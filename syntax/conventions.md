@@ -172,6 +172,7 @@ Compact form: `<npl-fact>JWT rotation :: short-lived access</npl-fact>`.
 Machine view: statement+conclusion = structured assertion.
 
 **npl-facts** — collection; the flagship surface.
+**Normative: `syntax/schema/npl-facts.md`.**
 ```html
 <npl-facts view-as="quiz" controls="shuffle,filter">
   <npl-fact>…</npl-fact>
@@ -186,6 +187,7 @@ Machine view: statement+conclusion = structured assertion.
 - Events: `npl-navigate {index}`, `npl-flip {face}`, `npl-complete {correct,total,ms}`.
 
 **npl-detail / npl-details** — prose with occludable content.
+**Normative: `syntax/schema/npl-details.md`.**
 ```html
 <npl-details view-as="quiz">
   <npl-detail>
