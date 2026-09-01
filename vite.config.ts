@@ -6,7 +6,7 @@ export default defineConfig({
       entry: 'src/index.ts',
       formats: ['iife'],
       name: 'NPL',
-      fileName: 'npl'
+      fileName: () => 'npl.js'
     },
     target: 'es2022'
   },
