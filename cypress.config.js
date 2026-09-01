@@ -1,0 +1,7 @@
+export default {
+  e2e: {
+    baseUrl: 'http://localhost:4173',
+    specPattern: 'cypress/e2e/**/*.cy.js',
+    supportFile: 'cypress/support/e2e.js'
+  }
+};

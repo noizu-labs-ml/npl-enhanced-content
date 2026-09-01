@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en" data-npl-theme="minimal-tech-light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>npl-enhanced-content · Format Spec v0.4</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  [data-npl-theme="minimal-tech-light"] {
+    --npl-bg: #fafafa; --npl-surface: #ffffff; --npl-fg: #1e293b;
+    --npl-muted: #64748b; --npl-border: #e2e8f0; --npl-accent: #2563eb;
+    --npl-note-info: #2563eb; --npl-note-tip: #059669;
+    --npl-note-warning: #d97706; --npl-note-danger: #dc2626;
+    --npl-correct: #059669; --npl-wrong: #dc2626; --npl-occluded: #94a3b8;
+  }
+  @media (prefers-color-scheme: dark) {
+    [data-npl-theme="minimal-tech-light"] {
+      --npl-bg: #0f172a; --npl-surface: #1e293b; --npl-fg: #e2e8f0;
+      --npl-muted: #94a3b8; --npl-border: #334155; --npl-accent: #60a5fa;
+      --npl-note-info: #60a5fa; --npl-note-tip: #34d399;
+      --npl-note-warning: #fbbf24; --npl-note-danger: #f87171;
+      --npl-correct: #34d399; --npl-wrong: #f87171; --npl-occluded: #475569;
+    }
+  }
+  body { margin: 0; background: var(--npl-bg); color: var(--npl-fg); }
+  .npl-enhanced-document { font-family: system-ui, sans-serif; line-height: 1.6; }
+
+  /* spec-document furniture */
+  h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 .25rem; }
+  h2 { font-size: 1.125rem; font-weight: 600; margin: 2rem 0 .5rem;
+       border-bottom: 1px solid var(--npl-border); padding-bottom: .3rem; }
+  h2:target { outline: 2px solid var(--npl-accent); outline-offset: 4px; border-radius: 4px; }
+  h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 .4rem; }
+  p { margin: .5rem 0; }
+  ul { margin: .5rem 0; padding-left: 1.25rem; }
+  pre { background: var(--npl-surface); border: 1px solid var(--npl-border);
+        border-radius: 8px; padding: .75rem 1rem; overflow-x: auto;
+        font-size: .8rem; line-height: 1.5; margin: .75rem 0; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  :not(pre) > code { background: color-mix(in srgb, var(--npl-accent) 10%, transparent);
+        padding: .1em .3em; border-radius: 4px; font-size: .9em; }
+  table { border-collapse: collapse; width: 100%; margin: .75rem 0; font-size: .85rem; }
+  th, td { border: 1px solid var(--npl-border); padding: .4rem .6rem;
+           text-align: left; vertical-align: top; }
+  th { background: var(--npl-surface); font-weight: 600; }
+  .npl-toc { border: 1px solid var(--npl-border); border-radius: 12px;
+             background: var(--npl-surface); padding: 1rem 1.5rem; margin: 1rem 0; }
+  .npl-toc a { color: var(--npl-accent); text-decoration: none; }
+  .npl-toc a:hover { text-decoration: underline; }
+  .npl-toc ol { margin: .25rem 0; }
+  .npl-doc-meta { color: var(--npl-muted); font-size: .85rem; margin-bottom: 1.5rem; }
+  .npl-open { color: var(--npl-note-warning); font-weight: 600; }
+
+  /* component base (shared with demo/index.html) */
+  .npl-note { border-left: 4px solid var(--npl-note-info); border-radius: 8px;
+    padding: .75rem 1rem; margin: 1rem 0; background: var(--npl-surface); }
+  .npl-note[data-variant="warning"] { border-color: var(--npl-note-warning); }
+  .npl-note[data-variant="tip"]     { border-color: var(--npl-note-tip); }
+  .npl-note[data-variant="danger"]  { border-color: var(--npl-note-danger); }
+  .npl-note[data-variant]::before { content: attr(data-variant) " · ";
+    font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--npl-muted); display: block; }
+  .npl-facts { margin: 1rem 0; }
+  .npl-facts-chrome { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
+  .npl-facts-chrome button { border: 1px solid var(--npl-border); background: var(--npl-surface);
+    color: var(--npl-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
+  .npl-progress { color: var(--npl-muted); font-size: .875rem; }
+  .npl-fact { border: 1px solid var(--npl-border); border-radius: 12px;
+    padding: 1rem; margin: .75rem 0; background: var(--npl-surface); }
+  .npl-fact .npl-statement { font-weight: 600; }
+  .npl-fact .npl-conclusion { margin: .5rem 0 0; color: var(--npl-muted); }
+  .npl-fact .npl-distractor { display: none; }
+  .npl-facts[data-view-as="flashcards"] .npl-fact { display: none; cursor: pointer;
+    min-height: 6rem; }
+  .npl-facts[data-view-as="flashcards"] .npl-fact.npl-current { display: block; }
+  .npl-facts[data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
+  .npl-facts[data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
+  .npl-facts[data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
+  .npl-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
+  .npl-quiz-options button { text-align: left; border: 1px solid var(--npl-border);
+    background: var(--npl-surface); color: var(--npl-fg); border-radius: 8px;
+    padding: .5rem .75rem; cursor: pointer; }
+  .npl-quiz-options button[data-correct="true"].npl-answered { border-color: var(--npl-correct); }
+  .npl-quiz-options button.npl-wrong-pick { border-color: var(--npl-wrong); }
+  .npl-highlight { font-style: normal; background: color-mix(in srgb, var(--npl-accent) 18%, transparent);
+    border-radius: 4px; padding: 0 .2em; }
+  .npl-occluded { color: transparent; background: var(--npl-occluded); border-radius: 4px;
+    cursor: pointer; user-select: none; transition: color .15s; min-width: 3ch; display: inline-block; }
+  .npl-revealed { color: inherit; background: color-mix(in srgb, var(--npl-accent) 18%, transparent); }
+</style>
+
+<style type="text/tailwindcss">
+  .npl-enhanced-document { @apply mx-auto max-w-3xl px-4 py-10; }
+  .npl-toc { @apply shadow-sm; }
+  .npl-fact { @apply shadow-sm; }
+  .npl-facts-chrome button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
+  .npl-quiz-options button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
+</style>
+
+<!-- npl-fallback (same handler as demo/index.html) -->
+<script id="npl-fallback">
+(function () {
+  'use strict';
+  document.querySelectorAll('.npl-facts').forEach(function (root) {
+    var view = root.getAttribute('data-view-as') || 'list';
+    var items = [].slice.call(root.querySelectorAll('.npl-fact'));
+    if (view === 'list' || items.length === 0) return;
+    var chrome = document.createElement('div');
+    chrome.className = 'npl-facts-chrome';
+    chrome.innerHTML =
+      '<button type="button" data-act="prev" aria-label="previous">←</button>' +
+      '<span class="npl-progress"></span>' +
+      '<button type="button" data-act="next" aria-label="next">→</button>';
+    root.insertBefore(chrome, root.firstChild);
+    var i = 0;
+    var progress = chrome.querySelector('.npl-progress');
+    function optionsFor(item) {
+      var correct = item.querySelector('.npl-conclusion');
+      var distractors = [].slice.call(item.querySelectorAll('.npl-distractor'));
+      var others = items.filter(function (f) { return f !== item; })
+        .map(function (f) { return f.querySelector('.npl-conclusion'); })
+        .filter(Boolean);
+      var pool = distractors.concat(others).slice(0, 3);
+      return pool.concat([correct]).sort(function () { return Math.random() - .5; })
+        .map(function (el) {
+          return { text: el.textContent.trim(), correct: el === correct };
+        });
+    }
+    function renderQuiz(item) {
+      var box = item.querySelector('.npl-quiz-options');
+      if (!box) {
+        box = document.createElement('div');
+        box.className = 'npl-quiz-options';
+        item.appendChild(box);
+      }
+      box.innerHTML = '';
+      optionsFor(item).forEach(function (o) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = o.text;
+        b.setAttribute('data-correct', String(o.correct));
+        b.addEventListener('click', function () {
+          if (box.hasAttribute('data-answered')) return;
+          box.setAttribute('data-answered', '');
+          b.classList.add(o.correct ? 'npl-answered' : 'npl-wrong-pick');
+          progress.textContent = (i + 1) + '/' + items.length;
+        });
+        box.appendChild(b);
+      });
+    }
+    function render() {
+      items.forEach(function (f, k) { f.classList.toggle('npl-current', k === i); });
+      progress.textContent = (i + 1) + '/' + items.length;
+      if (view === 'quiz') renderQuiz(items[i]);
+    }
+    chrome.addEventListener('click', function (e) {
+      var act = e.target.getAttribute && e.target.getAttribute('data-act');
+      if (act === 'prev') { i = (i - 1 + items.length) % items.length; render(); }
+      if (act === 'next') { i = (i + 1) % items.length; render(); }
+    });
+    items.forEach(function (f) {
+      f.addEventListener('click', function () { f.classList.toggle('npl-flipped'); });
+    });
+    render();
+  });
+  document.querySelectorAll('.npl-details[data-view-as="quiz"]').forEach(function (root) {
+    root.querySelectorAll('.npl-highlight').forEach(function (h) {
+      var span = document.createElement('span');
+      span.className = 'npl-occluded';
+      span.textContent = h.textContent;
+      span.setAttribute('role', 'button');
+      span.setAttribute('tabindex', '0');
+      function reveal() {
+        span.className = 'npl-highlight npl-revealed';
+        span.removeAttribute('role');
+        span.removeAttribute('tabindex');
+      }
+      span.addEventListener('click', reveal);
+      span.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reveal(); }
+      });
+      h.replaceWith(span);
+    });
+  });
+})();
+</script>
+</head>
+
+<body>
+<div class="npl-enhanced-document">
+
+  <h1>npl-enhanced-content — Format Spec &amp; Conventions</h1>
+  <p class="npl-doc-meta">DRAFT v0.4 · class-based baseline · this page is written in the format it specifies — one HTML file, inline CSS, Tailwind refinement, vanilla fallback. Normative source: <code>syntax/conventions.md</code>.</p>
+
+  <nav class="npl-toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#model">Model</a></li>
+      <li><a href="#skeleton">Document skeleton</a></li>
+      <li><a href="#attributes">Attribute catalog</a></li>
+      <li><a href="#notation">NPL notation inside tags</a></li>
+      <li><a href="#fallback">Fallback handler &amp; degradation</a></li>
+      <li><a href="#elements">Element entries</a></li>
+      <li><a href="#themes">Theme conventions</a></li>
+      <li><a href="#distribution">Distribution forms</a></li>
+      <li><a href="#machine">Machine-readability contract</a></li>
+      <li><a href="#alignment">NPL XML-variant alignment</a></li>
+      <li><a href="#questions">Open questions</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="model">0 · Model</h2>
+  <p>One file, three consumers:</p>
+  <ul>
+    <li><strong>Human / browser</strong> — double-click the <code>.html</code>/<code>.mhtml</code>; current Chrome/Edge/Brave/Firefox/Safari render styled, interactive documents. No server, no build, no install.</li>
+    <li><strong>LLM / non-visual</strong> — the same file read structurally; attributes qualify every datum; same XML vocabulary NPL's MCP server already speaks.</li>
+    <li><strong>Terminal</strong> — browser render or DOM-text extraction; content complete without JS.</li>
+  </ul>
+  <p>Element names are <strong>semantic</strong> (<code>npl-fact</code>, <code>npl-detail</code>) — what content <em>is</em>; presentation is parameterized (<code>view-as="quiz|flashcards|list"</code>) — how it <em>renders</em>. NPL conventions live inside the tags, never as a pre-HTML grammar.</p>
+
+  <div class="npl-note" data-variant="tip">This page is the reference: every component class below is live. Try the embedded facts widget in §5.</div>
+
+  <h2 id="skeleton">1 · Document skeleton</h2>
+<pre>&lt;!doctype html&gt;
+&lt;html lang="en" data-npl-theme="minimal-tech-light"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;title&gt;…&lt;/title&gt;
+  &lt;link rel="stylesheet" href="npl/themes/minimal-tech-light.css"&gt;   &lt;!-- folder form --&gt;
+  &lt;style&gt;/* inline core CSS — theme tokens + component base */&lt;/style&gt;
+  &lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;
+  &lt;style type="text/tailwindcss"&gt;/* @apply refinements on npl-* */&lt;/style&gt;
+  &lt;script id="npl-fallback"&gt;/* always-embedded vanilla handler */&lt;/script&gt;
+  &lt;script defer src="npl/npl.js"&gt;&lt;/script&gt;   &lt;!-- Lit upgrade, optional (later milestone) --&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="npl-enhanced-document"&gt;
+  &lt;div class="npl-agent"&gt;
+    &lt;div class="npl-agent-name"&gt;…&lt;/div&gt;
+    &lt;div class="npl-agent-bio"&gt;…&lt;/div&gt;
+    &lt;div class="npl-agent-instructions"&gt;…&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;!-- content --&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+  <ul>
+    <li><code>.npl-enhanced-document</code> is the required root wrapper in v0.4.</li>
+    <li>Metadata children (<code>.npl-agent</code>, future <code>.npl-org</code>, <code>.npl-context</code>) are bare semantic blocks — machine-facing, lightly styled. <span class="npl-open">❓Q1</span> keep bare vs <code>npl-</code>-prefix everything inside?</li>
+    <li>Ordinary semantic HTML is always valid content; <code>npl-*</code> enhances where interactivity pays.</li>
+  </ul>
+
+  <h2 id="attributes">2 · Attribute catalog</h2>
+  <p>v0.4: identity = class, parameters = <code>data-*</code> attributes. Global set (any <code>.npl-*</code> element):</p>
+  <table>
+    <tr><th>Attribute</th><th>Values</th><th>Machine meaning</th></tr>
+    <tr><td><code>data-kind</code></td><td>free token (<code>concept</code>, <code>anti-pattern</code>, …)</td><td>what the data IS</td></tr>
+    <tr><td><code>data-tags</code></td><td>comma list</td><td>classification</td></tr>
+    <tr><td><code>data-view-as</code></td><td>element-defined modes</td><td>presentation parameter (identity unchanged)</td></tr>
+    <tr><td><code>data-status</code></td><td><code>done</code> <code>current</code> <code>todo</code> <code>blocked</code> <code>pass</code> <code>fail</code></td><td>lifecycle/verdict</td></tr>
+    <tr><td><code>data-controls</code></td><td><code>shuffle</code> <code>filter</code> <code>retry</code> <code>picker</code></td><td>which controls render</td></tr>
+    <tr><td><code>data-variant</code></td><td>element-defined</td><td>presentation + semantics variant</td></tr>
+    <tr><td><code>id</code></td><td>doc-unique</td><td>stable anchor, cite target</td></tr>
+    <tr><td><code>data-*</code></td><td>free</td><td>extension point</td></tr>
+  </table>
+  <p><code>data-view-as</code> is the core inversion: a fact is a fact in every view; the attribute only selects rendering. Unknown value ⇒ falls back to <code>list</code>/plain.</p>
+
+  <h2 id="notation">3 · NPL notation inside tags</h2>
+  <p>Compact notation is legal inside element text where the schema allows; <strong>attributes are canonical, notation is sugar</strong>:</p>
+  <table>
+    <tr><th>Notation</th><th>Meaning</th><th>Where</th></tr>
+    <tr><td><code>span.npl-highlight</code></td><td>recall target — occludes in quiz/flashcard views, <code>&lt;em&gt;</code>-equivalent in plain view</td><td>any prose element</td></tr>
+    <tr><td><code>[[cloze]]</code></td><td>inline occlusion sugar (≡ highlight)</td><td><code>npl-detail</code>, <code>npl-fact</code></td></tr>
+    <tr><td><code>term :: value</code></td><td>pair</td><td><code>npl-property</code> text, fact compact form</td></tr>
+    <tr><td><code>✅ …</code> / <code>✗ …</code></td><td>correct / distractor</td><td>quiz options sugar</td></tr>
+    <tr><td><code>→ …</code></td><td>current</td><td><code>npl-step</code> status sugar</td></tr>
+    <tr><td><code>[hint | reveal]</code></td><td>agent-facing instruction, human-rendered hint</td><td>instruction-bearing elements <span class="npl-open">❓Q2</span></td></tr>
+  </table>
+  <p>Structured children (<code>.npl-statement</code>/<code>.npl-conclusion</code>) always win over the <code>::</code> compact form when both present.</p>
+
+  <h2 id="fallback">4 · Fallback handler &amp; degradation rules</h2>
+  <ul>
+    <li><code>&lt;script id="npl-fallback"&gt;</code> is embedded inline in every portable doc (~2–4KB vanilla JS): <code>data-view-as</code> switching, reveal toggles, highlight occlusion, basic quiz checking, theme picker. <strong>Zero external resources required for full baseline interactivity.</strong></li>
+    <li><code>npl/npl.js</code> (Lit 3, IIFE) upgrades elements in place when reachable; component implementations supersede fallback behaviors. Handoff contract: fallback sets <code>data-npl-fallback</code>; components remove it on upgrade. BDD asserts both tiers + the handoff.</li>
+    <li>Core CSS (inline, plain) keeps the page presentable with JS <em>and</em> CDN absent; Tailwind refinement is a progressive enhancement layer.</li>
+    <li>Content lives in light DOM (searchable, copyable); interactive chrome may use shadow DOM once Lit lands.</li>
+  </ul>
+
+  <h2 id="elements">5 · Element entries</h2>
+
+  <h3>npl-note — callout</h3>
+<pre>&lt;div class="npl-note" data-variant="warning"&gt;
+  JWTs must rotate &lt;strong&gt;per session&lt;/strong&gt;.
+&lt;/div&gt;</pre>
+  <p>Variants <code>info</code> (default) <code>warning</code> <code>tip</code> <code>danger</code>; <code>collapsed</code> attr hides <code>.npl-note-body</code> behind a generated summary. Light DOM, content searchable.</p>
+
+  <h3>npl-fact — atomic assertable pair</h3>
+<pre>&lt;div class="npl-fact" id="f-jwt" data-kind="concept"&gt;
+  &lt;div class="npl-statement"&gt;JWTs rotate per session&lt;/div&gt;
+  &lt;div class="npl-conclusion"&gt;Short-lived access; refresh grants a new pair.&lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p>Compact form: <code>term :: conclusion</code> as direct text. Machine view: statement+conclusion = structured assertion.</p>
+
+  <h3>npl-facts — collection; the flagship surface</h3>
+<pre>&lt;div class="npl-facts" data-view-as="quiz" data-controls="shuffle"&gt;
+  &lt;div class="npl-fact"&gt;…&lt;/div&gt;
+  &lt;div class="npl-fact"&gt;
+    &lt;div class="npl-conclusion"&gt;true answer&lt;/div&gt;
+    &lt;div class="npl-distractor"&gt;decoy&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+  <ul>
+    <li><code>list</code> (default): all facts visible; filter/tags later.</li>
+    <li><code>flashcards</code>: front = statement, back = conclusion; flip click/Space; ←/→; progress.</li>
+    <li><code>quiz</code>: statement shown; options = explicit <code>.npl-distractor</code> children else sibling conclusions; scoring.</li>
+  </ul>
+  <div class="npl-note" data-variant="tip">Live example — this widget is the spec executing itself:</div>
+  <div class="npl-facts" data-view-as="flashcards">
+    <div class="npl-fact" id="spec-f1">
+      <div class="npl-statement">Semantic identity, parameterized presentation</div>
+      <div class="npl-conclusion"><code>npl-fact</code> is a fact in list, flashcard, and quiz views — <code>data-view-as</code> only changes rendering.</div>
+    </div>
+    <div class="npl-fact" id="spec-f2">
+      <div class="npl-statement">What guarantees interactivity with zero external resources?</div>
+      <div class="npl-conclusion">The inline <code>npl-fallback</code> handler.</div>
+      <div class="npl-distractor">The Tailwind CDN script.</div>
+    </div>
+  </div>
+
+  <h3>npl-detail / npl-details — prose with occludable content</h3>
+<pre>&lt;div class="npl-details" data-view-as="quiz"&gt;
+  &lt;div class="npl-detail"&gt;
+    The OIDC token travels in the &lt;span class="npl-highlight"&gt;Authorization&lt;/span&gt; header.
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p>Plain view: highlight renders emphasized. Quiz view: occluded, reveal per span. Live: <span class="npl-highlight">refresh tokens never reach the browser</span> (this page is in plain mode — swap <code>data-view-as</code> to see occlusion).</p>
+
+  <h3>Planned Tier-0 remainder</h3>
+  <p><code>npl-procedure</code>/<code>npl-step</code> (<code>data-status</code>), <code>npl-properties</code>/<code>npl-property</code> (→ <code>&lt;dl&gt;</code>), <code>npl-views</code>/<code>npl-view</code> (perspectives, <span class="npl-open">❓Q3</span>), <code>npl-reveal</code>, <code>npl-progress</code>. Tier 1: <code>npl-question</code> with 7 TRP types. Tier 2: <code>npl-chronology</code>, <code>npl-table</code>, <code>npl-query</code>, <code>npl-themes</code>.</p>
+
+  <h2 id="themes">6 · Theme conventions</h2>
+  <ul>
+    <li><code>data-npl-theme="&lt;slug&gt;"</code> on <code>&lt;html&gt;</code>; one theme per doc; tokens on <code>[data-npl-theme]</code> (this page uses them live).</li>
+    <li>Compiled themes from TRP-format YAML → <code>npl/themes/&lt;slug&gt;.css</code>; <code>--npl-*</code> tokens; <code>:not(:defined)</code> vocabulary base when custom elements land.</li>
+    <li>Ship 4 TRP ports: <code>minimal-tech-light</code> (default), <code>nocturne-console</code>, <code>organic-warm</code>, <code>editorial-settings</code>; auto light/dark via <code>prefers-color-scheme</code>, <code>data-color-mode</code> forces.</li>
+  </ul>
+
+  <h2 id="distribution">7 · Distribution forms</h2>
+  <ol>
+    <li><strong>Folder</strong> — <code>doc.html</code> + relative <code>npl/</code> (IIFE <code>npl.js</code> + <code>themes/</code>).</li>
+    <li><strong>Single-file</strong> — fallback + CSS + (later) Lit bundle + data all inlined; one file shares anywhere.</li>
+    <li><strong>MHTML</strong> — multi-page bundle.</li>
+  </ol>
+  <p>Hard rules: no ES-module scripts; no runtime fetch in portable docs; the fallback handler is always embedded regardless of form.</p>
+
+  <h2 id="machine">8 · Machine-readability contract</h2>
+  <ul>
+    <li>Semantic children (<code>.npl-statement</code>, <code>.npl-conclusion</code>, <code>.npl-highlight</code>) + <code>data-*</code> attributes qualify every datum.</li>
+    <li>Well-formed, correctly nested HTML — parseable by XML/HTML tooling; same vocabulary is the XML variant of NPL (§9).</li>
+    <li>Behaviors + attributes documented per schema = agent integration surface.</li>
+    <li>A "text extraction" reference recipe (DOM → annotated plain text) ships with the lib.</li>
+  </ul>
+
+  <h2 id="alignment">9 · NPL XML-variant alignment</h2>
+  <p>This vocabulary is the <strong>XML variant of NPL</strong>: NPL yaml already models agents (name/bio/instructions), instructions, and structured prompt sections via the MCP server; this format is its document-shaped rendering target. Alignment tasks (tracked, not blocking): map <code>.npl-agent</code> children to NPL agent schema; map facts to NPL knowledge records; define <code>npl-enhanced-document</code> as a valid MCP render target. <span class="npl-open">❓Q4</span> mapping ownership.</p>
+
+  <h2 id="questions">10 · Open questions</h2>
+  <table>
+    <tr><th>#</th><th>Question</th><th>Lean</th></tr>
+    <tr><td><span class="npl-open">Q1</span></td><td>Metadata children bare vs <code>npl-</code>-prefixed</td><td>bare (matches NPL yaml shape)</td></tr>
+    <tr><td><span class="npl-open">Q2</span></td><td>keep <code>[hint | reveal]</code> notation?</td><td>yes — agent-instruction hook</td></tr>
+    <tr><td><span class="npl-open">Q3</span></td><td>tabs-family name: <code>npl-views</code> vs <code>npl-perspectives</code></td><td><code>npl-views</code></td></tr>
+    <tr><td><span class="npl-open">Q4</span></td><td>NPL MCP alignment ownership</td><td>we publish the schema; MCP consumes</td></tr>
+    <tr><td><span class="npl-open">Q5</span></td><td>fallback scope: toggles only vs full quiz logic</td><td>full logic v1</td></tr>
+  </table>
+
+</div>
+</body>
+</html>

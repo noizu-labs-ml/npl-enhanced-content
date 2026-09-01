@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en" data-npl-theme="minimal-tech-light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>npl-enhanced-content · v0.4 baseline</title>
+
+<!-- Tailwind (CDN). Refinement layer only — core styles below are offline-safe. -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Inline core CSS: theme tokens + npl-* component base. Plain CSS, no deps. -->
+<style>
+  [data-npl-theme="minimal-tech-light"] {
+    --npl-bg: #fafafa; --npl-surface: #ffffff; --npl-fg: #1e293b;
+    --npl-muted: #64748b; --npl-border: #e2e8f0; --npl-accent: #2563eb;
+    --npl-accent-fg: #ffffff;
+    --npl-note-info: #2563eb; --npl-note-tip: #059669;
+    --npl-note-warning: #d97706; --npl-note-danger: #dc2626;
+    --npl-correct: #059669; --npl-wrong: #dc2626; --npl-occluded: #94a3b8;
+  }
+  @media (prefers-color-scheme: dark) {
+    [data-npl-theme="minimal-tech-light"] {
+      --npl-bg: #0f172a; --npl-surface: #1e293b; --npl-fg: #e2e8f0;
+      --npl-muted: #94a3b8; --npl-border: #334155; --npl-accent: #60a5fa;
+      --npl-accent-fg: #0f172a;
+      --npl-note-info: #60a5fa; --npl-note-tip: #34d399;
+      --npl-note-warning: #fbbf24; --npl-note-danger: #f87171;
+      --npl-correct: #34d399; --npl-wrong: #f87171; --npl-occluded: #475569;
+    }
+  }
+  body { margin: 0; background: var(--npl-bg); color: var(--npl-fg); }
+  .npl-enhanced-document { font-family: system-ui, sans-serif; line-height: 1.6; }
+
+  /* metadata */
+  .npl-agent { border: 1px solid var(--npl-border); border-radius: 12px;
+    padding: 1rem; margin: 1.5rem 0; background: var(--npl-surface); }
+  .npl-agent .npl-agent-name { font-weight: 600; }
+  .npl-agent .npl-agent-bio { color: var(--npl-muted); margin: .25rem 0; }
+  .npl-agent .npl-agent-instructions { font-size: .875rem; margin: .25rem 0 0; }
+
+  /* note */
+  .npl-note { border-left: 4px solid var(--npl-note-info); border-radius: 8px;
+    padding: .75rem 1rem; margin: 1rem 0; background: var(--npl-surface); }
+  .npl-note[data-variant="warning"] { border-color: var(--npl-note-warning); }
+  .npl-note[data-variant="tip"]     { border-color: var(--npl-note-tip); }
+  .npl-note[data-variant="danger"]  { border-color: var(--npl-note-danger); }
+  .npl-note[data-variant]::before { content: attr(data-variant) " · ";
+    font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--npl-muted); display: block; }
+  .npl-note[collapsed] > .npl-note-body { display: none; }
+  .npl-note[collapsed] .npl-note-summary { cursor: pointer; color: var(--npl-accent); }
+
+  /* facts */
+  .npl-facts { margin: 1.5rem 0; }
+  .npl-facts-chrome { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
+  .npl-facts-chrome button { border: 1px solid var(--npl-border); background: var(--npl-surface);
+    color: var(--npl-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
+  .npl-progress { color: var(--npl-muted); font-size: .875rem; }
+  .npl-fact { border: 1px solid var(--npl-border); border-radius: 12px;
+    padding: 1rem; margin: .75rem 0; background: var(--npl-surface); }
+  .npl-fact .npl-statement { font-weight: 600; }
+  .npl-fact .npl-conclusion { margin: .5rem 0 0; color: var(--npl-muted); }
+  .npl-fact .npl-distractor { display: none; }
+  /* quiz mode */
+  .npl-facts[data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
+  .npl-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
+  .npl-facts[data-view-as="flashcards"] .npl-fact { display: none; cursor: pointer;
+    min-height: 8rem; position: relative; }
+  .npl-facts[data-view-as="flashcards"] .npl-fact.npl-current { display: block; }
+  .npl-facts[data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
+  .npl-facts[data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
+  /* quiz mode */
+  .npl-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
+  .npl-quiz-options button { text-align: left; border: 1px solid var(--npl-border);
+    background: var(--npl-surface); color: var(--npl-fg); border-radius: 8px;
+    padding: .5rem .75rem; cursor: pointer; }
+  .npl-quiz-options button[data-correct="true"].npl-answered { border-color: var(--npl-correct); }
+  .npl-quiz-options button.npl-wrong-pick { border-color: var(--npl-wrong); }
+  .npl-score { font-size: .875rem; color: var(--npl-muted); }
+
+  /* details + highlight */
+  .npl-detail { border: 1px solid var(--npl-border); border-radius: 12px;
+    padding: 1rem; margin: .75rem 0; background: var(--npl-surface); cursor: pointer; }
+  .npl-highlight { font-style: normal; background: color-mix(in srgb, var(--npl-accent) 18%, transparent);
+    border-radius: 4px; padding: 0 .2em; }
+  .npl-occluded { color: transparent; background: var(--npl-occluded); border-radius: 4px;
+    cursor: pointer; user-select: none; transition: color .15s; min-width: 3ch; display: inline-block; }
+  .npl-revealed { color: inherit; background: color-mix(in srgb, var(--npl-accent) 18%, transparent); }
+</style>
+
+<!-- Tailwind refinement layer: applies utility rules to npl-* classes.
+     Requires the CDN above; harmless (no-op) without it. -->
+<style type="text/tailwindcss">
+  .npl-enhanced-document { @apply mx-auto max-w-3xl px-4 py-10; }
+  .npl-agent { @apply shadow-sm; }
+  .npl-note { @apply shadow-sm text-sm; }
+  .npl-fact { @apply shadow-sm transition hover:border-blue-300; }
+  .npl-facts-chrome button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
+  .npl-quiz-options button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
+  h1 { @apply text-2xl font-bold tracking-tight mb-2; }
+  h2 { @apply text-lg font-semibold mt-8 mb-2; }
+</style>
+
+<!-- npl-fallback: vanilla interactivity. No external resources required. -->
+<script id="npl-fallback">
+(function () {
+  'use strict';
+
+  /* ---- npl-facts: flashcards + quiz views ---- */
+  document.querySelectorAll('.npl-facts').forEach(function (root) {
+    var view = root.getAttribute('data-view-as') || 'list';
+    var items = [].slice.call(root.querySelectorAll('.npl-fact'));
+    if (view === 'list' || items.length === 0) return;
+
+    var chrome = document.createElement('div');
+    chrome.className = 'npl-facts-chrome';
+    chrome.innerHTML =
+      '<button type="button" data-act="prev" aria-label="previous">←</button>' +
+      '<span class="npl-progress"></span>' +
+      '<button type="button" data-act="next" aria-label="next">→</button>';
+    root.insertBefore(chrome, root.firstChild);
+
+    var i = 0, flipped = false, score = { correct: 0, answered: 0 };
+    var progress = chrome.querySelector('.npl-progress');
+
+    function optionsFor(item) {
+      var correct = item.querySelector('.npl-conclusion');
+      var distractors = [].slice.call(item.querySelectorAll('.npl-distractor'));
+      var others = items.filter(function (f) { return f !== item; })
+        .map(function (f) { return f.querySelector('.npl-conclusion'); })
+        .filter(Boolean);
+      var pool = distractors.concat(others).slice(0, 3);
+      var opts = pool.concat([correct]).sort(function () { return Math.random() - .5; });
+      return opts.map(function (el) {
+        return { text: el.textContent.trim(), correct: el === correct };
+      });
+    }
+
+    function renderQuiz(item) {
+      var box = item.querySelector('.npl-quiz-options');
+      if (!box) {
+        box = document.createElement('div');
+        box.className = 'npl-quiz-options';
+        item.appendChild(box);
+      }
+      box.innerHTML = '';
+      optionsFor(item).forEach(function (o) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = o.text;
+        b.setAttribute('data-correct', String(o.correct));
+        b.addEventListener('click', function () {
+          if (box.hasAttribute('data-answered')) return;
+          box.setAttribute('data-answered', '');
+          b.classList.add(o.correct ? 'npl-answered' : 'npl-wrong-pick');
+          if (o.correct) score.correct++;
+          score.answered++;
+          progress.textContent = (i + 1) + '/' + items.length +
+            ' · score ' + score.correct + '/' + score.answered;
+        });
+        box.appendChild(b);
+      });
+    }
+
+    function render() {
+      var item = items[i];
+      items.forEach(function (f, k) {
+        f.classList.toggle('npl-current', k === i);
+        f.classList.remove('npl-flipped');
+      });
+      flipped = false;
+      if (view === 'flashcards') {
+        progress.textContent = (i + 1) + '/' + items.length;
+      } else {
+        progress.textContent = (i + 1) + '/' + items.length;
+        renderQuiz(item);
+      }
+    }
+
+    chrome.addEventListener('click', function (e) {
+      var act = e.target.getAttribute && e.target.getAttribute('data-act');
+      if (!act) return;
+      if (act === 'prev') { i = (i - 1 + items.length) % items.length; render(); }
+      if (act === 'next') { i = (i + 1) % items.length; render(); }
+      if (act === 'flip' || e.target.closest('.npl-fact')) {
+        items[i].classList.toggle('npl-flipped');
+        flipped = !flipped;
+      }
+    });
+    if (view === 'flashcards') {
+      items.forEach(function (f) {
+        f.addEventListener('click', function () { f.classList.toggle('npl-flipped'); });
+      });
+    }
+    render();
+  });
+
+  /* ---- npl-details: highlight occlusion (quiz view) ---- */
+  document.querySelectorAll('.npl-details[data-view-as="quiz"]').forEach(function (root) {
+    root.querySelectorAll('.npl-highlight').forEach(function (h) {
+      var span = document.createElement('span');
+      span.className = 'npl-occluded';
+      span.textContent = h.textContent;
+      span.setAttribute('role', 'button');
+      span.setAttribute('tabindex', '0');
+      span.setAttribute('aria-label', 'reveal');
+      function reveal() {
+        span.className = 'npl-highlight npl-revealed';
+        span.removeAttribute('role');
+        span.removeAttribute('tabindex');
+      }
+      span.addEventListener('click', reveal);
+      span.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reveal(); }
+      });
+      h.replaceWith(span);
+    });
+  });
+
+  /* ---- npl-note[collapsed]: summary toggle ---- */
+  document.querySelectorAll('.npl-note[collapsed]').forEach(function (n) {
+    var body = n.querySelector('.npl-note-body');
+    if (!body) return;
+    var sum = document.createElement('div');
+    sum.className = 'npl-note-summary';
+    sum.textContent = (body.textContent || '').trim().split(/\s+/).slice(0, 10).join(' ') + ' …';
+    n.insertBefore(sum, body);
+    sum.addEventListener('click', function () {
+      n.removeAttribute('collapsed');
+      sum.remove();
+    });
+  });
+})();
+</script>
+</head>
+
+<body>
+<div class="npl-enhanced-document">
+
+  <h1>Auth Patterns — Sample npl Document</h1>
+  <p>Demonstrates the v0.4 class-based vocabulary: inline CSS + Tailwind refinement + vanilla fallback handler. Open this file directly in any browser.</p>
+
+  <div class="npl-agent">
+    <div class="npl-agent-name">Auth Guide</div>
+    <div class="npl-agent-bio">Answer questions about the sample auth facts in this document.</div>
+    <div class="npl-agent-instructions">Cite npl-fact ids. Prefer conclusions verbatim.</div>
+  </div>
+
+  <div class="npl-note" data-variant="warning">JWTs must rotate <strong>per session</strong>, not per request.</div>
+  <div class="npl-note" data-variant="tip" collapsed>Shuffle flashcards before each review session for better recall.</div>
+
+  <h2>Facts — flashcards</h2>
+  <div class="npl-facts" data-view-as="flashcards">
+    <div class="npl-fact" id="f-jwt">
+      <div class="npl-statement">JWTs rotate per session</div>
+      <div class="npl-conclusion">Short-lived access tokens; the refresh grant issues a new pair.</div>
+    </div>
+    <div class="npl-fact" id="f-device">
+      <div class="npl-statement">OAuth device flow targets input-constrained devices</div>
+      <div class="npl-conclusion">TVs, consoles, CLI tools — poll the token endpoint with the device code.</div>
+    </div>
+    <div class="npl-fact" id="f-scope">
+      <div class="npl-statement">Long-lived tokens are an anti-pattern</div>
+      <div class="npl-conclusion">Scope capabilities tightly instead of extending lifetime.</div>
+      <div class="npl-distractor">Store tokens in localStorage for durability.</div>
+    </div>
+  </div>
+
+  <h2>Facts — quiz</h2>
+  <div class="npl-facts" data-view-as="quiz">
+    <div class="npl-fact" id="f-oidc">
+      <div class="npl-statement">The OIDC token travels in which header?</div>
+      <div class="npl-conclusion">Authorization</div>
+      <div class="npl-distractor">Cookie</div>
+      <div class="npl-distractor">X-Auth-Token</div>
+    </div>
+    <div class="npl-fact" id="f-pkce">
+      <div class="npl-statement">PKCE protects which flow?</div>
+      <div class="npl-conclusion">Authorization code flow</div>
+      <div class="npl-distractor">Client credentials flow</div>
+    </div>
+  </div>
+
+  <h2>Details — highlight occlusion</h2>
+  <div class="npl-details" data-view-as="quiz">
+    <div class="npl-detail">
+      The OIDC token travels in the <span class="npl-highlight">Authorization</span> header,
+      and refresh tokens should never reach the <span class="npl-highlight">browser</span>.
+    </div>
+  </div>
+
+  <h2>Details — plain reading</h2>
+  <div class="npl-details">
+    <div class="npl-detail">Plain view keeps highlights readable inline — no occlusion without <code>data-view-as="quiz"</code>.</div>
+  </div>
+
+</div>
+</body>
+</html>
