@@ -1,8 +1,6 @@
 // BDD spec — v0.4 class-based baseline · source: conventions.md v0.4, demo/index.html
-// Fixture serves the repo root; run `npx vite preview` (port 4173) or any static server.
-// Note: the JS-off scenario's __nplJsOff guard needs a fixture hook — the demo
-// currently always runs the fallback handler; adjust fixture or drop the guard
-// when wiring cypress.config.js.
+// Fixture serves the repo root; run any static server on port 4173.
+// The JS-off scenario uses the demo's `__nplJsOff` kill-switch hook.
 //
 // Feature: the class-based baseline document renders and behaves with zero
 //          external resources beyond Tailwind CDN
@@ -30,22 +28,22 @@ describe('v0.4 baseline (demo/index.html)', () => {
   });
 
   it('flashcards view: one card at a time, flip reveals conclusion', () => {
-    const root = cy.get('.npl-facts[data-view-as="flashcards"]');
-    root.find('.npl-fact.npl-current').should('have.length', 1);
-    root.find('.npl-current .npl-conclusion').should('not.be.visible');
-    root.find('.npl-current').click();
-    root.find('.npl-current.npl-flipped .npl-conclusion').should('be.visible');
-    root.find('[data-act="next"]').click();
-    root.find('.npl-current').should('have.length', 1);
-    root.find('.npl-progress').should('contain', '2/3');
+    const fc = '.npl-facts[data-view-as="flashcards"] ';
+    cy.get(fc + '.npl-fact.npl-current').should('have.length', 1);
+    cy.get(fc + '.npl-current .npl-conclusion').should('not.be.visible');
+    cy.get(fc + '.npl-current').click();
+    cy.get(fc + '.npl-current.npl-flipped .npl-conclusion').should('be.visible');
+    cy.get(fc + '[data-act="next"]').click();
+    cy.get(fc + '.npl-current').should('have.length', 1);
+    cy.get(fc + '.npl-progress').should('contain', '2/3');
   });
 
   it('quiz view: conclusion hidden, options scored, distractors count', () => {
-    const root = cy.get('.npl-facts[data-view-as="quiz"]');
-    root.find('.npl-fact .npl-conclusion').should('not.be.visible');
-    root.find('.npl-current .npl-quiz-options button').should('have.length.at.least', 2);
-    root.find('.npl-current .npl-quiz-options button[data-correct="true"]').click();
-    root.find('.npl-progress').should('contain', 'score 1/1');
+    const qz = '.npl-facts[data-view-as="quiz"] ';
+    cy.get(qz + '.npl-fact .npl-conclusion').should('not.be.visible');
+    cy.get(qz + '.npl-current .npl-quiz-options button').should('have.length.at.least', 2);
+    cy.get(qz + '.npl-current .npl-quiz-options button[data-correct="true"]').click();
+    cy.get(qz + '.npl-progress').should('contain', 'score 1/1');
   });
 
   it('highlight occlusion: hidden until reveal, then visible', () => {
