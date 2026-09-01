@@ -47,7 +47,7 @@
   .npl-note[data-variant]::before { content: attr(data-variant) " · ";
     font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
     color: var(--npl-muted); display: block; }
-  .npl-note[collapsed] > .npl-note-body { display: none; }
+  .npl-note[data-npl-fallback][collapsed] > .npl-note-body { display: none; }
   .npl-note[collapsed] .npl-note-summary { cursor: pointer; color: var(--npl-accent); }
 
   /* facts */
@@ -61,14 +61,14 @@
   .npl-fact .npl-statement { font-weight: 600; }
   .npl-fact .npl-conclusion { margin: .5rem 0 0; color: var(--npl-muted); }
   .npl-fact .npl-distractor { display: none; }
-  /* quiz mode */
-  .npl-facts[data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
+  /* quiz mode (hide rules gated on the fallback enhancement marker — JS-off stays readable) */
+  .npl-facts[data-npl-fallback][data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
   .npl-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
-  .npl-facts[data-view-as="flashcards"] .npl-fact { display: none; cursor: pointer;
+  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact { display: none; cursor: pointer;
     min-height: 8rem; position: relative; }
-  .npl-facts[data-view-as="flashcards"] .npl-fact.npl-current { display: block; }
-  .npl-facts[data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
-  .npl-facts[data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
+  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact.npl-current { display: block; }
+  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
+  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
   /* quiz mode */
   .npl-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
   .npl-quiz-options button { text-align: left; border: 1px solid var(--npl-border);
@@ -86,6 +86,57 @@
   .npl-occluded { color: transparent; background: var(--npl-occluded); border-radius: 4px;
     cursor: pointer; user-select: none; transition: color .15s; min-width: 3ch; display: inline-block; }
   .npl-revealed { color: inherit; background: color-mix(in srgb, var(--npl-accent) 18%, transparent); }
+
+  /* procedure */
+  .npl-procedure { margin: 1rem 0; }
+  .npl-step { counter-increment: npl-step; border-left: 3px solid var(--npl-border);
+    padding: .5rem .75rem .5rem 2.25rem; margin: .25rem 0; position: relative;
+    background: var(--npl-surface); border-radius: 0 8px 8px 0; }
+  .npl-step::before { content: counter(npl-step); position: absolute; left: .6rem;
+    top: .5rem; font-size: .75rem; color: var(--npl-muted); }
+  .npl-step[data-status="done"]::after { content: " ✓"; color: var(--npl-correct); }
+  .npl-step[data-status="current"] { border-left-color: var(--npl-accent); }
+  .npl-step[data-status="current"]::after { content: " →"; color: var(--npl-accent); }
+  .npl-step[data-status="blocked"] { border-left-color: var(--npl-wrong); color: var(--npl-muted); }
+  .npl-step[data-status="blocked"]::after { content: " ⛔"; color: var(--npl-wrong); }
+
+  /* properties */
+  .npl-properties { margin: 1rem 0; border: 1px solid var(--npl-border);
+    border-radius: 12px; overflow: hidden; background: var(--npl-surface); }
+  .npl-property { display: grid; grid-template-columns: minmax(8rem, 1fr) 2fr;
+    gap: .75rem; padding: .5rem .9rem; }
+  .npl-property:nth-child(even) { background: color-mix(in srgb, var(--npl-border) 40%, transparent); }
+  .npl-property::before { content: attr(data-key); color: var(--npl-muted);
+    font-variant-caps: all-small-caps; }
+
+  /* views */
+  .npl-views { margin: 1.5rem 0; }
+  .npl-views-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--npl-border); }
+  .npl-views-tabs button { border: 1px solid transparent; border-bottom: none;
+    background: none; color: var(--npl-muted); border-radius: 8px 8px 0 0;
+    padding: .4rem .9rem; cursor: pointer; }
+  .npl-views-tabs button[aria-selected="true"] { color: var(--npl-accent);
+    border-color: var(--npl-border); background: var(--npl-surface); }
+  .npl-view { display: none; border: 1px solid var(--npl-border); border-top: none;
+    border-radius: 0 0 12px 12px; padding: 1rem; background: var(--npl-surface); }
+  .npl-view[data-active] { display: block; }
+
+  /* reveal */
+  .npl-reveal { margin: 1rem 0; border: 1px solid var(--npl-border);
+    border-radius: 12px; background: var(--npl-surface); }
+  .npl-reveal[data-summary]::before { content: attr(data-summary);
+    display: block; font-variant-caps: all-small-caps; color: var(--npl-muted);
+    padding: .6rem .9rem 0; }
+  .npl-reveal .npl-reveal-body { padding: .5rem .9rem .75rem; }
+  .npl-reveal details:not([open]) .npl-reveal-body { display: none; }
+
+  /* progress */
+  .npl-progress { margin: 1rem 0; color: var(--npl-muted); font-size: .875rem; }
+  .npl-progress .npl-progress-track { display: block; height: .5rem;
+    background: color-mix(in srgb, var(--npl-border) 60%, transparent);
+    border-radius: 999px; overflow: hidden; margin-top: .25rem; }
+  .npl-progress .npl-progress-fill { display: block; height: 100%;
+    background: var(--npl-accent); border-radius: 999px; }
 </style>
 
 <!-- Tailwind refinement layer: applies utility rules to npl-* classes.
@@ -105,12 +156,15 @@
 <script id="npl-fallback">
 (function () {
   'use strict';
+  function init() {
+  if (window.__nplJsOff) return;   /* test hook: simulate JS-off degradation */
 
   /* ---- npl-facts: flashcards + quiz views ---- */
   document.querySelectorAll('.npl-facts').forEach(function (root) {
     var view = root.getAttribute('data-view-as') || 'list';
     var items = [].slice.call(root.querySelectorAll('.npl-fact'));
     if (view === 'list' || items.length === 0) return;
+    root.setAttribute('data-npl-fallback', '');
 
     var chrome = document.createElement('div');
     chrome.className = 'npl-facts-chrome';
@@ -221,6 +275,7 @@
   document.querySelectorAll('.npl-note[collapsed]').forEach(function (n) {
     var body = n.querySelector('.npl-note-body');
     if (!body) return;
+    n.setAttribute('data-npl-fallback', '');
     var sum = document.createElement('div');
     sum.className = 'npl-note-summary';
     sum.textContent = (body.textContent || '').trim().split(/\s+/).slice(0, 10).join(' ') + ' …';
@@ -230,6 +285,108 @@
       sum.remove();
     });
   });
+
+  /* ---- npl-properties: duplicate data-key warning (non-fatal) ---- */
+  document.querySelectorAll('.npl-properties').forEach(function (root) {
+    var seen = {};
+    root.querySelectorAll('.npl-property[data-key]').forEach(function (p) {
+      var k = p.getAttribute('data-key');
+      if (seen[k]) console.warn('npl-properties: duplicate data-key "' + k + '"');
+      seen[k] = true;
+    });
+  });
+
+  /* ---- npl-views: tab bar, keyboard, deep-links ---- */
+  document.querySelectorAll('.npl-views[id]').forEach(function (root) {
+    var views = [].slice.call(root.querySelectorAll('.npl-view'));
+    if (!views.length) return;
+    if (!root.querySelector('.npl-view[data-active]')) views[0].setAttribute('data-active', '');
+    var active = Math.max(0, views.findIndex(function (v) { return v.hasAttribute('data-active'); }));
+
+    var bar = document.createElement('div');
+    bar.className = 'npl-views-tabs';
+    bar.setAttribute('role', 'tablist');
+    views.forEach(function (v, k) {
+      v.setAttribute('role', 'tabpanel');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'tab');
+      b.textContent = v.getAttribute('data-name');
+      b.setAttribute('aria-selected', String(k === active));
+      b.addEventListener('click', function () { activate(k); });
+      b.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { e.preventDefault(); activate((active + 1) % views.length, true); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); activate((active - 1 + views.length) % views.length, true); }
+      });
+      bar.appendChild(b);
+    });
+    root.insertBefore(bar, root.firstChild);
+
+    function activate(k, focus) {
+      active = k;
+      views.forEach(function (v, j) {
+        if (j === k) v.setAttribute('data-active', ''); else v.removeAttribute('data-active');
+      });
+      [].forEach.call(bar.querySelectorAll('[role="tab"]'), function (b, j) {
+        b.setAttribute('aria-selected', String(j === k));
+      });
+      var v = views[k];
+      if (v.id) location.hash = root.id + '/' + v.id;
+      else location.hash = root.id + '/' + (v.getAttribute('data-name') || '').toLowerCase();
+      v.dispatchEvent(new CustomEvent('npl-navigate', {
+        bubbles: true, detail: { id: root.id, name: v.getAttribute('data-name'), index: k }
+      }));
+      if (focus) bar.querySelectorAll('[role="tab"]')[k].focus();
+    }
+
+    function fromHash() {
+      var m = location.hash.match(new RegExp('^#' + root.id + '/(.+)$'));
+      if (!m) return;
+      var k = views.findIndex(function (v) {
+        return v.id === m[1] || (v.getAttribute('data-name') || '').toLowerCase() === m[1];
+      });
+      if (k >= 0 && k !== active) activate(k);
+    }
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+  });
+
+  /* ---- npl-reveal: wrap in native details/summary ---- */
+  document.querySelectorAll('.npl-reveal').forEach(function (r) {
+    var d = document.createElement('details');
+    if (!r.hasAttribute('collapsed')) d.setAttribute('open', '');
+    var s = document.createElement('summary');
+    s.textContent = r.getAttribute('data-summary') ||
+      (r.textContent || '').trim().split(/\s+/).slice(0, 8).join(' ') + ' …';
+    d.appendChild(s);
+    var body = document.createElement('div');
+    body.className = 'npl-reveal-body';
+    while (r.firstChild) body.appendChild(r.firstChild);
+    d.appendChild(body);
+    r.appendChild(d);
+  });
+
+  /* ---- npl-progress: meter render ---- */
+  document.querySelectorAll('.npl-progress[data-value]').forEach(function (p) {
+    var raw = parseFloat(p.getAttribute('data-value'));
+    var v = Math.min(1, Math.max(0, isNaN(raw) ? 0 : raw));
+    var label = p.getAttribute('data-label') || 'progress';
+    var pct = Math.round(v * 100);
+    p.textContent = label + ' :: ' + pct + '%';
+    var track = document.createElement('span');
+    track.className = 'npl-progress-track';
+    var fill = document.createElement('span');
+    fill.className = 'npl-progress-fill';
+    fill.style.width = pct + '%';
+    track.appendChild(fill);
+    p.appendChild(track);
+  });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
 </script>
 </head>
@@ -247,7 +404,7 @@
   </div>
 
   <div class="npl-note" data-variant="warning">JWTs must rotate <strong>per session</strong>, not per request.</div>
-  <div class="npl-note" data-variant="tip" collapsed>Shuffle flashcards before each review session for better recall.</div>
+  <div class="npl-note" data-variant="tip" collapsed><div class="npl-note-body">Shuffle flashcards before each review session for better recall.</div></div>
 
   <h2>Facts — flashcards</h2>
   <div class="npl-facts" data-view-as="flashcards">
@@ -293,6 +450,50 @@
   <div class="npl-details">
     <div class="npl-detail">Plain view keeps highlights readable inline — no occlusion without <code>data-view-as="quiz"</code>.</div>
   </div>
+
+  <h2>Procedure — status runbook</h2>
+  <div class="npl-procedure" data-kind="runbook" role="list">
+    <div class="npl-step" role="listitem" data-status="done">provision Infisical path</div>
+    <div class="npl-step" role="listitem" data-status="current">port-forward MinIO</div>
+    <div class="npl-step" role="listitem">run migrations</div>
+    <div class="npl-step" role="listitem" data-status="blocked">cut release — waiting on CI</div>
+  </div>
+
+  <h2>Properties — config block</h2>
+  <div class="npl-properties" data-kind="config">
+    <div class="npl-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
+    <div class="npl-property" data-key="refresh rotation" role="definition" aria-label="refresh rotation">per use</div>
+    <div class="npl-property" data-key="storage" role="definition" aria-label="storage">httpOnly cookie</div>
+  </div>
+  <div class="npl-properties" id="npl-props-dup" data-kind="fixture">
+    <div class="npl-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
+    <div class="npl-property" data-key="token ttl" role="definition" aria-label="token ttl">14m</div>
+  </div>
+
+  <h2>Views — same deploy, two perspectives</h2>
+  <div class="npl-views" id="deploy">
+    <div class="npl-view" data-name="Helm" data-active role="tabpanel">
+      Chart from the <code>noizu-infra</code> repo; values live in <code>.infra-config.yaml</code>.
+    </div>
+    <div class="npl-view" data-name="ArgoCD" role="tabpanel">
+      ArgoCD auto-syncs from the product remote's <code>main</code>; CI bumps the image tag.
+    </div>
+  </div>
+
+  <h2>Reveal — Q→A disclosure</h2>
+  <div class="npl-reveal" id="r-storage" data-summary="Why not localStorage?" collapsed>
+    Tokens in localStorage are readable by any script on the page — one XSS away from session theft.
+    Prefer httpOnly cookies or memory-scoped storage.
+  </div>
+  <div class="npl-reveal" id="r-derived">
+    Refresh tokens rotate per use — each exchange retires the presented token.
+  </div>
+
+  <h2>Progress — completion meter</h2>
+  <div class="npl-progress" id="p-coverage" data-value="0.62" data-label="coverage"
+       role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"></div>
+  <div class="npl-progress" id="p-clamp" data-value="1.4" data-label="out-of-range fixture"
+       role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1.4"></div>
 
 </div>
 </body>

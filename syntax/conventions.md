@@ -19,6 +19,11 @@ vocabulary for the Lit milestone; the class mapping below is mechanical.
 | `<npl-distractor>` | `div.npl-distractor` |
 | `<npl-details>` / `<npl-detail>` | `div.npl-details` › `div.npl-detail` |
 | `<highlight>` | `span.npl-highlight` (occluded form: `.npl-occluded`) |
+| `<npl-procedure>` / `<npl-step status>` | `div.npl-procedure` › `div.npl-step[data-status]` |
+| `<npl-properties>` / `<npl-property key>` | `div.npl-properties` › `div.npl-property[data-key]` |
+| `<npl-views>` / `<npl-view name>` | `div.npl-views[id]` › `div.npl-view[data-name]`, `data-active` marker |
+| `<npl-reveal summary>` | `div.npl-reveal[data-summary]`, `collapsed` attr |
+| `<npl-progress value label>` | `div.npl-progress[data-value][data-label]` |
 
 CSS layering (all inline in `<head>`): (1) plain core CSS — theme tokens on
 `[data-npl-theme]` + component base, offline-safe; (2) `<style
@@ -191,36 +196,71 @@ Machine view: statement+conclusion = structured assertion.
 Plain view: `<highlight>` renders `<em>`. Quiz view: occluded (`▮▮▮`), reveal
 per item, self-check or auto-check.
 
-**npl-procedure / npl-step** —
+**npl-procedure / npl-step** — ordered, status-annotated procedure.
+**Normative: `syntax/schema/npl-procedure.md`.**
 ```html
-<npl-procedure kind="runbook">
-  <npl-step status="done">provision Infisical path</npl-step>
-  <npl-step status="current">port-forward MinIO</npl-step>
-  <npl-step>run migrations</npl-step>
-</npl-procedure>
+<div class="npl-procedure" data-kind="runbook" role="list">
+  <div class="npl-step" role="listitem" data-status="done">provision Infisical path</div>
+  <div class="npl-step" role="listitem" data-status="current">port-forward MinIO</div>
+  <div class="npl-step" role="listitem">run migrations</div>
+  <div class="npl-step" role="listitem" data-status="blocked">cut release</div>
+</div>
 ```
-`<ol>` + `data-status`; `status` attr canonical, `✅/→/❌` prefix sugar.
+`data-status`: `done|current|todo` (default) `|blocked`; DOM order =
+execution order (ordinals positional, CSS counters); status sugar
+(`✅/→/❌`) is display-only — `data-status` canonical. **Zero-JS element.**
 
-**npl-properties / npl-property** —
+**npl-properties / npl-property** — definition/properties block.
+**Normative: `syntax/schema/npl-properties.md`.**
 ```html
-<npl-properties kind="config">
-  <npl-property key="token ttl">15m</npl-property>
-</npl-properties>
+<div class="npl-properties" data-kind="config">
+  <div class="npl-property" data-key="token ttl"
+       role="definition" aria-label="token ttl">15m</div>
+</div>
 ```
-Renders `<dl>`; no JS v1. ❓ **Q2** add copy/search chrome later?
+`data-key` = the term, property text = the value. Zero-JS: key column
+renders via CSS `attr(data-key)`; AT gets the pair via
+`role="definition"` + `aria-label` = key. Compact `term :: value` sugar
+(conventions §3) is display-only — `data-key` canonical. Renders
+`<dl>`-equivalent grid; **Q2 resolved v1: pure definition list, no
+copy/search chrome.**
 
-**npl-views / npl-view** — switchable perspectives (tabs family).
+**npl-views / npl-view** — same content, switchable perspectives.
+**Normative: `syntax/schema/npl-views.md`.**
 ```html
-<npl-views id="deploy">
-  <npl-view name="Helm">content…</npl-view>
-  <npl-view name="ArgoCD">content…</npl-view>
-</npl-views>
+<div class="npl-views" id="deploy">
+  <div class="npl-view" data-name="Helm" data-active role="tabpanel">content…</div>
+  <div class="npl-view" data-name="ArgoCD" role="tabpanel">content…</div>
+</div>
 ```
-Deep-link `#deploy/argocd`; arrow-key nav; `role="tablist"` contract.
-❓ **Q3** `npl-views` the right semantic name? alternatives: `npl-perspectives`.
+`data-name` unique per container; `data-active` marks initial view
+(first wins if absent); fallback builds the tab bar (`.npl-views-tabs`,
+`role="tab"` buttons), arrow-key roving focus; deep-link `#deploy/argocd`;
+fires `npl-navigate {id, name, index}`. JS-off: all views stacked,
+`data-name`-headed. **Q3 resolved v1: `npl-views`.**
 
-**npl-reveal** — `<details>`-backed; `summary` attr or first line.
-**npl-progress** — `<npl-progress value="0.62" label="coverage">`; `role="meter"`.
+**npl-reveal** — Q→A disclosure, `<details>`-backed.
+**Normative: `syntax/schema/npl-reveal.md`.**
+```html
+<div class="npl-reveal" data-summary="Why not localStorage?" collapsed>
+  Tokens in localStorage are readable by any script on the page…
+</div>
+```
+`data-summary` optional — first body line (≤60 chars) derives it;
+`collapsed` starts hidden, otherwise open. Fallback wraps in native
+`<details>/<summary>`; JS-off: fully visible (summary as small-caps
+heading). Non-assertive counterpart to `npl-fact` Q/A shape.
+
+**npl-progress** — completion meter.
+**Normative: `syntax/schema/npl-progress.md`.**
+```html
+<div class="npl-progress" data-value="0.62" data-label="coverage"
+     role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"></div>
+```
+`data-value` canonical 0..1 (render clamps, attr untouched); `data-label`
+default `progress`; fallback renders track + fill + `label :: N%`; JS-off:
+text-only via CSS `attr()` — no fake bar. `data-status="done"` ⇔ 1 by
+convention.
 
 ### Tier 1 — flagship buildout
 
@@ -288,7 +328,7 @@ repo exports it, or NPL MCP consumes a schema file we publish?
 | # | Question | My lean |
 | :-- | :-- | :-- |
 | Q1 | bare `<agent>` metadata children vs `npl-`-prefixed | bare (per your example; matches NPL yaml shape) |
-| Q2 | `npl-properties` pure `<dl>` v1 | yes, chrome later |
-| Q3 | tabs-family name: `npl-views` vs `npl-perspectives` | `npl-views` (shorter; `name` attr reads well) |
+| Q2 | `npl-properties` pure `<dl>` v1 | **resolved (this branch)** — pure `<dl>`, chrome only if a consumer demands it |
+| Q3 | tabs-family name: `npl-views` vs `npl-perspectives` | **resolved (this branch)** — `npl-views` |
 | Q4 | NPL MCP alignment ownership | we publish the schema file; MCP consumes |
 | Q5 | fallback handler scope: baseline interactivity only vs full quiz logic | full logic v1 — it's small and makes single-file form Lit-free |

@@ -72,12 +72,12 @@
   .npl-fact .npl-statement { font-weight: 600; }
   .npl-fact .npl-conclusion { margin: .5rem 0 0; color: var(--npl-muted); }
   .npl-fact .npl-distractor { display: none; }
-  .npl-facts[data-view-as="flashcards"] .npl-fact { display: none; cursor: pointer;
+  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact { display: none; cursor: pointer;
     min-height: 6rem; }
-  .npl-facts[data-view-as="flashcards"] .npl-fact.npl-current { display: block; }
-  .npl-facts[data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
-  .npl-facts[data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
-  .npl-facts[data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
+  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact.npl-current { display: block; }
+  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
+  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
+  .npl-facts[data-npl-fallback][data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
   .npl-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
   .npl-quiz-options button { text-align: left; border: 1px solid var(--npl-border);
     background: var(--npl-surface); color: var(--npl-fg); border-radius: 8px;
@@ -89,6 +89,46 @@
   .npl-occluded { color: transparent; background: var(--npl-occluded); border-radius: 4px;
     cursor: pointer; user-select: none; transition: color .15s; min-width: 3ch; display: inline-block; }
   .npl-revealed { color: inherit; background: color-mix(in srgb, var(--npl-accent) 18%, transparent); }
+  /* Tier-0 expansion (matches demo/index.html) */
+  .npl-step { counter-increment: npl-step; border-left: 3px solid var(--npl-border);
+    padding: .5rem .75rem .5rem 2.25rem; margin: .25rem 0; position: relative;
+    background: var(--npl-surface); border-radius: 0 8px 8px 0; }
+  .npl-step::before { content: counter(npl-step); position: absolute; left: .6rem;
+    top: .5rem; font-size: .75rem; color: var(--npl-muted); }
+  .npl-step[data-status="done"]::after { content: " ✓"; color: var(--npl-correct); }
+  .npl-step[data-status="current"] { border-left-color: var(--npl-accent); }
+  .npl-step[data-status="current"]::after { content: " →"; color: var(--npl-accent); }
+  .npl-step[data-status="blocked"] { border-left-color: var(--npl-wrong); color: var(--npl-muted); }
+  .npl-step[data-status="blocked"]::after { content: " ⛔"; color: var(--npl-wrong); }
+  .npl-properties { margin: 1rem 0; border: 1px solid var(--npl-border);
+    border-radius: 12px; overflow: hidden; background: var(--npl-surface); }
+  .npl-property { display: grid; grid-template-columns: minmax(8rem, 1fr) 2fr;
+    gap: .75rem; padding: .5rem .9rem; }
+  .npl-property:nth-child(even) { background: color-mix(in srgb, var(--npl-border) 40%, transparent); }
+  .npl-property::before { content: attr(data-key); color: var(--npl-muted);
+    font-variant-caps: all-small-caps; }
+  .npl-views { margin: 1.5rem 0; }
+  .npl-views-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--npl-border); }
+  .npl-views-tabs button { border: 1px solid transparent; border-bottom: none;
+    background: none; color: var(--npl-muted); border-radius: 8px 8px 0 0;
+    padding: .4rem .9rem; cursor: pointer; }
+  .npl-views-tabs button[aria-selected="true"] { color: var(--npl-accent);
+    border-color: var(--npl-border); background: var(--npl-surface); }
+  .npl-view { display: none; border: 1px solid var(--npl-border); border-top: none;
+    border-radius: 0 0 12px 12px; padding: 1rem; background: var(--npl-surface); }
+  .npl-view[data-active] { display: block; }
+  .npl-reveal { margin: 1rem 0; border: 1px solid var(--npl-border);
+    border-radius: 12px; background: var(--npl-surface); }
+  .npl-reveal[data-summary]::before { content: attr(data-summary);
+    display: block; font-variant-caps: all-small-caps; color: var(--npl-muted);
+    padding: .6rem .9rem 0; }
+  .npl-reveal .npl-reveal-body { padding: .5rem .9rem .75rem; }
+  .npl-reveal details:not([open]) .npl-reveal-body { display: none; }
+  .npl-progress .npl-progress-track { display: block; height: .5rem;
+    background: color-mix(in srgb, var(--npl-border) 60%, transparent);
+    border-radius: 999px; overflow: hidden; margin-top: .25rem; }
+  .npl-progress .npl-progress-fill { display: block; height: 100%;
+    background: var(--npl-accent); border-radius: 999px; }
 </style>
 
 <style type="text/tailwindcss">
@@ -103,10 +143,12 @@
 <script id="npl-fallback">
 (function () {
   'use strict';
+  function init() {
   document.querySelectorAll('.npl-facts').forEach(function (root) {
     var view = root.getAttribute('data-view-as') || 'list';
     var items = [].slice.call(root.querySelectorAll('.npl-fact'));
     if (view === 'list' || items.length === 0) return;
+    root.setAttribute('data-npl-fallback', '');
     var chrome = document.createElement('div');
     chrome.className = 'npl-facts-chrome';
     chrome.innerHTML =
@@ -184,6 +226,95 @@
       h.replaceWith(span);
     });
   });
+
+  /* ---- npl-views (same handler as demo/index.html) ---- */
+  document.querySelectorAll('.npl-views[id]').forEach(function (root) {
+    var views = [].slice.call(root.querySelectorAll('.npl-view'));
+    if (!views.length) return;
+    if (!root.querySelector('.npl-view[data-active]')) views[0].setAttribute('data-active', '');
+    var active = Math.max(0, views.findIndex(function (v) { return v.hasAttribute('data-active'); }));
+    var bar = document.createElement('div');
+    bar.className = 'npl-views-tabs';
+    bar.setAttribute('role', 'tablist');
+    views.forEach(function (v, k) {
+      v.setAttribute('role', 'tabpanel');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'tab');
+      b.textContent = v.getAttribute('data-name');
+      b.setAttribute('aria-selected', String(k === active));
+      b.addEventListener('click', function () { activate(k); });
+      b.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { e.preventDefault(); activate((active + 1) % views.length, true); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); activate((active - 1 + views.length) % views.length, true); }
+      });
+      bar.appendChild(b);
+    });
+    root.insertBefore(bar, root.firstChild);
+    function activate(k, focus) {
+      active = k;
+      views.forEach(function (v, j) {
+        if (j === k) v.setAttribute('data-active', ''); else v.removeAttribute('data-active');
+      });
+      [].forEach.call(bar.querySelectorAll('[role="tab"]'), function (b, j) {
+        b.setAttribute('aria-selected', String(j === k));
+      });
+      var v = views[k];
+      location.hash = root.id + '/' + (v.id || (v.getAttribute('data-name') || '').toLowerCase());
+      v.dispatchEvent(new CustomEvent('npl-navigate', {
+        bubbles: true, detail: { id: root.id, name: v.getAttribute('data-name'), index: k }
+      }));
+      if (focus) bar.querySelectorAll('[role="tab"]')[k].focus();
+    }
+    function fromHash() {
+      var m = location.hash.match(new RegExp('^#' + root.id + '/(.+)$'));
+      if (!m) return;
+      var k = views.findIndex(function (v) {
+        return v.id === m[1] || (v.getAttribute('data-name') || '').toLowerCase() === m[1];
+      });
+      if (k >= 0 && k !== active) activate(k);
+    }
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+  });
+
+  /* ---- npl-reveal ---- */
+  document.querySelectorAll('.npl-reveal').forEach(function (r) {
+    var d = document.createElement('details');
+    if (!r.hasAttribute('collapsed')) d.setAttribute('open', '');
+    var s = document.createElement('summary');
+    s.textContent = r.getAttribute('data-summary') ||
+      (r.textContent || '').trim().split(/\s+/).slice(0, 8).join(' ') + ' …';
+    d.appendChild(s);
+    var body = document.createElement('div');
+    body.className = 'npl-reveal-body';
+    while (r.firstChild) body.appendChild(r.firstChild);
+    d.appendChild(body);
+    r.appendChild(d);
+  });
+
+  /* ---- npl-progress ---- */
+  document.querySelectorAll('.npl-progress[data-value]').forEach(function (p) {
+    if (p.querySelector('.npl-progress-track')) return;   /* facts chrome label, not a meter */
+    var raw = parseFloat(p.getAttribute('data-value'));
+    var v = Math.min(1, Math.max(0, isNaN(raw) ? 0 : raw));
+    var label = p.getAttribute('data-label') || 'progress';
+    var pct = Math.round(v * 100);
+    p.textContent = label + ' :: ' + pct + '%';
+    var track = document.createElement('span');
+    track.className = 'npl-progress-track';
+    var fill = document.createElement('span');
+    fill.className = 'npl-progress-fill';
+    fill.style.width = pct + '%';
+    track.appendChild(fill);
+    p.appendChild(track);
+  });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
 </script>
 </head>
@@ -337,8 +468,62 @@
 &lt;/div&gt;</pre>
   <p>Plain view: highlight renders emphasized. Quiz view: occluded, reveal per span. Live: <span class="npl-highlight">refresh tokens never reach the browser</span> (this page is in plain mode — swap <code>data-view-as</code> to see occlusion).</p>
 
-  <h3>Planned Tier-0 remainder</h3>
-  <p><code>npl-procedure</code>/<code>npl-step</code> (<code>data-status</code>), <code>npl-properties</code>/<code>npl-property</code> (→ <code>&lt;dl&gt;</code>), <code>npl-views</code>/<code>npl-view</code> (perspectives, <span class="npl-open">❓Q3</span>), <code>npl-reveal</code>, <code>npl-progress</code>. Tier 1: <code>npl-question</code> with 7 TRP types. Tier 2: <code>npl-chronology</code>, <code>npl-table</code>, <code>npl-query</code>, <code>npl-themes</code>.</p>
+  <h3>npl-procedure / npl-step — ordered, status-annotated procedure</h3>
+<pre>&lt;div class="npl-procedure" data-kind="runbook" role="list"&gt;
+  &lt;div class="npl-step" role="listitem" data-status="done"&gt;provision Infisical path&lt;/div&gt;
+  &lt;div class="npl-step" role="listitem" data-status="current"&gt;port-forward MinIO&lt;/div&gt;
+  &lt;div class="npl-step" role="listitem"&gt;run migrations&lt;/div&gt;
+  &lt;div class="npl-step" role="listitem" data-status="blocked"&gt;cut release&lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p><code>data-status</code>: <code>done</code> <code>current</code> <code>todo</code> (default) <code>blocked</code>. DOM order = execution order (ordinals positional); <code>✅/→/❌</code> sugar is display-only — the attribute is canonical. <strong>Zero-JS element.</strong> Normative: <code>syntax/schema/npl-procedure.md</code>.</p>
+  <div class="npl-procedure" data-kind="runbook" role="list">
+    <div class="npl-step" role="listitem" data-status="done">define Tier-0 schemas</div>
+    <div class="npl-step" role="listitem" data-status="current">expand spec entries (this section)</div>
+    <div class="npl-step" role="listitem">author BDD suites</div>
+    <div class="npl-step" role="listitem" data-status="blocked">Lit upgrade — waits for M3</div>
+  </div>
+
+  <h3>npl-properties / npl-property — definition block</h3>
+<pre>&lt;div class="npl-properties" data-kind="config"&gt;
+  &lt;div class="npl-property" data-key="token ttl"
+       role="definition" aria-label="token ttl"&gt;15m&lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p><code>data-key</code> = term, text = value; key column renders via CSS <code>attr()</code>; <code>role="definition"</code> + <code>aria-label</code> carry the pair to AT. <code>term :: value</code> sugar is display-only. Q2 resolved: pure <code>&lt;dl&gt;</code> v1, no chrome. Normative: <code>syntax/schema/npl-properties.md</code>.</p>
+  <div class="npl-properties" data-kind="spec">
+    <div class="npl-property" data-key="canonical attr" role="definition" aria-label="canonical attr">data-key</div>
+    <div class="npl-property" data-key="js required" role="definition" aria-label="js required">none</div>
+  </div>
+
+  <h3>npl-views / npl-view — switchable perspectives</h3>
+<pre>&lt;div class="npl-views" id="deploy"&gt;
+  &lt;div class="npl-view" data-name="Helm" data-active role="tabpanel"&gt;…&lt;/div&gt;
+  &lt;div class="npl-view" data-name="ArgoCD" role="tabpanel"&gt;…&lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p><code>data-name</code> unique per container; <code>data-active</code> marks the initial view (first wins if absent). Fallback builds the tab bar, manages arrow keys and deep-links (<code>#id/name</code>), fires <code>npl-navigate {id,name,index}</code>. JS-off: all views stacked. Q3 resolved: <code>npl-views</code>. Normative: <code>syntax/schema/npl-views.md</code>.</p>
+  <div class="npl-views" id="spec-views">
+    <div class="npl-view" data-name="Spec" data-active role="tabpanel">
+      Each view is the same subject under a named perspective — deep-link form <code>#spec-views/quiz</code> style.</div>
+    <div class="npl-view" data-name="Live" role="tabpanel">
+      This tab bar, keyboard roving focus, and hash sync are the v0.4 fallback handler executing the spec.</div>
+  </div>
+
+  <h3>npl-reveal — Q→A disclosure</h3>
+<pre>&lt;div class="npl-reveal" data-summary="Why not localStorage?" collapsed&gt;
+  Tokens in localStorage are readable by any script on the page…
+&lt;/div&gt;</pre>
+  <p><code>data-summary</code> optional — first body line (≤60 chars) derives it; <code>collapsed</code> starts hidden, otherwise open. Fallback wraps in native <code>&lt;details&gt;</code>; JS-off: fully visible. Non-assertive counterpart to the <code>npl-fact</code> Q/A shape. Normative: <code>syntax/schema/npl-reveal.md</code>.</p>
+  <div class="npl-reveal" id="spec-reveal" data-summary="Why a separate element from npl-note[collapsed]?" collapsed>
+    Intent: a note is an annotation (variant tone); a reveal is exposition (Q→A). Same mechanism, different semantics — machines distinguish them.</div>
+
+  <h3>npl-progress — completion meter</h3>
+<pre>&lt;div class="npl-progress" data-value="0.62" data-label="coverage"
+     role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"&gt;&lt;/div&gt;</pre>
+  <p><code>data-value</code> canonical 0..1 (render clamps, attr untouched); <code>data-label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code>. <code>data-status="done"</code> ⇔ 1 by convention. Normative: <code>syntax/schema/npl-progress.md</code>.</p>
+  <div class="npl-progress" id="spec-progress" data-value="0.7" data-label="Tier-0 spec coverage"
+       role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7"></div>
+
+  <h3>Tier 1 &amp; 2 — planned</h3>
+  <p>Tier 1: <code>npl-question</code> with 7 TRP types. Tier 2: <code>npl-chronology</code>, <code>npl-table</code>, <code>npl-query</code>, <code>npl-themes</code>.</p>
 
   <h2 id="themes">6 · Theme conventions</h2>
   <ul>
@@ -370,8 +555,8 @@
   <table>
     <tr><th>#</th><th>Question</th><th>Lean</th></tr>
     <tr><td><span class="npl-open">Q1</span></td><td>Metadata children bare vs <code>npl-</code>-prefixed</td><td>bare (matches NPL yaml shape)</td></tr>
-    <tr><td><span class="npl-open">Q2</span></td><td>keep <code>[hint | reveal]</code> notation?</td><td>yes — agent-instruction hook</td></tr>
-    <tr><td><span class="npl-open">Q3</span></td><td>tabs-family name: <code>npl-views</code> vs <code>npl-perspectives</code></td><td><code>npl-views</code></td></tr>
+    <tr><td><span class="npl-open">Q2</span></td><td><code>npl-properties</code> pure <code>&lt;dl&gt;</code> v1</td><td><strong>resolved (feat/tier0-spec-expansion)</strong> — pure <code>&lt;dl&gt;</code>, no chrome</td></tr>
+    <tr><td><span class="npl-open">Q3</span></td><td>tabs-family name: <code>npl-views</code> vs <code>npl-perspectives</code></td><td><strong>resolved (feat/tier0-spec-expansion)</strong> — <code>npl-views</code></td></tr>
     <tr><td><span class="npl-open">Q4</span></td><td>NPL MCP alignment ownership</td><td>we publish the schema; MCP consumes</td></tr>
     <tr><td><span class="npl-open">Q5</span></td><td>fallback scope: toggles only vs full quiz logic</td><td>full logic v1</td></tr>
   </table>
