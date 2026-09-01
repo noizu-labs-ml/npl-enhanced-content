@@ -55,7 +55,7 @@
   .npl-facts-chrome { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
   .npl-facts-chrome button { border: 1px solid var(--npl-border); background: var(--npl-surface);
     color: var(--npl-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
-  .npl-progress { color: var(--npl-muted); font-size: .875rem; }
+  .npl-facts-meter { color: var(--npl-muted); font-size: .875rem; }
   .npl-fact { border: 1px solid var(--npl-border); border-radius: 12px;
     padding: 1rem; margin: .75rem 0; background: var(--npl-surface); }
   .npl-fact .npl-statement { font-weight: 600; }
@@ -170,12 +170,12 @@
     chrome.className = 'npl-facts-chrome';
     chrome.innerHTML =
       '<button type="button" data-act="prev" aria-label="previous">←</button>' +
-      '<span class="npl-progress"></span>' +
+      '<span class="npl-facts-meter"></span>' +
       '<button type="button" data-act="next" aria-label="next">→</button>';
     root.insertBefore(chrome, root.firstChild);
 
     var i = 0, flipped = false, score = { correct: 0, answered: 0 };
-    var progress = chrome.querySelector('.npl-progress');
+    var progress = chrome.querySelector('.npl-facts-meter');
 
     function optionsFor(item) {
       var correct = item.querySelector('.npl-conclusion');
@@ -423,6 +423,18 @@
     </div>
   </div>
 
+  <h2>Facts — list (default view)</h2>
+  <div class="npl-facts" id="facts-list">
+    <div class="npl-fact" id="f-rotate">
+      <div class="npl-statement">Refresh tokens rotate per use</div>
+      <div class="npl-conclusion">Each exchange retires the presented token.</div>
+    </div>
+    <div class="npl-fact" id="f-scope-tight">
+      <div class="npl-statement">Scope tightly instead of extending lifetime</div>
+      <div class="npl-conclusion">Long-lived tokens are an anti-pattern.</div>
+    </div>
+  </div>
+
   <h2>Facts — quiz</h2>
   <div class="npl-facts" data-view-as="quiz">
     <div class="npl-fact" id="f-oidc">
@@ -448,7 +460,7 @@
 
   <h2>Details — plain reading</h2>
   <div class="npl-details">
-    <div class="npl-detail">Plain view keeps highlights readable inline — no occlusion without <code>data-view-as="quiz"</code>.</div>
+    <div class="npl-detail">Plain view keeps highlights readable inline — no occlusion without <span class="npl-highlight">data-view-as="quiz"</span>.</div>
   </div>
 
   <h2>Procedure — status runbook</h2>

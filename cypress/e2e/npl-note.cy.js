@@ -35,7 +35,7 @@ describe('v0.4 baseline (demo/index.html)', () => {
     cy.get(fc + '.npl-current.npl-flipped .npl-conclusion').should('be.visible');
     cy.get(fc + '[data-act="next"]').click();
     cy.get(fc + '.npl-current').should('have.length', 1);
-    cy.get(fc + '.npl-progress').should('contain', '2/3');
+    cy.get(fc + '.npl-facts-meter').should('contain', '2/3');
   });
 
   it('quiz view: conclusion hidden, options scored, distractors count', () => {
@@ -43,7 +43,7 @@ describe('v0.4 baseline (demo/index.html)', () => {
     cy.get(qz + '.npl-fact .npl-conclusion').should('not.be.visible');
     cy.get(qz + '.npl-current .npl-quiz-options button').should('have.length.at.least', 2);
     cy.get(qz + '.npl-current .npl-quiz-options button[data-correct="true"]').click();
-    cy.get(qz + '.npl-progress').should('contain', 'score 1/1');
+    cy.get(qz + '.npl-facts-meter').should('contain', 'score 1/1');
   });
 
   it('highlight occlusion: hidden until reveal, then visible', () => {
