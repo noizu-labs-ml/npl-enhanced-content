@@ -66,7 +66,7 @@
   .npl-facts-chrome { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
   .npl-facts-chrome button { border: 1px solid var(--npl-border); background: var(--npl-surface);
     color: var(--npl-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
-  .npl-progress { color: var(--npl-muted); font-size: .875rem; }
+  .npl-facts-meter { color: var(--npl-muted); font-size: .875rem; }
   .npl-fact { border: 1px solid var(--npl-border); border-radius: 12px;
     padding: 1rem; margin: .75rem 0; background: var(--npl-surface); }
   .npl-fact .npl-statement { font-weight: 600; }
@@ -153,11 +153,11 @@
     chrome.className = 'npl-facts-chrome';
     chrome.innerHTML =
       '<button type="button" data-act="prev" aria-label="previous">←</button>' +
-      '<span class="npl-progress"></span>' +
+      '<span class="npl-facts-meter"></span>' +
       '<button type="button" data-act="next" aria-label="next">→</button>';
     root.insertBefore(chrome, root.firstChild);
     var i = 0;
-    var progress = chrome.querySelector('.npl-progress');
+    var progress = chrome.querySelector('.npl-facts-meter');
     function optionsFor(item) {
       var correct = item.querySelector('.npl-conclusion');
       var distractors = [].slice.call(item.querySelectorAll('.npl-distractor'));
@@ -295,7 +295,6 @@
 
   /* ---- npl-progress ---- */
   document.querySelectorAll('.npl-progress[data-value]').forEach(function (p) {
-    if (p.querySelector('.npl-progress-track')) return;   /* facts chrome label, not a meter */
     var raw = parseFloat(p.getAttribute('data-value'));
     var v = Math.min(1, Math.max(0, isNaN(raw) ? 0 : raw));
     var label = p.getAttribute('data-label') || 'progress';
@@ -435,6 +434,7 @@
   <p>Compact form: <code>term :: conclusion</code> as direct text. Machine view: statement+conclusion = structured assertion.</p>
 
   <h3>npl-facts — collection; the flagship surface</h3>
+  <p><strong>Normative: <code>syntax/schema/npl-facts.md</code>.</strong></p>
 <pre>&lt;div class="npl-facts" data-view-as="quiz" data-controls="shuffle"&gt;
   &lt;div class="npl-fact"&gt;…&lt;/div&gt;
   &lt;div class="npl-fact"&gt;
@@ -461,6 +461,7 @@
   </div>
 
   <h3>npl-detail / npl-details — prose with occludable content</h3>
+  <p><strong>Normative: <code>syntax/schema/npl-details.md</code>.</strong></p>
 <pre>&lt;div class="npl-details" data-view-as="quiz"&gt;
   &lt;div class="npl-detail"&gt;
     The OIDC token travels in the &lt;span class="npl-highlight"&gt;Authorization&lt;/span&gt; header.
