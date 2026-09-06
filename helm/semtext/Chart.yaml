@@ -1,0 +1,15 @@
+apiVersion: v2
+name: semtext
+description: "SemText — XHTML-first semantic content format: marketing site + component demos (static nginx)"
+version: 0.1.0
+appVersion: "0.1.0"
+type: application
+keywords:
+  - semtext
+  - xhtml
+  - semantic-markup
+  - lit
+  - static-site
+maintainers:
+  - name: Keith Brings
+    email: keith.brings@noizu.com

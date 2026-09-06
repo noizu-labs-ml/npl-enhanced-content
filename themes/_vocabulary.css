@@ -1,0 +1,115 @@
+/* SemText — vocabulary base
+   Theme-independent structure: layout, spacing, the .sem-* component rules,
+   and the fallback-tier hide/show gating keyed on [data-sem-fallback]. Reads
+   --sem-* custom properties but declares none — pair with a theme file such
+   as themes/minimal-tech-light.css for values. */
+
+body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
+.sem-enhanced-document { font-family: system-ui, sans-serif; line-height: 1.6; }
+
+/* metadata */
+.sem-agent { border: 1px solid var(--sem-border); border-radius: 12px;
+  padding: 1rem; margin: 1.5rem 0; background: var(--sem-surface); }
+.sem-agent .sem-agent-name { font-weight: 600; }
+.sem-agent .sem-agent-bio { color: var(--sem-muted); margin: .25rem 0; }
+.sem-agent .sem-agent-instructions { font-size: .875rem; margin: .25rem 0 0; }
+
+/* note */
+.sem-note { border-left: 4px solid var(--sem-note-info); border-radius: 8px;
+  padding: .75rem 1rem; margin: 1rem 0; background: var(--sem-surface); }
+.sem-note[data-variant="warning"] { border-color: var(--sem-note-warning); }
+.sem-note[data-variant="tip"]     { border-color: var(--sem-note-tip); }
+.sem-note[data-variant="danger"]  { border-color: var(--sem-note-danger); }
+.sem-note[data-variant]::before { content: attr(data-variant) " · ";
+  font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--sem-muted); display: block; }
+.sem-note[data-sem-fallback][collapsed] > .sem-note-body { display: none; }
+.sem-note[collapsed] .sem-note-summary { cursor: pointer; color: var(--sem-accent); }
+
+/* facts */
+.sem-facts { margin: 1.5rem 0; }
+.sem-facts-chrome { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
+.sem-facts-chrome button { border: 1px solid var(--sem-border); background: var(--sem-surface);
+  color: var(--sem-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
+.sem-facts-meter { color: var(--sem-muted); font-size: .875rem; }
+.sem-fact { border: 1px solid var(--sem-border); border-radius: 12px;
+  padding: 1rem; margin: .75rem 0; background: var(--sem-surface); }
+.sem-fact .sem-statement { font-weight: 600; }
+.sem-fact .sem-conclusion { margin: .5rem 0 0; color: var(--sem-muted); }
+.sem-fact .sem-distractor { display: none; }
+/* quiz mode (hide rules gated on the fallback enhancement marker — JS-off stays readable) */
+.sem-facts[data-sem-fallback][data-view-as="quiz"] .sem-fact .sem-conclusion { display: none; }
+.sem-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
+.sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact { display: none; cursor: pointer;
+  min-height: 8rem; position: relative; }
+.sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact.sem-current { display: block; }
+.sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact .sem-conclusion { visibility: hidden; }
+.sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact.sem-flipped .sem-conclusion { visibility: visible; }
+/* quiz mode */
+.sem-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
+.sem-quiz-options button { text-align: left; border: 1px solid var(--sem-border);
+  background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
+  padding: .5rem .75rem; cursor: pointer; }
+.sem-quiz-options button[data-correct="true"].sem-answered { border-color: var(--sem-correct); }
+.sem-quiz-options button.sem-wrong-pick { border-color: var(--sem-wrong); }
+.sem-score { font-size: .875rem; color: var(--sem-muted); }
+
+/* details + highlight */
+.sem-detail { border: 1px solid var(--sem-border); border-radius: 12px;
+  padding: 1rem; margin: .75rem 0; background: var(--sem-surface); cursor: pointer; }
+.sem-highlight { font-style: normal; background: color-mix(in srgb, var(--sem-accent) 18%, transparent);
+  border-radius: 4px; padding: 0 .2em; }
+.sem-occluded { color: transparent; background: var(--sem-occluded); border-radius: 4px;
+  cursor: pointer; user-select: none; transition: color .15s; min-width: 3ch; display: inline-block; }
+.sem-revealed { color: inherit; background: color-mix(in srgb, var(--sem-accent) 18%, transparent); }
+
+/* procedure */
+.sem-procedure { margin: 1rem 0; }
+.sem-step { counter-increment: sem-step; border-left: 3px solid var(--sem-border);
+  padding: .5rem .75rem .5rem 2.25rem; margin: .25rem 0; position: relative;
+  background: var(--sem-surface); border-radius: 0 8px 8px 0; }
+.sem-step::before { content: counter(sem-step); position: absolute; left: .6rem;
+  top: .5rem; font-size: .75rem; color: var(--sem-muted); }
+.sem-step[data-status="done"]::after { content: " ✓"; color: var(--sem-correct); }
+.sem-step[data-status="current"] { border-left-color: var(--sem-accent); }
+.sem-step[data-status="current"]::after { content: " →"; color: var(--sem-accent); }
+.sem-step[data-status="blocked"] { border-left-color: var(--sem-wrong); color: var(--sem-muted); }
+.sem-step[data-status="blocked"]::after { content: " ⛔"; color: var(--sem-wrong); }
+
+/* properties */
+.sem-properties { margin: 1rem 0; border: 1px solid var(--sem-border);
+  border-radius: 12px; overflow: hidden; background: var(--sem-surface); }
+.sem-property { display: grid; grid-template-columns: minmax(8rem, 1fr) 2fr;
+  gap: .75rem; padding: .5rem .9rem; }
+.sem-property:nth-child(even) { background: color-mix(in srgb, var(--sem-border) 40%, transparent); }
+.sem-property::before { content: attr(data-key); color: var(--sem-muted);
+  font-variant-caps: all-small-caps; }
+
+/* views */
+.sem-views { margin: 1.5rem 0; }
+.sem-views-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--sem-border); }
+.sem-views-tabs button { border: 1px solid transparent; border-bottom: none;
+  background: none; color: var(--sem-muted); border-radius: 8px 8px 0 0;
+  padding: .4rem .9rem; cursor: pointer; }
+.sem-views-tabs button[aria-selected="true"] { color: var(--sem-accent);
+  border-color: var(--sem-border); background: var(--sem-surface); }
+.sem-view { display: none; border: 1px solid var(--sem-border); border-top: none;
+  border-radius: 0 0 12px 12px; padding: 1rem; background: var(--sem-surface); }
+.sem-view[data-active] { display: block; }
+
+/* reveal */
+.sem-reveal { margin: 1rem 0; border: 1px solid var(--sem-border);
+  border-radius: 12px; background: var(--sem-surface); }
+.sem-reveal[data-summary]::before { content: attr(data-summary);
+  display: block; font-variant-caps: all-small-caps; color: var(--sem-muted);
+  padding: .6rem .9rem 0; }
+.sem-reveal .sem-reveal-body { padding: .5rem .9rem .75rem; }
+.sem-reveal details:not([open]) .sem-reveal-body { display: none; }
+
+/* progress */
+.sem-progress { margin: 1rem 0; color: var(--sem-muted); font-size: .875rem; }
+.sem-progress .sem-progress-track { display: block; height: .5rem;
+  background: color-mix(in srgb, var(--sem-border) 60%, transparent);
+  border-radius: 999px; overflow: hidden; margin-top: .25rem; }
+.sem-progress .sem-progress-fill { display: block; height: 100%;
+  background: var(--sem-accent); border-radius: 999px; }

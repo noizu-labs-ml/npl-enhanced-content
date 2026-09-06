@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en" data-sem-theme="minimal-tech-light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SemText · v0.4 baseline</title>
+
+<!-- Tailwind (CDN). Refinement layer only — core styles below are offline-safe. -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Core CSS. Substituted at build time by scripts/build-standalone.mjs;
+     the emitted dist/demo page carries the real stylesheets inline, so it
+     opens from file:// with no network. Sources: themes/*.css. -->
+<!-- sem:inline theme minimal-tech-light -->
+<!-- sem:inline vocabulary -->
+
+<!-- Tailwind refinement layer: applies utility rules to sem-* classes.
+     Requires the CDN above; harmless (no-op) without it. -->
+<style type="text/tailwindcss">
+  .sem-enhanced-document { @apply mx-auto max-w-3xl px-4 py-10; }
+  .sem-agent { @apply shadow-sm; }
+  .sem-note { @apply shadow-sm text-sm; }
+  .sem-fact { @apply shadow-sm transition hover:border-blue-300; }
+  .sem-facts-chrome button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
+  .sem-quiz-options button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
+  h1 { @apply text-2xl font-bold tracking-tight mb-2; }
+  h2 { @apply text-lg font-semibold mt-8 mb-2; }
+</style>
+
+<!-- sem-fallback: vanilla interactivity, no Lit and no external resources.
+     Source lives in src/fallback/**; the built IIFE (dist/semtext-fallback.js)
+     is substituted here by scripts/build-standalone.mjs. -->
+<!-- sem:inline fallback -->
+</head>
+
+<body>
+<div class="sem-enhanced-document">
+
+  <h1>Auth Patterns — Sample SemText Document</h1>
+  <p>Demonstrates the v0.4 class-based vocabulary: inline CSS + Tailwind refinement + vanilla fallback handler. Open this file directly in any browser.</p>
+
+  <div class="sem-agent">
+    <div class="sem-agent-name">Auth Guide</div>
+    <div class="sem-agent-bio">Answer questions about the sample auth facts in this document.</div>
+    <div class="sem-agent-instructions">Cite sem-fact ids. Prefer conclusions verbatim.</div>
+  </div>
+
+  <div class="sem-note" data-variant="warning">JWTs must rotate <strong>per session</strong>, not per request.</div>
+  <div class="sem-note" data-variant="tip" collapsed><div class="sem-note-body">Shuffle flashcards before each review session for better recall.</div></div>
+
+  <h2>Facts — flashcards</h2>
+  <div class="sem-facts" data-view-as="flashcards">
+    <div class="sem-fact" id="f-jwt">
+      <div class="sem-statement">JWTs rotate per session</div>
+      <div class="sem-conclusion">Short-lived access tokens; the refresh grant issues a new pair.</div>
+    </div>
+    <div class="sem-fact" id="f-device">
+      <div class="sem-statement">OAuth device flow targets input-constrained devices</div>
+      <div class="sem-conclusion">TVs, consoles, CLI tools — poll the token endpoint with the device code.</div>
+    </div>
+    <div class="sem-fact" id="f-scope">
+      <div class="sem-statement">Long-lived tokens are an anti-pattern</div>
+      <div class="sem-conclusion">Scope capabilities tightly instead of extending lifetime.</div>
+      <div class="sem-distractor">Store tokens in localStorage for durability.</div>
+    </div>
+  </div>
+
+  <h2>Facts — list (default view)</h2>
+  <div class="sem-facts" id="facts-list">
+    <div class="sem-fact" id="f-rotate">
+      <div class="sem-statement">Refresh tokens rotate per use</div>
+      <div class="sem-conclusion">Each exchange retires the presented token.</div>
+    </div>
+    <div class="sem-fact" id="f-scope-tight">
+      <div class="sem-statement">Scope tightly instead of extending lifetime</div>
+      <div class="sem-conclusion">Long-lived tokens are an anti-pattern.</div>
+    </div>
+  </div>
+
+  <h2>Facts — quiz</h2>
+  <div class="sem-facts" data-view-as="quiz">
+    <div class="sem-fact" id="f-oidc">
+      <div class="sem-statement">The OIDC token travels in which header?</div>
+      <div class="sem-conclusion">Authorization</div>
+      <div class="sem-distractor">Cookie</div>
+      <div class="sem-distractor">X-Auth-Token</div>
+    </div>
+    <div class="sem-fact" id="f-pkce">
+      <div class="sem-statement">PKCE protects which flow?</div>
+      <div class="sem-conclusion">Authorization code flow</div>
+      <div class="sem-distractor">Client credentials flow</div>
+    </div>
+  </div>
+
+  <h2>Details — highlight occlusion</h2>
+  <div class="sem-details" data-view-as="quiz">
+    <div class="sem-detail">
+      The OIDC token travels in the <span class="sem-highlight">Authorization</span> header,
+      and refresh tokens should never reach the <span class="sem-highlight">browser</span>.
+    </div>
+  </div>
+
+  <h2>Details — plain reading</h2>
+  <div class="sem-details">
+    <div class="sem-detail">Plain view keeps highlights readable inline — no occlusion without <span class="sem-highlight">data-view-as="quiz"</span>.</div>
+  </div>
+
+  <h2>Procedure — status runbook</h2>
+  <div class="sem-procedure" data-kind="runbook" role="list">
+    <div class="sem-step" role="listitem" data-status="done">provision Infisical path</div>
+    <div class="sem-step" role="listitem" data-status="current">port-forward MinIO</div>
+    <div class="sem-step" role="listitem">run migrations</div>
+    <div class="sem-step" role="listitem" data-status="blocked">cut release — waiting on CI</div>
+  </div>
+
+  <h2>Properties — config block</h2>
+  <div class="sem-properties" data-kind="config">
+    <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
+    <div class="sem-property" data-key="refresh rotation" role="definition" aria-label="refresh rotation">per use</div>
+    <div class="sem-property" data-key="storage" role="definition" aria-label="storage">httpOnly cookie</div>
+  </div>
+  <div class="sem-properties" id="sem-props-dup" data-kind="fixture">
+    <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
+    <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">14m</div>
+  </div>
+
+  <h2>Views — same deploy, two perspectives</h2>
+  <div class="sem-views" id="deploy">
+    <div class="sem-view" data-name="Helm" data-active role="tabpanel">
+      Chart from the <code>noizu-infra</code> repo; values live in <code>.infra-config.yaml</code>.
+    </div>
+    <div class="sem-view" data-name="ArgoCD" role="tabpanel">
+      ArgoCD auto-syncs from the product remote's <code>main</code>; CI bumps the image tag.
+    </div>
+  </div>
+
+  <h2>Reveal — Q→A disclosure</h2>
+  <div class="sem-reveal" id="r-storage" data-summary="Why not localStorage?" collapsed>
+    Tokens in localStorage are readable by any script on the page — one XSS away from session theft.
+    Prefer httpOnly cookies or memory-scoped storage.
+  </div>
+  <div class="sem-reveal" id="r-derived">
+    Refresh tokens rotate per use — each exchange retires the presented token.
+  </div>
+
+  <h2>Progress — completion meter</h2>
+  <div class="sem-progress" id="p-coverage" data-value="0.62" data-label="coverage"
+       role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"></div>
+  <div class="sem-progress" id="p-clamp" data-value="1.4" data-label="out-of-range fixture"
+       role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1.4"></div>
+
+</div>
+</body>
+</html>

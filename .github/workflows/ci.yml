@@ -1,0 +1,175 @@
+name: CI
+
+# Release path (see monorepo docs/arch/deployment.md):
+#   push main -> build sha-<7> image -> CI seds the tag into
+#   helm/semtext/values.yaml and commits [skip ci] -> ArgoCD auto-syncs.
+# Nobody hand-edits chart tags and nobody runs helm-upgrade to ship.
+#
+# Component bundles are additionally published to the cdn.semtext.dev bucket
+# under an immutable /<version>/ prefix plus a mutable /latest/ pointer.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ops.noizu.com
+  IMAGE_REPO: semtext.dev/web
+  CDN_BUCKET: cdn-semtext-dev
+
+jobs:
+  test:
+    # Build the bundles + demo pages, serve dist/, run the cypress e2e suite.
+    # The preview server must be up before cypress starts or every spec fails.
+    runs-on: ubuntu-latest # amd64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Cypress e2e
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          start: npm run serve
+          wait-on: "http://localhost:4173/demo/index.html"
+          wait-on-timeout: 120
+
+  build-push:
+    needs: [test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      short: ${{ steps.sha.outputs.short }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Short SHA
+        id: sha
+        run: echo "short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - name: Build & push web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: production
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:sha-${{ steps.sha.outputs.short }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+
+  bump-chart:
+    # Commit the new tag into the chart; ArgoCD auto-syncs the rollout.
+    needs: build-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump image tag
+        run: |
+          set -euo pipefail
+          SHORT="${GITHUB_SHA::7}"
+          VALUES=helm/semtext/values.yaml
+          # A sed -E that matches nothing still exits 0. Assert the file exists
+          # before, and prove the substitution landed after, or the deploy is a
+          # green build that ships the previous image forever.
+          test -f "$VALUES"
+          sed -i -E "s|(image: ops\\.noizu\\.com/semtext\\.dev/web:).*|\\1sha-${SHORT}|" "$VALUES"
+          grep -q "image: ops\\.noizu\\.com/semtext\\.dev/web:sha-${SHORT}\$" "$VALUES" \
+            || { echo "::error::image tag substitution did not match in ${VALUES}"; grep -n 'image:' "$VALUES"; exit 1; }
+          grep -n 'image:' "$VALUES"
+      - name: Commit & push
+        run: |
+          set -euo pipefail
+          git config user.name "semtext-ci"
+          git config user.email "ci@noizu.com"
+          git add helm/semtext/values.yaml
+          git diff --cached --quiet && exit 0
+          git commit -m "ci: deploy sha-${GITHUB_SHA::7} [skip ci]"
+          git pull --rebase origin "${{ github.ref_name }}"
+          git push
+
+  publish-cdn:
+    # Publish the component bundles + themes to cdn.semtext.dev.
+    #   <version>/  immutable, never overwritten once published
+    #   latest/     mutable pointer, short max-age so it can move
+    #
+    # Gated so the pipeline stays green before the CDN exists. The bucket is
+    # created by terraform (cdn-semtext-minio.tf) and the proxy by
+    # cdn-semtext.tf; until both are applied this job would fail on a missing
+    # bucket. Job-level `if` cannot read secrets or `env`, so the switch is a
+    # repository VARIABLE, not a secret.
+    #
+    # To turn on, once the terraform is applied and the three CDN secrets
+    # exist (CDN_MINIO_URL / CDN_MINIO_ACCESS_KEY / CDN_MINIO_SECRET_KEY):
+    #   gh variable set CDN_PUBLISH --body true
+    needs: build-push
+    if: vars.CDN_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Stage CDN payload
+        id: payload
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          rm -rf cdn-payload
+          mkdir -p cdn-payload/themes
+          cp dist/semtext.js dist/semtext-fallback.js dist/semtext-extract.js cdn-payload/
+          cp themes/*.css cdn-payload/themes/
+          find cdn-payload -type f | sort
+      - name: Install mc
+        run: |
+          set -euo pipefail
+          curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
+          chmod +x /usr/local/bin/mc
+          mc --version
+      - name: Publish
+        env:
+          CDN_MINIO_URL: ${{ secrets.CDN_MINIO_URL }}
+          CDN_MINIO_ACCESS_KEY: ${{ secrets.CDN_MINIO_ACCESS_KEY }}
+          CDN_MINIO_SECRET_KEY: ${{ secrets.CDN_MINIO_SECRET_KEY }}
+          VERSION: ${{ steps.payload.outputs.version }}
+        run: |
+          set -euo pipefail
+          mc alias set cdn "$CDN_MINIO_URL" "$CDN_MINIO_ACCESS_KEY" "$CDN_MINIO_SECRET_KEY"
+
+          TARGET="cdn/${CDN_BUCKET}/${VERSION}"
+          if [ -n "$(mc ls --quiet "$TARGET/" 2>/dev/null || true)" ]; then
+            echo "::notice::${VERSION} already published — versioned prefix is immutable, skipping."
+          else
+            mc mirror --overwrite \
+              --attr "Cache-Control=public,max-age=31536000,immutable" \
+              cdn-payload/ "$TARGET/"
+          fi
+
+          # latest/ must NOT be immutable — it moves on every release.
+          mc mirror --overwrite --remove \
+            --attr "Cache-Control=public,max-age=300" \
+            cdn-payload/ "cdn/${CDN_BUCKET}/latest/"
+
+          mc ls --recursive "cdn/${CDN_BUCKET}/${VERSION}/"
+          mc ls --recursive "cdn/${CDN_BUCKET}/latest/"

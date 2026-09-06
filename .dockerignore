@@ -1,0 +1,9 @@
+.git
+.github
+.claude
+node_modules
+dist
+test/screenshots
+test/videos
+helm
+*.md
