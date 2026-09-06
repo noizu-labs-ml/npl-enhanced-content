@@ -11,7 +11,7 @@ import { defineConfig } from 'vite';
  *
  * `vite preview` serves `dist/` as the web root, which is why the cypress
  * baseUrl resolves `/demo/index.html` to `dist/demo/index.html` — the BUILT
- * page, not the marker source in `demo/`.
+ * page, not the marker source in `web/demo/`.
  */
 export default defineConfig({
   build: { outDir: 'dist', target: 'es2022' },

@@ -1,4 +1,4 @@
-// BDD spec — v0.4 class-based baseline · source: conventions.md v0.4, demo/index.html
+// BDD spec — v0.4 class-based baseline · source: conventions.md v0.4, web/demo/index.html
 // Fixture serves the repo root; run any static server on port 4173.
 // The JS-off scenario uses the demo's `__semJsOff` kill-switch hook.
 //
@@ -11,7 +11,7 @@
 //   Scenario: highlight occlusion — hidden until reveal, then visible
 //   Scenario: JS-off — all content still readable (list layout, no occlusion)
 
-describe('v0.4 baseline (demo/index.html)', () => {
+describe('v0.4 baseline (web/demo/index.html)', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
 
   it('renders agent metadata block', () => {

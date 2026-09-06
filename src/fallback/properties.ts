@@ -3,7 +3,7 @@
  *
  * Non-fatal by design: a duplicate key is an authoring mistake, not a reason
  * to hide content, so this warns and renders everything. The message text is
- * asserted by cypress/e2e/sem-properties.cy.js.
+ * asserted by test/e2e/sem-properties.cy.js.
  */
 
 export function enhanceProperties(scope: ParentNode): void {

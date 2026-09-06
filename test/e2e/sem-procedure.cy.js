@@ -1,4 +1,4 @@
-// BDD spec — sem-procedure / sem-step · source: syntax/schema/sem-procedure.md
+// BDD spec — sem-procedure / sem-step · source: spec/schema/sem-procedure.md
 // Fixture: /demo/index.html (v0.4 class-based baseline, sections appended on feat/tier0-spec-expansion)
 //
 // Feature: sem-procedure renders an ordered, status-annotated procedure with zero JS

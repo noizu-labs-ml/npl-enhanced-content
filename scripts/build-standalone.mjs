@@ -1,8 +1,11 @@
 /**
  * scripts/build-standalone.mjs — assemble portable single-file documents.
  *
- * Reads every `demo/*.html` source and substitutes marker comments with real
- * content, emitting two artifacts per source into `dist/demo/`:
+ * Reads every `web/demo/*.html` source and substitutes marker comments with real
+ * content, emitting two artifacts per source into `dist/demo/`. Pages under
+ * `web/site/` are copied to `dist/site/` by the same marker expansion.
+ *
+ * Per demo source:
  *
  *   <name>.html        everything inlined — opens from file:// with no network
  *   <name>.nojs.html   the same page with every <script> element removed
@@ -70,12 +73,12 @@ function stripScripts(html) {
 
 mkdirSync(outDir, { recursive: true });
 
-const sources = readdirSync(resolve(root, 'demo'))
+const sources = readdirSync(resolve(root, 'web', 'demo'))
   .filter((f) => f.endsWith('.html'))
   .sort();
 
 if (sources.length === 0) {
-  console.error('✗ no demo/*.html sources found');
+  console.error('✗ no web/demo/*.html sources found');
   process.exit(1);
 }
 
@@ -83,7 +86,7 @@ console.log('\n  page                          inlined   size     nojs');
 console.log('  ---------------------------------------------------------');
 
 for (const file of sources) {
-  const src = readFileSync(resolve(root, 'demo', file), 'utf8');
+  const src = readFileSync(resolve(root, 'web', 'demo', file), 'utf8');
   let count = 0;
   const built = src.replace(MARKER, (_m, kind, arg) => {
     count++;
@@ -100,3 +103,35 @@ for (const file of sources) {
   console.log(`  ${file.padEnd(30)}${String(count).padStart(5)}  ${kb(page)}${kb(nojs)}`);
 }
 console.log('');
+
+/* ---------------------------------------------------------------------------
+ * Marketing site — web/site/ → dist/site/
+ *
+ * Plain copy, not a standalone assembly: the site pages carry no `sem:inline`
+ * markers today. Marker expansion is applied anyway so a future page can opt
+ * in without another build path. Absent web/site/, this section is a no-op.
+ * ------------------------------------------------------------------------ */
+
+const siteSrcDir = resolve(root, 'web', 'site');
+if (existsSync(siteSrcDir)) {
+  const siteOutDir = resolve(root, 'dist', 'site');
+  mkdirSync(siteOutDir, { recursive: true });
+
+  const sitePages = readdirSync(siteSrcDir).filter((f) => f.endsWith('.html')).sort();
+
+  console.log('  site page                     inlined   size');
+  console.log('  ---------------------------------------------------------');
+  for (const file of sitePages) {
+    const src = readFileSync(resolve(siteSrcDir, file), 'utf8');
+    let count = 0;
+    const built = src.replace(MARKER, (_m, kind, arg) => {
+      count++;
+      return expand(kind, arg);
+    });
+    const page = resolve(siteOutDir, file);
+    writeFileSync(page, built);
+    const kb = (p) => (statSync(p).size / 1024).toFixed(1).padStart(6) + ' KB';
+    console.log(`  ${file.padEnd(30)}${String(count).padStart(5)}  ${kb(page)}`);
+  }
+  console.log('');
+}

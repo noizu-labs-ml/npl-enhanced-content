@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "description": "SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. Rendered by Lit web components over a zero-JS fallback tier. Zero React.",
   "type": "module",
-  "//exports.": "'.' points at dist/semtext.js, an IIFE global script with no ESM/CJS exports. 'type: module' advertises an ESM package; a bundler resolving '.' via import gets a script it cannot import from. Known conflict, tracked as ROADMAP.md debt D9 — do not import '.' from JS; use it only via <script> tag until M5 resolves the entry format.",
+  "//exports": "Three subpaths, one per shipped artifact, plus raw theme CSS. Each artifact is a classic IIFE script that installs a global (SemText, SemTextFallback, SemTextExtract) and exports NOTHING — so consume a subpath either as a <script src> tag / CDN asset, or as a side-effect ESM import (`import 'semtext/lit'`, which registers the custom elements). Named imports are not available from any subpath. There is deliberately no '.' export: ROADMAP debt D9 was 'type: module' advertising an ESM package whose root mapped to a non-importable script. Dropping '.' removes the false promise rather than papering over it.",
   "exports": {
-    ".": "./dist/semtext.js",
+    "./lit": "./dist/semtext.js",
+    "./fallback": "./dist/semtext-fallback.js",
+    "./extract": "./dist/semtext-extract.js",
     "./themes/*": "./themes/*"
   },
   "files": ["dist", "themes"],

@@ -1,8 +1,8 @@
 /**
  * SemText — canonical record extraction.
  *
- * Normative contract: syntax/extraction.md
- * BDD source of truth:  cypress/e2e/extraction.cy.js
+ * Normative contract: spec/extraction.md
+ * BDD source of truth:  test/e2e/extraction.cy.js
  *
  * Extraction projects a SemText document to a flat, ordered array of records.
  * It is PURE: it never writes an attribute, never inserts or removes a node,
@@ -17,7 +17,7 @@
  * classic IIFE script.
  */
 
-/** One extracted record. Shape is normative; see syntax/extraction.md §2. */
+/** One extracted record. Shape is normative; see spec/extraction.md §2. */
 export interface SemRecord {
   /** Vocabulary token, normalized across authoring forms (`sem-fact`), or
    *  the lowercased tag name for a minted plain-HTML record. */

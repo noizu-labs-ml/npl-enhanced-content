@@ -1,5 +1,5 @@
 /* Shared foundation */
-export { SemElement } from './elements/base.js';
+export { SemElement } from './lit/base.js';
 export { parseTokens, elementTokens } from './shared/tokens.js';
 export { mulberry32, shuffle, resolveSeed, randomFor } from './shared/rng.js';
 export {
@@ -21,9 +21,9 @@ export {
 } from './shared/state.js';
 
 /* Elements — importing registers the custom element */
-export { SemNote } from './elements/sem-note.js';
-import './elements/sem-note.js';
-export { SemFacts } from './elements/sem-facts.js';
-import './elements/sem-facts.js';
-export { SemDetails } from './elements/sem-details.js';
-import './elements/sem-details.js';
+export { SemNote } from './lit/sem-note.js';
+import './lit/sem-note.js';
+export { SemFacts } from './lit/sem-facts.js';
+import './lit/sem-facts.js';
+export { SemDetails } from './lit/sem-details.js';
+import './lit/sem-details.js';

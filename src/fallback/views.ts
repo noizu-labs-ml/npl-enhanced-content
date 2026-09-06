@@ -4,7 +4,7 @@
  *
  * The hash write stays a whole-hash assignment, matching the original inline
  * handler exactly: the deep-link format and the `sem-navigate` CustomEvent
- * payload are both asserted by cypress/e2e/sem-views.cy.js.
+ * payload are both asserted by test/e2e/sem-views.cy.js.
  */
 
 export function enhanceViews(scope: ParentNode): void {

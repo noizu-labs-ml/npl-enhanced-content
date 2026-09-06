@@ -1,4 +1,4 @@
-// BDD spec — extraction (DOM → records → annotated text) · source: syntax/extraction.md
+// BDD spec — extraction (DOM → records → annotated text) · source: spec/extraction.md
 //
 // Feature: extraction projects the AUTHORED document to an ordered record
 //          array; generated chrome, runtime state, and presentation
@@ -43,7 +43,7 @@ const RECORD_SELECTOR = [
   '.sem-progress'
 ].join(', ');
 
-// Document order of demo/index.html, per syntax/extraction.md §3.1.
+// Document order of web/demo/index.html, per spec/extraction.md §3.1.
 const EXPECTED_TYPES = [
   'sem-agent',
   'sem-note',
@@ -92,7 +92,7 @@ const byType = (records, type) => records.filter((r) => r.type === type);
 const byId = (records, id) => records.find((r) => r.id === id);
 
 describe('extraction', () => {
-  describe('record emission (demo/index.html)', () => {
+  describe('record emission (web/demo/index.html)', () => {
     beforeEach(() => cy.visit('/demo/index.html'));
 
     it('emits one record per authored element, in document order', () => {
@@ -361,7 +361,7 @@ describe('extraction', () => {
     });
   });
 
-  describe('THE CENTRAL INVARIANT (syntax/extraction.md §5)', () => {
+  describe('THE CENTRAL INVARIANT (spec/extraction.md §5)', () => {
     it('JS-off extraction deep-equals extraction on the enhanced page', () => {
       let jsOff;
       visitJsOff();

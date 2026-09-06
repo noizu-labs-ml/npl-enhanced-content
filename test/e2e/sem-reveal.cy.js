@@ -1,4 +1,4 @@
-// BDD spec — sem-reveal · source: syntax/schema/sem-reveal.md
+// BDD spec — sem-reveal · source: spec/schema/sem-reveal.md
 //
 // Feature: sem-reveal discloses body under a summary, native details
 //          semantics after fallback wrap, fully visible JS-off

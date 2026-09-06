@@ -1,4 +1,4 @@
-// BDD spec — sem-properties / sem-property · source: syntax/schema/sem-properties.md
+// BDD spec — sem-properties / sem-property · source: spec/schema/sem-properties.md
 //
 // Feature: sem-properties renders a key/value definition list with zero JS
 //   Scenario: data-key renders as term, text as definition

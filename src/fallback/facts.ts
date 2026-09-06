@@ -2,16 +2,16 @@
  * fallback/facts — `.sem-facts` flashcard + quiz interactivity, no Lit.
  *
  * Extracted verbatim from the inline IIFE that used to live in
- * demo/index.html (D5: the same logic had drifted into a second hand-written
+ * web/demo/index.html (D5: the same logic had drifted into a second hand-written
  * copy inside the Lit elements). Behavior is a tested contract — DOM shape,
  * class names, `data-sem-fallback`, and meter text are all asserted by
- * cypress/e2e/sem-facts.cy.js and must not change.
+ * test/e2e/sem-facts.cy.js and must not change.
  *
  * The one deliberate divergence from the original inline source: option order
  * comes from a seeded Fisher-Yates draw (shared/rng) rather than
  * `sort(() => Math.random() - .5)`. That comparator was inconsistent, so its
  * output was neither uniform nor stable across JS engines. Sharing the draw
- * with src/elements/sem-facts.ts is what makes the two tiers emit identical
+ * with src/lit/sem-facts.ts is what makes the two tiers emit identical
  * option order for a fixed `data-sem-seed`.
  */
 

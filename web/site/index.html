@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!--
+  web/site/index.html — PLACEHOLDER for the semtext.dev marketing page.
+
+  Deliberately minimal. The real marketing page is a separate task with its
+  own design pass; this file exists so the directory is real and the
+  deployment work has a concrete build target (dist/site/index.html).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SemText</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-content: center;
+      gap: 0.75rem;
+      padding: 2rem;
+      font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      text-align: center;
+    }
+    h1 { margin: 0; font-size: 2.5rem; letter-spacing: -0.02em; }
+    p { margin: 0; max-width: 34rem; opacity: 0.8; }
+    .note { font-size: 0.8125rem; opacity: 0.55; }
+  </style>
+</head>
+<body>
+  <h1>SemText</h1>
+  <p>
+    XHTML-first semantic markup: one document that reads as a styled interactive
+    page, a structural record for LLMs, and plain text in a terminal.
+  </p>
+  <p><a href="../demo/index.html">View the demo</a></p>
+  <p class="note">Placeholder page — the semtext.dev marketing site is not designed yet.</p>
+</body>
+</html>

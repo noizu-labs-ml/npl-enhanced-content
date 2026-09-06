@@ -1,4 +1,4 @@
-// BDD spec — sem-facts / sem-fact · source: syntax/schema/sem-facts.md
+// BDD spec — sem-facts / sem-fact · source: spec/schema/sem-facts.md
 //
 // Feature: sem-facts presents fact/claim pairs as list, flashcards, or
 //          quiz; JS-off degrades to a fully readable list; the Lit
@@ -13,7 +13,7 @@
 //   Scenario: Lit upgrade — <sem-facts> owns behavior, no fallback marker
 
 describe('sem-facts', () => {
-  describe('v0.4 class baseline (demo/index.html)', () => {
+  describe('v0.4 class baseline (web/demo/index.html)', () => {
     beforeEach(() => cy.visit('/demo/index.html'));
 
     it('list view (default): all facts visible, no chrome, no fallback marker', () => {
@@ -82,7 +82,7 @@ describe('sem-facts', () => {
     });
   });
 
-  describe('Lit upgrade (demo/standalone-lit.html)', () => {
+  describe('Lit upgrade (web/demo/standalone-lit.html)', () => {
     beforeEach(() => cy.visit('/demo/standalone-lit.html'));
 
     it('registers and upgrades sem-facts (Lit ran, no fallback marker)', () => {

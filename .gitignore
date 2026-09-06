@@ -2,5 +2,5 @@
 .claude/worktrees/
 node_modules/
 dist/
-cypress/screenshots/
-cypress/videos/
+test/screenshots/
+test/videos/

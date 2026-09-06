@@ -1,7 +1,7 @@
 /**
  * SemText — extraction entry point.
  *
- * Normative contract: syntax/extraction.md
+ * Normative contract: spec/extraction.md
  *
  * Build note: this module is the intended entry for a second Vite lib
  * target emitting an IIFE global (`SemTextExtract`) at `dist/semtext-extract.js`,

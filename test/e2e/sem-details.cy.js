@@ -1,4 +1,4 @@
-// BDD spec — sem-details / sem-detail / highlight · source: syntax/schema/sem-details.md
+// BDD spec — sem-details / sem-detail / highlight · source: spec/schema/sem-details.md
 //
 // Feature: sem-details presents prose whose highlights are recall targets;
 //          quiz view occludes them (reveal per item), plain view emphasizes;
@@ -10,7 +10,7 @@
 //   Scenario: Lit upgrade — <sem-details> occludes + reveals, no fallback marker
 
 describe('sem-details', () => {
-  describe('v0.4 class baseline (demo/index.html)', () => {
+  describe('v0.4 class baseline (web/demo/index.html)', () => {
     beforeEach(() => cy.visit('/demo/index.html'));
 
     it('quiz view: highlights occluded, click reveals per item', () => {
@@ -50,7 +50,7 @@ describe('sem-details', () => {
     });
   });
 
-  describe('Lit upgrade (demo/standalone-lit.html)', () => {
+  describe('Lit upgrade (web/demo/standalone-lit.html)', () => {
     beforeEach(() => cy.visit('/demo/standalone-lit.html'));
 
     it('registers and upgrades sem-details (Lit ran, no fallback marker)', () => {

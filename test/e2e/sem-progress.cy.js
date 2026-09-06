@@ -1,4 +1,4 @@
-// BDD spec — sem-progress · source: syntax/schema/sem-progress.md
+// BDD spec — sem-progress · source: spec/schema/sem-progress.md
 //
 // Feature: sem-progress renders a meter from data-value (0..1) with an
 //          accessible text alternative, pre-set roles JS-off

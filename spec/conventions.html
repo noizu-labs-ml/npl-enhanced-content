@@ -53,7 +53,7 @@
   .sem-doc-meta { color: var(--sem-muted); font-size: .85rem; margin-bottom: 1.5rem; }
   .sem-open { color: var(--sem-note-warning); font-weight: 600; }
 
-  /* component base (shared with demo/index.html) */
+  /* component base (shared with web/demo/index.html) */
   .sem-note { border-left: 4px solid var(--sem-note-info); border-radius: 8px;
     padding: .75rem 1rem; margin: 1rem 0; background: var(--sem-surface); }
   .sem-note[data-variant="warning"] { border-color: var(--sem-note-warning); }
@@ -89,7 +89,7 @@
   .sem-occluded { color: transparent; background: var(--sem-occluded); border-radius: 4px;
     cursor: pointer; user-select: none; transition: color .15s; min-width: 3ch; display: inline-block; }
   .sem-revealed { color: inherit; background: color-mix(in srgb, var(--sem-accent) 18%, transparent); }
-  /* Tier-0 expansion (matches demo/index.html) */
+  /* Tier-0 expansion (matches web/demo/index.html) */
   .sem-step { counter-increment: sem-step; border-left: 3px solid var(--sem-border);
     padding: .5rem .75rem .5rem 2.25rem; margin: .25rem 0; position: relative;
     background: var(--sem-surface); border-radius: 0 8px 8px 0; }
@@ -139,7 +139,7 @@
   .sem-quiz-options button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
 </style>
 
-<!-- sem-fallback (same handler as demo/index.html) -->
+<!-- sem-fallback (same handler as web/demo/index.html) -->
 <script id="sem-fallback">
 (function () {
   'use strict';
@@ -227,7 +227,7 @@
     });
   });
 
-  /* ---- sem-views (same handler as demo/index.html) ---- */
+  /* ---- sem-views (same handler as web/demo/index.html) ---- */
   document.querySelectorAll('.sem-views[id]').forEach(function (root) {
     var views = [].slice.call(root.querySelectorAll('.sem-view'));
     if (!views.length) return;
@@ -322,7 +322,7 @@
 <div class="sem-enhanced-document">
 
   <h1>SemText — Format Spec &amp; Conventions</h1>
-  <p class="sem-doc-meta">DRAFT v0.4 · class-based baseline · this page is written in the format it specifies — one HTML file, inline CSS, Tailwind refinement, vanilla fallback. Normative source: <code>syntax/conventions.md</code>.</p>
+  <p class="sem-doc-meta">DRAFT v0.4 · class-based baseline · this page is written in the format it specifies — one HTML file, inline CSS, Tailwind refinement, vanilla fallback. Normative source: <code>spec/conventions.md</code>.</p>
 
   <nav class="sem-toc">
     <strong>Contents</strong>
@@ -434,7 +434,7 @@
   <p>Compact form: <code>term :: conclusion</code> as direct text. Machine view: statement+conclusion = structured assertion.</p>
 
   <h3>sem-facts — collection; the flagship surface</h3>
-  <p><strong>Normative: <code>syntax/schema/sem-facts.md</code>.</strong></p>
+  <p><strong>Normative: <code>spec/schema/sem-facts.md</code>.</strong></p>
 <pre>&lt;div class="sem-facts" data-view-as="quiz" data-controls="shuffle"&gt;
   &lt;div class="sem-fact"&gt;…&lt;/div&gt;
   &lt;div class="sem-fact"&gt;
@@ -461,7 +461,7 @@
   </div>
 
   <h3>sem-detail / sem-details — prose with occludable content</h3>
-  <p><strong>Normative: <code>syntax/schema/sem-details.md</code>.</strong></p>
+  <p><strong>Normative: <code>spec/schema/sem-details.md</code>.</strong></p>
 <pre>&lt;div class="sem-details" data-view-as="quiz"&gt;
   &lt;div class="sem-detail"&gt;
     The OIDC token travels in the &lt;span class="sem-highlight"&gt;Authorization&lt;/span&gt; header.
@@ -476,7 +476,7 @@
   &lt;div class="sem-step" role="listitem"&gt;run migrations&lt;/div&gt;
   &lt;div class="sem-step" role="listitem" data-status="blocked"&gt;cut release&lt;/div&gt;
 &lt;/div&gt;</pre>
-  <p><code>data-status</code>: <code>done</code> <code>current</code> <code>todo</code> (default) <code>blocked</code>. DOM order = execution order (ordinals positional); <code>✅/→/❌</code> sugar is display-only — the attribute is canonical. <strong>Zero-JS element.</strong> Normative: <code>syntax/schema/sem-procedure.md</code>.</p>
+  <p><code>data-status</code>: <code>done</code> <code>current</code> <code>todo</code> (default) <code>blocked</code>. DOM order = execution order (ordinals positional); <code>✅/→/❌</code> sugar is display-only — the attribute is canonical. <strong>Zero-JS element.</strong> Normative: <code>spec/schema/sem-procedure.md</code>.</p>
   <div class="sem-procedure" data-kind="runbook" role="list">
     <div class="sem-step" role="listitem" data-status="done">define Tier-0 schemas</div>
     <div class="sem-step" role="listitem" data-status="current">expand spec entries (this section)</div>
@@ -489,7 +489,7 @@
   &lt;div class="sem-property" data-key="token ttl"
        role="definition" aria-label="token ttl"&gt;15m&lt;/div&gt;
 &lt;/div&gt;</pre>
-  <p><code>data-key</code> = term, text = value; key column renders via CSS <code>attr()</code>; <code>role="definition"</code> + <code>aria-label</code> carry the pair to AT. <code>term :: value</code> sugar is display-only. Q2 resolved: pure <code>&lt;dl&gt;</code> v1, no chrome. Normative: <code>syntax/schema/sem-properties.md</code>.</p>
+  <p><code>data-key</code> = term, text = value; key column renders via CSS <code>attr()</code>; <code>role="definition"</code> + <code>aria-label</code> carry the pair to AT. <code>term :: value</code> sugar is display-only. Q2 resolved: pure <code>&lt;dl&gt;</code> v1, no chrome. Normative: <code>spec/schema/sem-properties.md</code>.</p>
   <div class="sem-properties" data-kind="spec">
     <div class="sem-property" data-key="canonical attr" role="definition" aria-label="canonical attr">data-key</div>
     <div class="sem-property" data-key="js required" role="definition" aria-label="js required">none</div>
@@ -500,7 +500,7 @@
   &lt;div class="sem-view" data-name="Helm" data-active role="tabpanel"&gt;…&lt;/div&gt;
   &lt;div class="sem-view" data-name="ArgoCD" role="tabpanel"&gt;…&lt;/div&gt;
 &lt;/div&gt;</pre>
-  <p><code>data-name</code> unique per container; <code>data-active</code> marks the initial view (first wins if absent). Fallback builds the tab bar, manages arrow keys and deep-links (<code>#id/name</code>), fires <code>sem-navigate {id,name,index}</code>. JS-off: all views stacked. Q3 resolved: <code>sem-views</code>. Normative: <code>syntax/schema/sem-views.md</code>.</p>
+  <p><code>data-name</code> unique per container; <code>data-active</code> marks the initial view (first wins if absent). Fallback builds the tab bar, manages arrow keys and deep-links (<code>#id/name</code>), fires <code>sem-navigate {id,name,index}</code>. JS-off: all views stacked. Q3 resolved: <code>sem-views</code>. Normative: <code>spec/schema/sem-views.md</code>.</p>
   <div class="sem-views" id="spec-views">
     <div class="sem-view" data-name="Spec" data-active role="tabpanel">
       Each view is the same subject under a named perspective — deep-link form <code>#spec-views/quiz</code> style.</div>
@@ -512,14 +512,14 @@
 <pre>&lt;div class="sem-reveal" data-summary="Why not localStorage?" collapsed&gt;
   Tokens in localStorage are readable by any script on the page…
 &lt;/div&gt;</pre>
-  <p><code>data-summary</code> optional — first body line (≤60 chars) derives it; <code>collapsed</code> starts hidden, otherwise open. Fallback wraps in native <code>&lt;details&gt;</code>; JS-off: fully visible. Non-assertive counterpart to the <code>sem-fact</code> Q/A shape. Normative: <code>syntax/schema/sem-reveal.md</code>.</p>
+  <p><code>data-summary</code> optional — first body line (≤60 chars) derives it; <code>collapsed</code> starts hidden, otherwise open. Fallback wraps in native <code>&lt;details&gt;</code>; JS-off: fully visible. Non-assertive counterpart to the <code>sem-fact</code> Q/A shape. Normative: <code>spec/schema/sem-reveal.md</code>.</p>
   <div class="sem-reveal" id="spec-reveal" data-summary="Why a separate element from sem-note[collapsed]?" collapsed>
     Intent: a note is an annotation (variant tone); a reveal is exposition (Q→A). Same mechanism, different semantics — machines distinguish them.</div>
 
   <h3>sem-progress — completion meter</h3>
 <pre>&lt;div class="sem-progress" data-value="0.62" data-label="coverage"
      role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"&gt;&lt;/div&gt;</pre>
-  <p><code>data-value</code> canonical 0..1 (render clamps, attr untouched); <code>data-label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code>. <code>data-status="done"</code> ⇔ 1 by convention. Normative: <code>syntax/schema/sem-progress.md</code>.</p>
+  <p><code>data-value</code> canonical 0..1 (render clamps, attr untouched); <code>data-label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code>. <code>data-status="done"</code> ⇔ 1 by convention. Normative: <code>spec/schema/sem-progress.md</code>.</p>
   <div class="sem-progress" id="spec-progress" data-value="0.7" data-label="Tier-0 spec coverage"
        role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7"></div>
 

@@ -1,4 +1,4 @@
-// BDD spec — sem-views / sem-view · source: syntax/schema/sem-views.md
+// BDD spec — sem-views / sem-view · source: spec/schema/sem-views.md
 //
 // Feature: sem-views shows one named perspective at a time, switches by
 //          click/keyboard/hash, degrades to stacked readable views JS-off
