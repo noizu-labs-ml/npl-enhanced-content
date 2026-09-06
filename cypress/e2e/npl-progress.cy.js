@@ -11,7 +11,7 @@ describe('npl-progress', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
 
   it('fill width and percentage text follow data-value', () => {
-    cy.get('#p-coverage .npl-progress-fill').should(($el) => {
+    cy.get('#p-coverage .sem-progress-fill').should(($el) => {
       const w = parseFloat($el.css('width'));
       expect(w).to.be.greaterThan(0);
     });
@@ -24,9 +24,9 @@ describe('npl-progress', () => {
 
   it('out-of-range value clamps in render, raw attr untouched', () => {
     cy.get('#p-clamp').should('have.attr', 'data-value', '1.4');
-    cy.get('#p-clamp .npl-progress-fill')
+    cy.get('#p-clamp .sem-progress-fill')
       .invoke('css', 'width').then((w) => {
-        const track = Cypress.$('#p-clamp .npl-progress-track')[0];
+        const track = Cypress.$('#p-clamp .sem-progress-track')[0];
         expect(parseFloat(w)).to.be.at.most(track.getBoundingClientRect().width + 0.5);
       });
     cy.get('#p-clamp').should('contain', '100%');

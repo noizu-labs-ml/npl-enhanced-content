@@ -1,5 +1,5 @@
 /**
- * fallback/views — `.npl-views[id]` tab bar, arrow-key navigation and
+ * fallback/views — `.sem-views[id]` tab bar, arrow-key navigation and
  * `#<container-id>/<view>` deep links.
  *
  * The hash write stays a whole-hash assignment, matching the original inline
@@ -8,14 +8,14 @@
  */
 
 export function enhanceViews(scope: ParentNode): void {
-  scope.querySelectorAll<HTMLElement>('.npl-views[id]').forEach((root) => {
-    const views = Array.from(root.querySelectorAll<HTMLElement>('.npl-view'));
+  scope.querySelectorAll<HTMLElement>('.sem-views[id]').forEach((root) => {
+    const views = Array.from(root.querySelectorAll<HTMLElement>('.sem-view'));
     if (!views.length) return;
-    if (!root.querySelector('.npl-view[data-active]')) views[0].setAttribute('data-active', '');
+    if (!root.querySelector('.sem-view[data-active]')) views[0].setAttribute('data-active', '');
     let active = Math.max(0, views.findIndex((v) => v.hasAttribute('data-active')));
 
     const bar = document.createElement('div');
-    bar.className = 'npl-views-tabs';
+    bar.className = 'sem-views-tabs';
     bar.setAttribute('role', 'tablist');
     views.forEach((v, k) => {
       v.setAttribute('role', 'tabpanel');

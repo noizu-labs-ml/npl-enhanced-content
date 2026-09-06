@@ -7,7 +7,7 @@ precede code.
 ## Authoring form (v0.4 class-based)
 
 ```html
-<div class="npl-reveal" data-summary="Why not localStorage?">
+<div class="sem-reveal" data-summary="Why not localStorage?">
   Tokens in localStorage are readable by any script on the page…
 </div>
 ```

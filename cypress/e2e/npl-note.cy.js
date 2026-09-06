@@ -15,49 +15,49 @@ describe('v0.4 baseline (demo/index.html)', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
 
   it('renders agent metadata block', () => {
-    cy.get('.npl-agent .npl-agent-name').should('contain', 'Auth Guide');
-    cy.get('.npl-agent .npl-agent-instructions').should('exist');
+    cy.get('.sem-agent .sem-agent-name').should('contain', 'Auth Guide');
+    cy.get('.sem-agent .sem-agent-instructions').should('exist');
   });
 
   it('renders note variants; collapsed hides body until clicked', () => {
-    cy.get('.npl-note[data-variant="warning"]').should('be.visible');
-    cy.get('.npl-note[collapsed] .npl-note-body').should('not.be.visible');
-    cy.get('.npl-note[collapsed] .npl-note-summary').click();
-    cy.get('.npl-note[collapsed] .npl-note-body').should('not.exist');
+    cy.get('.sem-note[data-variant="warning"]').should('be.visible');
+    cy.get('.sem-note[collapsed] .sem-note-body').should('not.be.visible');
+    cy.get('.sem-note[collapsed] .sem-note-summary').click();
+    cy.get('.sem-note[collapsed] .sem-note-body').should('not.exist');
     cy.contains('Shuffle flashcards').should('be.visible');
   });
 
   it('flashcards view: one card at a time, flip reveals conclusion', () => {
-    const fc = '.npl-facts[data-view-as="flashcards"] ';
-    cy.get(fc + '.npl-fact.npl-current').should('have.length', 1);
-    cy.get(fc + '.npl-current .npl-conclusion').should('not.be.visible');
-    cy.get(fc + '.npl-current').click();
-    cy.get(fc + '.npl-current.npl-flipped .npl-conclusion').should('be.visible');
+    const fc = '.sem-facts[data-view-as="flashcards"] ';
+    cy.get(fc + '.sem-fact.sem-current').should('have.length', 1);
+    cy.get(fc + '.sem-current .sem-conclusion').should('not.be.visible');
+    cy.get(fc + '.sem-current').click();
+    cy.get(fc + '.sem-current.sem-flipped .sem-conclusion').should('be.visible');
     cy.get(fc + '[data-act="next"]').click();
-    cy.get(fc + '.npl-current').should('have.length', 1);
-    cy.get(fc + '.npl-facts-meter').should('contain', '2/3');
+    cy.get(fc + '.sem-current').should('have.length', 1);
+    cy.get(fc + '.sem-facts-meter').should('contain', '2/3');
   });
 
   it('quiz view: conclusion hidden, options scored, distractors count', () => {
-    const qz = '.npl-facts[data-view-as="quiz"] ';
-    cy.get(qz + '.npl-fact .npl-conclusion').should('not.be.visible');
-    cy.get(qz + '.npl-current .npl-quiz-options button').should('have.length.at.least', 2);
-    cy.get(qz + '.npl-current .npl-quiz-options button[data-correct="true"]').click();
-    cy.get(qz + '.npl-facts-meter').should('contain', 'score 1/1');
+    const qz = '.sem-facts[data-view-as="quiz"] ';
+    cy.get(qz + '.sem-fact .sem-conclusion').should('not.be.visible');
+    cy.get(qz + '.sem-current .sem-quiz-options button').should('have.length.at.least', 2);
+    cy.get(qz + '.sem-current .sem-quiz-options button[data-correct="true"]').click();
+    cy.get(qz + '.sem-facts-meter').should('contain', 'score 1/1');
   });
 
   it('highlight occlusion: hidden until reveal, then visible', () => {
-    cy.get('.npl-occluded').first().click();
-    cy.get('.npl-revealed').should('contain', 'Authorization');
+    cy.get('.sem-occluded').first().click();
+    cy.get('.sem-revealed').should('contain', 'Authorization');
   });
 
   it('JS-off: content fully readable, no occlusion', () => {
     cy.visit('/demo/index.html', {
       onBeforeLoad(win) { win.__nplJsOff = true; }
     });
-    cy.get('.npl-fact .npl-statement').should('be.visible');
-    cy.get('.npl-fact .npl-conclusion').should('be.visible');
-    cy.get('.npl-highlight').should('be.visible');
-    cy.get('.npl-occluded').should('not.exist');
+    cy.get('.sem-fact .sem-statement').should('be.visible');
+    cy.get('.sem-fact .sem-conclusion').should('be.visible');
+    cy.get('.sem-highlight').should('be.visible');
+    cy.get('.sem-occluded').should('not.exist');
   });
 });

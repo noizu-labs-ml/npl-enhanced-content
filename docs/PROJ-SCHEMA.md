@@ -16,21 +16,21 @@ interface contract for NPL-enhanced XHTML documents. Repo layout:
 
 NPL-enhanced documents are XHTML readable by three consumers: browser (styled/
 interactive), LLM (structural), terminal. Canonical form: **class-based**
-(`div.npl-*` on plain elements) with `data-*` attribute parameters; semantic
+(`div.sem-*` on plain elements) with `data-*` attribute parameters; semantic
 custom elements (`<npl-fact>`) are the target vocabulary for the Lit milestone.
 
 ### v0.3 element → v0.4 class mapping
 
 | Element form | Class markup |
 | :-- | :-- |
-| `<npl-enhanced-document>` | `div.npl-enhanced-document` (required root wrapper) |
-| `<agent>` + name/bio/instructions | `div.npl-agent` › `.npl-agent-name` / `-bio` / `-instructions` |
-| `<npl-note variant="warning">` | `div.npl-note[data-variant="warning"]` › `.npl-note-body` |
-| `<npl-facts view-as="quiz">` | `div.npl-facts[data-view-as="quiz"]` |
-| `<npl-fact>` statement/conclusion | `div.npl-fact` › `.npl-statement` / `.npl-conclusion` |
-| `<npl-distractor>` | `div.npl-distractor` |
-| `<npl-details>` / `<npl-detail>` | `div.npl-details` › `div.npl-detail` |
-| `<highlight>` | `span.npl-highlight` (occluded form `.npl-occluded`) |
+| `<npl-enhanced-document>` | `div.sem-enhanced-document` (required root wrapper) |
+| `<agent>` + name/bio/instructions | `div.sem-agent` › `.sem-agent-name` / `-bio` / `-instructions` |
+| `<npl-note variant="warning">` | `div.sem-note[data-variant="warning"]` › `.sem-note-body` |
+| `<npl-facts view-as="quiz">` | `div.sem-facts[data-view-as="quiz"]` |
+| `<npl-fact>` statement/conclusion | `div.sem-fact` › `.sem-statement` / `.sem-conclusion` |
+| `<npl-distractor>` | `div.sem-distractor` |
+| `<npl-details>` / `<npl-detail>` | `div.sem-details` › `div.sem-detail` |
+| `<highlight>` | `span.sem-highlight` (occluded form `.sem-occluded`) |
 
 ### Global attribute catalog (any npl-* element)
 

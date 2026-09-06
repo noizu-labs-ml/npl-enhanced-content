@@ -1,5 +1,5 @@
 /**
- * fallback/facts — `.npl-facts` flashcard + quiz interactivity, no Lit.
+ * fallback/facts — `.sem-facts` flashcard + quiz interactivity, no Lit.
  *
  * Extracted verbatim from the inline IIFE that used to live in
  * demo/index.html (D5: the same logic had drifted into a second hand-written
@@ -18,32 +18,32 @@
 import { randomFor, shuffle } from '../shared/rng.js';
 
 export function enhanceFacts(scope: ParentNode): void {
-  scope.querySelectorAll<HTMLElement>('.npl-facts').forEach((root) => {
+  scope.querySelectorAll<HTMLElement>('.sem-facts').forEach((root) => {
     const view = root.getAttribute('data-view-as') || 'list';
-    const items = Array.from(root.querySelectorAll<HTMLElement>('.npl-fact'));
+    const items = Array.from(root.querySelectorAll<HTMLElement>('.sem-fact'));
     if (view === 'list' || items.length === 0) return;
     root.setAttribute('data-sem-fallback', '');
 
     const rand = randomFor(root);
 
     const chrome = document.createElement('div');
-    chrome.className = 'npl-facts-chrome';
+    chrome.className = 'sem-facts-chrome';
     chrome.innerHTML =
       '<button type="button" data-act="prev" aria-label="previous">←</button>' +
-      '<span class="npl-facts-meter"></span>' +
+      '<span class="sem-facts-meter"></span>' +
       '<button type="button" data-act="next" aria-label="next">→</button>';
     root.insertBefore(chrome, root.firstChild);
 
     let i = 0;
     const score = { correct: 0, answered: 0 };
-    const progress = chrome.querySelector('.npl-facts-meter') as HTMLElement;
+    const progress = chrome.querySelector('.sem-facts-meter') as HTMLElement;
 
     function optionsFor(item: Element): { text: string; correct: boolean }[] {
-      const correct = item.querySelector('.npl-conclusion');
-      const distractors = Array.from(item.querySelectorAll('.npl-distractor'));
+      const correct = item.querySelector('.sem-conclusion');
+      const distractors = Array.from(item.querySelectorAll('.sem-distractor'));
       const others = items
         .filter((f) => f !== item)
-        .map((f) => f.querySelector('.npl-conclusion'))
+        .map((f) => f.querySelector('.sem-conclusion'))
         .filter(Boolean) as Element[];
       const pool = distractors.concat(others).slice(0, 3);
       const opts = shuffle(pool.concat([correct as Element]), rand);
@@ -54,10 +54,10 @@ export function enhanceFacts(scope: ParentNode): void {
     }
 
     function renderQuiz(item: Element): void {
-      let box = item.querySelector('.npl-quiz-options') as HTMLElement | null;
+      let box = item.querySelector('.sem-quiz-options') as HTMLElement | null;
       if (!box) {
         box = document.createElement('div');
-        box.className = 'npl-quiz-options';
+        box.className = 'sem-quiz-options';
         item.appendChild(box);
       }
       const target = box;
@@ -70,7 +70,7 @@ export function enhanceFacts(scope: ParentNode): void {
         b.addEventListener('click', () => {
           if (target.hasAttribute('data-answered')) return;
           target.setAttribute('data-answered', '');
-          b.classList.add(o.correct ? 'npl-answered' : 'npl-wrong-pick');
+          b.classList.add(o.correct ? 'sem-answered' : 'sem-wrong-pick');
           if (o.correct) score.correct++;
           score.answered++;
           progress.textContent =
@@ -83,8 +83,8 @@ export function enhanceFacts(scope: ParentNode): void {
     function render(): void {
       const item = items[i];
       items.forEach((f, k) => {
-        f.classList.toggle('npl-current', k === i);
-        f.classList.remove('npl-flipped');
+        f.classList.toggle('sem-current', k === i);
+        f.classList.remove('sem-flipped');
       });
       if (view === 'flashcards') {
         progress.textContent = (i + 1) + '/' + items.length;
@@ -100,14 +100,14 @@ export function enhanceFacts(scope: ParentNode): void {
       if (!act) return;
       if (act === 'prev') { i = (i - 1 + items.length) % items.length; render(); }
       if (act === 'next') { i = (i + 1) % items.length; render(); }
-      if (act === 'flip' || target.closest('.npl-fact')) {
-        items[i].classList.toggle('npl-flipped');
+      if (act === 'flip' || target.closest('.sem-fact')) {
+        items[i].classList.toggle('sem-flipped');
       }
     });
 
     if (view === 'flashcards') {
       items.forEach((f) => {
-        f.addEventListener('click', () => f.classList.toggle('npl-flipped'));
+        f.addEventListener('click', () => f.classList.toggle('sem-flipped'));
       });
     }
     render();

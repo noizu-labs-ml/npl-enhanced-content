@@ -27,20 +27,20 @@ const clone = (v) => JSON.parse(JSON.stringify(v));
 const extract = () => cy.document().then((doc) => clone(extractRecords(doc)));
 
 const RECORD_SELECTOR = [
-  '.npl-agent',
-  '.npl-note',
-  '.npl-facts',
-  '.npl-fact',
-  '.npl-details',
-  '.npl-detail',
-  '.npl-procedure',
-  '.npl-step',
-  '.npl-properties',
-  '.npl-property',
-  '.npl-views',
-  '.npl-view',
-  '.npl-reveal',
-  '.npl-progress'
+  '.sem-agent',
+  '.sem-note',
+  '.sem-facts',
+  '.sem-fact',
+  '.sem-details',
+  '.sem-detail',
+  '.sem-procedure',
+  '.sem-step',
+  '.sem-properties',
+  '.sem-property',
+  '.sem-views',
+  '.sem-view',
+  '.sem-reveal',
+  '.sem-progress'
 ].join(', ');
 
 // Document order of demo/index.html, per syntax/extraction.md §3.1.
@@ -78,10 +78,10 @@ const visitWithViews = (factsMode, detailsMode) =>
   cy.visit('/demo/index.html', {
     onBeforeLoad(win) {
       win.document.addEventListener('DOMContentLoaded', () => {
-        win.document.querySelectorAll('.npl-facts').forEach((el) => {
+        win.document.querySelectorAll('.sem-facts').forEach((el) => {
           el.setAttribute('data-view-as', factsMode);
         });
-        win.document.querySelectorAll('.npl-details').forEach((el) => {
+        win.document.querySelectorAll('.sem-details').forEach((el) => {
           el.setAttribute('data-view-as', detailsMode);
         });
       });
@@ -148,7 +148,7 @@ describe('extraction', () => {
         expect(notes[1].text).to.equal(
           'Shuffle flashcards before each review session for better recall.'
         );
-        // The fallback's generated .npl-note-summary never reaches the record.
+        // The fallback's generated .sem-note-summary never reaches the record.
         expect(notes[1].text).not.to.contain('…');
       });
     });
@@ -191,8 +191,8 @@ describe('extraction', () => {
     it('npl-detail: highlights extracted whether authored or occluded', () => {
       extract().then((records) => {
         const passages = byType(records, 'npl-detail');
-        // Quiz-view passage: the fallback has replaced .npl-highlight with
-        // .npl-occluded; extraction reads through the mask.
+        // Quiz-view passage: the fallback has replaced .sem-highlight with
+        // .sem-occluded; extraction reads through the mask.
         expect(passages[0].fields.highlights).to.deep.equal([
           'Authorization',
           'browser'
@@ -336,8 +336,8 @@ describe('extraction', () => {
       cy.document().then((doc) => {
         const root = doc.createElement('div');
         root.innerHTML =
-          '<div class="npl-fact">JWT rotation :: short-lived access</div>' +
-          '<div class="npl-property">token ttl :: 15m</div>';
+          '<div class="sem-fact">JWT rotation :: short-lived access</div>' +
+          '<div class="sem-property">token ttl :: 15m</div>';
         const records = extractRecords(root);
         expect(records[0].fields.statement).to.equal('JWT rotation');
         expect(records[0].fields.conclusion).to.equal('short-lived access');
@@ -393,7 +393,7 @@ describe('extraction', () => {
       modes.forEach(([facts, details]) => {
         visitWithViews(facts, details);
         // The substitution really did take effect on the enhanced page.
-        cy.get('.npl-facts').first().should('have.attr', 'data-view-as', facts);
+        cy.get('.sem-facts').first().should('have.attr', 'data-view-as', facts);
         extract().then((records) => {
           expect(records, 'view-as=' + facts + '/' + details).to.deep.equal(
             baseline
@@ -410,19 +410,19 @@ describe('extraction', () => {
       });
 
       // Flip a flashcard.
-      cy.get('.npl-facts[data-view-as="flashcards"] .npl-fact.npl-current').click();
+      cy.get('.sem-facts[data-view-as="flashcards"] .sem-fact.sem-current').click();
       // Advance the deck.
-      cy.get('.npl-facts[data-view-as="flashcards"] [data-act="next"]').click();
+      cy.get('.sem-facts[data-view-as="flashcards"] [data-act="next"]').click();
       // Answer a quiz option.
-      cy.get('.npl-facts[data-view-as="quiz"] .npl-current .npl-quiz-options button')
+      cy.get('.sem-facts[data-view-as="quiz"] .sem-current .sem-quiz-options button')
         .first()
         .click();
       // Switch a view (moves data-active).
-      cy.get('#deploy .npl-views-tabs [role="tab"]').eq(1).click();
+      cy.get('#deploy .sem-views-tabs [role="tab"]').eq(1).click();
       // Reveal an occluded highlight.
-      cy.get('.npl-details[data-view-as="quiz"] .npl-occluded').first().click();
+      cy.get('.sem-details[data-view-as="quiz"] .sem-occluded').first().click();
       // Expand the collapsed note (removes the `collapsed` attribute).
-      cy.get('.npl-note[data-variant="tip"] .npl-note-summary').click();
+      cy.get('.sem-note[data-variant="tip"] .sem-note-summary').click();
 
       extract().then((after) => {
         expect(after).to.deep.equal(before);

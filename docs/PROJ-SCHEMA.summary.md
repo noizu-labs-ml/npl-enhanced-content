@@ -6,8 +6,8 @@ NPL-enhanced XHTML (see [PROJ-SCHEMA.md](PROJ-SCHEMA.md), layout in
 
 ## Core entities
 
-- **Enhanced document** — root `npl-enhanced-document` (v0.4: `div.npl-enhanced-document`); metadata children (`agent`, …) + semantic HTML + `npl-*` vocabulary.
-- **Element↔class mapping** — v0.3 custom elements map mechanically to `div/span.npl-*` classes with `data-*` parameters (npl-agent, npl-note, npl-facts, npl-fact, npl-distractor, npl-details/detail, npl-highlight).
+- **Enhanced document** — root `npl-enhanced-document` (v0.4: `div.sem-enhanced-document`); metadata children (`agent`, …) + semantic HTML + `npl-*` vocabulary.
+- **Element↔class mapping** — v0.3 custom elements map mechanically to `div/span.sem-*` classes with `data-*` parameters (npl-agent, npl-note, npl-facts, npl-fact, npl-distractor, npl-details/detail, npl-highlight).
 - **Global attributes** — `kind`, `tags`, `view-as` (unknown ⇒ list fallback), `status` (`done|current|todo|blocked|pass|fail`), `controls`, `collapsed`, `id`, `data-*`. Attributes canonical; inline notation is sugar.
 
 ## npl-note schema

@@ -1,5 +1,5 @@
 /**
- * fallback/reveal — wraps `.npl-reveal` content in native `<details>`.
+ * fallback/reveal — wraps `.sem-reveal` content in native `<details>`.
  *
  * Native disclosure rather than a hand-rolled toggle: it is keyboard- and
  * screen-reader-correct for free, and find-in-page still reaches closed
@@ -8,7 +8,7 @@
  */
 
 export function enhanceReveal(scope: ParentNode): void {
-  scope.querySelectorAll('.npl-reveal').forEach((r) => {
+  scope.querySelectorAll('.sem-reveal').forEach((r) => {
     const d = document.createElement('details');
     if (!r.hasAttribute('collapsed')) d.setAttribute('open', '');
     const s = document.createElement('summary');
@@ -17,7 +17,7 @@ export function enhanceReveal(scope: ParentNode): void {
       (r.textContent || '').trim().split(/\s+/).slice(0, 8).join(' ') + ' …';
     d.appendChild(s);
     const body = document.createElement('div');
-    body.className = 'npl-reveal-body';
+    body.className = 'sem-reveal-body';
     while (r.firstChild) body.appendChild(r.firstChild);
     d.appendChild(body);
     r.appendChild(d);

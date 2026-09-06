@@ -41,7 +41,7 @@ schemas exist to serve the flagship build, so they belong where they get used.
 ### M2 — v0.4 class-based baseline ✅
 
 `demo/index.html`: inline CSS + fallback handler, class-based vocabulary
-(`div.npl-*`, `data-*` canonical; sugar is display-only). Double-click demo works.
+(`div.sem-*`, `data-*` canonical; sugar is display-only). Double-click demo works.
 
 ### M3 — Flagship + Lit upgrade path 🔶 in progress
 
@@ -87,7 +87,7 @@ Every row: what it costs, what it costs *per change*, and the written trigger to
 
 | ID | Item | Principal | Interest rate | Trigger to repay | Risk |
 |---|---|---|---|---|---|
-| D1 | `.npl-progress` class names both the progress element and a facts-chrome label | small rename | every element that renders both in one document misbehaves; grows with each new element | ✅ repaid **M3 step 3** (renamed to `.npl-facts-meter`) | correctness |
+| D1 | `.sem-progress` class names both the progress element and a facts-chrome label | small rename | every element that renders both in one document misbehaves; grows with each new element | ✅ repaid **M3 step 3** (renamed to `.sem-facts-meter`) | correctness |
 | D2 | Lit elements upgrade pre-parse — children may not exist at first `updated()`; NplNote retries via rAF | pattern, not code | every new Lit element must re-learn the children-ready problem (or copy the pattern) | document the pattern in a shared base/helper during **M3 step 3** | correctness, per-element friction |
 | D3 | PRD.md §10 milestones drifted from reality before this roadmap existed | one pointer note | confusion about which doc is authoritative | PR gets a "see ROADMAP.md" note on next PRD touch | friction |
 | D4 | CDN infra committed but unapplied (monorepo develop e8e2d35b) | apply + seed per runbook | assets ship without a distribution host; docs can't reference CDN URLs | **M5** distribution step | delivery |
@@ -98,7 +98,7 @@ Every row: what it costs, what it costs *per change*, and the written trigger to
 | D9 | `"type": "module"` vs the `.` export mapping to an IIFE bundle with no ESM/CJS exports — a bundler importing `.` gets a script it can't import from | build-format decision (dual entry or drop the `.` export) | consumers hit a silent/confusing import failure | **M5** publish prep | delivery |
 | D11 | `demo/standalone-lit.html` inlined a hand-pasted copy of `dist/npl.js`, so every Lit-tier cypress assertion green-lit a frozen artifact rather than current source | build automation | a Lit regression can land fully green; the gap is invisible and unbounded in time | ✅ repaid **this epic** (`scripts/build-standalone.mjs` substitutes the freshly built bundle; cypress now runs against `dist/demo/`) | correctness |
 | D13 | `npl-note[collapsed]` anti-flash rule was gated on `:not([data-sem-upgraded])`, so with the bundle absent the body stayed `display:none` with no summary to expand — collapsed note content unreachable with JS off | one selector (`:defined`) | every element that adds a pre-upgrade anti-flash rule inherits the bug | ✅ repaid **this epic** — found by the new scripts-stripped artifact, which is the whole reason it exists | degradation |
-| D12 | Ungated `display:none` in the vocabulary hides `.npl-distractor` and every inactive `.npl-view` in the scripts-stripped no-JS artifact — content unreachable with JS off | CSS gating (show distractors and all views when neither tier marker is present) | every new hide-rule inherits the pattern; the no-JS degradation promise stays partly unmet | **axes wave**, alongside D10 | degradation |
+| D12 | Ungated `display:none` in the vocabulary hides `.sem-distractor` and every inactive `.sem-view` in the scripts-stripped no-JS artifact — content unreachable with JS off | CSS gating (show distractors and all views when neither tier marker is present) | every new hide-rule inherits the pattern; the no-JS degradation promise stays partly unmet | **axes wave**, alongside D10 | degradation |
 | D10 | Theme CSS ships no `npl-*:not(:defined)` base — custom-element documents render unstyled before/without the Lit upgrade, contradicting conventions §4 rule 3 which promises exactly this | one CSS block in `themes/_vocabulary.css` | every element added in element form inherits the defect; the scripts-stripped no-JS artifact will fail on it | **axes wave** (`npl-controls` + no-JS build artifact both depend on it) | correctness, degradation |
 
 ## Open decisions (must close before their dependent milestone exits)

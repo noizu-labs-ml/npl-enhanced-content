@@ -43,14 +43,14 @@ export class NplNote extends NplElement {
     }
     if (this.#summary()) return;
 
-    const body = this.querySelector('.npl-note-body');
+    const body = this.querySelector('.sem-note-body');
     if (!body) {
       // element upgraded pre-parse: children aren't there yet at first update
       this.#awaitBody();
       return;
     }
     const sum = document.createElement('div');
-    sum.className = 'npl-note-summary';
+    sum.className = 'sem-note-summary';
     sum.textContent = this.#bodyText().split(/\s+/).slice(0, 10).join(' ') + ' …';
     this.insertBefore(sum, body);
   }
@@ -58,24 +58,24 @@ export class NplNote extends NplElement {
   #awaitBody(): void {
     if (this.#awaitingBody) return;
     this.#awaitingBody = true;
-    void this.whenChildrenReady('.npl-note-body').then(() => {
+    void this.whenChildrenReady('.sem-note-body').then(() => {
       this.#awaitingBody = false;
       this.requestUpdate();
     });
   }
 
   #summary(): Element | null {
-    return this.querySelector(':scope > .npl-note-summary');
+    return this.querySelector(':scope > .sem-note-summary');
   }
 
   #bodyText(): string {
-    const body = this.querySelector('.npl-note-body');
+    const body = this.querySelector('.sem-note-body');
     return ((body ?? this).textContent || '').trim();
   }
 
   #onSummaryClick(e: Event): void {
     const t = e.target;
-    if (t instanceof Element && t.classList.contains('npl-note-summary')) {
+    if (t instanceof Element && t.classList.contains('sem-note-summary')) {
       this.collapsed = false;
     }
   }

@@ -13,12 +13,12 @@ describe('npl-reveal', () => {
   it('data-summary becomes the toggle label; collapsed hides body', () => {
     cy.get('#r-storage details summary').should('contain', 'Why not localStorage?');
     cy.get('#r-storage details').should('not.have.attr', 'open');
-    cy.get('#r-storage details .npl-reveal-body').should('not.be.visible');
+    cy.get('#r-storage details .sem-reveal-body').should('not.be.visible');
   });
 
   it('clicking summary reveals body', () => {
     cy.get('#r-storage details summary').click();
-    cy.get('#r-storage details .npl-reveal-body').should('be.visible');
+    cy.get('#r-storage details .sem-reveal-body').should('be.visible');
   });
 
   it('first-line summary derived when data-summary absent', () => {

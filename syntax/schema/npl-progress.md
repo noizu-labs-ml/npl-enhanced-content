@@ -7,7 +7,7 @@ precede code.
 ## Authoring form (v0.4 class-based)
 
 ```html
-<div class="npl-progress" data-value="0.62" data-label="coverage"></div>
+<div class="sem-progress" data-value="0.62" data-label="coverage"></div>
 ```
 
 - `data-value`: **required, canonical unit 0..1.** Out-of-range values

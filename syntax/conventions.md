@@ -1,7 +1,7 @@
 # npl-enhanced-content — Format Spec & Conventions
 
 **DRAFT v0.4 — class-based baseline.** v0.4 renders the vocabulary as
-**classes on plain elements** (`<div class="npl-agent">`), not custom
+**classes on plain elements** (`<div class="sem-agent">`), not custom
 elements: inline core CSS + Tailwind CDN refinement (`@apply` on `npl-*`
 classes) + the vanilla fallback handler. Reference implementation:
 `demo/index.html`. Semantic custom elements (`<npl-fact>`) remain the target
@@ -11,19 +11,19 @@ vocabulary for the Lit milestone; the class mapping below is mechanical.
 
 | v0.3 element | v0.4 class markup |
 | :-- | :-- |
-| `<npl-enhanced-document>` | `div.npl-enhanced-document` |
-| `<agent>` + name/bio/instructions | `div.npl-agent` › `.npl-agent-name/-bio/-instructions` |
-| `<npl-note variant="warning">` | `div.npl-note[data-variant="warning"]`, body `.npl-note-body`, `collapsed` attr |
-| `<npl-facts view-as="quiz">` | `div.npl-facts[data-view-as="quiz"]` |
-| `<npl-fact>` / statement / conclusion | `div.npl-fact` › `.npl-statement`, `.npl-conclusion` |
-| `<npl-distractor>` | `div.npl-distractor` |
-| `<npl-details>` / `<npl-detail>` | `div.npl-details` › `div.npl-detail` |
-| `<highlight>` | `span.npl-highlight` (occluded form: `.npl-occluded`) |
-| `<npl-procedure>` / `<npl-step status>` | `div.npl-procedure` › `div.npl-step[data-status]` |
-| `<npl-properties>` / `<npl-property key>` | `div.npl-properties` › `div.npl-property[data-key]` |
-| `<npl-views>` / `<npl-view name>` | `div.npl-views[id]` › `div.npl-view[data-name]`, `data-active` marker |
-| `<npl-reveal summary>` | `div.npl-reveal[data-summary]`, `collapsed` attr |
-| `<npl-progress value label>` | `div.npl-progress[data-value][data-label]` |
+| `<npl-enhanced-document>` | `div.sem-enhanced-document` |
+| `<agent>` + name/bio/instructions | `div.sem-agent` › `.sem-agent-name/-bio/-instructions` |
+| `<npl-note variant="warning">` | `div.sem-note[data-variant="warning"]`, body `.sem-note-body`, `collapsed` attr |
+| `<npl-facts view-as="quiz">` | `div.sem-facts[data-view-as="quiz"]` |
+| `<npl-fact>` / statement / conclusion | `div.sem-fact` › `.sem-statement`, `.sem-conclusion` |
+| `<npl-distractor>` | `div.sem-distractor` |
+| `<npl-details>` / `<npl-detail>` | `div.sem-details` › `div.sem-detail` |
+| `<highlight>` | `span.sem-highlight` (occluded form: `.sem-occluded`) |
+| `<npl-procedure>` / `<npl-step status>` | `div.sem-procedure` › `div.sem-step[data-status]` |
+| `<npl-properties>` / `<npl-property key>` | `div.sem-properties` › `div.sem-property[data-key]` |
+| `<npl-views>` / `<npl-view name>` | `div.sem-views[id]` › `div.sem-view[data-name]`, `data-active` marker |
+| `<npl-reveal summary>` | `div.sem-reveal[data-summary]`, `collapsed` attr |
+| `<npl-progress value label>` | `div.sem-progress[data-value][data-label]` |
 
 CSS layering (all inline in `<head>`): (1) plain core CSS — theme tokens on
 `[data-sem-theme]` + component base, offline-safe; (2) `<style
@@ -119,10 +119,10 @@ Global attributes (any `npl-*` element):
 plain + fallback-handler warning.
 
 **Class namespace.** Each element owns exactly the class namespace
-`.npl-<element>` and `.npl-<element>-*`; no other element may reuse that
-bare class name for its own chrome. `.npl-progress` names only the progress
-element — a facts-chrome label needing similar styling is `.npl-facts-meter`,
-never `.npl-progress` borrowed from another element.
+`.sem-<element>` and `.sem-<element>-*`; no other element may reuse that
+bare class name for its own chrome. `.sem-progress` names only the progress
+element — a facts-chrome label needing similar styling is `.sem-facts-meter`,
+never `.sem-progress` borrowed from another element.
 
 ## 3. NPL notation inside tags
 
@@ -207,11 +207,11 @@ per item, self-check or auto-check.
 **npl-procedure / npl-step** — ordered, status-annotated procedure.
 **Normative: `syntax/schema/npl-procedure.md`.**
 ```html
-<div class="npl-procedure" data-kind="runbook" role="list">
-  <div class="npl-step" role="listitem" data-status="done">provision Infisical path</div>
-  <div class="npl-step" role="listitem" data-status="current">port-forward MinIO</div>
-  <div class="npl-step" role="listitem">run migrations</div>
-  <div class="npl-step" role="listitem" data-status="blocked">cut release</div>
+<div class="sem-procedure" data-kind="runbook" role="list">
+  <div class="sem-step" role="listitem" data-status="done">provision Infisical path</div>
+  <div class="sem-step" role="listitem" data-status="current">port-forward MinIO</div>
+  <div class="sem-step" role="listitem">run migrations</div>
+  <div class="sem-step" role="listitem" data-status="blocked">cut release</div>
 </div>
 ```
 `data-status`: `done|current|todo` (default) `|blocked`; DOM order =
@@ -221,8 +221,8 @@ execution order (ordinals positional, CSS counters); status sugar
 **npl-properties / npl-property** — definition/properties block.
 **Normative: `syntax/schema/npl-properties.md`.**
 ```html
-<div class="npl-properties" data-kind="config">
-  <div class="npl-property" data-key="token ttl"
+<div class="sem-properties" data-kind="config">
+  <div class="sem-property" data-key="token ttl"
        role="definition" aria-label="token ttl">15m</div>
 </div>
 ```
@@ -236,13 +236,13 @@ copy/search chrome.**
 **npl-views / npl-view** — same content, switchable perspectives.
 **Normative: `syntax/schema/npl-views.md`.**
 ```html
-<div class="npl-views" id="deploy">
-  <div class="npl-view" data-name="Helm" data-active role="tabpanel">content…</div>
-  <div class="npl-view" data-name="ArgoCD" role="tabpanel">content…</div>
+<div class="sem-views" id="deploy">
+  <div class="sem-view" data-name="Helm" data-active role="tabpanel">content…</div>
+  <div class="sem-view" data-name="ArgoCD" role="tabpanel">content…</div>
 </div>
 ```
 `data-name` unique per container; `data-active` marks initial view
-(first wins if absent); fallback builds the tab bar (`.npl-views-tabs`,
+(first wins if absent); fallback builds the tab bar (`.sem-views-tabs`,
 `role="tab"` buttons), arrow-key roving focus; deep-link `#deploy/argocd`;
 fires `npl-navigate {id, name, index}`. JS-off: all views stacked,
 `data-name`-headed. **Q3 resolved v1: `npl-views`.**
@@ -250,7 +250,7 @@ fires `npl-navigate {id, name, index}`. JS-off: all views stacked,
 **npl-reveal** — Q→A disclosure, `<details>`-backed.
 **Normative: `syntax/schema/npl-reveal.md`.**
 ```html
-<div class="npl-reveal" data-summary="Why not localStorage?" collapsed>
+<div class="sem-reveal" data-summary="Why not localStorage?" collapsed>
   Tokens in localStorage are readable by any script on the page…
 </div>
 ```
@@ -262,7 +262,7 @@ heading). Non-assertive counterpart to `npl-fact` Q/A shape.
 **npl-progress** — completion meter.
 **Normative: `syntax/schema/npl-progress.md`.**
 ```html
-<div class="npl-progress" data-value="0.62" data-label="coverage"
+<div class="sem-progress" data-value="0.62" data-label="coverage"
      role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"></div>
 ```
 `data-value` canonical 0..1 (render clamps, attr untouched); `data-label`

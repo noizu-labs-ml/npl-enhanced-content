@@ -10,7 +10,7 @@ Three candidate readings existed for `npl-details`; this schema adopts the
 **PRD §5 catalog reading — prose passage with occludable content**:
 
 1. **Adopted**: container of `npl-detail` prose passages whose
-   `span.npl-highlight` children mark cloze/recall targets;
+   `span.sem-highlight` children mark cloze/recall targets;
    `data-view-as="quiz"` occludes them (the universal `<highlight>` cloze,
    PRD §4 rule 3). The demo prototype (demo/index.html) already implements
    this — M3 formalizes it.
@@ -29,33 +29,33 @@ same prose, different interaction model per view.
 ## Authoring form (v0.4 class-based)
 
 ```html
-<div class="npl-details" id="oidc-details" data-view-as="quiz">
-  <div class="npl-detail">
+<div class="sem-details" id="oidc-details" data-view-as="quiz">
+  <div class="sem-detail">
     The OIDC token travels in the
-    <span class="npl-highlight">Authorization</span> header.
+    <span class="sem-highlight">Authorization</span> header.
   </div>
 </div>
 ```
 
 - `data-view-as`: `plain` (default) | `quiz`. Display-only sugar — the
   prose is identical; quiz view additionally occludes highlights.
-- `.npl-detail`: one prose passage; any inline content, `span.npl-highlight`
-  marks a recall target. `[[cloze]]` sugar maps to `span.npl-highlight`.
+- `.sem-detail`: one prose passage; any inline content, `span.sem-highlight`
+  marks a recall target. `[[cloze]]` sugar maps to `span.sem-highlight`.
 - `id` on the container; `kind`, `tags` global. Facts may also carry
   `npl-highlight` prompts (schema npl-facts), but occlusion wiring for
   prose lives here.
 
 ## Rendered form (v0.4)
 
-- `plain` (default): highlights render emphasized (`.npl-highlight` —
+- `plain` (default): highlights render emphasized (`.sem-highlight` —
   accent-tinted, non-italic-safe inline emphasis). No JS needed, no
   fallback marker.
-- `quiz`: fallback JS replaces each `.npl-highlight` with an occluded
-  span (`.npl-occluded`): text masked (background chip, transparent
+- `quiz`: fallback JS replaces each `.sem-highlight` with an occluded
+  span (`.sem-occluded`): text masked (background chip, transparent
   color), `role="button"`, `tabindex="0"`, `aria-label="reveal"`.
   Container gets `data-sem-fallback`; hide/mask rules key off it.
 - Reveal: click or Enter/Space on the occluded span → becomes
-  `.npl-highlight .npl-revealed` (readable, accent-tinted), loses
+  `.sem-highlight .sem-revealed` (readable, accent-tinted), loses
   `role`/`tabindex`. Reveals are per-item and irreversible (self-check
   model).
 - Lit upgrade (`<npl-details>` element) supersedes: sets

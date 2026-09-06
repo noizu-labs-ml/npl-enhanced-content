@@ -42,8 +42,8 @@ export type FallbackHandler = (scope: ParentNode) => void;
 
 /**
  * Registry order is the original inline handler's order and is load-bearing:
- * `enhanceDetails` rewrites `.npl-highlight` nodes that later handlers must
- * not see twice, and `enhanceReveal` moves `.npl-reveal` children into a
+ * `enhanceDetails` rewrites `.sem-highlight` nodes that later handlers must
+ * not see twice, and `enhanceReveal` moves `.sem-reveal` children into a
  * `<details>` after `enhanceProgress`'s targets have been located.
  */
 export const handlers: FallbackHandler[] = [

@@ -7,11 +7,11 @@ precede code.
 ## Authoring form (v0.4 class-based)
 
 ```html
-<div class="npl-procedure" data-kind="runbook">
-  <div class="npl-step" data-status="done">provision Infisical path</div>
-  <div class="npl-step" data-status="current">port-forward MinIO</div>
-  <div class="npl-step">run migrations</div>
-  <div class="npl-step" data-status="blocked">cut release — waiting on CI</div>
+<div class="sem-procedure" data-kind="runbook">
+  <div class="sem-step" data-status="done">provision Infisical path</div>
+  <div class="sem-step" data-status="current">port-forward MinIO</div>
+  <div class="sem-step">run migrations</div>
+  <div class="sem-step" data-status="blocked">cut release — waiting on CI</div>
 </div>
 ```
 

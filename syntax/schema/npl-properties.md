@@ -7,15 +7,15 @@ precede code.
 ## Authoring form (v0.4 class-based)
 
 ```html
-<div class="npl-properties" data-kind="config">
-  <div class="npl-property" data-key="token ttl">15m</div>
-  <div class="npl-property" data-key="refresh rotation">per use</div>
-  <div class="npl-property" data-key="storage">httpOnly cookie</div>
+<div class="sem-properties" data-kind="config">
+  <div class="sem-property" data-key="token ttl">15m</div>
+  <div class="sem-property" data-key="refresh rotation">per use</div>
+  <div class="sem-property" data-key="storage">httpOnly cookie</div>
 </div>
 ```
 
 - `data-key`: required, free text (the term). Property text = the value.
-- Compact sugar (conventions §3): `<div class="npl-property">token ttl
+- Compact sugar (conventions §3): `<div class="sem-property">token ttl
   :: 15m</div>` is legal; **`data-key` wins** when both present.
   v0.4 fallback does NOT parse `::` — sugar authors must use `data-key`
   for correct rendering until a parser ships.

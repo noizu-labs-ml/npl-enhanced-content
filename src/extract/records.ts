@@ -200,7 +200,7 @@ function prose(el: Element): string {
   return norm(collectText(el, proseSkip));
 }
 
-/** Direct-ish part lookup: `.npl-x` (v0.4) or `<x>` (v0.3), first match. */
+/** Direct-ish part lookup: `.sem-x` (v0.4) or `<x>` (v0.3), first match. */
 function part(el: Element, cls: string, tag: string): Element | null {
   const list = el.querySelectorAll(tag + ', .' + cls);
   for (let i = 0; i < list.length; i++) {
@@ -241,7 +241,7 @@ function partText(el: Element, cls: string, tag: string): string | null {
 
 function highlightsIn(el: Element): string[] {
   const out: string[] = [];
-  const list = el.querySelectorAll('highlight, .npl-highlight, .npl-occluded');
+  const list = el.querySelectorAll('highlight, .sem-highlight, .sem-occluded');
   for (let i = 0; i < list.length; i++) {
     const h = list[i];
     if (nearestRecordAncestor(h, el) !== el) continue;
@@ -420,9 +420,9 @@ function buildProgress(el: Element): Payload {
 }
 
 function buildReveal(el: Element): Payload {
-  // JS-on the fallback moves the body into `.npl-reveal-body` inside a
+  // JS-on the fallback moves the body into `.sem-reveal-body` inside a
   // <details> and prepends a <summary>. Unwrap the body, ignore the summary.
-  const bodyEl = el.querySelector('.npl-reveal-body') || el;
+  const bodyEl = el.querySelector('.sem-reveal-body') || el;
   const text = norm(collectText(bodyEl, proseSkip));
   const authored = param(el, 'summary');
   const summary = authored !== null ? norm(authored) : deriveSummary(text);
@@ -481,7 +481,7 @@ function payloadFor(type: string, el: Element): Payload {
 function rootElement(root: Document | Element): Element | null {
   const doc = (root as Document).nodeType === 9 ? (root as Document) : null;
   if (!doc) return root as Element;
-  const scoped = doc.querySelector('.npl-enhanced-document, npl-enhanced-document');
+  const scoped = doc.querySelector('.sem-enhanced-document, npl-enhanced-document');
   return scoped || doc.body || doc.documentElement;
 }
 

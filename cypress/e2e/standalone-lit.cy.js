@@ -25,19 +25,19 @@ describe('standalone Lit page', () => {
   });
 
   it('collapsed note renders a summary and hides its body', () => {
-    cy.get('main npl-note[data-variant="tip"] > .npl-note-summary')
+    cy.get('main npl-note[data-variant="tip"] > .sem-note-summary')
       .should('exist')
       .and('contain.text', '…');
-    cy.get('main npl-note[data-variant="tip"] > .npl-note-summary')
+    cy.get('main npl-note[data-variant="tip"] > .sem-note-summary')
       .invoke('text')
       .should('have.length.gt', 4);
   });
 
   it('expands the collapsed note when the summary is clicked', () => {
     const tip = 'main npl-note[data-variant="tip"] ';
-    cy.get(tip + '.npl-note-summary').click();
+    cy.get(tip + '.sem-note-summary').click();
     cy.get(tip).should('not.have.attr', 'collapsed');
-    cy.get(tip + '.npl-note-body').should('be.visible');
-    cy.get(tip + '.npl-note-summary').should('not.exist');
+    cy.get(tip + '.sem-note-body').should('be.visible');
+    cy.get(tip + '.sem-note-summary').should('not.exist');
   });
 });

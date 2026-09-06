@@ -16,12 +16,12 @@ self-test, quiz = scored recall).
 ## Authoring form (v0.4 class-based)
 
 ```html
-<div class="npl-facts" id="auth-facts" data-view-as="flashcards">
-  <div class="npl-fact" id="f-jwt">
-    <div class="npl-statement">JWTs rotate per session</div>
-    <div class="npl-conclusion">Short-lived access tokens; the refresh
+<div class="sem-facts" id="auth-facts" data-view-as="flashcards">
+  <div class="sem-fact" id="f-jwt">
+    <div class="sem-statement">JWTs rotate per session</div>
+    <div class="sem-conclusion">Short-lived access tokens; the refresh
       grant issues a new pair.</div>
-    <div class="npl-distractor">Store tokens in localStorage.</div>
+    <div class="sem-distractor">Store tokens in localStorage.</div>
   </div>
 </div>
 ```
@@ -29,8 +29,8 @@ self-test, quiz = scored recall).
 - `data-view-as`: `list` (default) | `flashcards` | `quiz`. Canonical
   attribute; display-only sugar — machines extract the same pairs
   regardless of view.
-- `.npl-statement` + `.npl-conclusion`: required per fact.
-- `.npl-distractor`: optional, quiz view only — explicit wrong candidate.
+- `.sem-statement` + `.sem-conclusion`: required per fact.
+- `.sem-distractor`: optional, quiz view only — explicit wrong candidate.
   Without one, sibling conclusions serve as distractors.
 - `id` on the container and on facts: required for citation
   (`#auth-facts/f-jwt`); `kind`, `tags` global.
@@ -45,23 +45,23 @@ self-test, quiz = scored recall).
 
 ### `flashcards` (deck semantics)
 
-- One card visible at a time (`.npl-current`); first card initially.
-- Chrome (`.npl-facts-chrome`) is the container's first child: prev/next
-  buttons (`data-act`, `aria-label`) + position meter (`.npl-facts-meter`,
-  text form `N/M`). **Meter class is `.npl-facts-meter` — NOT
-  `.npl-progress`, which is the npl-progress element (D1).**
+- One card visible at a time (`.sem-current`); first card initially.
+- Chrome (`.sem-facts-chrome`) is the container's first child: prev/next
+  buttons (`data-act`, `aria-label`) + position meter (`.sem-facts-meter`,
+  text form `N/M`). **Meter class is `.sem-facts-meter` — NOT
+  `.sem-progress`, which is the npl-progress element (D1).**
 - Click a card to flip: front = statement, back = conclusion
-  (`.npl-flipped` reveals the conclusion).
+  (`.sem-flipped` reveals the conclusion).
 - Wrapping navigation (prev from first card → last).
 
 ### `quiz` (interaction model)
 
 - Conclusions hidden until revealed by a correct selection.
-- Current fact (`.npl-current`) renders `.npl-quiz-options`: shuffled
-  buttons, one per candidate — explicit `.npl-distractor` children (up to
-  3) + the `.npl-conclusion` as correct (`data-correct="true"`).
+- Current fact (`.sem-current`) renders `.sem-quiz-options`: shuffled
+  buttons, one per candidate — explicit `.sem-distractor` children (up to
+  3) + the `.sem-conclusion` as correct (`data-correct="true"`).
 - One answer per question (`data-answered` on the option box): correct
-  pick → `.npl-answered` on the button; wrong pick → `.npl-wrong-pick`;
+  pick → `.sem-answered` on the button; wrong pick → `.sem-wrong-pick`;
   the meter reports `N/M · score C/A`.
 - Prev/next chrome as in flashcards.
 

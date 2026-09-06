@@ -5,7 +5,7 @@ import { randomFor, shuffle } from '../shared/rng.js';
  * npl-facts — Lit upgrade of the v0.4 class-based fact collection.
  * Light DOM per PRD §4 rule 5; Lit owns the flashcard/quiz behavior,
  * not the markup. Handoff contract comes from NplElement. Chrome meter is
- * .npl-facts-meter — never .npl-progress (D1: that class is the
+ * .sem-facts-meter — never .sem-progress (D1: that class is the
  * npl-progress element).
  *
  * Quiz option order is a seeded Fisher-Yates draw (shared/rng), not a
@@ -19,7 +19,7 @@ export class NplFacts extends NplElement {
   updated(): void {
     if (this.#wired) return;
     const view = this.getAttribute('data-view-as') || 'list';
-    const items = Array.from(this.querySelectorAll(':scope > .npl-fact'));
+    const items = Array.from(this.querySelectorAll(':scope > .sem-fact'));
     if (items.length === 0) {
       // element upgraded pre-parse: children aren't there yet at first update
       this.#awaitItems();
@@ -31,23 +31,23 @@ export class NplFacts extends NplElement {
     const rand = randomFor(this);
 
     const chrome = document.createElement('div');
-    chrome.className = 'npl-facts-chrome';
+    chrome.className = 'sem-facts-chrome';
     chrome.innerHTML =
       '<button type="button" data-act="prev" aria-label="previous">←</button>' +
-      '<span class="npl-facts-meter"></span>' +
+      '<span class="sem-facts-meter"></span>' +
       '<button type="button" data-act="next" aria-label="next">→</button>';
     this.insertBefore(chrome, this.firstChild);
 
     let i = 0;
     const score = { correct: 0, answered: 0 };
-    const meter = chrome.querySelector('.npl-facts-meter')!;
+    const meter = chrome.querySelector('.sem-facts-meter')!;
 
     const optionsFor = (item: Element) => {
-      const correct = item.querySelector('.npl-conclusion');
-      const distractors = Array.from(item.querySelectorAll('.npl-distractor'));
+      const correct = item.querySelector('.sem-conclusion');
+      const distractors = Array.from(item.querySelectorAll('.sem-distractor'));
       const others = items
         .filter((f) => f !== item)
-        .map((f) => f.querySelector('.npl-conclusion'))
+        .map((f) => f.querySelector('.sem-conclusion'))
         .filter(Boolean) as Element[];
       const opts = distractors.concat(others).slice(0, 3).concat([correct!]);
       return shuffle(opts, rand).map((el) => ({
@@ -57,10 +57,10 @@ export class NplFacts extends NplElement {
     };
 
     const renderQuiz = (item: Element) => {
-      let box = item.querySelector('.npl-quiz-options') as HTMLDivElement | null;
+      let box = item.querySelector('.sem-quiz-options') as HTMLDivElement | null;
       if (!box) {
         box = document.createElement('div');
-        box.className = 'npl-quiz-options';
+        box.className = 'sem-quiz-options';
         item.appendChild(box);
       }
       box.innerHTML = '';
@@ -72,7 +72,7 @@ export class NplFacts extends NplElement {
         b.addEventListener('click', () => {
           if (box!.hasAttribute('data-answered')) return;
           box!.setAttribute('data-answered', '');
-          b.classList.add(o.correct ? 'npl-answered' : 'npl-wrong-pick');
+          b.classList.add(o.correct ? 'sem-answered' : 'sem-wrong-pick');
           if (o.correct) score.correct++;
           score.answered++;
           meter.textContent =
@@ -84,8 +84,8 @@ export class NplFacts extends NplElement {
 
     const render = () => {
       items.forEach((f, k) => {
-        f.classList.toggle('npl-current', k === i);
-        f.classList.remove('npl-flipped');
+        f.classList.toggle('sem-current', k === i);
+        f.classList.remove('sem-flipped');
       });
       meter.textContent = (i + 1) + '/' + items.length;
       if (view === 'quiz') renderQuiz(items[i]);
@@ -99,7 +99,7 @@ export class NplFacts extends NplElement {
 
     if (view === 'flashcards') {
       items.forEach((f) => {
-        f.addEventListener('click', () => f.classList.toggle('npl-flipped'));
+        f.addEventListener('click', () => f.classList.toggle('sem-flipped'));
       });
     }
     render();
@@ -108,7 +108,7 @@ export class NplFacts extends NplElement {
   #awaitItems(): void {
     if (this.#awaitingItems) return;
     this.#awaitingItems = true;
-    void this.whenChildrenReady(':scope > .npl-fact').then(() => {
+    void this.whenChildrenReady(':scope > .sem-fact').then(() => {
       this.#awaitingItems = false;
       this.requestUpdate();
     });

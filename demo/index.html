@@ -17,12 +17,12 @@
 <!-- Tailwind refinement layer: applies utility rules to npl-* classes.
      Requires the CDN above; harmless (no-op) without it. -->
 <style type="text/tailwindcss">
-  .npl-enhanced-document { @apply mx-auto max-w-3xl px-4 py-10; }
-  .npl-agent { @apply shadow-sm; }
-  .npl-note { @apply shadow-sm text-sm; }
-  .npl-fact { @apply shadow-sm transition hover:border-blue-300; }
-  .npl-facts-chrome button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
-  .npl-quiz-options button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
+  .sem-enhanced-document { @apply mx-auto max-w-3xl px-4 py-10; }
+  .sem-agent { @apply shadow-sm; }
+  .sem-note { @apply shadow-sm text-sm; }
+  .sem-fact { @apply shadow-sm transition hover:border-blue-300; }
+  .sem-facts-chrome button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
+  .sem-quiz-options button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
   h1 { @apply text-2xl font-bold tracking-tight mb-2; }
   h2 { @apply text-lg font-semibold mt-8 mb-2; }
 </style>
@@ -34,119 +34,119 @@
 </head>
 
 <body>
-<div class="npl-enhanced-document">
+<div class="sem-enhanced-document">
 
   <h1>Auth Patterns — Sample npl Document</h1>
   <p>Demonstrates the v0.4 class-based vocabulary: inline CSS + Tailwind refinement + vanilla fallback handler. Open this file directly in any browser.</p>
 
-  <div class="npl-agent">
-    <div class="npl-agent-name">Auth Guide</div>
-    <div class="npl-agent-bio">Answer questions about the sample auth facts in this document.</div>
-    <div class="npl-agent-instructions">Cite npl-fact ids. Prefer conclusions verbatim.</div>
+  <div class="sem-agent">
+    <div class="sem-agent-name">Auth Guide</div>
+    <div class="sem-agent-bio">Answer questions about the sample auth facts in this document.</div>
+    <div class="sem-agent-instructions">Cite npl-fact ids. Prefer conclusions verbatim.</div>
   </div>
 
-  <div class="npl-note" data-variant="warning">JWTs must rotate <strong>per session</strong>, not per request.</div>
-  <div class="npl-note" data-variant="tip" collapsed><div class="npl-note-body">Shuffle flashcards before each review session for better recall.</div></div>
+  <div class="sem-note" data-variant="warning">JWTs must rotate <strong>per session</strong>, not per request.</div>
+  <div class="sem-note" data-variant="tip" collapsed><div class="sem-note-body">Shuffle flashcards before each review session for better recall.</div></div>
 
   <h2>Facts — flashcards</h2>
-  <div class="npl-facts" data-view-as="flashcards">
-    <div class="npl-fact" id="f-jwt">
-      <div class="npl-statement">JWTs rotate per session</div>
-      <div class="npl-conclusion">Short-lived access tokens; the refresh grant issues a new pair.</div>
+  <div class="sem-facts" data-view-as="flashcards">
+    <div class="sem-fact" id="f-jwt">
+      <div class="sem-statement">JWTs rotate per session</div>
+      <div class="sem-conclusion">Short-lived access tokens; the refresh grant issues a new pair.</div>
     </div>
-    <div class="npl-fact" id="f-device">
-      <div class="npl-statement">OAuth device flow targets input-constrained devices</div>
-      <div class="npl-conclusion">TVs, consoles, CLI tools — poll the token endpoint with the device code.</div>
+    <div class="sem-fact" id="f-device">
+      <div class="sem-statement">OAuth device flow targets input-constrained devices</div>
+      <div class="sem-conclusion">TVs, consoles, CLI tools — poll the token endpoint with the device code.</div>
     </div>
-    <div class="npl-fact" id="f-scope">
-      <div class="npl-statement">Long-lived tokens are an anti-pattern</div>
-      <div class="npl-conclusion">Scope capabilities tightly instead of extending lifetime.</div>
-      <div class="npl-distractor">Store tokens in localStorage for durability.</div>
+    <div class="sem-fact" id="f-scope">
+      <div class="sem-statement">Long-lived tokens are an anti-pattern</div>
+      <div class="sem-conclusion">Scope capabilities tightly instead of extending lifetime.</div>
+      <div class="sem-distractor">Store tokens in localStorage for durability.</div>
     </div>
   </div>
 
   <h2>Facts — list (default view)</h2>
-  <div class="npl-facts" id="facts-list">
-    <div class="npl-fact" id="f-rotate">
-      <div class="npl-statement">Refresh tokens rotate per use</div>
-      <div class="npl-conclusion">Each exchange retires the presented token.</div>
+  <div class="sem-facts" id="facts-list">
+    <div class="sem-fact" id="f-rotate">
+      <div class="sem-statement">Refresh tokens rotate per use</div>
+      <div class="sem-conclusion">Each exchange retires the presented token.</div>
     </div>
-    <div class="npl-fact" id="f-scope-tight">
-      <div class="npl-statement">Scope tightly instead of extending lifetime</div>
-      <div class="npl-conclusion">Long-lived tokens are an anti-pattern.</div>
+    <div class="sem-fact" id="f-scope-tight">
+      <div class="sem-statement">Scope tightly instead of extending lifetime</div>
+      <div class="sem-conclusion">Long-lived tokens are an anti-pattern.</div>
     </div>
   </div>
 
   <h2>Facts — quiz</h2>
-  <div class="npl-facts" data-view-as="quiz">
-    <div class="npl-fact" id="f-oidc">
-      <div class="npl-statement">The OIDC token travels in which header?</div>
-      <div class="npl-conclusion">Authorization</div>
-      <div class="npl-distractor">Cookie</div>
-      <div class="npl-distractor">X-Auth-Token</div>
+  <div class="sem-facts" data-view-as="quiz">
+    <div class="sem-fact" id="f-oidc">
+      <div class="sem-statement">The OIDC token travels in which header?</div>
+      <div class="sem-conclusion">Authorization</div>
+      <div class="sem-distractor">Cookie</div>
+      <div class="sem-distractor">X-Auth-Token</div>
     </div>
-    <div class="npl-fact" id="f-pkce">
-      <div class="npl-statement">PKCE protects which flow?</div>
-      <div class="npl-conclusion">Authorization code flow</div>
-      <div class="npl-distractor">Client credentials flow</div>
+    <div class="sem-fact" id="f-pkce">
+      <div class="sem-statement">PKCE protects which flow?</div>
+      <div class="sem-conclusion">Authorization code flow</div>
+      <div class="sem-distractor">Client credentials flow</div>
     </div>
   </div>
 
   <h2>Details — highlight occlusion</h2>
-  <div class="npl-details" data-view-as="quiz">
-    <div class="npl-detail">
-      The OIDC token travels in the <span class="npl-highlight">Authorization</span> header,
-      and refresh tokens should never reach the <span class="npl-highlight">browser</span>.
+  <div class="sem-details" data-view-as="quiz">
+    <div class="sem-detail">
+      The OIDC token travels in the <span class="sem-highlight">Authorization</span> header,
+      and refresh tokens should never reach the <span class="sem-highlight">browser</span>.
     </div>
   </div>
 
   <h2>Details — plain reading</h2>
-  <div class="npl-details">
-    <div class="npl-detail">Plain view keeps highlights readable inline — no occlusion without <span class="npl-highlight">data-view-as="quiz"</span>.</div>
+  <div class="sem-details">
+    <div class="sem-detail">Plain view keeps highlights readable inline — no occlusion without <span class="sem-highlight">data-view-as="quiz"</span>.</div>
   </div>
 
   <h2>Procedure — status runbook</h2>
-  <div class="npl-procedure" data-kind="runbook" role="list">
-    <div class="npl-step" role="listitem" data-status="done">provision Infisical path</div>
-    <div class="npl-step" role="listitem" data-status="current">port-forward MinIO</div>
-    <div class="npl-step" role="listitem">run migrations</div>
-    <div class="npl-step" role="listitem" data-status="blocked">cut release — waiting on CI</div>
+  <div class="sem-procedure" data-kind="runbook" role="list">
+    <div class="sem-step" role="listitem" data-status="done">provision Infisical path</div>
+    <div class="sem-step" role="listitem" data-status="current">port-forward MinIO</div>
+    <div class="sem-step" role="listitem">run migrations</div>
+    <div class="sem-step" role="listitem" data-status="blocked">cut release — waiting on CI</div>
   </div>
 
   <h2>Properties — config block</h2>
-  <div class="npl-properties" data-kind="config">
-    <div class="npl-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
-    <div class="npl-property" data-key="refresh rotation" role="definition" aria-label="refresh rotation">per use</div>
-    <div class="npl-property" data-key="storage" role="definition" aria-label="storage">httpOnly cookie</div>
+  <div class="sem-properties" data-kind="config">
+    <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
+    <div class="sem-property" data-key="refresh rotation" role="definition" aria-label="refresh rotation">per use</div>
+    <div class="sem-property" data-key="storage" role="definition" aria-label="storage">httpOnly cookie</div>
   </div>
-  <div class="npl-properties" id="npl-props-dup" data-kind="fixture">
-    <div class="npl-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
-    <div class="npl-property" data-key="token ttl" role="definition" aria-label="token ttl">14m</div>
+  <div class="sem-properties" id="npl-props-dup" data-kind="fixture">
+    <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
+    <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">14m</div>
   </div>
 
   <h2>Views — same deploy, two perspectives</h2>
-  <div class="npl-views" id="deploy">
-    <div class="npl-view" data-name="Helm" data-active role="tabpanel">
+  <div class="sem-views" id="deploy">
+    <div class="sem-view" data-name="Helm" data-active role="tabpanel">
       Chart from the <code>noizu-infra</code> repo; values live in <code>.infra-config.yaml</code>.
     </div>
-    <div class="npl-view" data-name="ArgoCD" role="tabpanel">
+    <div class="sem-view" data-name="ArgoCD" role="tabpanel">
       ArgoCD auto-syncs from the product remote's <code>main</code>; CI bumps the image tag.
     </div>
   </div>
 
   <h2>Reveal — Q→A disclosure</h2>
-  <div class="npl-reveal" id="r-storage" data-summary="Why not localStorage?" collapsed>
+  <div class="sem-reveal" id="r-storage" data-summary="Why not localStorage?" collapsed>
     Tokens in localStorage are readable by any script on the page — one XSS away from session theft.
     Prefer httpOnly cookies or memory-scoped storage.
   </div>
-  <div class="npl-reveal" id="r-derived">
+  <div class="sem-reveal" id="r-derived">
     Refresh tokens rotate per use — each exchange retires the presented token.
   </div>
 
   <h2>Progress — completion meter</h2>
-  <div class="npl-progress" id="p-coverage" data-value="0.62" data-label="coverage"
+  <div class="sem-progress" id="p-coverage" data-value="0.62" data-label="coverage"
        role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"></div>
-  <div class="npl-progress" id="p-clamp" data-value="1.4" data-label="out-of-range fixture"
+  <div class="sem-progress" id="p-clamp" data-value="1.4" data-label="out-of-range fixture"
        role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1.4"></div>
 
 </div>

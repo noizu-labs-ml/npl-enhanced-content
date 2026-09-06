@@ -37,19 +37,19 @@ function attr(el: Element, name: string): string | null {
 type ProfileRoot = Document | DocumentFragment | Element;
 
 /**
- * Read the `.npl-audiences` / `<npl-audiences>` block and return its profiles.
+ * Read the `.sem-audiences` / `<npl-audiences>` block and return its profiles.
  * Both attribute forms are accepted: bare `id`/`label`/`implies` and the
  * `data-` prefixed spellings.
  */
 export function parseProfiles(root: ProfileRoot): Profile[] {
   if (!root || typeof root.querySelectorAll !== 'function') return [];
 
-  const blocks = Array.from(root.querySelectorAll('.npl-audiences, npl-audiences'));
+  const blocks = Array.from(root.querySelectorAll('.sem-audiences, npl-audiences'));
   const profiles: Profile[] = [];
   const seen = new Set<string>();
 
   for (const block of blocks) {
-    for (const node of Array.from(block.querySelectorAll('.npl-profile, npl-profile'))) {
+    for (const node of Array.from(block.querySelectorAll('.sem-profile, npl-profile'))) {
       const id = (attr(node, 'id') || '').trim();
       if (id === '') {
         warn('npl-audiences: profile without an id was ignored');

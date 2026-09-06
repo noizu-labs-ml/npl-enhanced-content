@@ -10,7 +10,7 @@ import { closureFor, matches, warn as nplWarn, type AudienceClosure } from '../s
  * requestAnimationFrame retry for the pre-parse children problem.
  *
  * The rAF retry was wrong in both directions. npl-note had no guard, so a note
- * whose `.npl-note-body` was never authored re-queued a frame forever. npl-facts
+ * whose `.sem-note-body` was never authored re-queued a frame forever. npl-facts
  * and npl-details had a one-shot `#retrying` flag, so children streamed in by a
  * slow parse (or injected later) after that single frame were never picked up.
  * `whenChildrenReady` replaces both with a MutationObserver: it costs nothing
@@ -24,7 +24,7 @@ import { closureFor, matches, warn as nplWarn, type AudienceClosure } from '../s
 export class NplElement extends LitElement {
   #observers = new Set<MutationObserver>();
 
-  /** Light DOM — theme CSS styles the `.npl-*` classes directly. */
+  /** Light DOM — theme CSS styles the `.sem-*` classes directly. */
   createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
   }
@@ -113,7 +113,7 @@ export class NplElement extends LitElement {
   }
 
   #root(): Element | Document {
-    return this.closest('npl-enhanced-document, .npl-enhanced-document') ?? this.ownerDocument;
+    return this.closest('npl-enhanced-document, .sem-enhanced-document') ?? this.ownerDocument;
   }
 
   #activeProfile(): string | null {

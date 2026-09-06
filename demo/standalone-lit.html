@@ -10,7 +10,7 @@
 <!-- npl:inline theme minimal-tech-light -->
 
 <!-- Element-scoped component CSS for the Lit tier. Distinct from
-     themes/_vocabulary.css, which targets the .npl-* class vocabulary:
+     themes/_vocabulary.css, which targets the .sem-* class vocabulary:
      these rules key off the custom-element tag names and the
      [data-sem-upgraded] handoff marker. -->
 <style>
@@ -33,48 +33,48 @@
      absent entirely the element is never defined, so a collapsed note's body
      must stay readable. Without :defined the scripts-stripped artifact hid
      the body with no summary to expand — content unreachable with JS off. */
-  npl-note:defined:not([data-sem-upgraded])[collapsed] > :not(.npl-note-summary) { display: none; }
-  npl-note[data-sem-upgraded][collapsed] > .npl-note-body { display: none; }
-  npl-note .npl-note-summary { cursor: pointer; color: var(--sem-accent); }
+  npl-note:defined:not([data-sem-upgraded])[collapsed] > :not(.sem-note-summary) { display: none; }
+  npl-note[data-sem-upgraded][collapsed] > .sem-note-body { display: none; }
+  npl-note .sem-note-summary { cursor: pointer; color: var(--sem-accent); }
 
   /* npl-facts base (pre- and post-upgrade; the Lit element keeps light DOM) */
   npl-facts { display: block; margin: 1.5rem 0; }
-  npl-facts .npl-fact { border: 1px solid var(--sem-border); border-radius: 12px;
+  npl-facts .sem-fact { border: 1px solid var(--sem-border); border-radius: 12px;
     padding: 1rem; margin: .75rem 0; background: var(--sem-surface); }
-  npl-facts .npl-statement { font-weight: 600; }
-  npl-facts .npl-conclusion { margin: .5rem 0 0; color: var(--sem-muted); }
-  npl-facts[data-sem-upgraded] .npl-facts-chrome { display: flex; gap: .5rem;
+  npl-facts .sem-statement { font-weight: 600; }
+  npl-facts .sem-conclusion { margin: .5rem 0 0; color: var(--sem-muted); }
+  npl-facts[data-sem-upgraded] .sem-facts-chrome { display: flex; gap: .5rem;
     align-items: center; margin: .5rem 0; }
-  npl-facts .npl-facts-chrome button { border: 1px solid var(--sem-border);
+  npl-facts .sem-facts-chrome button { border: 1px solid var(--sem-border);
     background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
     padding: .25rem .75rem; cursor: pointer; }
-  npl-facts .npl-facts-meter { color: var(--sem-muted); font-size: .875rem; }
-  npl-facts .npl-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
-  npl-facts .npl-quiz-options button { text-align: left; border: 1px solid var(--sem-border);
+  npl-facts .sem-facts-meter { color: var(--sem-muted); font-size: .875rem; }
+  npl-facts .sem-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
+  npl-facts .sem-quiz-options button { text-align: left; border: 1px solid var(--sem-border);
     background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
     padding: .5rem .75rem; cursor: pointer; }
-  npl-facts .npl-quiz-options button[data-correct="true"].npl-answered { border-color: var(--sem-correct); }
-  npl-facts .npl-quiz-options button.npl-wrong-pick { border-color: var(--sem-wrong); }
+  npl-facts .sem-quiz-options button[data-correct="true"].sem-answered { border-color: var(--sem-correct); }
+  npl-facts .sem-quiz-options button.sem-wrong-pick { border-color: var(--sem-wrong); }
   /* flashcards/quiz hide rules gated on the upgrade marker — pre-upgrade
      (script failed) everything stays readable */
-  npl-facts[data-sem-upgraded][data-view-as="flashcards"] > .npl-fact { display: none;
+  npl-facts[data-sem-upgraded][data-view-as="flashcards"] > .sem-fact { display: none;
     cursor: pointer; min-height: 8rem; position: relative; }
-  npl-facts[data-sem-upgraded][data-view-as="flashcards"] > .npl-fact.npl-current { display: block; }
-  npl-facts[data-sem-upgraded][data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
-  npl-facts[data-sem-upgraded][data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
-  npl-facts[data-sem-upgraded][data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
+  npl-facts[data-sem-upgraded][data-view-as="flashcards"] > .sem-fact.sem-current { display: block; }
+  npl-facts[data-sem-upgraded][data-view-as="flashcards"] .sem-fact .sem-conclusion { visibility: hidden; }
+  npl-facts[data-sem-upgraded][data-view-as="flashcards"] .sem-fact.sem-flipped .sem-conclusion { visibility: visible; }
+  npl-facts[data-sem-upgraded][data-view-as="quiz"] .sem-fact .sem-conclusion { display: none; }
 
   /* npl-details base */
   npl-details { display: block; margin: 1rem 0; }
-  npl-details .npl-detail { border: 1px solid var(--sem-border); border-radius: 12px;
+  npl-details .sem-detail { border: 1px solid var(--sem-border); border-radius: 12px;
     padding: 1rem; margin: .75rem 0; background: var(--sem-surface); }
-  npl-details .npl-highlight { font-style: normal;
+  npl-details .sem-highlight { font-style: normal;
     background: color-mix(in srgb, var(--sem-accent) 18%, transparent);
     border-radius: 4px; padding: 0 .2em; }
-  npl-details .npl-occluded { color: transparent; background: var(--sem-occluded);
+  npl-details .sem-occluded { color: transparent; background: var(--sem-occluded);
     border-radius: 4px; cursor: pointer; user-select: none; transition: color .15s;
     min-width: 3ch; display: inline-block; }
-  npl-details .npl-revealed { color: inherit;
+  npl-details .sem-revealed { color: inherit;
     background: color-mix(in srgb, var(--sem-accent) 18%, transparent); }
 </style>
 
@@ -92,52 +92,52 @@
      and the custom element upgrades and behaves.</p>
 
   <npl-note variant="warning">
-    <div class="npl-note-body">This note is upgraded by <code>NplNote</code> (Lit 3):
+    <div class="sem-note-body">This note is upgraded by <code>NplNote</code> (Lit 3):
       check its <code>data-sem-upgraded</code> attribute and <code>role="note"</code>.</div>
   </npl-note>
 
   <npl-note variant="tip" collapsed>
-    <div class="npl-note-body">Lit renders the collapsed-state summary and expands
+    <div class="sem-note-body">Lit renders the collapsed-state summary and expands
       on click — the component owns the behavior, the light DOM keeps the text
       searchable and copyable.</div>
   </npl-note>
 
   <h2>Facts — flashcards (Lit)</h2>
   <npl-facts data-view-as="flashcards" id="lit-fc">
-    <div class="npl-fact" id="f-jwt">
-      <div class="npl-statement">JWTs rotate per session</div>
-      <div class="npl-conclusion">Short-lived access tokens; the refresh grant issues a new pair.</div>
+    <div class="sem-fact" id="f-jwt">
+      <div class="sem-statement">JWTs rotate per session</div>
+      <div class="sem-conclusion">Short-lived access tokens; the refresh grant issues a new pair.</div>
     </div>
-    <div class="npl-fact" id="f-device">
-      <div class="npl-statement">OAuth device flow targets input-constrained devices</div>
-      <div class="npl-conclusion">TVs, consoles, CLI tools — poll the token endpoint with the device code.</div>
+    <div class="sem-fact" id="f-device">
+      <div class="sem-statement">OAuth device flow targets input-constrained devices</div>
+      <div class="sem-conclusion">TVs, consoles, CLI tools — poll the token endpoint with the device code.</div>
     </div>
   </npl-facts>
 
   <h2>Facts — quiz (Lit)</h2>
   <npl-facts data-view-as="quiz" id="lit-quiz">
-    <div class="npl-fact" id="f-oidc">
-      <div class="npl-statement">The OIDC token travels in which header?</div>
-      <div class="npl-conclusion">Authorization</div>
-      <div class="npl-distractor">Cookie</div>
-      <div class="npl-distractor">X-Auth-Token</div>
+    <div class="sem-fact" id="f-oidc">
+      <div class="sem-statement">The OIDC token travels in which header?</div>
+      <div class="sem-conclusion">Authorization</div>
+      <div class="sem-distractor">Cookie</div>
+      <div class="sem-distractor">X-Auth-Token</div>
     </div>
-    <div class="npl-fact" id="f-pkce">
-      <div class="npl-statement">PKCE protects which flow?</div>
-      <div class="npl-conclusion">Authorization code flow</div>
-      <div class="npl-distractor">Client credentials flow</div>
+    <div class="sem-fact" id="f-pkce">
+      <div class="sem-statement">PKCE protects which flow?</div>
+      <div class="sem-conclusion">Authorization code flow</div>
+      <div class="sem-distractor">Client credentials flow</div>
     </div>
   </npl-facts>
 
   <h2>Details — highlight occlusion (Lit)</h2>
   <npl-details data-view-as="quiz" id="lit-dt-quiz">
-    <div class="npl-detail">
-      The OIDC token travels in the <span class="npl-highlight">Authorization</span> header,
-      and refresh tokens should never reach the <span class="npl-highlight">browser</span>.
+    <div class="sem-detail">
+      The OIDC token travels in the <span class="sem-highlight">Authorization</span> header,
+      and refresh tokens should never reach the <span class="sem-highlight">browser</span>.
     </div>
   </npl-details>
   <npl-details id="lit-dt-plain">
-    <div class="npl-detail">Plain view keeps highlights readable inline — no occlusion without <span class="npl-highlight">data-view-as="quiz"</span>.</div>
+    <div class="sem-detail">Plain view keeps highlights readable inline — no occlusion without <span class="sem-highlight">data-view-as="quiz"</span>.</div>
   </npl-details>
 </main>
 </body>

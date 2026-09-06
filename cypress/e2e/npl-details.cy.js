@@ -14,29 +14,29 @@ describe('npl-details', () => {
     beforeEach(() => cy.visit('/demo/index.html'));
 
     it('quiz view: highlights occluded, click reveals per item', () => {
-      const dt = '.npl-details[data-view-as="quiz"] ';
-      cy.get(dt + '.npl-occluded').should('have.length.at.least', 2);
-      cy.get(dt + '.npl-occluded').first()
+      const dt = '.sem-details[data-view-as="quiz"] ';
+      cy.get(dt + '.sem-occluded').should('have.length.at.least', 2);
+      cy.get(dt + '.sem-occluded').first()
         .should('have.attr', 'role', 'button')
         .and('have.attr', 'aria-label', 'reveal');
-      cy.get(dt + '.npl-highlight.npl-revealed').should('not.exist');
-      cy.get(dt + '.npl-occluded').first().click();
-      cy.get(dt + '.npl-highlight.npl-revealed').should('contain', 'Authorization');
+      cy.get(dt + '.sem-highlight.sem-revealed').should('not.exist');
+      cy.get(dt + '.sem-occluded').first().click();
+      cy.get(dt + '.sem-highlight.sem-revealed').should('contain', 'Authorization');
       // unrevealed siblings stay occluded
-      cy.get(dt + '.npl-occluded').should('have.length', 1);
+      cy.get(dt + '.sem-occluded').should('have.length', 1);
     });
 
     it('quiz view: keyboard reveal with Enter', () => {
-      const dt = '.npl-details[data-view-as="quiz"] ';
-      cy.get(dt + '.npl-occluded').first().focus().type('{enter}');
-      cy.get(dt + '.npl-highlight.npl-revealed').should('exist');
+      const dt = '.sem-details[data-view-as="quiz"] ';
+      cy.get(dt + '.sem-occluded').first().focus().type('{enter}');
+      cy.get(dt + '.sem-highlight.sem-revealed').should('exist');
     });
 
     it('plain view: highlights emphasized, nothing occluded', () => {
-      const dt = '.npl-details:not([data-view-as="quiz"]) ';
-      cy.get(dt + '.npl-highlight').should('be.visible');
-      cy.get(dt + '.npl-occluded').should('not.exist');
-      cy.get('.npl-details:not([data-view-as="quiz"])')
+      const dt = '.sem-details:not([data-view-as="quiz"]) ';
+      cy.get(dt + '.sem-highlight').should('be.visible');
+      cy.get(dt + '.sem-occluded').should('not.exist');
+      cy.get('.sem-details:not([data-view-as="quiz"])')
         .should('not.have.attr', 'data-sem-fallback');
     });
 
@@ -44,9 +44,9 @@ describe('npl-details', () => {
       cy.visit('/demo/index.html', {
         onBeforeLoad(win) { win.__nplJsOff = true; }
       });
-      cy.get('.npl-details .npl-highlight').should('be.visible');
-      cy.get('.npl-occluded').should('not.exist');
-      cy.get('.npl-details[data-sem-fallback]').should('not.exist');
+      cy.get('.sem-details .sem-highlight').should('be.visible');
+      cy.get('.sem-occluded').should('not.exist');
+      cy.get('.sem-details[data-sem-fallback]').should('not.exist');
     });
   });
 
@@ -64,15 +64,15 @@ describe('npl-details', () => {
 
     it('quiz view: highlights occluded after upgrade, click reveals', () => {
       const dt = 'npl-details[data-view-as="quiz"] ';
-      cy.get(dt + '.npl-occluded').should('have.length.at.least', 1);
-      cy.get(dt + '.npl-occluded').first().click();
-      cy.get(dt + '.npl-highlight.npl-revealed').should('exist');
+      cy.get(dt + '.sem-occluded').should('have.length.at.least', 1);
+      cy.get(dt + '.sem-occluded').first().click();
+      cy.get(dt + '.sem-highlight.sem-revealed').should('exist');
     });
 
     it('plain view: highlights stay readable', () => {
-      cy.get('npl-details:not([data-view-as="quiz"]) .npl-highlight')
+      cy.get('npl-details:not([data-view-as="quiz"]) .sem-highlight')
         .should('be.visible');
-      cy.get('npl-details:not([data-view-as="quiz"]) .npl-occluded')
+      cy.get('npl-details:not([data-view-as="quiz"]) .sem-occluded')
         .should('not.exist');
     });
   });

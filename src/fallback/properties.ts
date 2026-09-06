@@ -7,9 +7,9 @@
  */
 
 export function enhanceProperties(scope: ParentNode): void {
-  scope.querySelectorAll('.npl-properties').forEach((root) => {
+  scope.querySelectorAll('.sem-properties').forEach((root) => {
     const seen: Record<string, boolean> = {};
-    root.querySelectorAll('.npl-property[data-key]').forEach((p) => {
+    root.querySelectorAll('.sem-property[data-key]').forEach((p) => {
       const k = p.getAttribute('data-key') as string;
       if (seen[k]) console.warn('npl-properties: duplicate data-key "' + k + '"');
       seen[k] = true;

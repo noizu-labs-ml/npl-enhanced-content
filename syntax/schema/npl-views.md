@@ -10,9 +10,9 @@ code.
 ## Authoring form (v0.4 class-based)
 
 ```html
-<div class="npl-views" id="deploy">
-  <div class="npl-view" data-name="Helm" data-active>content…</div>
-  <div class="npl-view" data-name="ArgoCD">content…</div>
+<div class="sem-views" id="deploy">
+  <div class="sem-view" data-name="Helm" data-active>content…</div>
+  <div class="sem-view" data-name="ArgoCD">content…</div>
 </div>
 ```
 
@@ -27,7 +27,7 @@ code.
 
 ## Rendered form (v0.4)
 
-- Fallback JS builds a tab bar (`.npl-views-tabs`) as the container's
+- Fallback JS builds a tab bar (`.sem-views-tabs`) as the container's
   first child: one button per view, `aria-selected` follows
   `data-active`.
 - Active view: `display:block`; inactive: `display:none`.

@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-const DOCUMENT_SELECTOR = 'npl-enhanced-document, .npl-enhanced-document';
+const DOCUMENT_SELECTOR = 'npl-enhanced-document, .sem-enhanced-document';
 
 /**
  * mulberry32 — 32-bit seeded PRNG. Small, fast, no dependencies, good enough

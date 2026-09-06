@@ -53,7 +53,7 @@ interface NplRecord {
 ```
 
 - `type` is normalized across authoring forms. `<npl-fact>` (v0.3) and
-  `div.npl-fact` (v0.4) both yield `npl-fact`; `<agent>` yields `npl-agent`.
+  `div.sem-fact` (v0.4) both yield `npl-fact`; `<agent>` yields `npl-agent`.
 - `parent` carries containment. A fact inside `#auth-facts` cites as
   `#auth-facts/f-jwt`, which the consumer composes from the fact's `id` and
   its parent record's `id`. Containment is a number, not an id, because
@@ -75,17 +75,17 @@ interface NplRecord {
    `npl-details`, `npl-detail`, `npl-procedure`, `npl-step`,
    `npl-properties`, `npl-property`, `npl-views`, `npl-view`, `npl-reveal`,
    `npl-progress`.
-2. **Parts are not records.** `.npl-statement`, `.npl-conclusion`,
-   `.npl-distractor`, `.npl-highlight`, `.npl-note-body`, and the
-   `.npl-agent-*` children are fields of their owning record, never entries
+2. **Parts are not records.** `.sem-statement`, `.sem-conclusion`,
+   `.sem-distractor`, `.sem-highlight`, `.sem-note-body`, and the
+   `.sem-agent-*` children are fields of their owning record, never entries
    of their own.
-3. **The root wrapper is scope, not content.** `.npl-enhanced-document`
+3. **The root wrapper is scope, not content.** `.sem-enhanced-document`
    delimits extraction and mints nothing. Given a `Document`, extraction
    scopes to the wrapper when present, otherwise to `<body>`.
 4. **Generated nodes are invisible.** The following are skipped entirely,
-   contributing neither records nor text: `.npl-facts-chrome`,
-   `.npl-facts-meter`, `.npl-quiz-options`, `.npl-views-tabs`,
-   `.npl-note-summary`, `.npl-progress-track`, `.npl-progress-fill`, and the
+   contributing neither records nor text: `.sem-facts-chrome`,
+   `.sem-facts-meter`, `.sem-quiz-options`, `.sem-views-tabs`,
+   `.sem-note-summary`, `.sem-progress-track`, `.sem-progress-fill`, and the
    `<summary>` the reveal fallback synthesizes inside its `<details>`. An
    authored `<details>`/`<summary>` elsewhere in the document is ordinary
    content and is not skipped.
@@ -101,14 +101,14 @@ interface NplRecord {
 
 ### `npl-agent`
 
-`fields: { name, bio, instructions }` from `.npl-agent-name` / `<name>`,
-`.npl-agent-bio` / `<bio>`, `.npl-agent-instructions` / `<instructions>`.
+`fields: { name, bio, instructions }` from `.sem-agent-name` / `<name>`,
+`.sem-agent-bio` / `<bio>`, `.sem-agent-instructions` / `<instructions>`.
 Missing children yield `""`. `text` = `name`.
 
 ### `npl-note`
 
 `fields: { variant }` — `data-variant` / `variant`, defaulting to `info` per
-`syntax/schema/npl-note.md`. `text` = the note body: `.npl-note-body` when
+`syntax/schema/npl-note.md`. `text` = the note body: `.sem-note-body` when
 present, otherwise the note's own prose.
 
 `collapsed` is **not** extracted. It is initial disclosure state, and the
@@ -122,8 +122,8 @@ fallback removes the attribute when the reader opens the note (see §5).
 `npl-fact` yields
 `fields: { statement, conclusion, distractors: string[], highlights: string[] }`.
 
-- `statement` / `conclusion` from `.npl-statement` / `<statement>` and
-  `.npl-conclusion` / `<conclusion>`.
+- `statement` / `conclusion` from `.sem-statement` / `<statement>` and
+  `.sem-conclusion` / `<conclusion>`.
 - When neither child is present, the compact form applies: the fact's own
   text is split on the first `::`, left → `statement`, right → `conclusion`.
   With no `::`, the whole text is the `statement` and `conclusion` is `""`.
@@ -132,11 +132,11 @@ fallback removes the attribute when the reader opens the note (see §5).
   is exactly what `syntax/schema/npl-facts.md` requires: they appear in their
   own array, never in `text`, never as a `conclusion`.
 - `highlights` are the fact's recall prompts, in either the authored
-  (`.npl-highlight`, `<highlight>`) or occluded (`.npl-occluded`) form.
+  (`.sem-highlight`, `<highlight>`) or occluded (`.sem-occluded`) form.
 - `text` = `statement :: conclusion` when both exist, otherwise `statement`.
 
 Implicit distractors — the sibling conclusions the quiz view borrows when a
-fact has no `.npl-distractor` child — are a **rendering** decision and are not
+fact has no `.sem-distractor` child — are a **rendering** decision and are not
 extracted. They are already in the output as other facts' conclusions.
 
 ### `npl-details` / `npl-detail`
@@ -149,8 +149,8 @@ passage prose. This is the `{container, passage, cloze}` shape
 `highlights`.
 
 A highlight is reported identically whether it is authored
-(`span.npl-highlight`), occluded by the quiz view (`span.npl-occluded`), or
-revealed (`span.npl-highlight.npl-revealed`). The occlusion is a mask over
+(`span.sem-highlight`), occluded by the quiz view (`span.sem-occluded`), or
+revealed (`span.sem-highlight.sem-revealed`). The occlusion is a mask over
 text that is still in the DOM; extraction reads through it.
 
 ### `npl-procedure` / `npl-step`
@@ -211,7 +211,7 @@ deep links cite.
   the last word boundary, with no ellipsis. The derivation is a pure function
   of the body, which is what lets it survive the fallback's `<details>`
   rewrite unchanged.
-- The body is read from `.npl-reveal-body` when the fallback has wrapped the
+- The body is read from `.sem-reveal-body` when the fallback has wrapped the
   reveal, and from the element itself otherwise. Both yield the same text.
 - `collapsed` is not extracted (§5).
 
@@ -284,8 +284,8 @@ look at.
 **(a) Generated chrome is skipped** (§3.4). Everything the fallback adds is
 enumerated and excluded by class.
 
-**(b) Runtime state classes are ignored.** `.npl-current`, `.npl-flipped`,
-`.npl-answered`, `.npl-wrong-pick`, `.npl-revealed`, `data-sem-fallback`,
+**(b) Runtime state classes are ignored.** `.sem-current`, `.sem-flipped`,
+`.sem-answered`, `.sem-wrong-pick`, `.sem-revealed`, `data-sem-fallback`,
 `data-sem-upgraded`, `data-answered` are session facts, not document facts.
 Extraction matches on vocabulary classes only.
 
@@ -353,16 +353,16 @@ never-suppress rule are not.
 Input:
 
 ```html
-<div class="npl-enhanced-document">
+<div class="sem-enhanced-document">
   <h2 data-kind="section" data-tags="auth, tokens">Token handling</h2>
-  <div class="npl-facts" id="auth-facts" data-view-as="quiz">
-    <div class="npl-fact" id="f-jwt" data-kind="concept">
-      <div class="npl-statement">JWTs rotate per session</div>
-      <div class="npl-conclusion">Short-lived access; refresh issues a new pair.</div>
-      <div class="npl-distractor">Store them in localStorage.</div>
+  <div class="sem-facts" id="auth-facts" data-view-as="quiz">
+    <div class="sem-fact" id="f-jwt" data-kind="concept">
+      <div class="sem-statement">JWTs rotate per session</div>
+      <div class="sem-conclusion">Short-lived access; refresh issues a new pair.</div>
+      <div class="sem-distractor">Store them in localStorage.</div>
     </div>
   </div>
-  <div class="npl-progress" id="p-cov" data-value="1.4" data-label="coverage"></div>
+  <div class="sem-progress" id="p-cov" data-value="1.4" data-label="coverage"></div>
 </div>
 ```
 
@@ -408,7 +408,7 @@ npl-progress (#p-cov): coverage :: 100%
 ```
 
 Note what did not appear: `data-view-as="quiz"` (presentation), the
-`.npl-quiz-options` the fallback would build (chrome), and the clamped-vs-raw
+`.sem-quiz-options` the fallback would build (chrome), and the clamped-vs-raw
 distinction collapsing (both `value` and `rawValue` are reported).
 
 ## 9. Machine contract
