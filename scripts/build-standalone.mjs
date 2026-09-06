@@ -69,9 +69,22 @@ function expand(kind, arg) {
  *  count as whitespace), so match `\b[^>]*` rather than `\s*` — otherwise a
  *  script survives into the nojs artifact. */
 function stripScripts(html) {
-  return html
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, '')
-    .replace(/\n{3,}/g, '\n\n');
+  let out = html;
+  // Removing one pair can reveal another, so run to a fixed point rather
+  // than single-pass.
+  let prev;
+  do {
+    prev = out;
+    out = out.replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, '');
+  } while (out !== prev);
+  // An unclosed opener has no matching end tag and would otherwise survive.
+  out = out.replace(/<script\b[\s\S]*$/i, '');
+  // This artifact exists to prove the document reads with scripts off, so a
+  // survivor is a build failure, not a warning.
+  if (/<script/i.test(out)) {
+    throw new Error('nojs artifact still contains <script after stripping');
+  }
+  return out.replace(/\n{3,}/g, '\n\n');
 }
 
 mkdirSync(outDir, { recursive: true });
