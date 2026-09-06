@@ -14,8 +14,8 @@ NPL-enhanced XHTML (see [PROJ-SCHEMA.md](PROJ-SCHEMA.md), layout in
 
 ```mermaid
 erDiagram
-    NPL_NOTE ||--o| DETAILS : "collapsed wraps body"
-    NPL_NOTE {
+    SEM_NOTE ||--o| DETAILS : "collapsed wraps body"
+    SEM_NOTE {
         ENUM_VARIANT variant "info|warning|tip|danger, default info"
         BOOLEAN collapsed "native details, 60-char summary"
         TOKEN id "doc-unique anchor"
