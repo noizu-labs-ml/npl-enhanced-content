@@ -37,7 +37,7 @@ describe('npl-details', () => {
       cy.get(dt + '.npl-highlight').should('be.visible');
       cy.get(dt + '.npl-occluded').should('not.exist');
       cy.get('.npl-details:not([data-view-as="quiz"])')
-        .should('not.have.attr', 'data-npl-fallback');
+        .should('not.have.attr', 'data-sem-fallback');
     });
 
     it('JS-off: highlights readable, no occlusion in either view', () => {
@@ -46,7 +46,7 @@ describe('npl-details', () => {
       });
       cy.get('.npl-details .npl-highlight').should('be.visible');
       cy.get('.npl-occluded').should('not.exist');
-      cy.get('.npl-details[data-npl-fallback]').should('not.exist');
+      cy.get('.npl-details[data-sem-fallback]').should('not.exist');
     });
   });
 
@@ -58,8 +58,8 @@ describe('npl-details', () => {
         expect(win.customElements.get('npl-details')).to.exist;
       });
       cy.get('main npl-details[data-view-as="quiz"]')
-        .should('have.attr', 'data-npl-upgraded');
-      cy.get('main npl-details').should('not.have.attr', 'data-npl-fallback');
+        .should('have.attr', 'data-sem-upgraded');
+      cy.get('main npl-details').should('not.have.attr', 'data-sem-fallback');
     });
 
     it('quiz view: highlights occluded after upgrade, click reveals', () => {

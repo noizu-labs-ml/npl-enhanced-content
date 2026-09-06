@@ -7,8 +7,8 @@ XHTML-first rich-content format for NPL: one document serves browser (styled/int
 - **Tier-0 specs** (`syntax/conventions.md` v0.4, `schema/npl-note.md`) — BDD source of truth; change order spec → spec → code → e2e.
 - **Class-based vocabulary** — identity = `npl-*` classes, parameters = `data-*`; mechanical map to future custom elements.
 - **`npl-fallback` handler** — inline ~2–4KB vanilla JS; full baseline interactivity with zero external resources.
-- **Lit 3 components** — upgrade in place, light-DOM content, shadow-DOM chrome; handoff via `data-npl-fallback`.
-- **Theme layer** — `data-npl-theme`, `--npl-*` tokens, 4 TRP-ported themes, zero-JS flips.
+- **Lit 3 components** — upgrade in place, light-DOM content, shadow-DOM chrome; handoff via `data-sem-fallback`.
+- **Theme layer** — `data-sem-theme`, `--sem-*` tokens, 4 TRP-ported themes, zero-JS flips.
 - **Demo + cypress** — reference impl (`demo/index.html`) validated by `cypress/e2e/npl-note.cy.js`.
 
 ## Rendering tiers

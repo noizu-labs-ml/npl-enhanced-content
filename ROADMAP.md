@@ -11,13 +11,13 @@ Status snapshot: **2026-09-01 · main = 19cb226 (PR#1 merged)**
 1. **Canonical artifact = standalone XHTML document.** file:// double-click is the
    zero-th acceptance bar; IIFE classic scripts only, no runtime fetch, no ES modules.
 2. **Fallback-first.** The universal inline vanilla handler ships with (or before) every
-   behavior. Lit upgrades in place: sets `data-npl-upgraded`, removes `data-npl-fallback`.
+   behavior. Lit upgrades in place: sets `data-sem-upgraded`, removes `data-sem-fallback`.
    Both surfaces are BDD-asserted tiers per element — never one without the other.
 3. **Light DOM for content, shadow DOM for chrome only.** Text stays searchable/copyable.
 4. **Zero React. Ever.** (PRD non-goal.)
 5. **BDD-before-code.** Schema `.md` + cypress spec co-authored before implementation;
    green before the next element (PRD §9, binding).
-6. **JS-off documents stay readable.** Hide-rules gated on `data-npl-fallback`; no
+6. **JS-off documents stay readable.** Hide-rules gated on `data-sem-fallback`; no
    content is unreachable without JS.
 
 ## Milestones
@@ -60,10 +60,10 @@ Order matters here — strangler, not big-bang:
 
 ### T — Theme pipeline (parallel track)
 
-TRP YAML → CSS with `--npl-*` tokens → `npl/themes/<slug>.css`. Port the 4 TRP themes
+TRP YAML → CSS with `--sem-*` tokens → `npl/themes/<slug>.css`. Port the 4 TRP themes
 (minimal-tech-light default, nocturne-console, organic-warm, editorial-settings).
 No dependency on M3/M4; can land in any window. **Exit:** a demo page renders identically
-under all 4 themes via `data-npl-theme` swap.
+under all 4 themes via `data-sem-theme` swap.
 
 ### M4 — npl-question 7 types + occlusion
 
@@ -97,7 +97,7 @@ Every row: what it costs, what it costs *per change*, and the written trigger to
 | D8 | `themes/` declared as a package export/`files` entry with no directory on disk | create + populate | `npm pack` ships a broken export | ✅ repaid **this epic** | delivery |
 | D9 | `"type": "module"` vs the `.` export mapping to an IIFE bundle with no ESM/CJS exports — a bundler importing `.` gets a script it can't import from | build-format decision (dual entry or drop the `.` export) | consumers hit a silent/confusing import failure | **M5** publish prep | delivery |
 | D11 | `demo/standalone-lit.html` inlined a hand-pasted copy of `dist/npl.js`, so every Lit-tier cypress assertion green-lit a frozen artifact rather than current source | build automation | a Lit regression can land fully green; the gap is invisible and unbounded in time | ✅ repaid **this epic** (`scripts/build-standalone.mjs` substitutes the freshly built bundle; cypress now runs against `dist/demo/`) | correctness |
-| D13 | `npl-note[collapsed]` anti-flash rule was gated on `:not([data-npl-upgraded])`, so with the bundle absent the body stayed `display:none` with no summary to expand — collapsed note content unreachable with JS off | one selector (`:defined`) | every element that adds a pre-upgrade anti-flash rule inherits the bug | ✅ repaid **this epic** — found by the new scripts-stripped artifact, which is the whole reason it exists | degradation |
+| D13 | `npl-note[collapsed]` anti-flash rule was gated on `:not([data-sem-upgraded])`, so with the bundle absent the body stayed `display:none` with no summary to expand — collapsed note content unreachable with JS off | one selector (`:defined`) | every element that adds a pre-upgrade anti-flash rule inherits the bug | ✅ repaid **this epic** — found by the new scripts-stripped artifact, which is the whole reason it exists | degradation |
 | D12 | Ungated `display:none` in the vocabulary hides `.npl-distractor` and every inactive `.npl-view` in the scripts-stripped no-JS artifact — content unreachable with JS off | CSS gating (show distractors and all views when neither tier marker is present) | every new hide-rule inherits the pattern; the no-JS degradation promise stays partly unmet | **axes wave**, alongside D10 | degradation |
 | D10 | Theme CSS ships no `npl-*:not(:defined)` base — custom-element documents render unstyled before/without the Lit upgrade, contradicting conventions §4 rule 3 which promises exactly this | one CSS block in `themes/_vocabulary.css` | every element added in element form inherits the defect; the scripts-stripped no-JS artifact will fail on it | **axes wave** (`npl-controls` + no-JS build artifact both depend on it) | correctness, degradation |
 

@@ -53,13 +53,13 @@ same prose, different interaction model per view.
 - `quiz`: fallback JS replaces each `.npl-highlight` with an occluded
   span (`.npl-occluded`): text masked (background chip, transparent
   color), `role="button"`, `tabindex="0"`, `aria-label="reveal"`.
-  Container gets `data-npl-fallback`; hide/mask rules key off it.
+  Container gets `data-sem-fallback`; hide/mask rules key off it.
 - Reveal: click or Enter/Space on the occluded span → becomes
   `.npl-highlight .npl-revealed` (readable, accent-tinted), loses
   `role`/`tabindex`. Reveals are per-item and irreversible (self-check
   model).
 - Lit upgrade (`<npl-details>` element) supersedes: sets
-  `data-npl-upgraded`, removes `data-npl-fallback`, performs the same
+  `data-sem-upgraded`, removes `data-sem-fallback`, performs the same
   occlusion imperatively in light DOM.
 
 ## JS-off behavior

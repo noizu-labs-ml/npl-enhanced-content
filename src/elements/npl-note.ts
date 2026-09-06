@@ -4,7 +4,7 @@ import { NplElement } from './base.js';
  * npl-note — Lit upgrade of the v0.4 class-based callout.
  * Light DOM per PRD §4 rule 5: content stays searchable/copyable;
  * Lit owns behavior (collapsed toggle, variant reaction), not markup.
- * Handoff contract (data-npl-upgraded / data-npl-fallback) comes from NplElement.
+ * Handoff contract (data-sem-upgraded / data-sem-fallback) comes from NplElement.
  */
 export class NplNote extends NplElement {
   static properties = {

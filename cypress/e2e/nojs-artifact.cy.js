@@ -23,8 +23,8 @@ describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
     });
 
     it('carries neither tier handoff marker', () => {
-      cy.get('[data-npl-fallback]').should('not.exist');
-      cy.get('[data-npl-upgraded]').should('not.exist');
+      cy.get('[data-sem-fallback]').should('not.exist');
+      cy.get('[data-sem-upgraded]').should('not.exist');
     });
 
     it('leaves every fact readable — statement and conclusion both visible', () => {
@@ -71,7 +71,7 @@ describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
 
     it('ships no script elements and upgrades nothing', () => {
       cy.request('/demo/standalone-lit.nojs.html').its('body').should('not.match', /<script/i);
-      cy.get('[data-npl-upgraded]').should('not.exist');
+      cy.get('[data-sem-upgraded]').should('not.exist');
     });
 
     it('renders undefined custom elements as readable content', () => {

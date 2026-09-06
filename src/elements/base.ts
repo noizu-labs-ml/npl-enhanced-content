@@ -31,13 +31,13 @@ export class NplElement extends LitElement {
 
   /**
    * Fallback→upgrade handoff. The vanilla inline handler marks what it wired
-   * with `data-npl-fallback`; the upgraded element takes ownership by claiming
-   * `data-npl-upgraded` and clearing that marker. CSS hide-rules key off both.
+   * with `data-sem-fallback`; the upgraded element takes ownership by claiming
+   * `data-sem-upgraded` and clearing that marker. CSS hide-rules key off both.
    */
   connectedCallback(): void {
     super.connectedCallback();
-    this.setAttribute('data-npl-upgraded', '');
-    this.removeAttribute('data-npl-fallback');
+    this.setAttribute('data-sem-upgraded', '');
+    this.removeAttribute('data-sem-fallback');
   }
 
   disconnectedCallback(): void {
@@ -102,13 +102,13 @@ export class NplElement extends LitElement {
   /**
    * Is this element visible to the document's active audience profile?
    *
-   * The active profile lives on the document root as `data-npl-audience`; the
+   * The active profile lives on the document root as `data-sem-audience`; the
    * profile declarations live in the `npl-audiences` block. With neither
    * declared — which is every document today — this returns true for
    * everything, and an unknown token fails open for the same reason.
    */
   audienceMatches(spec?: string | null): boolean {
-    const requested = spec === undefined ? this.getAttribute('data-npl-audience-spec') : spec;
+    const requested = spec === undefined ? this.getAttribute('data-sem-audience-spec') : spec;
     return matches(requested, this.#activeProfile(), this.#closure());
   }
 
@@ -118,8 +118,8 @@ export class NplElement extends LitElement {
 
   #activeProfile(): string | null {
     const root = this.#root();
-    if (root instanceof Element) return root.getAttribute('data-npl-audience');
-    return root.documentElement?.getAttribute('data-npl-audience') ?? null;
+    if (root instanceof Element) return root.getAttribute('data-sem-audience');
+    return root.documentElement?.getAttribute('data-sem-audience') ?? null;
   }
 
   #closure(): AudienceClosure {

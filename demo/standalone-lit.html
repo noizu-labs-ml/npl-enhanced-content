@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-npl-theme="minimal-tech-light">
+<html lang="en" data-sem-theme="minimal-tech-light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,70 +12,70 @@
 <!-- Element-scoped component CSS for the Lit tier. Distinct from
      themes/_vocabulary.css, which targets the .npl-* class vocabulary:
      these rules key off the custom-element tag names and the
-     [data-npl-upgraded] handoff marker. -->
+     [data-sem-upgraded] handoff marker. -->
 <style>
-  body { margin: 0; background: var(--npl-bg); color: var(--npl-fg); }
+  body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
   main { font-family: system-ui, sans-serif; line-height: 1.6;
          max-width: 48rem; margin: 0 auto; padding: 2.5rem 1rem; }
 
   /* npl-note base (pre- and post-upgrade; the Lit element keeps light DOM) */
-  npl-note { display: block; border-left: 4px solid var(--npl-note-info);
+  npl-note { display: block; border-left: 4px solid var(--sem-note-info);
     border-radius: 8px; padding: .75rem 1rem; margin: 1rem 0;
-    background: var(--npl-surface); }
-  npl-note[data-variant="warning"] { border-color: var(--npl-note-warning); }
-  npl-note[data-variant="tip"]     { border-color: var(--npl-note-tip); }
-  npl-note[data-variant="danger"]  { border-color: var(--npl-note-danger); }
+    background: var(--sem-surface); }
+  npl-note[data-variant="warning"] { border-color: var(--sem-note-warning); }
+  npl-note[data-variant="tip"]     { border-color: var(--sem-note-tip); }
+  npl-note[data-variant="danger"]  { border-color: var(--sem-note-danger); }
   npl-note[data-variant]::before { content: attr(data-variant) " · ";
     font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
-    color: var(--npl-muted); display: block; }
+    color: var(--sem-muted); display: block; }
   /* Anti-flash rule for the window between parse and upgrade. Gated on
-     :defined, NOT on the absence of [data-npl-upgraded]: with the bundle
+     :defined, NOT on the absence of [data-sem-upgraded]: with the bundle
      absent entirely the element is never defined, so a collapsed note's body
      must stay readable. Without :defined the scripts-stripped artifact hid
      the body with no summary to expand — content unreachable with JS off. */
-  npl-note:defined:not([data-npl-upgraded])[collapsed] > :not(.npl-note-summary) { display: none; }
-  npl-note[data-npl-upgraded][collapsed] > .npl-note-body { display: none; }
-  npl-note .npl-note-summary { cursor: pointer; color: var(--npl-accent); }
+  npl-note:defined:not([data-sem-upgraded])[collapsed] > :not(.npl-note-summary) { display: none; }
+  npl-note[data-sem-upgraded][collapsed] > .npl-note-body { display: none; }
+  npl-note .npl-note-summary { cursor: pointer; color: var(--sem-accent); }
 
   /* npl-facts base (pre- and post-upgrade; the Lit element keeps light DOM) */
   npl-facts { display: block; margin: 1.5rem 0; }
-  npl-facts .npl-fact { border: 1px solid var(--npl-border); border-radius: 12px;
-    padding: 1rem; margin: .75rem 0; background: var(--npl-surface); }
+  npl-facts .npl-fact { border: 1px solid var(--sem-border); border-radius: 12px;
+    padding: 1rem; margin: .75rem 0; background: var(--sem-surface); }
   npl-facts .npl-statement { font-weight: 600; }
-  npl-facts .npl-conclusion { margin: .5rem 0 0; color: var(--npl-muted); }
-  npl-facts[data-npl-upgraded] .npl-facts-chrome { display: flex; gap: .5rem;
+  npl-facts .npl-conclusion { margin: .5rem 0 0; color: var(--sem-muted); }
+  npl-facts[data-sem-upgraded] .npl-facts-chrome { display: flex; gap: .5rem;
     align-items: center; margin: .5rem 0; }
-  npl-facts .npl-facts-chrome button { border: 1px solid var(--npl-border);
-    background: var(--npl-surface); color: var(--npl-fg); border-radius: 8px;
+  npl-facts .npl-facts-chrome button { border: 1px solid var(--sem-border);
+    background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
     padding: .25rem .75rem; cursor: pointer; }
-  npl-facts .npl-facts-meter { color: var(--npl-muted); font-size: .875rem; }
+  npl-facts .npl-facts-meter { color: var(--sem-muted); font-size: .875rem; }
   npl-facts .npl-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
-  npl-facts .npl-quiz-options button { text-align: left; border: 1px solid var(--npl-border);
-    background: var(--npl-surface); color: var(--npl-fg); border-radius: 8px;
+  npl-facts .npl-quiz-options button { text-align: left; border: 1px solid var(--sem-border);
+    background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
     padding: .5rem .75rem; cursor: pointer; }
-  npl-facts .npl-quiz-options button[data-correct="true"].npl-answered { border-color: var(--npl-correct); }
-  npl-facts .npl-quiz-options button.npl-wrong-pick { border-color: var(--npl-wrong); }
+  npl-facts .npl-quiz-options button[data-correct="true"].npl-answered { border-color: var(--sem-correct); }
+  npl-facts .npl-quiz-options button.npl-wrong-pick { border-color: var(--sem-wrong); }
   /* flashcards/quiz hide rules gated on the upgrade marker — pre-upgrade
      (script failed) everything stays readable */
-  npl-facts[data-npl-upgraded][data-view-as="flashcards"] > .npl-fact { display: none;
+  npl-facts[data-sem-upgraded][data-view-as="flashcards"] > .npl-fact { display: none;
     cursor: pointer; min-height: 8rem; position: relative; }
-  npl-facts[data-npl-upgraded][data-view-as="flashcards"] > .npl-fact.npl-current { display: block; }
-  npl-facts[data-npl-upgraded][data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
-  npl-facts[data-npl-upgraded][data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
-  npl-facts[data-npl-upgraded][data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
+  npl-facts[data-sem-upgraded][data-view-as="flashcards"] > .npl-fact.npl-current { display: block; }
+  npl-facts[data-sem-upgraded][data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
+  npl-facts[data-sem-upgraded][data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
+  npl-facts[data-sem-upgraded][data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
 
   /* npl-details base */
   npl-details { display: block; margin: 1rem 0; }
-  npl-details .npl-detail { border: 1px solid var(--npl-border); border-radius: 12px;
-    padding: 1rem; margin: .75rem 0; background: var(--npl-surface); }
+  npl-details .npl-detail { border: 1px solid var(--sem-border); border-radius: 12px;
+    padding: 1rem; margin: .75rem 0; background: var(--sem-surface); }
   npl-details .npl-highlight { font-style: normal;
-    background: color-mix(in srgb, var(--npl-accent) 18%, transparent);
+    background: color-mix(in srgb, var(--sem-accent) 18%, transparent);
     border-radius: 4px; padding: 0 .2em; }
-  npl-details .npl-occluded { color: transparent; background: var(--npl-occluded);
+  npl-details .npl-occluded { color: transparent; background: var(--sem-occluded);
     border-radius: 4px; cursor: pointer; user-select: none; transition: color .15s;
     min-width: 3ch; display: inline-block; }
   npl-details .npl-revealed { color: inherit;
-    background: color-mix(in srgb, var(--npl-accent) 18%, transparent); }
+    background: color-mix(in srgb, var(--sem-accent) 18%, transparent); }
 </style>
 
 <!-- Lit 3 bundle (IIFE classic script — file://-safe). Substituted at build
@@ -93,7 +93,7 @@
 
   <npl-note variant="warning">
     <div class="npl-note-body">This note is upgraded by <code>NplNote</code> (Lit 3):
-      check its <code>data-npl-upgraded</code> attribute and <code>role="note"</code>.</div>
+      check its <code>data-sem-upgraded</code> attribute and <code>role="note"</code>.</div>
   </npl-note>
 
   <npl-note variant="tip" collapsed>

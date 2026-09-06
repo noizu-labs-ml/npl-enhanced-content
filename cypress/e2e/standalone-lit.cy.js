@@ -1,7 +1,7 @@
 // Standalone Lit page — proves the M3 upgrade path end to end:
 // one self-contained file, inlined IIFE bundle, custom element upgrades
 // and owns the collapsed/expanded behavior. Targets the handoff contract:
-// data-npl-upgraded set, data-npl-fallback absent, role="note".
+// data-sem-upgraded set, data-sem-fallback absent, role="note".
 
 describe('standalone Lit page', () => {
   beforeEach(() => {
@@ -12,7 +12,7 @@ describe('standalone Lit page', () => {
     cy.window().then((win) => {
       expect(win.customElements.get('npl-note')).to.exist;
     });
-    cy.get('main npl-note').should('have.attr', 'data-npl-upgraded');
+    cy.get('main npl-note').should('have.attr', 'data-sem-upgraded');
   });
 
   it('sets role="note" and reflects variant', () => {
@@ -21,7 +21,7 @@ describe('standalone Lit page', () => {
   });
 
   it('upgraded notes carry no fallback marker', () => {
-    cy.get('main npl-note').should('not.have.attr', 'data-npl-fallback');
+    cy.get('main npl-note').should('not.have.attr', 'data-sem-fallback');
   });
 
   it('collapsed note renders a summary and hides its body', () => {

@@ -26,7 +26,7 @@ vocabulary for the Lit milestone; the class mapping below is mechanical.
 | `<npl-progress value label>` | `div.npl-progress[data-value][data-label]` |
 
 CSS layering (all inline in `<head>`): (1) plain core CSS — theme tokens on
-`[data-npl-theme]` + component base, offline-safe; (2) `<style
+`[data-sem-theme]` + component base, offline-safe; (2) `<style
 type="text/tailwindcss">` with `@apply` rules per class — refinement, no-op
 without the CDN script; (3) `npl-fallback` vanilla JS — interactivity.
 Supersedes v0.3 custom-element examples until the Lit milestone.
@@ -64,7 +64,7 @@ inside the tags, never as a pre-HTML grammar.
 
 ```html
 <!doctype html>
-<html lang="en" data-npl-theme="minimal-tech-light">
+<html lang="en" data-sem-theme="minimal-tech-light">
 <head>
   <meta charset="utf-8">
   <title>Authoring Guide</title>
@@ -149,7 +149,7 @@ both present; authors pick one per fact.
    required for full baseline interactivity.**
 2. `npl/npl.js` (Lit 3, IIFE) upgrades elements in place when reachable;
    component implementations supersede fallback behaviors. Handoff contract:
-   fallback sets `data-npl-fallback` on elements it enhanced; components
+   fallback sets `data-sem-fallback` on elements it enhanced; components
    remove it on upgrade. BDD asserts both tiers + the handoff.
 3. Theme CSS styles the vocabulary via `npl-*:not(:defined)` — presentable
    JS-off; no layout shift on upgrade where feasible.
@@ -294,8 +294,8 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
 
 ## 6. Theme conventions
 
-- `data-npl-theme="<slug>"` on `<html>`; one theme per doc; themes compiled
-  from TRP-format YAML → `npl/themes/<slug>.css`; `--npl-*` tokens;
+- `data-sem-theme="<slug>"` on `<html>`; one theme per doc; themes compiled
+  from TRP-format YAML → `npl/themes/<slug>.css`; `--sem-*` tokens;
   `:not(:defined)` vocabulary base included.
 - Shadow components read tokens via fallback indirection — zero-JS theme flips.
 - Ship 4 TRP ports: `minimal-tech-light` (default), `nocturne-console`,

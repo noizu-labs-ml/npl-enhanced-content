@@ -4,7 +4,7 @@
  * Extracted verbatim from the inline IIFE that used to live in
  * demo/index.html (D5: the same logic had drifted into a second hand-written
  * copy inside the Lit elements). Behavior is a tested contract — DOM shape,
- * class names, `data-npl-fallback`, and meter text are all asserted by
+ * class names, `data-sem-fallback`, and meter text are all asserted by
  * cypress/e2e/npl-facts.cy.js and must not change.
  *
  * The one deliberate divergence from the original inline source: option order
@@ -12,7 +12,7 @@
  * `sort(() => Math.random() - .5)`. That comparator was inconsistent, so its
  * output was neither uniform nor stable across JS engines. Sharing the draw
  * with src/elements/npl-facts.ts is what makes the two tiers emit identical
- * option order for a fixed `data-npl-seed`.
+ * option order for a fixed `data-sem-seed`.
  */
 
 import { randomFor, shuffle } from '../shared/rng.js';
@@ -22,7 +22,7 @@ export function enhanceFacts(scope: ParentNode): void {
     const view = root.getAttribute('data-view-as') || 'list';
     const items = Array.from(root.querySelectorAll<HTMLElement>('.npl-fact'));
     if (view === 'list' || items.length === 0) return;
-    root.setAttribute('data-npl-fallback', '');
+    root.setAttribute('data-sem-fallback', '');
 
     const rand = randomFor(root);
 

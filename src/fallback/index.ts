@@ -6,9 +6,9 @@
  * document that never loads the component bundle: the fallback tier is what
  * makes a portable `file://` document interactive with zero network.
  *
- * TIER HANDOFF. Each handler marks what it wired with `data-npl-fallback`.
+ * TIER HANDOFF. Each handler marks what it wired with `data-sem-fallback`.
  * When the Lit bundle is also present, `NplElement.connectedCallback` claims
- * `data-npl-upgraded` and clears that marker, and every hide-rule in the
+ * `data-sem-upgraded` and clears that marker, and every hide-rule in the
  * theme CSS is gated on one marker or the other — so with neither script
  * running, nothing is hidden and the document reads as plain prose.
  *

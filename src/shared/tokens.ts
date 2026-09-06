@@ -2,7 +2,7 @@
  * tokens — comma/space separated attribute lists.
  *
  * One parser for every list-valued attribute in the vocabulary:
- * `tags`, `data-npl-controls`, `data-npl-audience`, `implies`.
+ * `tags`, `data-sem-controls`, `data-sem-audience`, `implies`.
  * Order is preserved (author order is meaningful for `implies`);
  * empties are dropped and duplicates collapse to their first occurrence.
  */

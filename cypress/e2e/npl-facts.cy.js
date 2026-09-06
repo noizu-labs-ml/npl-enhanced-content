@@ -20,7 +20,7 @@ describe('npl-facts', () => {
       cy.get('#facts-list .npl-fact').should('have.length', 2);
       cy.get('#facts-list .npl-fact .npl-conclusion').should('be.visible');
       cy.get('#facts-list .npl-facts-chrome').should('not.exist');
-      cy.get('#facts-list').should('not.have.attr', 'data-npl-fallback');
+      cy.get('#facts-list').should('not.have.attr', 'data-sem-fallback');
     });
 
     it('flashcards: one card at a time, flip reveals conclusion', () => {
@@ -78,7 +78,7 @@ describe('npl-facts', () => {
       cy.get('.npl-facts[data-view-as="quiz"] .npl-fact .npl-conclusion')
         .should('be.visible');
       cy.get('.npl-facts .npl-facts-chrome').should('not.exist');
-      cy.get('.npl-facts[data-npl-fallback]').should('not.exist');
+      cy.get('.npl-facts[data-sem-fallback]').should('not.exist');
     });
   });
 
@@ -89,8 +89,8 @@ describe('npl-facts', () => {
       cy.window().then((win) => {
         expect(win.customElements.get('npl-facts')).to.exist;
       });
-      cy.get('main npl-facts').should('have.attr', 'data-npl-upgraded');
-      cy.get('main npl-facts').should('not.have.attr', 'data-npl-fallback');
+      cy.get('main npl-facts').should('have.attr', 'data-sem-upgraded');
+      cy.get('main npl-facts').should('not.have.attr', 'data-sem-fallback');
     });
 
     it('flashcards: one current card, flip reveals conclusion', () => {

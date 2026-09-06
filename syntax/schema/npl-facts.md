@@ -40,7 +40,7 @@ self-test, quiz = scored recall).
 ### `list` (default)
 
 - All facts rendered, statement + conclusion visible, document order.
-- **No chrome, no `data-npl-fallback`** — nothing interactive, so the
+- **No chrome, no `data-sem-fallback`** — nothing interactive, so the
   fallback handler is a no-op and the Lit element keeps the plain layout.
 
 ### `flashcards` (deck semantics)
@@ -68,10 +68,10 @@ self-test, quiz = scored recall).
 ## Rendered form (v0.4)
 
 - Fallback JS (vanilla, inline) implements flashcards/quiz behavior and
-  sets `data-npl-fallback` on the container (hide rules key off it).
+  sets `data-sem-fallback` on the container (hide rules key off it).
 - List view (and empty containers) get no marker and no chrome.
 - Lit upgrade (`<npl-facts>` element) supersedes: sets
-  `data-npl-upgraded`, removes `data-npl-fallback`, owns the same
+  `data-sem-upgraded`, removes `data-sem-fallback`, owns the same
   chrome/behavior imperatively in light DOM. Both tiers are BDD-asserted.
 
 ## JS-off behavior
@@ -90,7 +90,7 @@ self-test, quiz = scored recall).
 - The position meter is text (`2/3 · score 1/1`) — readable, no ARIA
   meter role (it is not a scalar value).
 - JS-off: nothing hidden, so no hidden-content AT hazard. Quiz/flashcard
-  hide rules are gated on `data-npl-fallback`/`data-npl-upgraded`.
+  hide rules are gated on `data-sem-fallback`/`data-sem-upgraded`.
 
 ## Machine contract
 

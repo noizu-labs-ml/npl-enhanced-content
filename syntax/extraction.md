@@ -285,8 +285,8 @@ look at.
 enumerated and excluded by class.
 
 **(b) Runtime state classes are ignored.** `.npl-current`, `.npl-flipped`,
-`.npl-answered`, `.npl-wrong-pick`, `.npl-revealed`, `data-npl-fallback`,
-`data-npl-upgraded`, `data-answered` are session facts, not document facts.
+`.npl-answered`, `.npl-wrong-pick`, `.npl-revealed`, `data-sem-fallback`,
+`data-sem-upgraded`, `data-answered` are session facts, not document facts.
 Extraction matches on vocabulary classes only.
 
 **(c) Mutable presentation attributes are excluded from the record.** Three

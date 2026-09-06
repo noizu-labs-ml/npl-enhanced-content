@@ -51,10 +51,10 @@ function expand(kind, arg) {
       return `<script id="npl-extract">\n${readOrDie(resolve(root, 'dist/npl-extract.js'), 'extract')}\n</script>`;
     case 'theme': {
       if (!arg) throw new Error('marker "theme" requires a theme name');
-      return `<style data-npl-theme-source="${arg}">\n${readOrDie(resolve(root, 'themes', `${arg}.css`), 'theme')}\n</style>`;
+      return `<style data-sem-theme-source="${arg}">\n${readOrDie(resolve(root, 'themes', `${arg}.css`), 'theme')}\n</style>`;
     }
     case 'vocabulary':
-      return `<style data-npl-vocabulary>\n${readOrDie(resolve(root, 'themes/_vocabulary.css'), 'vocabulary')}\n</style>`;
+      return `<style data-sem-vocabulary>\n${readOrDie(resolve(root, 'themes/_vocabulary.css'), 'vocabulary')}\n</style>`;
     default:
       throw new Error(`unknown inline marker "${kind}"`);
   }

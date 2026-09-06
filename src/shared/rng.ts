@@ -62,13 +62,13 @@ function parseSeed(raw: unknown): number | null {
 
 function seedFromAttribute(el: Element | null): number | null {
   if (!el) return null;
-  return parseSeed(el.getAttribute('data-npl-seed'));
+  return parseSeed(el.getAttribute('data-sem-seed'));
 }
 
 /**
  * Resolve the seed for an element, in precedence order:
- *   1. `data-npl-seed` on the element itself
- *   2. `data-npl-seed` on the nearest enhanced-document ancestor
+ *   1. `data-sem-seed` on the element itself
+ *   2. `data-sem-seed` on the nearest enhanced-document ancestor
  *   3. `window.__nplSeed`
  *   4. `Date.now()` (unseeded documents still shuffle, just not reproducibly)
  * A value that is not a whole number is treated as absent and falls through.

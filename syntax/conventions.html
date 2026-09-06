@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-npl-theme="minimal-tech-light">
+<html lang="en" data-sem-theme="minimal-tech-light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,127 +8,127 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-  [data-npl-theme="minimal-tech-light"] {
-    --npl-bg: #fafafa; --npl-surface: #ffffff; --npl-fg: #1e293b;
-    --npl-muted: #64748b; --npl-border: #e2e8f0; --npl-accent: #2563eb;
-    --npl-note-info: #2563eb; --npl-note-tip: #059669;
-    --npl-note-warning: #d97706; --npl-note-danger: #dc2626;
-    --npl-correct: #059669; --npl-wrong: #dc2626; --npl-occluded: #94a3b8;
+  [data-sem-theme="minimal-tech-light"] {
+    --sem-bg: #fafafa; --sem-surface: #ffffff; --sem-fg: #1e293b;
+    --sem-muted: #64748b; --sem-border: #e2e8f0; --sem-accent: #2563eb;
+    --sem-note-info: #2563eb; --sem-note-tip: #059669;
+    --sem-note-warning: #d97706; --sem-note-danger: #dc2626;
+    --sem-correct: #059669; --sem-wrong: #dc2626; --sem-occluded: #94a3b8;
   }
   @media (prefers-color-scheme: dark) {
-    [data-npl-theme="minimal-tech-light"] {
-      --npl-bg: #0f172a; --npl-surface: #1e293b; --npl-fg: #e2e8f0;
-      --npl-muted: #94a3b8; --npl-border: #334155; --npl-accent: #60a5fa;
-      --npl-note-info: #60a5fa; --npl-note-tip: #34d399;
-      --npl-note-warning: #fbbf24; --npl-note-danger: #f87171;
-      --npl-correct: #34d399; --npl-wrong: #f87171; --npl-occluded: #475569;
+    [data-sem-theme="minimal-tech-light"] {
+      --sem-bg: #0f172a; --sem-surface: #1e293b; --sem-fg: #e2e8f0;
+      --sem-muted: #94a3b8; --sem-border: #334155; --sem-accent: #60a5fa;
+      --sem-note-info: #60a5fa; --sem-note-tip: #34d399;
+      --sem-note-warning: #fbbf24; --sem-note-danger: #f87171;
+      --sem-correct: #34d399; --sem-wrong: #f87171; --sem-occluded: #475569;
     }
   }
-  body { margin: 0; background: var(--npl-bg); color: var(--npl-fg); }
+  body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
   .npl-enhanced-document { font-family: system-ui, sans-serif; line-height: 1.6; }
 
   /* spec-document furniture */
   h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 .25rem; }
   h2 { font-size: 1.125rem; font-weight: 600; margin: 2rem 0 .5rem;
-       border-bottom: 1px solid var(--npl-border); padding-bottom: .3rem; }
-  h2:target { outline: 2px solid var(--npl-accent); outline-offset: 4px; border-radius: 4px; }
+       border-bottom: 1px solid var(--sem-border); padding-bottom: .3rem; }
+  h2:target { outline: 2px solid var(--sem-accent); outline-offset: 4px; border-radius: 4px; }
   h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 .4rem; }
   p { margin: .5rem 0; }
   ul { margin: .5rem 0; padding-left: 1.25rem; }
-  pre { background: var(--npl-surface); border: 1px solid var(--npl-border);
+  pre { background: var(--sem-surface); border: 1px solid var(--sem-border);
         border-radius: 8px; padding: .75rem 1rem; overflow-x: auto;
         font-size: .8rem; line-height: 1.5; margin: .75rem 0; }
   code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-  :not(pre) > code { background: color-mix(in srgb, var(--npl-accent) 10%, transparent);
+  :not(pre) > code { background: color-mix(in srgb, var(--sem-accent) 10%, transparent);
         padding: .1em .3em; border-radius: 4px; font-size: .9em; }
   table { border-collapse: collapse; width: 100%; margin: .75rem 0; font-size: .85rem; }
-  th, td { border: 1px solid var(--npl-border); padding: .4rem .6rem;
+  th, td { border: 1px solid var(--sem-border); padding: .4rem .6rem;
            text-align: left; vertical-align: top; }
-  th { background: var(--npl-surface); font-weight: 600; }
-  .npl-toc { border: 1px solid var(--npl-border); border-radius: 12px;
-             background: var(--npl-surface); padding: 1rem 1.5rem; margin: 1rem 0; }
-  .npl-toc a { color: var(--npl-accent); text-decoration: none; }
+  th { background: var(--sem-surface); font-weight: 600; }
+  .npl-toc { border: 1px solid var(--sem-border); border-radius: 12px;
+             background: var(--sem-surface); padding: 1rem 1.5rem; margin: 1rem 0; }
+  .npl-toc a { color: var(--sem-accent); text-decoration: none; }
   .npl-toc a:hover { text-decoration: underline; }
   .npl-toc ol { margin: .25rem 0; }
-  .npl-doc-meta { color: var(--npl-muted); font-size: .85rem; margin-bottom: 1.5rem; }
-  .npl-open { color: var(--npl-note-warning); font-weight: 600; }
+  .npl-doc-meta { color: var(--sem-muted); font-size: .85rem; margin-bottom: 1.5rem; }
+  .npl-open { color: var(--sem-note-warning); font-weight: 600; }
 
   /* component base (shared with demo/index.html) */
-  .npl-note { border-left: 4px solid var(--npl-note-info); border-radius: 8px;
-    padding: .75rem 1rem; margin: 1rem 0; background: var(--npl-surface); }
-  .npl-note[data-variant="warning"] { border-color: var(--npl-note-warning); }
-  .npl-note[data-variant="tip"]     { border-color: var(--npl-note-tip); }
-  .npl-note[data-variant="danger"]  { border-color: var(--npl-note-danger); }
+  .npl-note { border-left: 4px solid var(--sem-note-info); border-radius: 8px;
+    padding: .75rem 1rem; margin: 1rem 0; background: var(--sem-surface); }
+  .npl-note[data-variant="warning"] { border-color: var(--sem-note-warning); }
+  .npl-note[data-variant="tip"]     { border-color: var(--sem-note-tip); }
+  .npl-note[data-variant="danger"]  { border-color: var(--sem-note-danger); }
   .npl-note[data-variant]::before { content: attr(data-variant) " · ";
     font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
-    color: var(--npl-muted); display: block; }
+    color: var(--sem-muted); display: block; }
   .npl-facts { margin: 1rem 0; }
   .npl-facts-chrome { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
-  .npl-facts-chrome button { border: 1px solid var(--npl-border); background: var(--npl-surface);
-    color: var(--npl-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
-  .npl-facts-meter { color: var(--npl-muted); font-size: .875rem; }
-  .npl-fact { border: 1px solid var(--npl-border); border-radius: 12px;
-    padding: 1rem; margin: .75rem 0; background: var(--npl-surface); }
+  .npl-facts-chrome button { border: 1px solid var(--sem-border); background: var(--sem-surface);
+    color: var(--sem-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
+  .npl-facts-meter { color: var(--sem-muted); font-size: .875rem; }
+  .npl-fact { border: 1px solid var(--sem-border); border-radius: 12px;
+    padding: 1rem; margin: .75rem 0; background: var(--sem-surface); }
   .npl-fact .npl-statement { font-weight: 600; }
-  .npl-fact .npl-conclusion { margin: .5rem 0 0; color: var(--npl-muted); }
+  .npl-fact .npl-conclusion { margin: .5rem 0 0; color: var(--sem-muted); }
   .npl-fact .npl-distractor { display: none; }
-  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact { display: none; cursor: pointer;
+  .npl-facts[data-sem-fallback][data-view-as="flashcards"] .npl-fact { display: none; cursor: pointer;
     min-height: 6rem; }
-  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact.npl-current { display: block; }
-  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
-  .npl-facts[data-npl-fallback][data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
-  .npl-facts[data-npl-fallback][data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
+  .npl-facts[data-sem-fallback][data-view-as="flashcards"] .npl-fact.npl-current { display: block; }
+  .npl-facts[data-sem-fallback][data-view-as="flashcards"] .npl-fact .npl-conclusion { visibility: hidden; }
+  .npl-facts[data-sem-fallback][data-view-as="flashcards"] .npl-fact.npl-flipped .npl-conclusion { visibility: visible; }
+  .npl-facts[data-sem-fallback][data-view-as="quiz"] .npl-fact .npl-conclusion { display: none; }
   .npl-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
-  .npl-quiz-options button { text-align: left; border: 1px solid var(--npl-border);
-    background: var(--npl-surface); color: var(--npl-fg); border-radius: 8px;
+  .npl-quiz-options button { text-align: left; border: 1px solid var(--sem-border);
+    background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
     padding: .5rem .75rem; cursor: pointer; }
-  .npl-quiz-options button[data-correct="true"].npl-answered { border-color: var(--npl-correct); }
-  .npl-quiz-options button.npl-wrong-pick { border-color: var(--npl-wrong); }
-  .npl-highlight { font-style: normal; background: color-mix(in srgb, var(--npl-accent) 18%, transparent);
+  .npl-quiz-options button[data-correct="true"].npl-answered { border-color: var(--sem-correct); }
+  .npl-quiz-options button.npl-wrong-pick { border-color: var(--sem-wrong); }
+  .npl-highlight { font-style: normal; background: color-mix(in srgb, var(--sem-accent) 18%, transparent);
     border-radius: 4px; padding: 0 .2em; }
-  .npl-occluded { color: transparent; background: var(--npl-occluded); border-radius: 4px;
+  .npl-occluded { color: transparent; background: var(--sem-occluded); border-radius: 4px;
     cursor: pointer; user-select: none; transition: color .15s; min-width: 3ch; display: inline-block; }
-  .npl-revealed { color: inherit; background: color-mix(in srgb, var(--npl-accent) 18%, transparent); }
+  .npl-revealed { color: inherit; background: color-mix(in srgb, var(--sem-accent) 18%, transparent); }
   /* Tier-0 expansion (matches demo/index.html) */
-  .npl-step { counter-increment: npl-step; border-left: 3px solid var(--npl-border);
+  .npl-step { counter-increment: npl-step; border-left: 3px solid var(--sem-border);
     padding: .5rem .75rem .5rem 2.25rem; margin: .25rem 0; position: relative;
-    background: var(--npl-surface); border-radius: 0 8px 8px 0; }
+    background: var(--sem-surface); border-radius: 0 8px 8px 0; }
   .npl-step::before { content: counter(npl-step); position: absolute; left: .6rem;
-    top: .5rem; font-size: .75rem; color: var(--npl-muted); }
-  .npl-step[data-status="done"]::after { content: " ✓"; color: var(--npl-correct); }
-  .npl-step[data-status="current"] { border-left-color: var(--npl-accent); }
-  .npl-step[data-status="current"]::after { content: " →"; color: var(--npl-accent); }
-  .npl-step[data-status="blocked"] { border-left-color: var(--npl-wrong); color: var(--npl-muted); }
-  .npl-step[data-status="blocked"]::after { content: " ⛔"; color: var(--npl-wrong); }
-  .npl-properties { margin: 1rem 0; border: 1px solid var(--npl-border);
-    border-radius: 12px; overflow: hidden; background: var(--npl-surface); }
+    top: .5rem; font-size: .75rem; color: var(--sem-muted); }
+  .npl-step[data-status="done"]::after { content: " ✓"; color: var(--sem-correct); }
+  .npl-step[data-status="current"] { border-left-color: var(--sem-accent); }
+  .npl-step[data-status="current"]::after { content: " →"; color: var(--sem-accent); }
+  .npl-step[data-status="blocked"] { border-left-color: var(--sem-wrong); color: var(--sem-muted); }
+  .npl-step[data-status="blocked"]::after { content: " ⛔"; color: var(--sem-wrong); }
+  .npl-properties { margin: 1rem 0; border: 1px solid var(--sem-border);
+    border-radius: 12px; overflow: hidden; background: var(--sem-surface); }
   .npl-property { display: grid; grid-template-columns: minmax(8rem, 1fr) 2fr;
     gap: .75rem; padding: .5rem .9rem; }
-  .npl-property:nth-child(even) { background: color-mix(in srgb, var(--npl-border) 40%, transparent); }
-  .npl-property::before { content: attr(data-key); color: var(--npl-muted);
+  .npl-property:nth-child(even) { background: color-mix(in srgb, var(--sem-border) 40%, transparent); }
+  .npl-property::before { content: attr(data-key); color: var(--sem-muted);
     font-variant-caps: all-small-caps; }
   .npl-views { margin: 1.5rem 0; }
-  .npl-views-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--npl-border); }
+  .npl-views-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--sem-border); }
   .npl-views-tabs button { border: 1px solid transparent; border-bottom: none;
-    background: none; color: var(--npl-muted); border-radius: 8px 8px 0 0;
+    background: none; color: var(--sem-muted); border-radius: 8px 8px 0 0;
     padding: .4rem .9rem; cursor: pointer; }
-  .npl-views-tabs button[aria-selected="true"] { color: var(--npl-accent);
-    border-color: var(--npl-border); background: var(--npl-surface); }
-  .npl-view { display: none; border: 1px solid var(--npl-border); border-top: none;
-    border-radius: 0 0 12px 12px; padding: 1rem; background: var(--npl-surface); }
+  .npl-views-tabs button[aria-selected="true"] { color: var(--sem-accent);
+    border-color: var(--sem-border); background: var(--sem-surface); }
+  .npl-view { display: none; border: 1px solid var(--sem-border); border-top: none;
+    border-radius: 0 0 12px 12px; padding: 1rem; background: var(--sem-surface); }
   .npl-view[data-active] { display: block; }
-  .npl-reveal { margin: 1rem 0; border: 1px solid var(--npl-border);
-    border-radius: 12px; background: var(--npl-surface); }
+  .npl-reveal { margin: 1rem 0; border: 1px solid var(--sem-border);
+    border-radius: 12px; background: var(--sem-surface); }
   .npl-reveal[data-summary]::before { content: attr(data-summary);
-    display: block; font-variant-caps: all-small-caps; color: var(--npl-muted);
+    display: block; font-variant-caps: all-small-caps; color: var(--sem-muted);
     padding: .6rem .9rem 0; }
   .npl-reveal .npl-reveal-body { padding: .5rem .9rem .75rem; }
   .npl-reveal details:not([open]) .npl-reveal-body { display: none; }
   .npl-progress .npl-progress-track { display: block; height: .5rem;
-    background: color-mix(in srgb, var(--npl-border) 60%, transparent);
+    background: color-mix(in srgb, var(--sem-border) 60%, transparent);
     border-radius: 999px; overflow: hidden; margin-top: .25rem; }
   .npl-progress .npl-progress-fill { display: block; height: 100%;
-    background: var(--npl-accent); border-radius: 999px; }
+    background: var(--sem-accent); border-radius: 999px; }
 </style>
 
 <style type="text/tailwindcss">
@@ -148,7 +148,7 @@
     var view = root.getAttribute('data-view-as') || 'list';
     var items = [].slice.call(root.querySelectorAll('.npl-fact'));
     if (view === 'list' || items.length === 0) return;
-    root.setAttribute('data-npl-fallback', '');
+    root.setAttribute('data-sem-fallback', '');
     var chrome = document.createElement('div');
     chrome.className = 'npl-facts-chrome';
     chrome.innerHTML =
@@ -354,7 +354,7 @@
 
   <h2 id="skeleton">1 · Document skeleton</h2>
 <pre>&lt;!doctype html&gt;
-&lt;html lang="en" data-npl-theme="minimal-tech-light"&gt;
+&lt;html lang="en" data-sem-theme="minimal-tech-light"&gt;
 &lt;head&gt;
   &lt;meta charset="utf-8"&gt;
   &lt;title&gt;…&lt;/title&gt;
@@ -413,7 +413,7 @@
   <h2 id="fallback">4 · Fallback handler &amp; degradation rules</h2>
   <ul>
     <li><code>&lt;script id="npl-fallback"&gt;</code> is embedded inline in every portable doc (~2–4KB vanilla JS): <code>data-view-as</code> switching, reveal toggles, highlight occlusion, basic quiz checking, theme picker. <strong>Zero external resources required for full baseline interactivity.</strong></li>
-    <li><code>npl/npl.js</code> (Lit 3, IIFE) upgrades elements in place when reachable; component implementations supersede fallback behaviors. Handoff contract: fallback sets <code>data-npl-fallback</code>; components remove it on upgrade. BDD asserts both tiers + the handoff.</li>
+    <li><code>npl/npl.js</code> (Lit 3, IIFE) upgrades elements in place when reachable; component implementations supersede fallback behaviors. Handoff contract: fallback sets <code>data-sem-fallback</code>; components remove it on upgrade. BDD asserts both tiers + the handoff.</li>
     <li>Core CSS (inline, plain) keeps the page presentable with JS <em>and</em> CDN absent; Tailwind refinement is a progressive enhancement layer.</li>
     <li>Content lives in light DOM (searchable, copyable); interactive chrome may use shadow DOM once Lit lands.</li>
   </ul>
@@ -528,8 +528,8 @@
 
   <h2 id="themes">6 · Theme conventions</h2>
   <ul>
-    <li><code>data-npl-theme="&lt;slug&gt;"</code> on <code>&lt;html&gt;</code>; one theme per doc; tokens on <code>[data-npl-theme]</code> (this page uses them live).</li>
-    <li>Compiled themes from TRP-format YAML → <code>npl/themes/&lt;slug&gt;.css</code>; <code>--npl-*</code> tokens; <code>:not(:defined)</code> vocabulary base when custom elements land.</li>
+    <li><code>data-sem-theme="&lt;slug&gt;"</code> on <code>&lt;html&gt;</code>; one theme per doc; tokens on <code>[data-sem-theme]</code> (this page uses them live).</li>
+    <li>Compiled themes from TRP-format YAML → <code>npl/themes/&lt;slug&gt;.css</code>; <code>--sem-*</code> tokens; <code>:not(:defined)</code> vocabulary base when custom elements land.</li>
     <li>Ship 4 TRP ports: <code>minimal-tech-light</code> (default), <code>nocturne-console</code>, <code>organic-warm</code>, <code>editorial-settings</code>; auto light/dark via <code>prefers-color-scheme</code>, <code>data-color-mode</code> forces.</li>
   </ul>
 

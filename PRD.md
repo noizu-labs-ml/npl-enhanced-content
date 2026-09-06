@@ -33,7 +33,7 @@ NPL conventions live **inside the tags** — attributes, `::` pairs,
 - **Universal inline fallback handler** (load-bearing, §7): a tiny always-
   embedded vanilla-JS snippet gives every document baseline interactivity even
   when the Lit bundle/CDN is unreachable. Lit upgrades when available.
-- Theme system ported from TRP (YAML tokens → compiled CSS, `--npl-*` tokens).
+- Theme system ported from TRP (YAML tokens → compiled CSS, `--sem-*` tokens).
 - Cypress BDD specs co-authored with each element schema before code.
 
 **Non-Goals (v1)**
@@ -46,7 +46,7 @@ NPL conventions live **inside the tags** — attributes, `::` pairs,
 
 | Asset | In TRP | Disposition |
 | :-- | :-- | :-- |
-| Theme system | YAML → generated CSS, `html[data-design-theme]` | **Lift**; rename `--npl-*`, `data-npl-theme` |
+| Theme system | YAML → generated CSS, `html[data-design-theme]` | **Lift**; rename `--sem-*`, `data-sem-theme` |
 | `trp-item-timeline` | Only real Lit component | **Lift packaging pattern**; port as `npl-chronology` (Tier 2) |
 | Quiz question types | `components/22-quiz-question-types.md` — 7 renderers | **Feature spec** for `view-as="quiz"` |
 | Flashcard spec | `components/13-flashcard.md` — cloze/flip/swipe | **Feature spec** for `npl-fact`/`npl-detail` views |
@@ -56,7 +56,7 @@ NPL conventions live **inside the tags** — attributes, `::` pairs,
 
 ```html
 <!doctype html>
-<html lang="en" data-npl-theme="minimal-tech-light">
+<html lang="en" data-sem-theme="minimal-tech-light">
 <head>
   <meta charset="utf-8">
   <title>Authoring Guide</title>
@@ -138,8 +138,8 @@ Schema + BDD spec land together, before code (§8). Tier order simplest first.
 
 ## 6. Theme System
 
-- `data-npl-theme="<slug>"` on `<html>`; themes compiled from TRP-format YAML
-  → `npl/themes/<slug>.css`; `--npl-*` tokens; `:not(:defined)` vocabulary base
+- `data-sem-theme="<slug>"` on `<html>`; themes compiled from TRP-format YAML
+  → `npl/themes/<slug>.css`; `--sem-*` tokens; `:not(:defined)` vocabulary base
   included so docs are presentable pre-upgrade and JS-off.
 - Shadow components read tokens via fallback indirection; zero-JS theme flips.
 - Ship 4 TRP ports: `minimal-tech-light` (default), `nocturne-console`,

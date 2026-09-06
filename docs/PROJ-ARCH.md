@@ -33,8 +33,8 @@ graph LR
 | Tier-0 specs (`syntax/`) | Authoring conventions (v0.4 class-based baseline) + `npl-note` element schema; BDD source of truth |
 | Class-based vocabulary (v0.4) | Identity = `npl-*` classes on plain elements, parameters = `data-*` attrs; mechanical map to future custom elements |
 | `npl-fallback` handler | ~2–4KB inline vanilla JS: view-as switching, reveal toggles, highlight occlusion, quiz checking, theme picker — zero external resources for baseline interactivity |
-| Lit components (`NplNote` first) | Upgrade elements in place; supersede fallback; light-DOM content, shadow DOM chrome only; handoff via `data-npl-fallback` attr |
-| Theme layer | `data-npl-theme` on `<html>`, `--npl-*` tokens, TRP-YAML-compiled CSS, 4 TRP ports, zero-JS theme flips |
+| Lit components (`NplNote` first) | Upgrade elements in place; supersede fallback; light-DOM content, shadow DOM chrome only; handoff via `data-sem-fallback` attr |
+| Theme layer | `data-sem-theme` on `<html>`, `--sem-*` tokens, TRP-YAML-compiled CSS, 4 TRP ports, zero-JS theme flips |
 | Standalone demo (`demo/index.html`) | Reference implementation of the v0.4 baseline (single file: core CSS + Tailwind `@apply` layer + fallback JS) |
 | Cypress e2e (`cypress/`) | Validates demo behavior; mirrors the `npl-note` schema BDD |
 
@@ -44,7 +44,7 @@ graph LR
 
 1. **JS-off**: `npl-*:not(:defined)` theme CSS — accent borders, variant labels, presentable, no layout shift on upgrade.
 2. **Fallback**: embedded vanilla handler provides full baseline interactivity (Lit-free single-file form works).
-3. **Upgraded**: Lit components register, remove `data-npl-fallback`, own behavior.
+3. **Upgraded**: Lit components register, remove `data-sem-fallback`, own behavior.
 
 Content always lives in light DOM (searchable/copyable); shadow DOM carries interactive chrome only.
 
