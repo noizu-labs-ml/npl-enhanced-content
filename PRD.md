@@ -170,9 +170,9 @@ runtime fetch; data via inline JSON payload scripts or attributes. Forms:
 
 ## 9. BDD Process (binding)
 
-1. `syntax/schema/<element>.md` — semantic contract: children, attrs, view-as
+1. `spec/schema/<element>.md` — semantic contract: children, attrs, view-as
    modes, events, a11y, machine-annotation contract.
-2. `cypress/e2e/<element>.cy.js` — render, fallback-only, upgraded, JS-off,
+2. `test/e2e/<element>.cy.js` — render, fallback-only, upgraded, JS-off,
    file:// smoke, a11y roles.
 3. Implement until green; next element only then.
 4. Syntax red/green: if a spec can't be written concisely, fix the vocabulary.
@@ -182,9 +182,9 @@ runtime fetch; data via inline JSON payload scripts or attributes. Forms:
 ```
 semtext/
 ├── PRD.md
-├── syntax/{conventions.md,schema/}
-├── src/{elements/,themes/build.ts,index.ts}
-├── themes/ · demo/ · cypress/e2e/
+├── spec/{conventions.md,extraction.md,schema/sem-*.md}
+├── src/{index.ts,lit/,fallback/,extract/,shared/}
+├── themes/ · web/{demo/,site/} · test/{e2e/,support/} · scripts/
 └── package.json (lit ^3, vite, typescript, cypress)
 ```
 
@@ -194,7 +194,7 @@ Local repo `Portfolio/AI/npl-enhanced-content`; promotion via `make-repo` →
 | Milestone | Content | Exit |
 | :-- | :-- | :-- |
 | M1 | Format spec v0 + Tier-0 schemas + red BDD specs (fallback + upgraded) | 9 schemas, 9 red specs |
-| M2 | **v0.4 class-based baseline shipped** (`demo/index.html`: inline CSS + Tailwind CDN + fallback handler); Lit upgrade deferred to M3+ | demo opens via double-click; flashcards/quiz/highlight work with zero external resources beyond Tailwind CDN |
+| M2 | **v0.4 class-based baseline shipped** (`web/demo/index.html`: inline CSS + Tailwind CDN + fallback handler); Lit upgrade deferred to M3+ | demo opens via double-click; flashcards/quiz/highlight work with zero external resources beyond Tailwind CDN |
 | M3 | `sem-facts`/`sem-details` flagship (list/flashcards/quiz) | demo + green, single-file variant builds |
 | M4 | `sem-question` 7 types; highlight occlusion full | TRP parity |
 | M5 | Tier 2 + MHTML + npm publish prep | zero React; mhtml round-trip |

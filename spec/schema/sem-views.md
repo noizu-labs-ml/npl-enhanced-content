@@ -1,7 +1,7 @@
 # Schema — `sem-views` / `sem-view`
 
 Contract per conventions.md v0.4. BDD source of truth for
-`cypress/e2e/sem-views.cy.js`. Changes here precede spec changes precede
+`test/e2e/sem-views.cy.js`. Changes here precede spec changes precede
 code.
 
 ❓ Q3 resolved for v1: **`sem-views`** (not `sem-perspectives`) — shorter,

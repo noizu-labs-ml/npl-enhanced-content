@@ -1,13 +1,13 @@
 # Schema — extraction (DOM → records → annotated text)
 
 Contract per conventions.md v0.4 §8 ("Machine-readability contract"). BDD
-source of truth for `cypress/e2e/extraction.cy.js`. Reference
+source of truth for `test/e2e/extraction.cy.js`. Reference
 implementation: `src/extract/records.ts`. Changes here precede spec changes
 precede code.
 
 This is the reference recipe conventions.md §8 has promised since v0.1. It is
 normative, not illustrative: the per-element "Machine contract" sections in
-`syntax/schema/*.md` say *what* each element means; this file says what a
+`spec/schema/*.md` say *what* each element means; this file says what a
 consumer actually receives, in what order, and what it is guaranteed never to
 see.
 
@@ -58,7 +58,7 @@ interface SemRecord {
   `#auth-facts/f-jwt`, which the consumer composes from the fact's `id` and
   its parent record's `id`. Containment is a number, not an id, because
   containers are not required to carry one — the flashcards deck in
-  `demo/index.html` does not.
+  `web/demo/index.html` does not.
 - `text` is always present and always a single line: whitespace runs are
   collapsed to one space and the result is trimmed. Container records carry
   `text: ""`; their content lives in their children.
@@ -108,7 +108,7 @@ Missing children yield `""`. `text` = `name`.
 ### `sem-note`
 
 `fields: { variant }` — `data-variant` / `variant`, defaulting to `info` per
-`syntax/schema/sem-note.md`. `text` = the note body: `.sem-note-body` when
+`spec/schema/sem-note.md`. `text` = the note body: `.sem-note-body` when
 present, otherwise the note's own prose.
 
 `collapsed` is **not** extracted. It is initial disclosure state, and the
@@ -129,7 +129,7 @@ fallback removes the attribute when the reader opens the note (see §5).
   With no `::`, the whole text is the `statement` and `conclusion` is `""`.
   Children always win over the compact form (conventions §3).
 - `distractors` are extracted **as distractors and never as claims**, which
-  is exactly what `syntax/schema/sem-facts.md` requires: they appear in their
+  is exactly what `spec/schema/sem-facts.md` requires: they appear in their
   own array, never in `text`, never as a `conclusion`.
 - `highlights` are the fact's recall prompts, in either the authored
   (`.sem-highlight`, `<highlight>`) or occluded (`.sem-occluded`) form.
@@ -145,7 +145,7 @@ extracted. They are already in the output as other facts' conclusions.
 
 `sem-detail` yields `fields: { highlights: string[] }` and `text` = the
 passage prose. This is the `{container, passage, cloze}` shape
-`syntax/schema/sem-details.md` promises, spelled as `parent`, `text`, and
+`spec/schema/sem-details.md` promises, spelled as `parent`, `text`, and
 `highlights`.
 
 A highlight is reported identically whether it is authored
@@ -162,7 +162,7 @@ text that is still in the DOM; extraction reads through it.
 
 - `status` = `data-status` / `status`, defaulting to `todo`.
 - `ordinal` is **positional and 1-based**, counted among sibling steps. There
-  is deliberately no ordinal attribute: `syntax/schema/sem-procedure.md`
+  is deliberately no ordinal attribute: `spec/schema/sem-procedure.md`
   makes DOM order the execution order, and extraction is where that becomes a
   number a consumer can use.
 - Status sugar (`✅`, `→`, `❌`) in step text is display-only and is not
@@ -216,7 +216,7 @@ deep links cite.
 - `collapsed` is not extracted (§5).
 
 **Recorded divergence.** The v0.4 fallback derives its `<summary>` as the
-first eight words plus `" …"`. `syntax/schema/sem-reveal.md` specifies "first
+first eight words plus `" …"`. `spec/schema/sem-reveal.md` specifies "first
 line of body, max 60 chars". The two rules disagree. Extraction implements
 the schema's rule; the fallback's string is a display artifact and is skipped
 outright. Reconciling the fallback to the schema is tracked separately —
@@ -230,7 +230,7 @@ present; `text` = `label :: N%` with `N` the rounded clamped percentage.
 - `value` is the clamped number in `[0,1]`; a non-numeric or absent attribute
   clamps to `0`.
 - `rawValue` is the **authored attribute string, untouched**.
-  `syntax/schema/sem-progress.md` is explicit that render clamps while the
+  `spec/schema/sem-progress.md` is explicit that render clamps while the
   attribute stays as written, so a machine reader must be able to see
   `1.4` and know the author asserted something out of range.
 - `text` is **derived from the attributes, never read from the DOM**. The
@@ -273,7 +273,7 @@ E(D) = E(R(D)) = E(I(R(D))) = E(V(D, m)) = E(V(R(D), m))
 
 Equality is deep equality of the record array, including `sourceOrder`.
 
-This is a testable claim, and `cypress/e2e/extraction.cy.js` is the test. It
+This is a testable claim, and `test/e2e/extraction.cy.js` is the test. It
 is the executable form of the format's central promise: one file, three
 consumers, and the machine consumer does not get a degraded reading of what
 the human consumer saw.

@@ -1,7 +1,7 @@
 # Schema — `sem-note`
 
 Contract per conventions.md v0.3. BDD source of truth for
-`cypress/e2e/sem-note.cy.js`. Changes here precede spec changes precede code.
+`test/e2e/sem-note.cy.js`. Changes here precede spec changes precede code.
 
 ## Authoring form (canonical — no preprocessing layer)
 

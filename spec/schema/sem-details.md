@@ -1,7 +1,7 @@
 # Schema — `sem-details` / `sem-detail` / `highlight`
 
 Contract per conventions.md v0.4. BDD source of truth for
-`cypress/e2e/sem-details.cy.js`. Changes here precede spec changes
+`test/e2e/sem-details.cy.js`. Changes here precede spec changes
 precede code.
 
 ## Scope decision (recorded)
@@ -12,7 +12,7 @@ Three candidate readings existed for `sem-details`; this schema adopts the
 1. **Adopted**: container of `sem-detail` prose passages whose
    `span.sem-highlight` children mark cloze/recall targets;
    `data-view-as="quiz"` occludes them (the universal `<highlight>` cloze,
-   PRD §4 rule 3). The demo prototype (demo/index.html) already implements
+   PRD §4 rule 3). The demo prototype (web/demo/index.html) already implements
    this — M3 formalizes it.
 2. *Rejected — collapsible detail block*: `sem-reveal` already owns
    Q→A disclosure (`<details>`/`<summary>`); a second collapsible block

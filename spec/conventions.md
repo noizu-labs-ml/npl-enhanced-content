@@ -4,7 +4,7 @@
 **classes on plain elements** (`<div class="sem-agent">`), not custom
 elements: inline core CSS + Tailwind CDN refinement (`@apply` on `sem-*`
 classes) + the vanilla fallback handler. Reference implementation:
-`demo/index.html`. Semantic custom elements (`<sem-fact>`) remain the target
+`web/demo/index.html`. Semantic custom elements (`<sem-fact>`) remain the target
 vocabulary for the Lit milestone; the class mapping below is mechanical.
 
 **v0.4 mapping** — identity = class, parameters = `data-*` attrs:
@@ -178,7 +178,7 @@ Compact form: `<sem-fact>JWT rotation :: short-lived access</sem-fact>`.
 Machine view: statement+conclusion = structured assertion.
 
 **sem-facts** — collection; the flagship surface.
-**Normative: `syntax/schema/sem-facts.md`.**
+**Normative: `spec/schema/sem-facts.md`.**
 ```html
 <sem-facts view-as="quiz" controls="shuffle,filter">
   <sem-fact>…</sem-fact>
@@ -193,7 +193,7 @@ Machine view: statement+conclusion = structured assertion.
 - Events: `sem-navigate {index}`, `sem-flip {face}`, `sem-complete {correct,total,ms}`.
 
 **sem-detail / sem-details** — prose with occludable content.
-**Normative: `syntax/schema/sem-details.md`.**
+**Normative: `spec/schema/sem-details.md`.**
 ```html
 <sem-details view-as="quiz">
   <sem-detail>
@@ -205,7 +205,7 @@ Plain view: `<highlight>` renders `<em>`. Quiz view: occluded (`▮▮▮`), rev
 per item, self-check or auto-check.
 
 **sem-procedure / sem-step** — ordered, status-annotated procedure.
-**Normative: `syntax/schema/sem-procedure.md`.**
+**Normative: `spec/schema/sem-procedure.md`.**
 ```html
 <div class="sem-procedure" data-kind="runbook" role="list">
   <div class="sem-step" role="listitem" data-status="done">provision Infisical path</div>
@@ -219,7 +219,7 @@ execution order (ordinals positional, CSS counters); status sugar
 (`✅/→/❌`) is display-only — `data-status` canonical. **Zero-JS element.**
 
 **sem-properties / sem-property** — definition/properties block.
-**Normative: `syntax/schema/sem-properties.md`.**
+**Normative: `spec/schema/sem-properties.md`.**
 ```html
 <div class="sem-properties" data-kind="config">
   <div class="sem-property" data-key="token ttl"
@@ -234,7 +234,7 @@ renders via CSS `attr(data-key)`; AT gets the pair via
 copy/search chrome.**
 
 **sem-views / sem-view** — same content, switchable perspectives.
-**Normative: `syntax/schema/sem-views.md`.**
+**Normative: `spec/schema/sem-views.md`.**
 ```html
 <div class="sem-views" id="deploy">
   <div class="sem-view" data-name="Helm" data-active role="tabpanel">content…</div>
@@ -248,7 +248,7 @@ fires `sem-navigate {id, name, index}`. JS-off: all views stacked,
 `data-name`-headed. **Q3 resolved v1: `sem-views`.**
 
 **sem-reveal** — Q→A disclosure, `<details>`-backed.
-**Normative: `syntax/schema/sem-reveal.md`.**
+**Normative: `spec/schema/sem-reveal.md`.**
 ```html
 <div class="sem-reveal" data-summary="Why not localStorage?" collapsed>
   Tokens in localStorage are readable by any script on the page…
@@ -260,7 +260,7 @@ fires `sem-navigate {id, name, index}`. JS-off: all views stacked,
 heading). Non-assertive counterpart to `sem-fact` Q/A shape.
 
 **sem-progress** — completion meter.
-**Normative: `syntax/schema/sem-progress.md`.**
+**Normative: `spec/schema/sem-progress.md`.**
 ```html
 <div class="sem-progress" data-value="0.62" data-label="coverage"
      role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"></div>

@@ -1,7 +1,7 @@
 # Schema — `sem-facts` / `sem-fact`
 
 Contract per conventions.md v0.4. BDD source of truth for
-`cypress/e2e/sem-facts.cy.js`. Changes here precede spec changes
+`test/e2e/sem-facts.cy.js`. Changes here precede spec changes
 precede code.
 
 ## Scope semantics
