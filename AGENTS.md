@@ -1,4 +1,4 @@
-# AGENTS.md — npl-enhanced-content
+# AGENTS.md — SemText
 
 Guidance for **Codex**, **Grok**, **Cursor**, and other `AGENTS.md` / `AGENT.md` tools.
 
@@ -13,11 +13,22 @@ Claude Code loads [CLAUDE.md](./CLAUDE.md). Same policy; this file is the harnes
 
 ## Identity
 
-XHTML-first rich-content spec for NPL (Tier-0 schemas, Lit `NplNote` component + standalone demo, cypress e2e). Monorepo role: NPL-ecosystem spec + JS demo; couples to NPL framework and Libs Lit components.
+XHTML-first rich-content spec for NPL (Tier-0 schemas, Lit `SemNote` component + standalone demo, cypress e2e). Monorepo role: NPL-ecosystem spec + JS demo; couples to NPL framework and Libs Lit components.
 
 ## Stack & commands
 
 Node/Vite demo + cypress. `npm install` · `npm test` / e2e via `cypress.config.js` (see `package.json` scripts).
+
+## Layout
+
+Top-level directories are domains — `spec/` (normative format specs),
+`src/` (`lit/`, `fallback/`, `extract/`, `shared/`), `themes/` (CSS, kept
+top-level as a subpath export + CDN asset), `web/` (`demo/`, `site/`),
+`test/` (cypress `e2e/` + `support/`), `scripts/`, `docs/`.
+Full tree: `docs/PROJ-LAYOUT.md` (summary: `docs/PROJ-LAYOUT.summary.md`).
+
+Cypress runs against the BUILT pages in `dist/demo/`, not the marker sources
+in `web/demo/` — run `npm run build` before `npm test`.
 
 ## Branch & PR Policy
 

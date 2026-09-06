@@ -1,26 +1,32 @@
 {
-  "name": "npl-enhanced-content",
+  "name": "semtext",
   "version": "0.1.0",
-  "description": "NPL-enhanced content — Unicode-block semantic markup rendered by Lit web components. Zero React.",
+  "description": "SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. Rendered by Lit web components over a zero-JS fallback tier. Zero React.",
   "type": "module",
+  "//exports": "Three subpaths, one per shipped artifact, plus raw theme CSS. Each artifact is a classic IIFE script that installs a global (SemText, SemTextFallback, SemTextExtract) and exports NOTHING — so consume a subpath either as a <script src> tag / CDN asset, or as a side-effect ESM import (`import 'semtext/lit'`, which registers the custom elements). Named imports are not available from any subpath. There is deliberately no '.' export: ROADMAP debt D9 was 'type: module' advertising an ESM package whose root mapped to a non-importable script. Dropping '.' removes the false promise rather than papering over it.",
   "exports": {
-    ".": "./dist/npl.js",
-    "./preprocess": "./dist/preprocess.js",
+    "./lit": "./dist/semtext.js",
+    "./fallback": "./dist/semtext-fallback.js",
+    "./extract": "./dist/semtext-extract.js",
     "./themes/*": "./themes/*"
   },
   "files": ["dist", "themes"],
   "scripts": {
-    "build": "vite build",
+    "build": "node scripts/build.mjs && node scripts/build-standalone.mjs",
+    "build:strict": "node scripts/build.mjs --strict-budget && node scripts/build-standalone.mjs",
     "test": "cypress run --e2e",
     "test:open": "cypress open --e2e",
-    "serve": "vite preview --port 4173"
+    "test:unit": "vitest run",
+    "serve": "vite preview --outDir dist --port 4173 --strictPort"
   },
   "dependencies": {
     "lit": "^3.3.3"
   },
   "devDependencies": {
     "cypress": "^15.21.1",
+    "happy-dom": "^20.14.0",
     "typescript": "^5.6.0",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vitest": "^5.0.0"
   }
 }

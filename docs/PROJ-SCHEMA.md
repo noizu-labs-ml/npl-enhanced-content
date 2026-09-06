@@ -1,4 +1,4 @@
-# Data Schema — npl-enhanced-content
+# Data Schema — SemText
 
 No relational persistence, KV store, or runtime config layer exists in this
 repo. The repo is **spec-first**: its primary "schema" is the markup/data
@@ -7,8 +7,8 @@ interface contract for NPL-enhanced XHTML documents. Repo layout:
 
 | Data kind | Source | Documented here |
 |-----------|--------|-----------------|
-| Data interface schema (markup contract) | `syntax/conventions.md`, `syntax/schema/npl-note.md` | §1, §2 |
-| Data files (canonical spec HTML) | `syntax/conventions.html`, `demo/index.html` | §3 |
+| Data interface schema (markup contract) | `spec/conventions.md`, `spec/schema/sem-note.md` | §1, §2 |
+| Data files (canonical spec HTML) | `spec/conventions.html`, `web/demo/index.html` | §3 |
 | Config file schemas | `package.json`, `vite.config.ts`, `tsconfig.json`, `cypress.config.js` | §4 |
 | Persistence / KV | — (none) | — |
 
@@ -16,23 +16,23 @@ interface contract for NPL-enhanced XHTML documents. Repo layout:
 
 NPL-enhanced documents are XHTML readable by three consumers: browser (styled/
 interactive), LLM (structural), terminal. Canonical form: **class-based**
-(`div.npl-*` on plain elements) with `data-*` attribute parameters; semantic
-custom elements (`<npl-fact>`) are the target vocabulary for the Lit milestone.
+(`div.sem-*` on plain elements) with `data-*` attribute parameters; semantic
+custom elements (`<sem-fact>`) are the target vocabulary for the Lit milestone.
 
 ### v0.3 element → v0.4 class mapping
 
 | Element form | Class markup |
 | :-- | :-- |
-| `<npl-enhanced-document>` | `div.npl-enhanced-document` (required root wrapper) |
-| `<agent>` + name/bio/instructions | `div.npl-agent` › `.npl-agent-name` / `-bio` / `-instructions` |
-| `<npl-note variant="warning">` | `div.npl-note[data-variant="warning"]` › `.npl-note-body` |
-| `<npl-facts view-as="quiz">` | `div.npl-facts[data-view-as="quiz"]` |
-| `<npl-fact>` statement/conclusion | `div.npl-fact` › `.npl-statement` / `.npl-conclusion` |
-| `<npl-distractor>` | `div.npl-distractor` |
-| `<npl-details>` / `<npl-detail>` | `div.npl-details` › `div.npl-detail` |
-| `<highlight>` | `span.npl-highlight` (occluded form `.npl-occluded`) |
+| `<sem-enhanced-document>` | `div.sem-enhanced-document` (required root wrapper) |
+| `<agent>` + name/bio/instructions | `div.sem-agent` › `.sem-agent-name` / `-bio` / `-instructions` |
+| `<sem-note variant="warning">` | `div.sem-note[data-variant="warning"]` › `.sem-note-body` |
+| `<sem-facts view-as="quiz">` | `div.sem-facts[data-view-as="quiz"]` |
+| `<sem-fact>` statement/conclusion | `div.sem-fact` › `.sem-statement` / `.sem-conclusion` |
+| `<sem-distractor>` | `div.sem-distractor` |
+| `<sem-details>` / `<sem-detail>` | `div.sem-details` › `div.sem-detail` |
+| `<highlight>` | `span.sem-highlight` (occluded form `.sem-occluded`) |
 
-### Global attribute catalog (any npl-* element)
+### Global attribute catalog (any sem-* element)
 
 | Attribute | Values | Machine meaning |
 | :-- | :-- | :-- |
@@ -48,7 +48,7 @@ custom elements (`<npl-fact>`) are the target vocabulary for the Lit milestone.
 Rule: **attributes are canonical; inline `[hint | reveal]` NPL notation is
 sugar** and legal only where the element schema allows.
 
-## 2. `npl-note` element schema (syntax/schema/npl-note.md, contract v0.3)
+## 2. `sem-note` element schema (spec/schema/sem-note.md, contract v0.3)
 
 | Field | Type | Default | Notes |
 |-------|------|---------|-------|
@@ -58,18 +58,18 @@ sugar** and legal only where the element schema allows.
 | `role` | `note` | set on upgrade by Lit component; authored pre-set for JS-off machine readers | a11y contract |
 | Events | — | none | |
 
-Rendered forms: upgraded (Lit `NplNote`, light DOM — no shadow root, content
-searchable); pre-upgrade/JS-off (`npl-note:not(:defined)` base styles via
-attribute selectors). BDD source of truth for `cypress/e2e/npl-note.cy.js`.
+Rendered forms: upgraded (Lit `SemNote`, light DOM — no shadow root, content
+searchable); pre-upgrade/JS-off (`sem-note:not(:defined)` base styles via
+attribute selectors). BDD source of truth for `test/e2e/sem-note.cy.js`.
 Change order: schema → spec → code.
 
 ## 3. Data files
 
 | Path | Purpose | Shape |
 |------|---------|-------|
-| `syntax/conventions.md` | Authoring spec source of truth (v0.4 draft) | Markdown, 10 sections + open questions |
-| `syntax/conventions.html` | Rendered conventions (XHTML canonical) | XHTML document exercising the vocabulary |
-| `demo/index.html` | Reference implementation of the class-based v0.4 baseline | Single-file XHTML: inline core CSS + Tailwind CDN `@apply` layer + `npl-fallback` vanilla JS |
+| `spec/conventions.md` | Authoring spec source of truth (v0.4 draft) | Markdown, 10 sections + open questions |
+| `spec/conventions.html` | Rendered conventions (XHTML canonical) | XHTML document exercising the vocabulary |
+| `web/demo/index.html` | Reference implementation of the class-based v0.4 baseline | Single-file XHTML: inline core CSS + Tailwind CDN `@apply` layer + `sem-fallback` vanilla JS |
 
 ## 4. Config file schemas
 
@@ -78,23 +78,23 @@ Change order: schema → spec → code.
 | Field | Value |
 |-------|-------|
 | `type` | `module` |
-| `exports` | `.` → `dist/npl.js`, `./preprocess` → `dist/preprocess.js`, `./themes/*` → `themes/*` |
+| `exports` | `./lit` → `dist/semtext.js`, `./fallback` → `dist/semtext-fallback.js`, `./extract` → `dist/semtext-extract.js`, `./themes/*` → `themes/*`. No `.` export — each artifact is a classic IIFE script that installs a global and exports nothing (D9). |
 | `files` | `dist`, `themes` |
 | `dependencies` | `lit ^3.3.3` |
 | `devDependencies` | `cypress ^14`, `typescript ^5.6`, `vite ^6` |
-| scripts | `build` (vite build), `test` / `test:open` (cypress e2e), `serve` (vite preview :4173) |
+| scripts | `build` (`scripts/build.mjs` + `scripts/build-standalone.mjs`), `build:strict` (same, budget-enforcing), `test` / `test:open` (cypress e2e), `serve` (vite preview :4173) |
 
 ### Tool configs
 
 | File | Key settings |
 |------|--------------|
-| `vite.config.ts` | Library build → `dist/`; serves `demo/` |
+| `vite.config.ts` | Dev/preview only — the three-artifact build lives in `scripts/build.mjs` |
 | `tsconfig.json` | TypeScript compile options for vite build |
-| `cypress.config.js` | E2E spec path `cypress/e2e`, baseUrl pointed at the vite preview server |
+| `cypress.config.js` | E2E spec path `test/e2e`, baseUrl pointed at the vite preview server |
 
 ## Maintenance
 
-- Updates here must follow changes to `syntax/` specs (spec precedes code).
+- Updates here must follow changes to `spec/` specs (spec precedes code).
 - If a persistence layer, KV store, or server API is added, add the
   corresponding section per PROJ-SCHEMA conventions (ERD / key-pattern /
   interface tables).

@@ -1,0 +1,23 @@
+/* SemText — theme: minimal-tech-light
+   Token layer only. Structural/component rules live in themes/_vocabulary.css.
+   A new theme is a copy of this file with new --sem-* values — no selectors
+   beyond [data-sem-theme="<name>"] and its dark-mode media block. */
+
+[data-sem-theme="minimal-tech-light"] {
+  --sem-bg: #fafafa; --sem-surface: #ffffff; --sem-fg: #1e293b;
+  --sem-muted: #64748b; --sem-border: #e2e8f0; --sem-accent: #2563eb;
+  --sem-accent-fg: #ffffff;
+  --sem-note-info: #2563eb; --sem-note-tip: #059669;
+  --sem-note-warning: #d97706; --sem-note-danger: #dc2626;
+  --sem-correct: #059669; --sem-wrong: #dc2626; --sem-occluded: #94a3b8;
+}
+@media (prefers-color-scheme: dark) {
+  [data-sem-theme="minimal-tech-light"] {
+    --sem-bg: #0f172a; --sem-surface: #1e293b; --sem-fg: #e2e8f0;
+    --sem-muted: #94a3b8; --sem-border: #334155; --sem-accent: #60a5fa;
+    --sem-accent-fg: #0f172a;
+    --sem-note-info: #60a5fa; --sem-note-tip: #34d399;
+    --sem-note-warning: #fbbf24; --sem-note-danger: #f87171;
+    --sem-correct: #34d399; --sem-wrong: #f87171; --sem-occluded: #475569;
+  }
+}

@@ -1,15 +1,15 @@
 # Project Architecture — Summary
 
-XHTML-first rich-content format for NPL: one document serves browser (styled/interactive), LLM (structural), terminal (text extraction). Spec-first repo — `syntax/` tier-0 specs govern code; Lit `NplNote` + demo + cypress currently ship.
+XHTML-first rich-content format for NPL: one document serves browser (styled/interactive), LLM (structural), terminal (text extraction). Spec-first repo — `spec/` tier-0 specs govern code; Lit `SemNote` + demo + cypress currently ship.
 
 ## Components
 
-- **Tier-0 specs** (`syntax/conventions.md` v0.4, `schema/npl-note.md`) — BDD source of truth; change order spec → spec → code → e2e.
-- **Class-based vocabulary** — identity = `npl-*` classes, parameters = `data-*`; mechanical map to future custom elements.
-- **`npl-fallback` handler** — inline ~2–4KB vanilla JS; full baseline interactivity with zero external resources.
-- **Lit 3 components** — upgrade in place, light-DOM content, shadow-DOM chrome; handoff via `data-npl-fallback`.
-- **Theme layer** — `data-npl-theme`, `--npl-*` tokens, 4 TRP-ported themes, zero-JS flips.
-- **Demo + cypress** — reference impl (`demo/index.html`) validated by `cypress/e2e/npl-note.cy.js`.
+- **Tier-0 specs** (`spec/conventions.md` v0.4, `schema/sem-note.md`) — BDD source of truth; change order spec → spec → code → e2e.
+- **Class-based vocabulary** — identity = `sem-*` classes, parameters = `data-*`; mechanical map to future custom elements.
+- **`sem-fallback` handler** — inline ~2–4KB vanilla JS; full baseline interactivity with zero external resources.
+- **Lit 3 components** — upgrade in place, light-DOM content, shadow-DOM chrome; handoff via `data-sem-fallback`.
+- **Theme layer** — `data-sem-theme`, `--sem-*` tokens, 4 TRP-ported themes, zero-JS flips.
+- **Demo + cypress** — reference impl (`web/demo/index.html`) validated by `test/e2e/sem-note.cy.js`.
 
 ## Rendering tiers
 

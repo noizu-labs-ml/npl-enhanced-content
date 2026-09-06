@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en" data-sem-theme="minimal-tech-light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SemText · Format Spec v0.4</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  [data-sem-theme="minimal-tech-light"] {
+    --sem-bg: #fafafa; --sem-surface: #ffffff; --sem-fg: #1e293b;
+    --sem-muted: #64748b; --sem-border: #e2e8f0; --sem-accent: #2563eb;
+    --sem-note-info: #2563eb; --sem-note-tip: #059669;
+    --sem-note-warning: #d97706; --sem-note-danger: #dc2626;
+    --sem-correct: #059669; --sem-wrong: #dc2626; --sem-occluded: #94a3b8;
+  }
+  @media (prefers-color-scheme: dark) {
+    [data-sem-theme="minimal-tech-light"] {
+      --sem-bg: #0f172a; --sem-surface: #1e293b; --sem-fg: #e2e8f0;
+      --sem-muted: #94a3b8; --sem-border: #334155; --sem-accent: #60a5fa;
+      --sem-note-info: #60a5fa; --sem-note-tip: #34d399;
+      --sem-note-warning: #fbbf24; --sem-note-danger: #f87171;
+      --sem-correct: #34d399; --sem-wrong: #f87171; --sem-occluded: #475569;
+    }
+  }
+  body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
+  .sem-enhanced-document { font-family: system-ui, sans-serif; line-height: 1.6; }
+
+  /* spec-document furniture */
+  h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 .25rem; }
+  h2 { font-size: 1.125rem; font-weight: 600; margin: 2rem 0 .5rem;
+       border-bottom: 1px solid var(--sem-border); padding-bottom: .3rem; }
+  h2:target { outline: 2px solid var(--sem-accent); outline-offset: 4px; border-radius: 4px; }
+  h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 .4rem; }
+  p { margin: .5rem 0; }
+  ul { margin: .5rem 0; padding-left: 1.25rem; }
+  pre { background: var(--sem-surface); border: 1px solid var(--sem-border);
+        border-radius: 8px; padding: .75rem 1rem; overflow-x: auto;
+        font-size: .8rem; line-height: 1.5; margin: .75rem 0; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  :not(pre) > code { background: color-mix(in srgb, var(--sem-accent) 10%, transparent);
+        padding: .1em .3em; border-radius: 4px; font-size: .9em; }
+  table { border-collapse: collapse; width: 100%; margin: .75rem 0; font-size: .85rem; }
+  th, td { border: 1px solid var(--sem-border); padding: .4rem .6rem;
+           text-align: left; vertical-align: top; }
+  th { background: var(--sem-surface); font-weight: 600; }
+  .sem-toc { border: 1px solid var(--sem-border); border-radius: 12px;
+             background: var(--sem-surface); padding: 1rem 1.5rem; margin: 1rem 0; }
+  .sem-toc a { color: var(--sem-accent); text-decoration: none; }
+  .sem-toc a:hover { text-decoration: underline; }
+  .sem-toc ol { margin: .25rem 0; }
+  .sem-doc-meta { color: var(--sem-muted); font-size: .85rem; margin-bottom: 1.5rem; }
+  .sem-open { color: var(--sem-note-warning); font-weight: 600; }
+
+  /* component base (shared with web/demo/index.html) */
+  .sem-note { border-left: 4px solid var(--sem-note-info); border-radius: 8px;
+    padding: .75rem 1rem; margin: 1rem 0; background: var(--sem-surface); }
+  .sem-note[data-variant="warning"] { border-color: var(--sem-note-warning); }
+  .sem-note[data-variant="tip"]     { border-color: var(--sem-note-tip); }
+  .sem-note[data-variant="danger"]  { border-color: var(--sem-note-danger); }
+  .sem-note[data-variant]::before { content: attr(data-variant) " · ";
+    font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--sem-muted); display: block; }
+  .sem-facts { margin: 1rem 0; }
+  .sem-facts-chrome { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
+  .sem-facts-chrome button { border: 1px solid var(--sem-border); background: var(--sem-surface);
+    color: var(--sem-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
+  .sem-facts-meter { color: var(--sem-muted); font-size: .875rem; }
+  .sem-fact { border: 1px solid var(--sem-border); border-radius: 12px;
+    padding: 1rem; margin: .75rem 0; background: var(--sem-surface); }
+  .sem-fact .sem-statement { font-weight: 600; }
+  .sem-fact .sem-conclusion { margin: .5rem 0 0; color: var(--sem-muted); }
+  .sem-fact .sem-distractor { display: none; }
+  .sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact { display: none; cursor: pointer;
+    min-height: 6rem; }
+  .sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact.sem-current { display: block; }
+  .sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact .sem-conclusion { visibility: hidden; }
+  .sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact.sem-flipped .sem-conclusion { visibility: visible; }
+  .sem-facts[data-sem-fallback][data-view-as="quiz"] .sem-fact .sem-conclusion { display: none; }
+  .sem-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
+  .sem-quiz-options button { text-align: left; border: 1px solid var(--sem-border);
+    background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
+    padding: .5rem .75rem; cursor: pointer; }
+  .sem-quiz-options button[data-correct="true"].sem-answered { border-color: var(--sem-correct); }
+  .sem-quiz-options button.sem-wrong-pick { border-color: var(--sem-wrong); }
+  .sem-highlight { font-style: normal; background: color-mix(in srgb, var(--sem-accent) 18%, transparent);
+    border-radius: 4px; padding: 0 .2em; }
+  .sem-occluded { color: transparent; background: var(--sem-occluded); border-radius: 4px;
+    cursor: pointer; user-select: none; transition: color .15s; min-width: 3ch; display: inline-block; }
+  .sem-revealed { color: inherit; background: color-mix(in srgb, var(--sem-accent) 18%, transparent); }
+  /* Tier-0 expansion (matches web/demo/index.html) */
+  .sem-step { counter-increment: sem-step; border-left: 3px solid var(--sem-border);
+    padding: .5rem .75rem .5rem 2.25rem; margin: .25rem 0; position: relative;
+    background: var(--sem-surface); border-radius: 0 8px 8px 0; }
+  .sem-step::before { content: counter(sem-step); position: absolute; left: .6rem;
+    top: .5rem; font-size: .75rem; color: var(--sem-muted); }
+  .sem-step[data-status="done"]::after { content: " ✓"; color: var(--sem-correct); }
+  .sem-step[data-status="current"] { border-left-color: var(--sem-accent); }
+  .sem-step[data-status="current"]::after { content: " →"; color: var(--sem-accent); }
+  .sem-step[data-status="blocked"] { border-left-color: var(--sem-wrong); color: var(--sem-muted); }
+  .sem-step[data-status="blocked"]::after { content: " ⛔"; color: var(--sem-wrong); }
+  .sem-properties { margin: 1rem 0; border: 1px solid var(--sem-border);
+    border-radius: 12px; overflow: hidden; background: var(--sem-surface); }
+  .sem-property { display: grid; grid-template-columns: minmax(8rem, 1fr) 2fr;
+    gap: .75rem; padding: .5rem .9rem; }
+  .sem-property:nth-child(even) { background: color-mix(in srgb, var(--sem-border) 40%, transparent); }
+  .sem-property::before { content: attr(data-key); color: var(--sem-muted);
+    font-variant-caps: all-small-caps; }
+  .sem-views { margin: 1.5rem 0; }
+  .sem-views-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--sem-border); }
+  .sem-views-tabs button { border: 1px solid transparent; border-bottom: none;
+    background: none; color: var(--sem-muted); border-radius: 8px 8px 0 0;
+    padding: .4rem .9rem; cursor: pointer; }
+  .sem-views-tabs button[aria-selected="true"] { color: var(--sem-accent);
+    border-color: var(--sem-border); background: var(--sem-surface); }
+  .sem-view { display: none; border: 1px solid var(--sem-border); border-top: none;
+    border-radius: 0 0 12px 12px; padding: 1rem; background: var(--sem-surface); }
+  .sem-view[data-active] { display: block; }
+  .sem-reveal { margin: 1rem 0; border: 1px solid var(--sem-border);
+    border-radius: 12px; background: var(--sem-surface); }
+  .sem-reveal[data-summary]::before { content: attr(data-summary);
+    display: block; font-variant-caps: all-small-caps; color: var(--sem-muted);
+    padding: .6rem .9rem 0; }
+  .sem-reveal .sem-reveal-body { padding: .5rem .9rem .75rem; }
+  .sem-reveal details:not([open]) .sem-reveal-body { display: none; }
+  .sem-progress .sem-progress-track { display: block; height: .5rem;
+    background: color-mix(in srgb, var(--sem-border) 60%, transparent);
+    border-radius: 999px; overflow: hidden; margin-top: .25rem; }
+  .sem-progress .sem-progress-fill { display: block; height: 100%;
+    background: var(--sem-accent); border-radius: 999px; }
+</style>
+
+<style type="text/tailwindcss">
+  .sem-enhanced-document { @apply mx-auto max-w-3xl px-4 py-10; }
+  .sem-toc { @apply shadow-sm; }
+  .sem-fact { @apply shadow-sm; }
+  .sem-facts-chrome button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
+  .sem-quiz-options button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
+</style>
+
+<!-- sem-fallback (same handler as web/demo/index.html) -->
+<script id="sem-fallback">
+(function () {
+  'use strict';
+  function init() {
+  document.querySelectorAll('.sem-facts').forEach(function (root) {
+    var view = root.getAttribute('data-view-as') || 'list';
+    var items = [].slice.call(root.querySelectorAll('.sem-fact'));
+    if (view === 'list' || items.length === 0) return;
+    root.setAttribute('data-sem-fallback', '');
+    var chrome = document.createElement('div');
+    chrome.className = 'sem-facts-chrome';
+    chrome.innerHTML =
+      '<button type="button" data-act="prev" aria-label="previous">←</button>' +
+      '<span class="sem-facts-meter"></span>' +
+      '<button type="button" data-act="next" aria-label="next">→</button>';
+    root.insertBefore(chrome, root.firstChild);
+    var i = 0;
+    var progress = chrome.querySelector('.sem-facts-meter');
+    function optionsFor(item) {
+      var correct = item.querySelector('.sem-conclusion');
+      var distractors = [].slice.call(item.querySelectorAll('.sem-distractor'));
+      var others = items.filter(function (f) { return f !== item; })
+        .map(function (f) { return f.querySelector('.sem-conclusion'); })
+        .filter(Boolean);
+      var pool = distractors.concat(others).slice(0, 3);
+      return pool.concat([correct]).sort(function () { return Math.random() - .5; })
+        .map(function (el) {
+          return { text: el.textContent.trim(), correct: el === correct };
+        });
+    }
+    function renderQuiz(item) {
+      var box = item.querySelector('.sem-quiz-options');
+      if (!box) {
+        box = document.createElement('div');
+        box.className = 'sem-quiz-options';
+        item.appendChild(box);
+      }
+      box.innerHTML = '';
+      optionsFor(item).forEach(function (o) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = o.text;
+        b.setAttribute('data-correct', String(o.correct));
+        b.addEventListener('click', function () {
+          if (box.hasAttribute('data-answered')) return;
+          box.setAttribute('data-answered', '');
+          b.classList.add(o.correct ? 'sem-answered' : 'sem-wrong-pick');
+          progress.textContent = (i + 1) + '/' + items.length;
+        });
+        box.appendChild(b);
+      });
+    }
+    function render() {
+      items.forEach(function (f, k) { f.classList.toggle('sem-current', k === i); });
+      progress.textContent = (i + 1) + '/' + items.length;
+      if (view === 'quiz') renderQuiz(items[i]);
+    }
+    chrome.addEventListener('click', function (e) {
+      var act = e.target.getAttribute && e.target.getAttribute('data-act');
+      if (act === 'prev') { i = (i - 1 + items.length) % items.length; render(); }
+      if (act === 'next') { i = (i + 1) % items.length; render(); }
+    });
+    items.forEach(function (f) {
+      f.addEventListener('click', function () { f.classList.toggle('sem-flipped'); });
+    });
+    render();
+  });
+  document.querySelectorAll('.sem-details[data-view-as="quiz"]').forEach(function (root) {
+    root.querySelectorAll('.sem-highlight').forEach(function (h) {
+      var span = document.createElement('span');
+      span.className = 'sem-occluded';
+      span.textContent = h.textContent;
+      span.setAttribute('role', 'button');
+      span.setAttribute('tabindex', '0');
+      function reveal() {
+        span.className = 'sem-highlight sem-revealed';
+        span.removeAttribute('role');
+        span.removeAttribute('tabindex');
+      }
+      span.addEventListener('click', reveal);
+      span.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reveal(); }
+      });
+      h.replaceWith(span);
+    });
+  });
+
+  /* ---- sem-views (same handler as web/demo/index.html) ---- */
+  document.querySelectorAll('.sem-views[id]').forEach(function (root) {
+    var views = [].slice.call(root.querySelectorAll('.sem-view'));
+    if (!views.length) return;
+    if (!root.querySelector('.sem-view[data-active]')) views[0].setAttribute('data-active', '');
+    var active = Math.max(0, views.findIndex(function (v) { return v.hasAttribute('data-active'); }));
+    var bar = document.createElement('div');
+    bar.className = 'sem-views-tabs';
+    bar.setAttribute('role', 'tablist');
+    views.forEach(function (v, k) {
+      v.setAttribute('role', 'tabpanel');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'tab');
+      b.textContent = v.getAttribute('data-name');
+      b.setAttribute('aria-selected', String(k === active));
+      b.addEventListener('click', function () { activate(k); });
+      b.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { e.preventDefault(); activate((active + 1) % views.length, true); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); activate((active - 1 + views.length) % views.length, true); }
+      });
+      bar.appendChild(b);
+    });
+    root.insertBefore(bar, root.firstChild);
+    function activate(k, focus) {
+      active = k;
+      views.forEach(function (v, j) {
+        if (j === k) v.setAttribute('data-active', ''); else v.removeAttribute('data-active');
+      });
+      [].forEach.call(bar.querySelectorAll('[role="tab"]'), function (b, j) {
+        b.setAttribute('aria-selected', String(j === k));
+      });
+      var v = views[k];
+      location.hash = root.id + '/' + (v.id || (v.getAttribute('data-name') || '').toLowerCase());
+      v.dispatchEvent(new CustomEvent('sem-navigate', {
+        bubbles: true, detail: { id: root.id, name: v.getAttribute('data-name'), index: k }
+      }));
+      if (focus) bar.querySelectorAll('[role="tab"]')[k].focus();
+    }
+    function fromHash() {
+      var m = location.hash.match(new RegExp('^#' + root.id + '/(.+)$'));
+      if (!m) return;
+      var k = views.findIndex(function (v) {
+        return v.id === m[1] || (v.getAttribute('data-name') || '').toLowerCase() === m[1];
+      });
+      if (k >= 0 && k !== active) activate(k);
+    }
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+  });
+
+  /* ---- sem-reveal ---- */
+  document.querySelectorAll('.sem-reveal').forEach(function (r) {
+    var d = document.createElement('details');
+    if (!r.hasAttribute('collapsed')) d.setAttribute('open', '');
+    var s = document.createElement('summary');
+    s.textContent = r.getAttribute('data-summary') ||
+      (r.textContent || '').trim().split(/\s+/).slice(0, 8).join(' ') + ' …';
+    d.appendChild(s);
+    var body = document.createElement('div');
+    body.className = 'sem-reveal-body';
+    while (r.firstChild) body.appendChild(r.firstChild);
+    d.appendChild(body);
+    r.appendChild(d);
+  });
+
+  /* ---- sem-progress ---- */
+  document.querySelectorAll('.sem-progress[data-value]').forEach(function (p) {
+    var raw = parseFloat(p.getAttribute('data-value'));
+    var v = Math.min(1, Math.max(0, isNaN(raw) ? 0 : raw));
+    var label = p.getAttribute('data-label') || 'progress';
+    var pct = Math.round(v * 100);
+    p.textContent = label + ' :: ' + pct + '%';
+    var track = document.createElement('span');
+    track.className = 'sem-progress-track';
+    var fill = document.createElement('span');
+    fill.className = 'sem-progress-fill';
+    fill.style.width = pct + '%';
+    track.appendChild(fill);
+    p.appendChild(track);
+  });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</head>
+
+<body>
+<div class="sem-enhanced-document">
+
+  <h1>SemText — Format Spec &amp; Conventions</h1>
+  <p class="sem-doc-meta">DRAFT v0.4 · class-based baseline · this page is written in the format it specifies — one HTML file, inline CSS, Tailwind refinement, vanilla fallback. Normative source: <code>spec/conventions.md</code>.</p>
+
+  <nav class="sem-toc">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#model">Model</a></li>
+      <li><a href="#skeleton">Document skeleton</a></li>
+      <li><a href="#attributes">Attribute catalog</a></li>
+      <li><a href="#notation">NPL notation inside tags</a></li>
+      <li><a href="#fallback">Fallback handler &amp; degradation</a></li>
+      <li><a href="#elements">Element entries</a></li>
+      <li><a href="#themes">Theme conventions</a></li>
+      <li><a href="#distribution">Distribution forms</a></li>
+      <li><a href="#machine">Machine-readability contract</a></li>
+      <li><a href="#alignment">NPL XML-variant alignment</a></li>
+      <li><a href="#questions">Open questions</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="model">0 · Model</h2>
+  <p>One file, three consumers:</p>
+  <ul>
+    <li><strong>Human / browser</strong> — double-click the <code>.html</code>/<code>.mhtml</code>; current Chrome/Edge/Brave/Firefox/Safari render styled, interactive documents. No server, no build, no install.</li>
+    <li><strong>LLM / non-visual</strong> — the same file read structurally; attributes qualify every datum; same XML vocabulary NPL's MCP server already speaks.</li>
+    <li><strong>Terminal</strong> — browser render or DOM-text extraction; content complete without JS.</li>
+  </ul>
+  <p>Element names are <strong>semantic</strong> (<code>sem-fact</code>, <code>sem-detail</code>) — what content <em>is</em>; presentation is parameterized (<code>view-as="quiz|flashcards|list"</code>) — how it <em>renders</em>. NPL conventions live inside the tags, never as a pre-HTML grammar.</p>
+
+  <div class="sem-note" data-variant="tip">This page is the reference: every component class below is live. Try the embedded facts widget in §5.</div>
+
+  <h2 id="skeleton">1 · Document skeleton</h2>
+<pre>&lt;!doctype html&gt;
+&lt;html lang="en" data-sem-theme="minimal-tech-light"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;title&gt;…&lt;/title&gt;
+  &lt;link rel="stylesheet" href="semtext/themes/minimal-tech-light.css"&gt;   &lt;!-- folder form --&gt;
+  &lt;style&gt;/* inline core CSS — theme tokens + component base */&lt;/style&gt;
+  &lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;
+  &lt;style type="text/tailwindcss"&gt;/* @apply refinements on sem-* */&lt;/style&gt;
+  &lt;script id="sem-fallback"&gt;/* always-embedded vanilla handler */&lt;/script&gt;
+  &lt;script defer src="semtext/semtext.js"&gt;&lt;/script&gt;   &lt;!-- Lit upgrade, optional (later milestone) --&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="sem-enhanced-document"&gt;
+  &lt;div class="sem-agent"&gt;
+    &lt;div class="sem-agent-name"&gt;…&lt;/div&gt;
+    &lt;div class="sem-agent-bio"&gt;…&lt;/div&gt;
+    &lt;div class="sem-agent-instructions"&gt;…&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;!-- content --&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+  <ul>
+    <li><code>.sem-enhanced-document</code> is the required root wrapper in v0.4.</li>
+    <li>Metadata children (<code>.sem-agent</code>, future <code>.sem-org</code>, <code>.sem-context</code>) are bare semantic blocks — machine-facing, lightly styled. <span class="sem-open">❓Q1</span> keep bare vs <code>sem-</code>-prefix everything inside?</li>
+    <li>Ordinary semantic HTML is always valid content; <code>sem-*</code> enhances where interactivity pays.</li>
+  </ul>
+
+  <h2 id="attributes">2 · Attribute catalog</h2>
+  <p>v0.4: identity = class, parameters = <code>data-*</code> attributes. Global set (any <code>.sem-*</code> element):</p>
+  <table>
+    <tr><th>Attribute</th><th>Values</th><th>Machine meaning</th></tr>
+    <tr><td><code>data-kind</code></td><td>free token (<code>concept</code>, <code>anti-pattern</code>, …)</td><td>what the data IS</td></tr>
+    <tr><td><code>data-tags</code></td><td>comma list</td><td>classification</td></tr>
+    <tr><td><code>data-view-as</code></td><td>element-defined modes</td><td>presentation parameter (identity unchanged)</td></tr>
+    <tr><td><code>data-status</code></td><td><code>done</code> <code>current</code> <code>todo</code> <code>blocked</code> <code>pass</code> <code>fail</code></td><td>lifecycle/verdict</td></tr>
+    <tr><td><code>data-controls</code></td><td><code>shuffle</code> <code>filter</code> <code>retry</code> <code>picker</code></td><td>which controls render</td></tr>
+    <tr><td><code>data-variant</code></td><td>element-defined</td><td>presentation + semantics variant</td></tr>
+    <tr><td><code>id</code></td><td>doc-unique</td><td>stable anchor, cite target</td></tr>
+    <tr><td><code>data-*</code></td><td>free</td><td>extension point</td></tr>
+  </table>
+  <p><code>data-view-as</code> is the core inversion: a fact is a fact in every view; the attribute only selects rendering. Unknown value ⇒ falls back to <code>list</code>/plain.</p>
+
+  <h2 id="notation">3 · NPL notation inside tags</h2>
+  <p>Compact notation is legal inside element text where the schema allows; <strong>attributes are canonical, notation is sugar</strong>:</p>
+  <table>
+    <tr><th>Notation</th><th>Meaning</th><th>Where</th></tr>
+    <tr><td><code>span.sem-highlight</code></td><td>recall target — occludes in quiz/flashcard views, <code>&lt;em&gt;</code>-equivalent in plain view</td><td>any prose element</td></tr>
+    <tr><td><code>[[cloze]]</code></td><td>inline occlusion sugar (≡ highlight)</td><td><code>sem-detail</code>, <code>sem-fact</code></td></tr>
+    <tr><td><code>term :: value</code></td><td>pair</td><td><code>sem-property</code> text, fact compact form</td></tr>
+    <tr><td><code>✅ …</code> / <code>✗ …</code></td><td>correct / distractor</td><td>quiz options sugar</td></tr>
+    <tr><td><code>→ …</code></td><td>current</td><td><code>sem-step</code> status sugar</td></tr>
+    <tr><td><code>[hint | reveal]</code></td><td>agent-facing instruction, human-rendered hint</td><td>instruction-bearing elements <span class="sem-open">❓Q2</span></td></tr>
+  </table>
+  <p>Structured children (<code>.sem-statement</code>/<code>.sem-conclusion</code>) always win over the <code>::</code> compact form when both present.</p>
+
+  <h2 id="fallback">4 · Fallback handler &amp; degradation rules</h2>
+  <ul>
+    <li><code>&lt;script id="sem-fallback"&gt;</code> is embedded inline in every portable doc (~2–4KB vanilla JS): <code>data-view-as</code> switching, reveal toggles, highlight occlusion, basic quiz checking, theme picker. <strong>Zero external resources required for full baseline interactivity.</strong></li>
+    <li><code>semtext/semtext.js</code> (Lit 3, IIFE) upgrades elements in place when reachable; component implementations supersede fallback behaviors. Handoff contract: fallback sets <code>data-sem-fallback</code>; components remove it on upgrade. BDD asserts both tiers + the handoff.</li>
+    <li>Core CSS (inline, plain) keeps the page presentable with JS <em>and</em> CDN absent; Tailwind refinement is a progressive enhancement layer.</li>
+    <li>Content lives in light DOM (searchable, copyable); interactive chrome may use shadow DOM once Lit lands.</li>
+  </ul>
+
+  <h2 id="elements">5 · Element entries</h2>
+
+  <h3>sem-note — callout</h3>
+<pre>&lt;div class="sem-note" data-variant="warning"&gt;
+  JWTs must rotate &lt;strong&gt;per session&lt;/strong&gt;.
+&lt;/div&gt;</pre>
+  <p>Variants <code>info</code> (default) <code>warning</code> <code>tip</code> <code>danger</code>; <code>collapsed</code> attr hides <code>.sem-note-body</code> behind a generated summary. Light DOM, content searchable.</p>
+
+  <h3>sem-fact — atomic assertable pair</h3>
+<pre>&lt;div class="sem-fact" id="f-jwt" data-kind="concept"&gt;
+  &lt;div class="sem-statement"&gt;JWTs rotate per session&lt;/div&gt;
+  &lt;div class="sem-conclusion"&gt;Short-lived access; refresh grants a new pair.&lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p>Compact form: <code>term :: conclusion</code> as direct text. Machine view: statement+conclusion = structured assertion.</p>
+
+  <h3>sem-facts — collection; the flagship surface</h3>
+  <p><strong>Normative: <code>spec/schema/sem-facts.md</code>.</strong></p>
+<pre>&lt;div class="sem-facts" data-view-as="quiz" data-controls="shuffle"&gt;
+  &lt;div class="sem-fact"&gt;…&lt;/div&gt;
+  &lt;div class="sem-fact"&gt;
+    &lt;div class="sem-conclusion"&gt;true answer&lt;/div&gt;
+    &lt;div class="sem-distractor"&gt;decoy&lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+  <ul>
+    <li><code>list</code> (default): all facts visible; filter/tags later.</li>
+    <li><code>flashcards</code>: front = statement, back = conclusion; flip click/Space; ←/→; progress.</li>
+    <li><code>quiz</code>: statement shown; options = explicit <code>.sem-distractor</code> children else sibling conclusions; scoring.</li>
+  </ul>
+  <div class="sem-note" data-variant="tip">Live example — this widget is the spec executing itself:</div>
+  <div class="sem-facts" data-view-as="flashcards">
+    <div class="sem-fact" id="spec-f1">
+      <div class="sem-statement">Semantic identity, parameterized presentation</div>
+      <div class="sem-conclusion"><code>sem-fact</code> is a fact in list, flashcard, and quiz views — <code>data-view-as</code> only changes rendering.</div>
+    </div>
+    <div class="sem-fact" id="spec-f2">
+      <div class="sem-statement">What guarantees interactivity with zero external resources?</div>
+      <div class="sem-conclusion">The inline <code>sem-fallback</code> handler.</div>
+      <div class="sem-distractor">The Tailwind CDN script.</div>
+    </div>
+  </div>
+
+  <h3>sem-detail / sem-details — prose with occludable content</h3>
+  <p><strong>Normative: <code>spec/schema/sem-details.md</code>.</strong></p>
+<pre>&lt;div class="sem-details" data-view-as="quiz"&gt;
+  &lt;div class="sem-detail"&gt;
+    The OIDC token travels in the &lt;span class="sem-highlight"&gt;Authorization&lt;/span&gt; header.
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p>Plain view: highlight renders emphasized. Quiz view: occluded, reveal per span. Live: <span class="sem-highlight">refresh tokens never reach the browser</span> (this page is in plain mode — swap <code>data-view-as</code> to see occlusion).</p>
+
+  <h3>sem-procedure / sem-step — ordered, status-annotated procedure</h3>
+<pre>&lt;div class="sem-procedure" data-kind="runbook" role="list"&gt;
+  &lt;div class="sem-step" role="listitem" data-status="done"&gt;provision Infisical path&lt;/div&gt;
+  &lt;div class="sem-step" role="listitem" data-status="current"&gt;port-forward MinIO&lt;/div&gt;
+  &lt;div class="sem-step" role="listitem"&gt;run migrations&lt;/div&gt;
+  &lt;div class="sem-step" role="listitem" data-status="blocked"&gt;cut release&lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p><code>data-status</code>: <code>done</code> <code>current</code> <code>todo</code> (default) <code>blocked</code>. DOM order = execution order (ordinals positional); <code>✅/→/❌</code> sugar is display-only — the attribute is canonical. <strong>Zero-JS element.</strong> Normative: <code>spec/schema/sem-procedure.md</code>.</p>
+  <div class="sem-procedure" data-kind="runbook" role="list">
+    <div class="sem-step" role="listitem" data-status="done">define Tier-0 schemas</div>
+    <div class="sem-step" role="listitem" data-status="current">expand spec entries (this section)</div>
+    <div class="sem-step" role="listitem">author BDD suites</div>
+    <div class="sem-step" role="listitem" data-status="blocked">Lit upgrade — waits for M3</div>
+  </div>
+
+  <h3>sem-properties / sem-property — definition block</h3>
+<pre>&lt;div class="sem-properties" data-kind="config"&gt;
+  &lt;div class="sem-property" data-key="token ttl"
+       role="definition" aria-label="token ttl"&gt;15m&lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p><code>data-key</code> = term, text = value; key column renders via CSS <code>attr()</code>; <code>role="definition"</code> + <code>aria-label</code> carry the pair to AT. <code>term :: value</code> sugar is display-only. Q2 resolved: pure <code>&lt;dl&gt;</code> v1, no chrome. Normative: <code>spec/schema/sem-properties.md</code>.</p>
+  <div class="sem-properties" data-kind="spec">
+    <div class="sem-property" data-key="canonical attr" role="definition" aria-label="canonical attr">data-key</div>
+    <div class="sem-property" data-key="js required" role="definition" aria-label="js required">none</div>
+  </div>
+
+  <h3>sem-views / sem-view — switchable perspectives</h3>
+<pre>&lt;div class="sem-views" id="deploy"&gt;
+  &lt;div class="sem-view" data-name="Helm" data-active role="tabpanel"&gt;…&lt;/div&gt;
+  &lt;div class="sem-view" data-name="ArgoCD" role="tabpanel"&gt;…&lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p><code>data-name</code> unique per container; <code>data-active</code> marks the initial view (first wins if absent). Fallback builds the tab bar, manages arrow keys and deep-links (<code>#id/name</code>), fires <code>sem-navigate {id,name,index}</code>. JS-off: all views stacked. Q3 resolved: <code>sem-views</code>. Normative: <code>spec/schema/sem-views.md</code>.</p>
+  <div class="sem-views" id="spec-views">
+    <div class="sem-view" data-name="Spec" data-active role="tabpanel">
+      Each view is the same subject under a named perspective — deep-link form <code>#spec-views/quiz</code> style.</div>
+    <div class="sem-view" data-name="Live" role="tabpanel">
+      This tab bar, keyboard roving focus, and hash sync are the v0.4 fallback handler executing the spec.</div>
+  </div>
+
+  <h3>sem-reveal — Q→A disclosure</h3>
+<pre>&lt;div class="sem-reveal" data-summary="Why not localStorage?" collapsed&gt;
+  Tokens in localStorage are readable by any script on the page…
+&lt;/div&gt;</pre>
+  <p><code>data-summary</code> optional — first body line (≤60 chars) derives it; <code>collapsed</code> starts hidden, otherwise open. Fallback wraps in native <code>&lt;details&gt;</code>; JS-off: fully visible. Non-assertive counterpart to the <code>sem-fact</code> Q/A shape. Normative: <code>spec/schema/sem-reveal.md</code>.</p>
+  <div class="sem-reveal" id="spec-reveal" data-summary="Why a separate element from sem-note[collapsed]?" collapsed>
+    Intent: a note is an annotation (variant tone); a reveal is exposition (Q→A). Same mechanism, different semantics — machines distinguish them.</div>
+
+  <h3>sem-progress — completion meter</h3>
+<pre>&lt;div class="sem-progress" data-value="0.62" data-label="coverage"
+     role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"&gt;&lt;/div&gt;</pre>
+  <p><code>data-value</code> canonical 0..1 (render clamps, attr untouched); <code>data-label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code>. <code>data-status="done"</code> ⇔ 1 by convention. Normative: <code>spec/schema/sem-progress.md</code>.</p>
+  <div class="sem-progress" id="spec-progress" data-value="0.7" data-label="Tier-0 spec coverage"
+       role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7"></div>
+
+  <h3>Tier 1 &amp; 2 — planned</h3>
+  <p>Tier 1: <code>sem-question</code> with 7 TRP types. Tier 2: <code>sem-chronology</code>, <code>sem-table</code>, <code>sem-query</code>, <code>sem-themes</code>.</p>
+
+  <h2 id="themes">6 · Theme conventions</h2>
+  <ul>
+    <li><code>data-sem-theme="&lt;slug&gt;"</code> on <code>&lt;html&gt;</code>; one theme per doc; tokens on <code>[data-sem-theme]</code> (this page uses them live).</li>
+    <li>Compiled themes from TRP-format YAML → <code>semtext/themes/&lt;slug&gt;.css</code>; <code>--sem-*</code> tokens; <code>:not(:defined)</code> vocabulary base when custom elements land.</li>
+    <li>Ship 4 TRP ports: <code>minimal-tech-light</code> (default), <code>nocturne-console</code>, <code>organic-warm</code>, <code>editorial-settings</code>; auto light/dark via <code>prefers-color-scheme</code>, <code>data-color-mode</code> forces.</li>
+  </ul>
+
+  <h2 id="distribution">7 · Distribution forms</h2>
+  <ol>
+    <li><strong>Folder</strong> — <code>doc.html</code> + relative <code>semtext/</code> (IIFE <code>semtext.js</code> + <code>themes/</code>).</li>
+    <li><strong>Single-file</strong> — fallback + CSS + (later) Lit bundle + data all inlined; one file shares anywhere.</li>
+    <li><strong>MHTML</strong> — multi-page bundle.</li>
+  </ol>
+  <p>Hard rules: no ES-module scripts; no runtime fetch in portable docs; the fallback handler is always embedded regardless of form.</p>
+
+  <h2 id="machine">8 · Machine-readability contract</h2>
+  <ul>
+    <li>Semantic children (<code>.sem-statement</code>, <code>.sem-conclusion</code>, <code>.sem-highlight</code>) + <code>data-*</code> attributes qualify every datum.</li>
+    <li>Well-formed, correctly nested HTML — parseable by XML/HTML tooling; same vocabulary is the XML variant of NPL (§9).</li>
+    <li>Behaviors + attributes documented per schema = agent integration surface.</li>
+    <li>A "text extraction" reference recipe (DOM → annotated plain text) ships with the lib.</li>
+  </ul>
+
+  <h2 id="alignment">9 · NPL XML-variant alignment</h2>
+  <p>This vocabulary is the <strong>XML variant of NPL</strong>: NPL yaml already models agents (name/bio/instructions), instructions, and structured prompt sections via the MCP server; this format is its document-shaped rendering target. Alignment tasks (tracked, not blocking): map <code>.sem-agent</code> children to NPL agent schema; map facts to NPL knowledge records; define <code>sem-enhanced-document</code> as a valid MCP render target. <span class="sem-open">❓Q4</span> mapping ownership.</p>
+
+  <h2 id="questions">10 · Open questions</h2>
+  <table>
+    <tr><th>#</th><th>Question</th><th>Lean</th></tr>
+    <tr><td><span class="sem-open">Q1</span></td><td>Metadata children bare vs <code>sem-</code>-prefixed</td><td>bare (matches NPL yaml shape)</td></tr>
+    <tr><td><span class="sem-open">Q2</span></td><td><code>sem-properties</code> pure <code>&lt;dl&gt;</code> v1</td><td><strong>resolved (feat/tier0-spec-expansion)</strong> — pure <code>&lt;dl&gt;</code>, no chrome</td></tr>
+    <tr><td><span class="sem-open">Q3</span></td><td>tabs-family name: <code>sem-views</code> vs <code>sem-perspectives</code></td><td><strong>resolved (feat/tier0-spec-expansion)</strong> — <code>sem-views</code></td></tr>
+    <tr><td><span class="sem-open">Q4</span></td><td>NPL MCP alignment ownership</td><td>we publish the schema; MCP consumes</td></tr>
+    <tr><td><span class="sem-open">Q5</span></td><td>fallback scope: toggles only vs full quiz logic</td><td>full logic v1</td></tr>
+  </table>
+
+</div>
+</body>
+</html>
