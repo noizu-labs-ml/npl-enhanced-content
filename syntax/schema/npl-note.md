@@ -1,13 +1,13 @@
-# Schema — `npl-note`
+# Schema — `sem-note`
 
 Contract per conventions.md v0.3. BDD source of truth for
-`cypress/e2e/npl-note.cy.js`. Changes here precede spec changes precede code.
+`cypress/e2e/sem-note.cy.js`. Changes here precede spec changes precede code.
 
 ## Authoring form (canonical — no preprocessing layer)
 
 ```html
-<npl-note variant="warning">body HTML</npl-note>
-<npl-note variant="tip" collapsed>body HTML</npl-note>
+<sem-note variant="warning">body HTML</sem-note>
+<sem-note variant="tip" collapsed>body HTML</sem-note>
 ```
 
 - `variant`: `info` (default) | `warning` | `tip` | `danger`.
@@ -20,9 +20,9 @@ Contract per conventions.md v0.3. BDD source of truth for
 
 ## Rendered form
 
-- Upgraded: `<npl-note>` itself (Lit `NplNote` — minimal: variant icon,
+- Upgraded: `<sem-note>` itself (Lit `SemNote` — minimal: variant icon,
   collapsed behavior). No shadow root; light DOM, content searchable.
-- Pre-upgrade / JS-off: `npl-note:not(:defined)` base in theme CSS — accent
+- Pre-upgrade / JS-off: `sem-note:not(:defined)` base in theme CSS — accent
   border + variant label via attribute selectors.
 - `role="note"`: component sets on upgrade; docs author it pre-set so machine
   readers see the role without JS.

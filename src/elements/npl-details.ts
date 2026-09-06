@@ -1,12 +1,12 @@
-import { NplElement } from './base.js';
+import { SemElement } from './base.js';
 
 /**
- * npl-details — Lit upgrade of the v0.4 class-based prose-with-cloze block.
+ * sem-details — Lit upgrade of the v0.4 class-based prose-with-cloze block.
  * Light DOM per PRD §4 rule 5. quiz view occludes .sem-highlight recall
  * targets (.sem-occluded spans); plain view leaves prose untouched.
- * Handoff contract comes from NplElement.
+ * Handoff contract comes from SemElement.
  */
-export class NplDetails extends NplElement {
+export class SemDetails extends SemElement {
   #wired = false;
   #awaitingHighlights = false;
 
@@ -31,7 +31,7 @@ export class NplDetails extends NplElement {
       span.setAttribute('tabindex', '0');
       span.setAttribute('aria-label', 'reveal');
       const reveal = () => {
-        span.className = 'sem-highlight npl-revealed';
+        span.className = 'sem-highlight sem-revealed';
         span.removeAttribute('role');
         span.removeAttribute('tabindex');
       };
@@ -53,4 +53,4 @@ export class NplDetails extends NplElement {
   }
 }
 
-NplElement.register('npl-details', NplDetails);
+SemElement.register('sem-details', SemDetails);

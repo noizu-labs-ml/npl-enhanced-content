@@ -1,6 +1,6 @@
 // BDD spec — v0.4 class-based baseline · source: conventions.md v0.4, demo/index.html
 // Fixture serves the repo root; run any static server on port 4173.
-// The JS-off scenario uses the demo's `__nplJsOff` kill-switch hook.
+// The JS-off scenario uses the demo's `__semJsOff` kill-switch hook.
 //
 // Feature: the class-based baseline document renders and behaves with zero
 //          external resources beyond Tailwind CDN
@@ -53,7 +53,7 @@ describe('v0.4 baseline (demo/index.html)', () => {
 
   it('JS-off: content fully readable, no occlusion', () => {
     cy.visit('/demo/index.html', {
-      onBeforeLoad(win) { win.__nplJsOff = true; }
+      onBeforeLoad(win) { win.__semJsOff = true; }
     });
     cy.get('.sem-fact .sem-statement').should('be.visible');
     cy.get('.sem-fact .sem-conclusion').should('be.visible');

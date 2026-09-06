@@ -1,7 +1,7 @@
-# Schema — `npl-progress`
+# Schema — `sem-progress`
 
 Contract per conventions.md v0.4. BDD source of truth for
-`cypress/e2e/npl-progress.cy.js`. Changes here precede spec changes
+`cypress/e2e/sem-progress.cy.js`. Changes here precede spec changes
 precede code.
 
 ## Authoring form (v0.4 class-based)
@@ -16,7 +16,7 @@ precede code.
 - `data-label`: optional; default `progress`.
 - `id`, `kind`, `tags` global.
 - Status semantics pair naturally: `data-status="done"` renders the
-  full/accent state (same catalog as `npl-step`).
+  full/accent state (same catalog as `sem-step`).
 
 ## Rendered form (v0.4)
 
@@ -40,5 +40,5 @@ None (v0.4).
 ## Machine contract
 
 - One scalar completion assertion: `label ∈ [0,1]`. Embedded docs use
-  it for checklist/pipeline state (pairs with `npl-procedure`
+  it for checklist/pipeline state (pairs with `sem-procedure`
   statuses); `data-status="done"` ⇔ value 1 by convention.

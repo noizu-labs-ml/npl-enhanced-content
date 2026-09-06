@@ -11,11 +11,11 @@
 
 declare global {
   interface Window {
-    __nplSeed?: number | string;
+    __semSeed?: number | string;
   }
 }
 
-const DOCUMENT_SELECTOR = 'npl-enhanced-document, .sem-enhanced-document';
+const DOCUMENT_SELECTOR = 'sem-enhanced-document, .sem-enhanced-document';
 
 /**
  * mulberry32 — 32-bit seeded PRNG. Small, fast, no dependencies, good enough
@@ -69,7 +69,7 @@ function seedFromAttribute(el: Element | null): number | null {
  * Resolve the seed for an element, in precedence order:
  *   1. `data-sem-seed` on the element itself
  *   2. `data-sem-seed` on the nearest enhanced-document ancestor
- *   3. `window.__nplSeed`
+ *   3. `window.__semSeed`
  *   4. `Date.now()` (unseeded documents still shuffle, just not reproducibly)
  * A value that is not a whole number is treated as absent and falls through.
  */
@@ -81,7 +81,7 @@ export function resolveSeed(el: Element): number {
   const inherited = seedFromAttribute(host);
   if (inherited !== null) return inherited;
 
-  const global = typeof window !== 'undefined' ? parseSeed(window.__nplSeed) : null;
+  const global = typeof window !== 'undefined' ? parseSeed(window.__semSeed) : null;
   if (global !== null) return global;
 
   return Date.now();

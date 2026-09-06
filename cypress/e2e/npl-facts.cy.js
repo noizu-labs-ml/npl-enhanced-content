@@ -1,6 +1,6 @@
-// BDD spec — npl-facts / npl-fact · source: syntax/schema/npl-facts.md
+// BDD spec — sem-facts / sem-fact · source: syntax/schema/sem-facts.md
 //
-// Feature: npl-facts presents fact/claim pairs as list, flashcards, or
+// Feature: sem-facts presents fact/claim pairs as list, flashcards, or
 //          quiz; JS-off degrades to a fully readable list; the Lit
 //          upgrade supersedes the fallback behavior
 //   Scenario: list view (default) — all facts visible, no chrome
@@ -10,9 +10,9 @@
 //   Scenario: quiz — wrong pick marked, counts as answered
 //   Scenario: D1 — .sem-progress element and facts meter coexist
 //   Scenario: JS-off — all conclusions visible in every view
-//   Scenario: Lit upgrade — <npl-facts> owns behavior, no fallback marker
+//   Scenario: Lit upgrade — <sem-facts> owns behavior, no fallback marker
 
-describe('npl-facts', () => {
+describe('sem-facts', () => {
   describe('v0.4 class baseline (demo/index.html)', () => {
     beforeEach(() => cy.visit('/demo/index.html'));
 
@@ -71,7 +71,7 @@ describe('npl-facts', () => {
 
     it('JS-off: every view degrades to readable list, no occlusion', () => {
       cy.visit('/demo/index.html', {
-        onBeforeLoad(win) { win.__nplJsOff = true; }
+        onBeforeLoad(win) { win.__semJsOff = true; }
       });
       cy.get('.sem-facts[data-view-as="flashcards"] .sem-fact .sem-conclusion')
         .should('be.visible');
@@ -85,16 +85,16 @@ describe('npl-facts', () => {
   describe('Lit upgrade (demo/standalone-lit.html)', () => {
     beforeEach(() => cy.visit('/demo/standalone-lit.html'));
 
-    it('registers and upgrades npl-facts (Lit ran, no fallback marker)', () => {
+    it('registers and upgrades sem-facts (Lit ran, no fallback marker)', () => {
       cy.window().then((win) => {
-        expect(win.customElements.get('npl-facts')).to.exist;
+        expect(win.customElements.get('sem-facts')).to.exist;
       });
-      cy.get('main npl-facts').should('have.attr', 'data-sem-upgraded');
-      cy.get('main npl-facts').should('not.have.attr', 'data-sem-fallback');
+      cy.get('main sem-facts').should('have.attr', 'data-sem-upgraded');
+      cy.get('main sem-facts').should('not.have.attr', 'data-sem-fallback');
     });
 
     it('flashcards: one current card, flip reveals conclusion', () => {
-      const fc = 'npl-facts[data-view-as="flashcards"] ';
+      const fc = 'sem-facts[data-view-as="flashcards"] ';
       cy.get(fc + '.sem-fact.sem-current').should('have.length', 1);
       cy.get(fc + '.sem-current .sem-conclusion').should('not.be.visible');
       cy.get(fc + '.sem-current').click();
@@ -103,7 +103,7 @@ describe('npl-facts', () => {
     });
 
     it('quiz: conclusion hidden, correct pick scores', () => {
-      const qz = 'npl-facts[data-view-as="quiz"] ';
+      const qz = 'sem-facts[data-view-as="quiz"] ';
       cy.get(qz + '.sem-current .sem-conclusion').should('not.be.visible');
       cy.get(qz + '.sem-current .sem-quiz-options button[data-correct="true"]').click();
       cy.get(qz + '.sem-facts-meter').should('contain', 'score 1/1');

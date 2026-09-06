@@ -1,13 +1,13 @@
-// BDD spec — npl-progress · source: syntax/schema/npl-progress.md
+// BDD spec — sem-progress · source: syntax/schema/sem-progress.md
 //
-// Feature: npl-progress renders a meter from data-value (0..1) with an
+// Feature: sem-progress renders a meter from data-value (0..1) with an
 //          accessible text alternative, pre-set roles JS-off
 //   Scenario: fill width and percentage text follow data-value
 //   Scenario: label renders with the percentage
 //   Scenario: out-of-range value clamps in render, raw attr untouched
 //   Scenario: meter roles authored for AT without JS
 
-describe('npl-progress', () => {
+describe('sem-progress', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
 
   it('fill width and percentage text follow data-value', () => {

@@ -1,7 +1,7 @@
-# Schema — `npl-procedure` / `npl-step`
+# Schema — `sem-procedure` / `sem-step`
 
 Contract per conventions.md v0.4. BDD source of truth for
-`cypress/e2e/npl-procedure.cy.js`. Changes here precede spec changes
+`cypress/e2e/sem-procedure.cy.js`. Changes here precede spec changes
 precede code.
 
 ## Authoring form (v0.4 class-based)

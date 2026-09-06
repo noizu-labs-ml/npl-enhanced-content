@@ -8,7 +8,7 @@
  *   <name>.nojs.html   the same page with every <script> element removed
  *
  * The `.nojs.html` variant is the genuine JS-off artifact. The older
- * `window.__nplJsOff` kill switch only proves the handler no-ops; it leaves
+ * `window.__semJsOff` kill switch only proves the handler no-ops; it leaves
  * the script in the page, so it can never show that the CSS alone degrades
  * readably. Stripping the elements is the real test.
  *
@@ -46,9 +46,9 @@ function expand(kind, arg) {
     case 'bundle':
       return `<script>\n${readOrDie(resolve(root, 'dist/npl.js'), 'bundle')}\n</script>`;
     case 'fallback':
-      return `<script id="npl-fallback">\n${readOrDie(resolve(root, 'dist/npl-fallback.js'), 'fallback')}\n</script>`;
+      return `<script id="sem-fallback">\n${readOrDie(resolve(root, 'dist/npl-fallback.js'), 'fallback')}\n</script>`;
     case 'extract':
-      return `<script id="npl-extract">\n${readOrDie(resolve(root, 'dist/npl-extract.js'), 'extract')}\n</script>`;
+      return `<script id="sem-extract">\n${readOrDie(resolve(root, 'dist/npl-extract.js'), 'extract')}\n</script>`;
     case 'theme': {
       if (!arg) throw new Error('marker "theme" requires a theme name');
       return `<style data-sem-theme-source="${arg}">\n${readOrDie(resolve(root, 'themes', `${arg}.css`), 'theme')}\n</style>`;

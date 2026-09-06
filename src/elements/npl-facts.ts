@@ -1,18 +1,18 @@
-import { NplElement } from './base.js';
+import { SemElement } from './base.js';
 import { randomFor, shuffle } from '../shared/rng.js';
 
 /**
- * npl-facts — Lit upgrade of the v0.4 class-based fact collection.
+ * sem-facts — Lit upgrade of the v0.4 class-based fact collection.
  * Light DOM per PRD §4 rule 5; Lit owns the flashcard/quiz behavior,
- * not the markup. Handoff contract comes from NplElement. Chrome meter is
+ * not the markup. Handoff contract comes from SemElement. Chrome meter is
  * .sem-facts-meter — never .sem-progress (D1: that class is the
- * npl-progress element).
+ * sem-progress element).
  *
  * Quiz option order is a seeded Fisher-Yates draw (shared/rng), not a
  * `sort(() => Math.random() - .5)` comparator. The old comparator was
  * inconsistent, so its output was both non-uniform and engine-dependent.
  */
-export class NplFacts extends NplElement {
+export class SemFacts extends SemElement {
   #wired = false;
   #awaitingItems = false;
 
@@ -115,4 +115,4 @@ export class NplFacts extends NplElement {
   }
 }
 
-NplElement.register('npl-facts', NplFacts);
+SemElement.register('sem-facts', SemFacts);

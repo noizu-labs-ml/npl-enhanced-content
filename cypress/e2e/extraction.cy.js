@@ -5,15 +5,15 @@
 //          attributes are invisible to it, so the output is identical with
 //          JS on, with JS off, under any view-as, and after interaction
 //   Scenario: one record per authored element, in document order
-//   Scenario: field mapping — npl-agent metadata
-//   Scenario: field mapping — npl-note variant and body
-//   Scenario: field mapping — npl-fact statement/conclusion/distractors
-//   Scenario: field mapping — npl-detail highlights (authored and occluded)
-//   Scenario: field mapping — npl-step status and positional ordinal
-//   Scenario: field mapping — npl-property data-key and value
-//   Scenario: field mapping — npl-view name and index
-//   Scenario: field mapping — npl-reveal authored vs derived summary
-//   Scenario: field mapping — npl-progress clamped value and raw attribute
+//   Scenario: field mapping — sem-agent metadata
+//   Scenario: field mapping — sem-note variant and body
+//   Scenario: field mapping — sem-fact statement/conclusion/distractors
+//   Scenario: field mapping — sem-detail highlights (authored and occluded)
+//   Scenario: field mapping — sem-step status and positional ordinal
+//   Scenario: field mapping — sem-property data-key and value
+//   Scenario: field mapping — sem-view name and index
+//   Scenario: field mapping — sem-reveal authored vs derived summary
+//   Scenario: field mapping — sem-progress clamped value and raw attribute
 //   Scenario: minting test — plain HTML with npl global attributes
 //   Scenario: purity — extraction does not mutate the DOM
 //   Scenario: INVARIANT — JS-off extraction deep-equals JS-on extraction
@@ -45,26 +45,26 @@ const RECORD_SELECTOR = [
 
 // Document order of demo/index.html, per syntax/extraction.md §3.1.
 const EXPECTED_TYPES = [
-  'npl-agent',
-  'npl-note',
-  'npl-note',
-  'npl-facts', 'npl-fact', 'npl-fact', 'npl-fact',
-  'npl-facts', 'npl-fact', 'npl-fact',
-  'npl-facts', 'npl-fact', 'npl-fact',
-  'npl-details', 'npl-detail',
-  'npl-details', 'npl-detail',
-  'npl-procedure', 'npl-step', 'npl-step', 'npl-step', 'npl-step',
-  'npl-properties', 'npl-property', 'npl-property', 'npl-property',
-  'npl-properties', 'npl-property', 'npl-property',
-  'npl-views', 'npl-view', 'npl-view',
-  'npl-reveal', 'npl-reveal',
-  'npl-progress', 'npl-progress'
+  'sem-agent',
+  'sem-note',
+  'sem-note',
+  'sem-facts', 'sem-fact', 'sem-fact', 'sem-fact',
+  'sem-facts', 'sem-fact', 'sem-fact',
+  'sem-facts', 'sem-fact', 'sem-fact',
+  'sem-details', 'sem-detail',
+  'sem-details', 'sem-detail',
+  'sem-procedure', 'sem-step', 'sem-step', 'sem-step', 'sem-step',
+  'sem-properties', 'sem-property', 'sem-property', 'sem-property',
+  'sem-properties', 'sem-property', 'sem-property',
+  'sem-views', 'sem-view', 'sem-view',
+  'sem-reveal', 'sem-reveal',
+  'sem-progress', 'sem-progress'
 ];
 
 const visitJsOff = () =>
   cy.visit('/demo/index.html', {
     onBeforeLoad(win) {
-      win.__nplJsOff = true;
+      win.__semJsOff = true;
     }
   });
 
@@ -112,11 +112,11 @@ describe('extraction', () => {
       });
     });
 
-    it('containment: facts point at their enclosing npl-facts container', () => {
+    it('containment: facts point at their enclosing sem-facts container', () => {
       extract().then((records) => {
         const fact = byId(records, 'f-rotate');
         const container = records[fact.parent];
-        expect(container.type).to.equal('npl-facts');
+        expect(container.type).to.equal('sem-facts');
         expect(container.id).to.equal('facts-list');
         // Citation token composes from the containment tree.
         expect('#' + container.id + '/' + fact.id).to.equal('#facts-list/f-rotate');
@@ -127,19 +127,19 @@ describe('extraction', () => {
   describe('field mapping — the nine element families', () => {
     beforeEach(() => cy.visit('/demo/index.html'));
 
-    it('npl-agent: name, bio, instructions', () => {
+    it('sem-agent: name, bio, instructions', () => {
       extract().then((records) => {
-        const agent = byType(records, 'npl-agent')[0];
+        const agent = byType(records, 'sem-agent')[0];
         expect(agent.fields.name).to.equal('Auth Guide');
         expect(agent.fields.bio).to.contain('sample auth facts');
-        expect(agent.fields.instructions).to.contain('Cite npl-fact ids');
+        expect(agent.fields.instructions).to.contain('Cite sem-fact ids');
         expect(agent.text).to.equal('Auth Guide');
       });
     });
 
-    it('npl-note: variant plus body text, collapsed chrome excluded', () => {
+    it('sem-note: variant plus body text, collapsed chrome excluded', () => {
       extract().then((records) => {
-        const notes = byType(records, 'npl-note');
+        const notes = byType(records, 'sem-note');
         expect(notes[0].fields.variant).to.equal('warning');
         expect(notes[0].text).to.equal(
           'JWTs must rotate per session, not per request.'
@@ -153,7 +153,7 @@ describe('extraction', () => {
       });
     });
 
-    it('npl-fact: statement, conclusion, distractors kept out of the claim', () => {
+    it('sem-fact: statement, conclusion, distractors kept out of the claim', () => {
       extract().then((records) => {
         const jwt = byId(records, 'f-jwt');
         expect(jwt.fields.statement).to.equal('JWTs rotate per session');
@@ -174,23 +174,23 @@ describe('extraction', () => {
       });
     });
 
-    it('npl-facts / npl-details: containers carry id, kind, tags — not view-as', () => {
+    it('sem-facts / sem-details: containers carry id, kind, tags — not view-as', () => {
       extract().then((records) => {
         const container = byId(records, 'facts-list');
-        expect(container.type).to.equal('npl-facts');
+        expect(container.type).to.equal('sem-facts');
         expect(container.fields).to.deep.equal({});
         expect(container.text).to.equal('');
         expect(container).not.to.have.property('view');
 
-        const details = byType(records, 'npl-details');
+        const details = byType(records, 'sem-details');
         expect(details).to.have.length(2);
         details.forEach((d) => expect(d.fields).to.deep.equal({}));
       });
     });
 
-    it('npl-detail: highlights extracted whether authored or occluded', () => {
+    it('sem-detail: highlights extracted whether authored or occluded', () => {
       extract().then((records) => {
-        const passages = byType(records, 'npl-detail');
+        const passages = byType(records, 'sem-detail');
         // Quiz-view passage: the fallback has replaced .sem-highlight with
         // .sem-occluded; extraction reads through the mask.
         expect(passages[0].fields.highlights).to.deep.equal([
@@ -205,9 +205,9 @@ describe('extraction', () => {
       });
     });
 
-    it('npl-step: status defaults to todo, ordinal is positional', () => {
+    it('sem-step: status defaults to todo, ordinal is positional', () => {
       extract().then((records) => {
-        const steps = byType(records, 'npl-step');
+        const steps = byType(records, 'sem-step');
         expect(steps.map((s) => s.fields.status)).to.deep.equal([
           'done',
           'current',
@@ -219,9 +219,9 @@ describe('extraction', () => {
       });
     });
 
-    it('npl-property: data-key is the term, element text the value', () => {
+    it('sem-property: data-key is the term, element text the value', () => {
       extract().then((records) => {
-        const props = byType(records, 'npl-property');
+        const props = byType(records, 'sem-property');
         expect(props[0].fields).to.deep.equal({ key: 'token ttl', value: '15m' });
         expect(props[0].text).to.equal('token ttl :: 15m');
         expect(props[2].fields.key).to.equal('storage');
@@ -233,9 +233,9 @@ describe('extraction', () => {
       });
     });
 
-    it('npl-view: name and index; the tab bar is not content', () => {
+    it('sem-view: name and index; the tab bar is not content', () => {
       extract().then((records) => {
-        const views = byType(records, 'npl-view');
+        const views = byType(records, 'sem-view');
         expect(views.map((v) => v.fields.name)).to.deep.equal(['Helm', 'ArgoCD']);
         expect(views.map((v) => v.fields.index)).to.deep.equal([0, 1]);
         expect(views[0].text).to.contain('noizu-infra');
@@ -246,7 +246,7 @@ describe('extraction', () => {
       });
     });
 
-    it('npl-reveal: authored summary wins, otherwise derived from the body', () => {
+    it('sem-reveal: authored summary wins, otherwise derived from the body', () => {
       extract().then((records) => {
         const authored = byId(records, 'r-storage');
         expect(authored.fields.summary).to.equal('Why not localStorage?');
@@ -262,7 +262,7 @@ describe('extraction', () => {
       });
     });
 
-    it('npl-progress: clamped value plus the untouched authored attribute', () => {
+    it('sem-progress: clamped value plus the untouched authored attribute', () => {
       extract().then((records) => {
         const cov = byId(records, 'p-coverage');
         expect(cov.fields.value).to.equal(0.62);
@@ -272,7 +272,7 @@ describe('extraction', () => {
 
         const clamp = byId(records, 'p-clamp');
         expect(clamp.fields.value).to.equal(1);
-        // Render clamps; the attribute stays as written (schema npl-progress).
+        // Render clamps; the attribute stays as written (schema sem-progress).
         expect(clamp.fields.rawValue).to.equal('1.4');
       });
     });
@@ -310,18 +310,18 @@ describe('extraction', () => {
       cy.document().then((doc) => {
         const root = doc.createElement('div');
         root.innerHTML =
-          '<npl-facts id="v3" view-as="quiz">' +
-          '<npl-fact id="v3-f" kind="concept">' +
+          '<sem-facts id="v3" view-as="quiz">' +
+          '<sem-fact id="v3-f" kind="concept">' +
           '<statement>JWTs rotate per session</statement>' +
           '<conclusion>Short-lived access.</conclusion>' +
-          '<npl-distractor>localStorage.</npl-distractor>' +
-          '</npl-fact></npl-facts>' +
-          '<npl-progress value="0.5" label="done"></npl-progress>';
+          '<sem-distractor>localStorage.</sem-distractor>' +
+          '</sem-fact></sem-facts>' +
+          '<sem-progress value="0.5" label="done"></sem-progress>';
         const records = extractRecords(root);
         expect(records.map((r) => r.type)).to.deep.equal([
-          'npl-facts',
-          'npl-fact',
-          'npl-progress'
+          'sem-facts',
+          'sem-fact',
+          'sem-progress'
         ]);
         expect(records[1].kind).to.equal('concept');
         expect(records[1].fields.statement).to.equal('JWTs rotate per session');
@@ -436,14 +436,14 @@ describe('extraction', () => {
     it('renders indented, annotated lines from the same records', () => {
       cy.document().then((doc) => {
         const text = extractText(doc);
-        expect(text).to.contain('npl-agent: Auth Guide');
-        expect(text).to.contain('npl-facts (#facts-list)');
+        expect(text).to.contain('sem-agent: Auth Guide');
+        expect(text).to.contain('sem-facts (#facts-list)');
         expect(text).to.contain(
-          '  npl-fact (#f-jwt): JWTs rotate per session :: Short-lived access'
+          '  sem-fact (#f-jwt): JWTs rotate per session :: Short-lived access'
         );
-        expect(text).to.contain('npl-procedure (kind=runbook)');
+        expect(text).to.contain('sem-procedure (kind=runbook)');
         expect(text).to.contain('    status: blocked');
-        expect(text).to.contain('npl-progress (#p-clamp): out-of-range fixture :: 100%');
+        expect(text).to.contain('sem-progress (#p-clamp): out-of-range fixture :: 100%');
         expect(text).to.contain('  rawValue: 1.4');
         // No generated chrome leaks into the text rendering.
         expect(text).not.to.contain('score');

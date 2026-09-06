@@ -1,13 +1,13 @@
-// BDD spec — npl-procedure / npl-step · source: syntax/schema/npl-procedure.md
+// BDD spec — sem-procedure / sem-step · source: syntax/schema/sem-procedure.md
 // Fixture: /demo/index.html (v0.4 class-based baseline, sections appended on feat/tier0-spec-expansion)
 //
-// Feature: npl-procedure renders an ordered, status-annotated procedure with zero JS
+// Feature: sem-procedure renders an ordered, status-annotated procedure with zero JS
 //   Scenario: steps render in DOM order with ordinal numbers
 //   Scenario: status glyphs and accents follow data-status
 //   Scenario: missing data-status defaults to todo
 //   Scenario: roles authored for AT without JS
 
-describe('npl-procedure', () => {
+describe('sem-procedure', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
 
   it('renders steps in DOM order with ordinals', () => {

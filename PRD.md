@@ -1,6 +1,6 @@
 # PRD — `npl-enhanced-content` · The XML Variant of NPL
 
-v0.3 · 2026-09-01 · Status: DRAFT — npl- prefix, semantic naming, universal
+v0.3 · 2026-09-01 · Status: DRAFT — sem- prefix, semantic naming, universal
 fallback handler (v0.2 XHTML-first model retained; v0.1 was a false start)
 Session: noizu-labs / noizu-infra `8a675934-4fd9-4899-8678-2137f051ae78`
 
@@ -10,7 +10,7 @@ Session: noizu-labs / noizu-infra `8a675934-4fd9-4899-8678-2137f051ae78`
 
 `npl-enhanced-content` defines the **XML/HTML variant of NPL**: rich documents
 whose canonical artifact is a **standalone XHTML file**. Element names are
-**semantic** (`npl-fact`, `npl-detail`, `npl-procedure`), never
+**semantic** (`sem-fact`, `sem-detail`, `sem-procedure`), never
 UI-descriptive; presentation is a parameter (`view-as="quiz|flashcards|list"`),
 not the identity. One file, three consumers:
 
@@ -27,7 +27,7 @@ NPL conventions live **inside the tags** — attributes, `::` pairs,
 
 **Goals**
 
-- `<npl-enhanced-document>` root element; document-level metadata (e.g.
+- `<sem-enhanced-document>` root element; document-level metadata (e.g.
   `<agent><name/><bio/><instructions/></agent>`) as semantic XML children.
 - Lit 3 web components; **zero React** in the dependency tree.
 - **Universal inline fallback handler** (load-bearing, §7): a tiny always-
@@ -47,10 +47,10 @@ NPL conventions live **inside the tags** — attributes, `::` pairs,
 | Asset | In TRP | Disposition |
 | :-- | :-- | :-- |
 | Theme system | YAML → generated CSS, `html[data-design-theme]` | **Lift**; rename `--sem-*`, `data-sem-theme` |
-| `trp-item-timeline` | Only real Lit component | **Lift packaging pattern**; port as `npl-chronology` (Tier 2) |
+| `trp-item-timeline` | Only real Lit component | **Lift packaging pattern**; port as `sem-chronology` (Tier 2) |
 | Quiz question types | `components/22-quiz-question-types.md` — 7 renderers | **Feature spec** for `view-as="quiz"` |
-| Flashcard spec | `components/13-flashcard.md` — cloze/flip/swipe | **Feature spec** for `npl-fact`/`npl-detail` views |
-| Prior v0.1/v0.2 drafts | `hui-*` catalog | Element purposes survive; names now semantic `npl-*` |
+| Flashcard spec | `components/13-flashcard.md` — cloze/flip/swipe | **Feature spec** for `sem-fact`/`sem-detail` views |
+| Prior v0.1/v0.2 drafts | `hui-*` catalog | Element purposes survive; names now semantic `sem-*` |
 
 ## 4. Format Specification (v0)
 
@@ -61,37 +61,37 @@ NPL conventions live **inside the tags** — attributes, `::` pairs,
   <meta charset="utf-8">
   <title>Authoring Guide</title>
   <link rel="stylesheet" href="npl/themes/minimal-tech-light.css">
-  <script id="npl-fallback">/* always-embedded vanilla handler, §7 */</script>
+  <script id="sem-fallback">/* always-embedded vanilla handler, §7 */</script>
   <script defer src="npl/npl.js"></script>   <!-- Lit upgrade, optional -->
 </head>
 <body>
-<npl-enhanced-document>
+<sem-enhanced-document>
   <agent>
     <name>Infra Guide</name>
     <bio>Deployment runbook assistant for the trl-infra fleet</bio>
-    <instructions>Answer from document facts only; cite npl-fact ids.</instructions>
+    <instructions>Answer from document facts only; cite sem-fact ids.</instructions>
   </agent>
 
-  <npl-facts view-as="flashcards" controls="shuffle">
-    <npl-fact id="f-jwt">
+  <sem-facts view-as="flashcards" controls="shuffle">
+    <sem-fact id="f-jwt">
       <statement>JWTs rotate per session</statement>
       <conclusion>Short-lived access tokens; refresh grants a new pair.</conclusion>
-    </npl-fact>
-  </npl-facts>
+    </sem-fact>
+  </sem-facts>
 
-  <npl-details view-as="quiz">
-    <npl-detail>
+  <sem-details view-as="quiz">
+    <sem-detail>
       The OIDC token travels in the <highlight>Authorization</highlight> header.
-    </npl-detail>
-  </npl-details>
-</npl-enhanced-document>
+    </sem-detail>
+  </sem-details>
+</sem-enhanced-document>
 </body>
 </html>
 ```
 
 Binding rules:
 
-1. **Semantic identity, parameterized presentation.** `<npl-fact>` is a fact
+1. **Semantic identity, parameterized presentation.** `<sem-fact>` is a fact
    whether viewed as list, flashcard, or quiz — `view-as` selects rendering.
 2. **Machines read the XML.** Children like `<statement>`/`<conclusion>` are
    named roles; attributes (`kind`, `status`, `tags`) qualify. Same vocabulary
@@ -109,31 +109,31 @@ Schema + BDD spec land together, before code (§8). Tier order simplest first.
 
 | Element | Children/attrs | Purpose |
 | :-- | :-- | :-- |
-| `npl-note` | `variant="info\|warning\|tip\|danger"`, `collapsed` | callout annotation |
-| `npl-fact` | `<statement>` + `<conclusion>`; standalone or in `npl-facts` | assertable Q/A pair — the atomic unit |
-| `npl-facts` | `view-as="list\|flashcards\|quiz"`, `controls` | fact collection; the flagship surface |
-| `npl-detail` / `npl-details` | `<highlight>` cloze spans; `view-as` | prose passage with occludable content |
-| `npl-procedure` / `npl-step` | `status="done\|current\|todo\|blocked"` | ordered procedure |
-| `npl-properties` / `npl-property` | `key` attr | definition/properties block → `<dl>` |
-| `npl-views` / `npl-view` | `name` | same content, switchable perspectives (tabs family — ❓ naming) |
-| `npl-reveal` | `summary` attr | reveal-on-demand content |
-| `npl-progress` | `value`, `label` | completion/meter role |
+| `sem-note` | `variant="info\|warning\|tip\|danger"`, `collapsed` | callout annotation |
+| `sem-fact` | `<statement>` + `<conclusion>`; standalone or in `sem-facts` | assertable Q/A pair — the atomic unit |
+| `sem-facts` | `view-as="list\|flashcards\|quiz"`, `controls` | fact collection; the flagship surface |
+| `sem-detail` / `sem-details` | `<highlight>` cloze spans; `view-as` | prose passage with occludable content |
+| `sem-procedure` / `sem-step` | `status="done\|current\|todo\|blocked"` | ordered procedure |
+| `sem-properties` / `sem-property` | `key` attr | definition/properties block → `<dl>` |
+| `sem-views` / `sem-view` | `name` | same content, switchable perspectives (tabs family — ❓ naming) |
+| `sem-reveal` | `summary` attr | reveal-on-demand content |
+| `sem-progress` | `value`, `label` | completion/meter role |
 
 ### Tier 1 — flagship buildout
 
-- `npl-facts` full: filter/tag chips (list), flip+swipe+shuffle (flashcards),
-  quiz candidates from explicit `<npl-distractor>` children else sibling
-  statements; `hui-complete`-style events → `npl-complete {correct,total,ms}`.
-- `npl-details` full: `<highlight>` occlusion in quiz view; sequencing.
-- `<npl-question type="mc|multi|blank|match|order|tf|short">` — the 7 TRP
-  renderers as quiz content inside `npl-facts view-as="quiz"`; `<npl-option
+- `sem-facts` full: filter/tag chips (list), flip+swipe+shuffle (flashcards),
+  quiz candidates from explicit `<sem-distractor>` children else sibling
+  statements; `hui-complete`-style events → `sem-complete {correct,total,ms}`.
+- `sem-details` full: `<highlight>` occlusion in quiz view; sequencing.
+- `<sem-question type="mc|multi|blank|match|order|tf|short">` — the 7 TRP
+  renderers as quiz content inside `sem-facts view-as="quiz"`; `<sem-option
   correct>` children; `✅/✗` glyph sugar; scoring + `retry` control.
 
 ### Tier 2
 
-- `npl-chronology` / `npl-event when` — TRP timeline port.
-- `npl-table`, `npl-query` — data surfaces over inline JSON payload scripts.
-- `npl-themes controls="picker"` — floating theme switcher.
+- `sem-chronology` / `sem-event when` — TRP timeline port.
+- `sem-table`, `sem-query` — data surfaces over inline JSON payload scripts.
+- `sem-themes controls="picker"` — floating theme switcher.
 - md→npl authoring aid (optional, never required).
 
 ## 6. Theme System
@@ -151,7 +151,7 @@ Schema + BDD spec land together, before code (§8). Tier order simplest first.
 Every portable document embeds, inline in `<head>`:
 
 ```html
-<script id="npl-fallback">/* ~2-4KB vanilla JS: view-as switching,
+<script id="sem-fallback">/* ~2-4KB vanilla JS: view-as switching,
   reveal toggles, highlight occlusion, basic quiz checking */</script>
 ```
 
@@ -195,15 +195,15 @@ Local repo `Portfolio/AI/npl-enhanced-content`; promotion via `make-repo` →
 | :-- | :-- | :-- |
 | M1 | Format spec v0 + Tier-0 schemas + red BDD specs (fallback + upgraded) | 9 schemas, 9 red specs |
 | M2 | **v0.4 class-based baseline shipped** (`demo/index.html`: inline CSS + Tailwind CDN + fallback handler); Lit upgrade deferred to M3+ | demo opens via double-click; flashcards/quiz/highlight work with zero external resources beyond Tailwind CDN |
-| M3 | `npl-facts`/`npl-details` flagship (list/flashcards/quiz) | demo + green, single-file variant builds |
-| M4 | `npl-question` 7 types; highlight occlusion full | TRP parity |
+| M3 | `sem-facts`/`sem-details` flagship (list/flashcards/quiz) | demo + green, single-file variant builds |
+| M4 | `sem-question` 7 types; highlight occlusion full | TRP parity |
 | M5 | Tier 2 + MHTML + npm publish prep | zero React; mhtml round-trip |
 
 ## meta-review
 
 ```
-(like)    Semantic identity / parameterized presentation — view-as on npl-facts is the key inversion
+(like)    Semantic identity / parameterized presentation — view-as on sem-facts is the key inversion
 (like)    Fallback handler makes "standalone" honest: works with all externals stripped
 (dislike) Fallback + Lit dual implementation per element doubles behavior surface — BDD must pin exact handoff
-(dislike) Bare <agent> children vs npl-prefixed: XML validation story needs one decision, documented
+(dislike) Bare <agent> children vs sem-prefixed: XML validation story needs one decision, documented
 ```

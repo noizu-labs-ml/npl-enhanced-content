@@ -6,11 +6,11 @@ NPL-enhanced XHTML (see [PROJ-SCHEMA.md](PROJ-SCHEMA.md), layout in
 
 ## Core entities
 
-- **Enhanced document** — root `npl-enhanced-document` (v0.4: `div.sem-enhanced-document`); metadata children (`agent`, …) + semantic HTML + `npl-*` vocabulary.
-- **Element↔class mapping** — v0.3 custom elements map mechanically to `div/span.sem-*` classes with `data-*` parameters (npl-agent, npl-note, npl-facts, npl-fact, npl-distractor, npl-details/detail, npl-highlight).
+- **Enhanced document** — root `sem-enhanced-document` (v0.4: `div.sem-enhanced-document`); metadata children (`agent`, …) + semantic HTML + `sem-*` vocabulary.
+- **Element↔class mapping** — v0.3 custom elements map mechanically to `div/span.sem-*` classes with `data-*` parameters (sem-agent, sem-note, sem-facts, sem-fact, sem-distractor, sem-details/detail, sem-highlight).
 - **Global attributes** — `kind`, `tags`, `view-as` (unknown ⇒ list fallback), `status` (`done|current|todo|blocked|pass|fail`), `controls`, `collapsed`, `id`, `data-*`. Attributes canonical; inline notation is sugar.
 
-## npl-note schema
+## sem-note schema
 
 ```mermaid
 erDiagram
@@ -25,7 +25,7 @@ erDiagram
     }
 ```
 
-Events: none. Light DOM (searchable). BDD source for `cypress/e2e/npl-note.cy.js`.
+Events: none. Light DOM (searchable). BDD source for `cypress/e2e/sem-note.cy.js`.
 
 ## Data files & configs
 

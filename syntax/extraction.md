@@ -39,8 +39,8 @@ not a browser ran its scripts.
 Extraction returns a flat array of records in document order.
 
 ```ts
-interface NplRecord {
-  type: string;                    // 'npl-fact', or a tag name for a minted record
+interface SemRecord {
+  type: string;                    // 'sem-fact', or a tag name for a minted record
   id: string | null;               // citation token
   kind: string | null;             // data-kind / kind
   tags: string[];                  // data-tags / tags, comma-split, [] when absent
@@ -52,8 +52,8 @@ interface NplRecord {
 }
 ```
 
-- `type` is normalized across authoring forms. `<npl-fact>` (v0.3) and
-  `div.sem-fact` (v0.4) both yield `npl-fact`; `<agent>` yields `npl-agent`.
+- `type` is normalized across authoring forms. `<sem-fact>` (v0.3) and
+  `div.sem-fact` (v0.4) both yield `sem-fact`; `<agent>` yields `sem-agent`.
 - `parent` carries containment. A fact inside `#auth-facts` cites as
   `#auth-facts/f-jwt`, which the consumer composes from the fact's `id` and
   its parent record's `id`. Containment is a number, not an id, because
@@ -71,10 +71,10 @@ interface NplRecord {
 ## 3. Emission rules
 
 1. **One record per vocabulary element**, in document order. Fourteen element
-   types mint records: `npl-agent`, `npl-note`, `npl-facts`, `npl-fact`,
-   `npl-details`, `npl-detail`, `npl-procedure`, `npl-step`,
-   `npl-properties`, `npl-property`, `npl-views`, `npl-view`, `npl-reveal`,
-   `npl-progress`.
+   types mint records: `sem-agent`, `sem-note`, `sem-facts`, `sem-fact`,
+   `sem-details`, `sem-detail`, `sem-procedure`, `sem-step`,
+   `sem-properties`, `sem-property`, `sem-views`, `sem-view`, `sem-reveal`,
+   `sem-progress`.
 2. **Parts are not records.** `.sem-statement`, `.sem-conclusion`,
    `.sem-distractor`, `.sem-highlight`, `.sem-note-body`, and the
    `.sem-agent-*` children are fields of their owning record, never entries
@@ -99,27 +99,27 @@ interface NplRecord {
 
 ## 4. Per-element field mapping
 
-### `npl-agent`
+### `sem-agent`
 
 `fields: { name, bio, instructions }` from `.sem-agent-name` / `<name>`,
 `.sem-agent-bio` / `<bio>`, `.sem-agent-instructions` / `<instructions>`.
 Missing children yield `""`. `text` = `name`.
 
-### `npl-note`
+### `sem-note`
 
 `fields: { variant }` — `data-variant` / `variant`, defaulting to `info` per
-`syntax/schema/npl-note.md`. `text` = the note body: `.sem-note-body` when
+`syntax/schema/sem-note.md`. `text` = the note body: `.sem-note-body` when
 present, otherwise the note's own prose.
 
 `collapsed` is **not** extracted. It is initial disclosure state, and the
 fallback removes the attribute when the reader opens the note (see §5).
 
-### `npl-facts` / `npl-fact`
+### `sem-facts` / `sem-fact`
 
-`npl-facts` is a container: `fields: {}`, `text: ""`, carrying `id`, `kind`,
+`sem-facts` is a container: `fields: {}`, `text: ""`, carrying `id`, `kind`,
 `tags` for citation and grouping.
 
-`npl-fact` yields
+`sem-fact` yields
 `fields: { statement, conclusion, distractors: string[], highlights: string[] }`.
 
 - `statement` / `conclusion` from `.sem-statement` / `<statement>` and
@@ -129,7 +129,7 @@ fallback removes the attribute when the reader opens the note (see §5).
   With no `::`, the whole text is the `statement` and `conclusion` is `""`.
   Children always win over the compact form (conventions §3).
 - `distractors` are extracted **as distractors and never as claims**, which
-  is exactly what `syntax/schema/npl-facts.md` requires: they appear in their
+  is exactly what `syntax/schema/sem-facts.md` requires: they appear in their
   own array, never in `text`, never as a `conclusion`.
 - `highlights` are the fact's recall prompts, in either the authored
   (`.sem-highlight`, `<highlight>`) or occluded (`.sem-occluded`) form.
@@ -139,13 +139,13 @@ Implicit distractors — the sibling conclusions the quiz view borrows when a
 fact has no `.sem-distractor` child — are a **rendering** decision and are not
 extracted. They are already in the output as other facts' conclusions.
 
-### `npl-details` / `npl-detail`
+### `sem-details` / `sem-detail`
 
-`npl-details` is a container: `fields: {}`, `text: ""`.
+`sem-details` is a container: `fields: {}`, `text: ""`.
 
-`npl-detail` yields `fields: { highlights: string[] }` and `text` = the
+`sem-detail` yields `fields: { highlights: string[] }` and `text` = the
 passage prose. This is the `{container, passage, cloze}` shape
-`syntax/schema/npl-details.md` promises, spelled as `parent`, `text`, and
+`syntax/schema/sem-details.md` promises, spelled as `parent`, `text`, and
 `highlights`.
 
 A highlight is reported identically whether it is authored
@@ -153,16 +153,16 @@ A highlight is reported identically whether it is authored
 revealed (`span.sem-highlight.sem-revealed`). The occlusion is a mask over
 text that is still in the DOM; extraction reads through it.
 
-### `npl-procedure` / `npl-step`
+### `sem-procedure` / `sem-step`
 
-`npl-procedure` is a container: `fields: {}`, `text: ""`, typically carrying
+`sem-procedure` is a container: `fields: {}`, `text: ""`, typically carrying
 `kind` (`runbook`, `recipe`, …).
 
-`npl-step` yields `fields: { status, ordinal }`.
+`sem-step` yields `fields: { status, ordinal }`.
 
 - `status` = `data-status` / `status`, defaulting to `todo`.
 - `ordinal` is **positional and 1-based**, counted among sibling steps. There
-  is deliberately no ordinal attribute: `syntax/schema/npl-procedure.md`
+  is deliberately no ordinal attribute: `syntax/schema/sem-procedure.md`
   makes DOM order the execution order, and extraction is where that becomes a
   number a consumer can use.
 - Status sugar (`✅`, `→`, `❌`) in step text is display-only and is not
@@ -171,11 +171,11 @@ text that is still in the DOM; extraction reads through it.
 "A procedure with any blocked step is itself blocked" stays derivable, not
 extracted — the consumer computes it from the step records.
 
-### `npl-properties` / `npl-property`
+### `sem-properties` / `sem-property`
 
-`npl-properties` is a container: `fields: {}`, `text: ""`.
+`sem-properties` is a container: `fields: {}`, `text: ""`.
 
-`npl-property` yields `fields: { key, value }`; `text` = `key :: value`.
+`sem-property` yields `fields: { key, value }`; `text` = `key :: value`.
 
 - `key` = `data-key` / `key`; `value` = the property's own text.
 - When `data-key` is absent, the compact `term :: value` sugar is parsed.
@@ -188,19 +188,19 @@ extracted — the consumer computes it from the step records.
   reports both records faithfully and does not deduplicate; diagnosing the
   duplicate is the fallback's job (console warning) and the linter's.
 
-### `npl-views` / `npl-view`
+### `sem-views` / `sem-view`
 
-`npl-views` is a container: `fields: {}`, `text: ""`, carrying the `id` that
+`sem-views` is a container: `fields: {}`, `text: ""`, carrying the `id` that
 deep links cite.
 
-`npl-view` yields `fields: { name, index }`; `text` = the view's own prose.
+`sem-view` yields `fields: { name, index }`; `text` = the view's own prose.
 
 - `name` = `data-name` / `name`; `index` is 0-based among sibling views.
 - Citation form `#<views-id>/<view-name>` is composed from the parent
   record's `id` and this record's `name`.
 - `data-active` is **not** extracted. See §5.
 
-### `npl-reveal`
+### `sem-reveal`
 
 `fields: { summary, summarySource }`; `text` = the reveal body.
 
@@ -216,13 +216,13 @@ deep links cite.
 - `collapsed` is not extracted (§5).
 
 **Recorded divergence.** The v0.4 fallback derives its `<summary>` as the
-first eight words plus `" …"`. `syntax/schema/npl-reveal.md` specifies "first
+first eight words plus `" …"`. `syntax/schema/sem-reveal.md` specifies "first
 line of body, max 60 chars". The two rules disagree. Extraction implements
 the schema's rule; the fallback's string is a display artifact and is skipped
 outright. Reconciling the fallback to the schema is tracked separately —
 extraction does not wait on it.
 
-### `npl-progress`
+### `sem-progress`
 
 `fields: { value, rawValue, label }`, plus `status` when `data-status` is
 present; `text` = `label :: N%` with `N` the rounded clamped percentage.
@@ -230,7 +230,7 @@ present; `text` = `label :: N%` with `N` the rounded clamped percentage.
 - `value` is the clamped number in `[0,1]`; a non-numeric or absent attribute
   clamps to `0`.
 - `rawValue` is the **authored attribute string, untouched**.
-  `syntax/schema/npl-progress.md` is explicit that render clamps while the
+  `syntax/schema/sem-progress.md` is explicit that render clamps while the
   attribute stays as written, so a machine reader must be able to see
   `1.4` and know the author asserted something out of range.
 - `text` is **derived from the attributes, never read from the DOM**. The
@@ -253,7 +253,7 @@ targets.
 This is the **minting test** in operational form: if plain HTML plus the
 global attribute catalog already carries the meaning, we do not mint a new
 element for it. `<figure kind="diagram">` is a record without
-`<npl-figure>` ever existing. A new element earns its place only when it
+`<sem-figure>` ever existing. A new element earns its place only when it
 needs fields, interaction, or degradation behavior that attributes on plain
 HTML cannot express.
 
@@ -374,11 +374,11 @@ Output:
     "audience": null, "parent": null, "fields": {},
     "text": "Token handling", "sourceOrder": 0 },
 
-  { "type": "npl-facts", "id": "auth-facts", "kind": null, "tags": [],
+  { "type": "sem-facts", "id": "auth-facts", "kind": null, "tags": [],
     "audience": null, "parent": null, "fields": {},
     "text": "", "sourceOrder": 1 },
 
-  { "type": "npl-fact", "id": "f-jwt", "kind": "concept", "tags": [],
+  { "type": "sem-fact", "id": "f-jwt", "kind": "concept", "tags": [],
     "audience": null, "parent": 1,
     "fields": {
       "statement": "JWTs rotate per session",
@@ -389,7 +389,7 @@ Output:
     "text": "JWTs rotate per session :: Short-lived access; refresh issues a new pair.",
     "sourceOrder": 2 },
 
-  { "type": "npl-progress", "id": "p-cov", "kind": null, "tags": [],
+  { "type": "sem-progress", "id": "p-cov", "kind": null, "tags": [],
     "audience": null, "parent": null,
     "fields": { "value": 1, "rawValue": "1.4", "label": "coverage" },
     "text": "coverage :: 100%", "sourceOrder": 3 }
@@ -400,10 +400,10 @@ Rendered as annotated plain text:
 
 ```
 h2 (kind=section tags=auth|tokens): Token handling
-npl-facts (#auth-facts)
-  npl-fact (#f-jwt kind=concept): JWTs rotate per session :: Short-lived access; refresh issues a new pair.
+sem-facts (#auth-facts)
+  sem-fact (#f-jwt kind=concept): JWTs rotate per session :: Short-lived access; refresh issues a new pair.
     distractors: Store them in localStorage.
-npl-progress (#p-cov): coverage :: 100%
+sem-progress (#p-cov): coverage :: 100%
   rawValue: 1.4
 ```
 
@@ -414,7 +414,7 @@ distinction collapsing (both `value` and `rawValue` are reported).
 ## 9. Machine contract
 
 - Extraction is a **total, pure function** from a `Document` or root
-  `Element` to `NplRecord[]`. It has no configuration, no I/O, and no
+  `Element` to `SemRecord[]`. It has no configuration, no I/O, and no
   dependencies.
 - The array is ordered; `sourceOrder` is the index and is stable.
 - Containment is a tree over `parent`; citation tokens compose from `id`

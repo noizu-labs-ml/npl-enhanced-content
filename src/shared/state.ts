@@ -7,11 +7,11 @@
  *   • localStorage, for state that is this reader's business alone.
  *
  * HASH FORMAT. The hash is a `&`-joined list of segments. A segment is either
- * `name=value` or a bare token. The bare form is load-bearing: npl-views already
+ * `name=value` or a bare token. The bare form is load-bearing: sem-views already
  * deep-links as `#<container-id>/<view-id>`, and that link must keep working
  * unchanged when audience state joins it. The composed form is therefore
  *
- *     #deploy/argocd&npl-audience=operator
+ *     #deploy/argocd&sem-audience=operator
  *
  * so every reader/writer here edits exactly one segment and copies the rest
  * through verbatim — bare segments are never re-encoded or reordered.
@@ -37,7 +37,7 @@ export function hashSegments(): string[] {
   return raw.split('&').filter((segment) => segment !== '');
 }
 
-/** The segments that carry no `=` — e.g. the npl-views `id/view` deep link. */
+/** The segments that carry no `=` — e.g. the sem-views `id/view` deep link. */
 export function bareSegments(): string[] {
   return hashSegments().filter((segment) => !segment.includes('='));
 }

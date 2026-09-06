@@ -1,17 +1,17 @@
 import { LitElement } from 'lit';
 import { parseTokens } from '../shared/tokens.js';
-import { closureFor, matches, warn as nplWarn, type AudienceClosure } from '../shared/audience.js';
+import { closureFor, matches, warn as semWarn, type AudienceClosure } from '../shared/audience.js';
 
 /**
- * NplElement — the shared base for every npl custom element.
+ * SemElement — the shared base for every npl custom element.
  *
  * Repays debt D2. Three things were being copy-pasted per element and drifting:
  * the light-DOM render root, the fallback→upgrade handoff, and a
  * requestAnimationFrame retry for the pre-parse children problem.
  *
- * The rAF retry was wrong in both directions. npl-note had no guard, so a note
- * whose `.sem-note-body` was never authored re-queued a frame forever. npl-facts
- * and npl-details had a one-shot `#retrying` flag, so children streamed in by a
+ * The rAF retry was wrong in both directions. sem-note had no guard, so a note
+ * whose `.sem-note-body` was never authored re-queued a frame forever. sem-facts
+ * and sem-details had a one-shot `#retrying` flag, so children streamed in by a
  * slow parse (or injected later) after that single frame were never picked up.
  * `whenChildrenReady` replaces both with a MutationObserver: it costs nothing
  * while idle, fires the moment the children exist however late that is, and
@@ -21,7 +21,7 @@ import { closureFor, matches, warn as nplWarn, type AudienceClosure } from '../s
  * no shadow DOM and no `static styles`: content must stay searchable, copyable
  * and styleable by plain theme CSS (PRD §4 rule 5).
  */
-export class NplElement extends LitElement {
+export class SemElement extends LitElement {
   #observers = new Set<MutationObserver>();
 
   /** Light DOM — theme CSS styles the `.sem-*` classes directly. */
@@ -57,7 +57,7 @@ export class NplElement extends LitElement {
    *
    * While the document is still parsing, resolution is held until
    * DOMContentLoaded. Otherwise the observer would fire on the *first* child
-   * the streaming parser appends and a caller like npl-facts would wire itself
+   * the streaming parser appends and a caller like sem-facts would wire itself
    * against a partial deck. Callers get the full match set either way.
    */
   whenChildrenReady(selector: string): Promise<Element[]> {
@@ -87,7 +87,7 @@ export class NplElement extends LitElement {
     });
   }
 
-  /** Bubbling, composed CustomEvent — npl-navigate / npl-flip / npl-complete. */
+  /** Bubbling, composed CustomEvent — sem-navigate / sem-flip / sem-complete. */
   emit<T>(name: string, detail?: T): boolean {
     return this.dispatchEvent(
       new CustomEvent<T>(name, { bubbles: true, composed: true, detail: detail as T }),
@@ -103,7 +103,7 @@ export class NplElement extends LitElement {
    * Is this element visible to the document's active audience profile?
    *
    * The active profile lives on the document root as `data-sem-audience`; the
-   * profile declarations live in the `npl-audiences` block. With neither
+   * profile declarations live in the `sem-audiences` block. With neither
    * declared — which is every document today — this returns true for
    * everything, and an unknown token fails open for the same reason.
    */
@@ -113,7 +113,7 @@ export class NplElement extends LitElement {
   }
 
   #root(): Element | Document {
-    return this.closest('npl-enhanced-document, .sem-enhanced-document') ?? this.ownerDocument;
+    return this.closest('sem-enhanced-document, .sem-enhanced-document') ?? this.ownerDocument;
   }
 
   #activeProfile(): string | null {
@@ -128,7 +128,7 @@ export class NplElement extends LitElement {
 
   /** Author-facing warning, same channel as the vanilla fallback handler. */
   warn(message: string): void {
-    nplWarn(message);
+    semWarn(message);
   }
 
   /**

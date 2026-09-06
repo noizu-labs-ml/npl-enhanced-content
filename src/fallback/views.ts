@@ -3,8 +3,8 @@
  * `#<container-id>/<view>` deep links.
  *
  * The hash write stays a whole-hash assignment, matching the original inline
- * handler exactly: the deep-link format and the `npl-navigate` CustomEvent
- * payload are both asserted by cypress/e2e/npl-views.cy.js.
+ * handler exactly: the deep-link format and the `sem-navigate` CustomEvent
+ * payload are both asserted by cypress/e2e/sem-views.cy.js.
  */
 
 export function enhanceViews(scope: ParentNode): void {
@@ -44,7 +44,7 @@ export function enhanceViews(scope: ParentNode): void {
       const v = views[k];
       if (v.id) location.hash = root.id + '/' + v.id;
       else location.hash = root.id + '/' + (v.getAttribute('data-name') || '').toLowerCase();
-      v.dispatchEvent(new CustomEvent('npl-navigate', {
+      v.dispatchEvent(new CustomEvent('sem-navigate', {
         bubbles: true, detail: { id: root.id, name: v.getAttribute('data-name'), index: k },
       }));
       if (focus) (bar.querySelectorAll('[role="tab"]')[k] as HTMLElement).focus();

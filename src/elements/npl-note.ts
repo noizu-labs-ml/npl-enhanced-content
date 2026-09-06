@@ -1,12 +1,12 @@
-import { NplElement } from './base.js';
+import { SemElement } from './base.js';
 
 /**
- * npl-note — Lit upgrade of the v0.4 class-based callout.
+ * sem-note — Lit upgrade of the v0.4 class-based callout.
  * Light DOM per PRD §4 rule 5: content stays searchable/copyable;
  * Lit owns behavior (collapsed toggle, variant reaction), not markup.
- * Handoff contract (data-sem-upgraded / data-sem-fallback) comes from NplElement.
+ * Handoff contract (data-sem-upgraded / data-sem-fallback) comes from SemElement.
  */
-export class NplNote extends NplElement {
+export class SemNote extends SemElement {
   static properties = {
     variant: { type: String, reflect: true },
     collapsed: { type: Boolean, reflect: true },
@@ -81,4 +81,4 @@ export class NplNote extends NplElement {
   }
 }
 
-NplElement.register('npl-note', NplNote);
+SemElement.register('sem-note', SemNote);

@@ -1,29 +1,29 @@
-# Schema — `npl-details` / `npl-detail` / `highlight`
+# Schema — `sem-details` / `sem-detail` / `highlight`
 
 Contract per conventions.md v0.4. BDD source of truth for
-`cypress/e2e/npl-details.cy.js`. Changes here precede spec changes
+`cypress/e2e/sem-details.cy.js`. Changes here precede spec changes
 precede code.
 
 ## Scope decision (recorded)
 
-Three candidate readings existed for `npl-details`; this schema adopts the
+Three candidate readings existed for `sem-details`; this schema adopts the
 **PRD §5 catalog reading — prose passage with occludable content**:
 
-1. **Adopted**: container of `npl-detail` prose passages whose
+1. **Adopted**: container of `sem-detail` prose passages whose
    `span.sem-highlight` children mark cloze/recall targets;
    `data-view-as="quiz"` occludes them (the universal `<highlight>` cloze,
    PRD §4 rule 3). The demo prototype (demo/index.html) already implements
    this — M3 formalizes it.
-2. *Rejected — collapsible detail block*: `npl-reveal` already owns
+2. *Rejected — collapsible detail block*: `sem-reveal` already owns
    Q→A disclosure (`<details>`/`<summary>`); a second collapsible block
    would duplicate its mechanism and BDD.
 3. *Rejected — accordion group of reveal-like items*: overlaps
-   `npl-reveal` (disclosure semantics) and `npl-views` (mutually-exclusive
+   `sem-reveal` (disclosure semantics) and `sem-views` (mutually-exclusive
    visibility + named switching). An accordion adds a third sibling/
    sibling-hiding mechanism without new semantics.
 
-`npl-details` is therefore **recall-oriented prose**, distinct from
-`npl-reveal` (block disclosure) and `npl-views` (perspective switching):
+`sem-details` is therefore **recall-oriented prose**, distinct from
+`sem-reveal` (block disclosure) and `sem-views` (perspective switching):
 same prose, different interaction model per view.
 
 ## Authoring form (v0.4 class-based)
@@ -42,7 +42,7 @@ same prose, different interaction model per view.
 - `.sem-detail`: one prose passage; any inline content, `span.sem-highlight`
   marks a recall target. `[[cloze]]` sugar maps to `span.sem-highlight`.
 - `id` on the container; `kind`, `tags` global. Facts may also carry
-  `npl-highlight` prompts (schema npl-facts), but occlusion wiring for
+  `sem-highlight` prompts (schema sem-facts), but occlusion wiring for
   prose lives here.
 
 ## Rendered form (v0.4)
@@ -58,7 +58,7 @@ same prose, different interaction model per view.
   `.sem-highlight .sem-revealed` (readable, accent-tinted), loses
   `role`/`tabindex`. Reveals are per-item and irreversible (self-check
   model).
-- Lit upgrade (`<npl-details>` element) supersedes: sets
+- Lit upgrade (`<sem-details>` element) supersedes: sets
   `data-sem-upgraded`, removes `data-sem-fallback`, performs the same
   occlusion imperatively in light DOM.
 
@@ -69,7 +69,7 @@ same prose, different interaction model per view.
 
 ## Events
 
-None (self-check reveals are local). Sequencing (`npl-details` full:
+None (self-check reveals are local). Sequencing (`sem-details` full:
 guided item-by-item recall) is Tier-1.
 
 ## A11y contract

@@ -4,7 +4,7 @@
  * The value is clamped into [0,1] and a non-numeric value reads as 0, so an
  * authoring typo degrades to an empty bar rather than a broken layout. The
  * `label :: NN%` text and the clamp are asserted by
- * cypress/e2e/npl-progress.cy.js.
+ * cypress/e2e/sem-progress.cy.js.
  */
 
 export function enhanceProgress(scope: ParentNode): void {

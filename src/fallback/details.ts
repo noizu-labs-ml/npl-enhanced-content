@@ -3,7 +3,7 @@
  *
  * Replaces each `.sem-highlight` with a keyboard-reachable `.sem-occluded`
  * span that reveals on click or Enter/Space. Extracted verbatim from the
- * inline demo IIFE; src/elements/npl-details.ts holds the Lit-tier twin of
+ * inline demo IIFE; src/elements/sem-details.ts holds the Lit-tier twin of
  * this logic (D5) and both must keep producing the same DOM.
  */
 
@@ -17,7 +17,7 @@ export function enhanceDetails(scope: ParentNode): void {
       span.setAttribute('tabindex', '0');
       span.setAttribute('aria-label', 'reveal');
       const reveal = (): void => {
-        span.className = 'sem-highlight npl-revealed';
+        span.className = 'sem-highlight sem-revealed';
         span.removeAttribute('role');
         span.removeAttribute('tabindex');
       };

@@ -5,13 +5,13 @@
  * demo/index.html (D5: the same logic had drifted into a second hand-written
  * copy inside the Lit elements). Behavior is a tested contract — DOM shape,
  * class names, `data-sem-fallback`, and meter text are all asserted by
- * cypress/e2e/npl-facts.cy.js and must not change.
+ * cypress/e2e/sem-facts.cy.js and must not change.
  *
  * The one deliberate divergence from the original inline source: option order
  * comes from a seeded Fisher-Yates draw (shared/rng) rather than
  * `sort(() => Math.random() - .5)`. That comparator was inconsistent, so its
  * output was neither uniform nor stable across JS engines. Sharing the draw
- * with src/elements/npl-facts.ts is what makes the two tiers emit identical
+ * with src/elements/sem-facts.ts is what makes the two tiers emit identical
  * option order for a fixed `data-sem-seed`.
  */
 

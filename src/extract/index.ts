@@ -9,7 +9,7 @@
  * No runtime dependencies, no fetch, no top-level await.
  */
 
-export type { NplRecord } from './records.js';
+export type { SemRecord } from './records.js';
 export {
   extractRecords,
   extractText,

@@ -1,14 +1,14 @@
-// BDD spec — npl-views / npl-view · source: syntax/schema/npl-views.md
+// BDD spec — sem-views / sem-view · source: syntax/schema/sem-views.md
 //
-// Feature: npl-views shows one named perspective at a time, switches by
+// Feature: sem-views shows one named perspective at a time, switches by
 //          click/keyboard/hash, degrades to stacked readable views JS-off
 //   Scenario: first view active by default, others hidden
 //   Scenario: tab click switches active view
 //   Scenario: arrow keys move active view
 //   Scenario: deep-link hash #id/name activates that view
-//   Scenario: npl-navigate event fires with name and index
+//   Scenario: sem-navigate event fires with name and index
 
-describe('npl-views', () => {
+describe('sem-views', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
 
   it('first view active by default, others hidden', () => {
@@ -34,11 +34,11 @@ describe('npl-views', () => {
     cy.get('#deploy .sem-view[data-name="Helm"]').should('not.be.visible');
   });
 
-  it('npl-navigate event fires with name and index', () => {
+  it('sem-navigate event fires with name and index', () => {
     cy.window().then((win) => {
       const seen = [];
       win.document.getElementById('deploy')
-        .addEventListener('npl-navigate', (e) => seen.push(e.detail));
+        .addEventListener('sem-navigate', (e) => seen.push(e.detail));
       cy.get('#deploy .sem-views-tabs button').contains('ArgoCD').click();
       cy.wrap(seen).should((s) => {
         expect(s[0]).to.include({ name: 'ArgoCD', index: 1 });

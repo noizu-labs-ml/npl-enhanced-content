@@ -6,12 +6,12 @@ npl-enhanced-content/
 │   ├── conventions.html          # Rendered conventions spec (XHTML-first canonical)
 │   ├── conventions.md            # Markdown conventions spec (source of truth)
 │   └── schema/
-│       └── npl-note.md           # NplNote element schema definition
+│       └── sem-note.md           # SemNote element schema definition
 ├── demo/
-│   └── index.html                # Standalone Lit NplNote demo page (vite-served)
+│   └── index.html                # Standalone Lit SemNote demo page (vite-served)
 ├── cypress/
 │   └── e2e/
-│       └── npl-note.cy.js        # E2E tests for the NplNote component
+│       └── sem-note.cy.js        # E2E tests for the SemNote component
 ├── docs/                         # Project documentation (this sweep)
 │   ├── PROJ-ARCH.md              # Architecture overview
 │   ├── PROJ-LAYOUT.md            # This file
@@ -29,8 +29,8 @@ npl-enhanced-content/
 
 | Directory | Purpose |
 |-----------|---------|
-| `syntax/` | Tier-0 spec documents: authoring conventions and the `npl-note` element schema. This repo is spec-first — specs precede implementation. |
-| `demo/` | Standalone browser demo of the Lit `NplNote` web component; served via `npm run serve`. |
+| `syntax/` | Tier-0 spec documents: authoring conventions and the `sem-note` element schema. This repo is spec-first — specs precede implementation. |
+| `demo/` | Standalone browser demo of the Lit `SemNote` web component; served via `npm run serve`. |
 | `cypress/` | End-to-end test suites exercising the demo/component behavior. |
 | `docs/` | Maintained project docs (layout / schema / architecture). |
 

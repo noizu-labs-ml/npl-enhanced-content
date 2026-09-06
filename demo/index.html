@@ -14,7 +14,7 @@
 <!-- npl:inline theme minimal-tech-light -->
 <!-- npl:inline vocabulary -->
 
-<!-- Tailwind refinement layer: applies utility rules to npl-* classes.
+<!-- Tailwind refinement layer: applies utility rules to sem-* classes.
      Requires the CDN above; harmless (no-op) without it. -->
 <style type="text/tailwindcss">
   .sem-enhanced-document { @apply mx-auto max-w-3xl px-4 py-10; }
@@ -27,7 +27,7 @@
   h2 { @apply text-lg font-semibold mt-8 mb-2; }
 </style>
 
-<!-- npl-fallback: vanilla interactivity, no Lit and no external resources.
+<!-- sem-fallback: vanilla interactivity, no Lit and no external resources.
      Source lives in src/fallback/**; the built IIFE (dist/npl-fallback.js)
      is substituted here by scripts/build-standalone.mjs. -->
 <!-- npl:inline fallback -->
@@ -42,7 +42,7 @@
   <div class="sem-agent">
     <div class="sem-agent-name">Auth Guide</div>
     <div class="sem-agent-bio">Answer questions about the sample auth facts in this document.</div>
-    <div class="sem-agent-instructions">Cite npl-fact ids. Prefer conclusions verbatim.</div>
+    <div class="sem-agent-instructions">Cite sem-fact ids. Prefer conclusions verbatim.</div>
   </div>
 
   <div class="sem-note" data-variant="warning">JWTs must rotate <strong>per session</strong>, not per request.</div>
@@ -119,7 +119,7 @@
     <div class="sem-property" data-key="refresh rotation" role="definition" aria-label="refresh rotation">per use</div>
     <div class="sem-property" data-key="storage" role="definition" aria-label="storage">httpOnly cookie</div>
   </div>
-  <div class="sem-properties" id="npl-props-dup" data-kind="fixture">
+  <div class="sem-properties" id="sem-props-dup" data-kind="fixture">
     <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
     <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">14m</div>
   </div>

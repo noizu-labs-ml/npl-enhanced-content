@@ -1,7 +1,7 @@
-# Schema — `npl-reveal`
+# Schema — `sem-reveal`
 
 Contract per conventions.md v0.4. BDD source of truth for
-`cypress/e2e/npl-reveal.cy.js`. Changes here precede spec changes
+`cypress/e2e/sem-reveal.cy.js`. Changes here precede spec changes
 precede code.
 
 ## Authoring form (v0.4 class-based)
@@ -14,7 +14,7 @@ precede code.
 
 - `data-summary`: optional label. **Fallback: first line of body (max
   60 chars) acts as summary when absent.**
-- `collapsed`: boolean attr — starts hidden (the `npl-note[collapsed]`
+- `collapsed`: boolean attr — starts hidden (the `sem-note[collapsed]`
   convention carries over). Without it the reveal starts **open**.
 - `id`, `kind`, `tags` global.
 
@@ -26,7 +26,7 @@ precede code.
 - JS-off: **content fully visible**; `data-summary`, when present,
   renders as a small-caps heading via CSS `::before`. JS-off + no
   `data-summary`: plain prose, nothing hidden.
-- `npl-note[collapsed]` vs `npl-reveal[collapsed]`: note = annotation
+- `sem-note[collapsed]` vs `sem-reveal[collapsed]`: note = annotation
   tone (variant border); reveal = neutral Q→A disclosure. Same
   mechanism, different semantic — machines distinguish intent.
 
@@ -43,6 +43,6 @@ None (native `<details>` `toggle` event is the upgrade-time signal).
 ## Machine contract
 
 - `data-summary` (or derived first line) = the question/label; body =
-  the answer. Extractable as a Q/A pair, same shape as `npl-fact`
+  the answer. Extractable as a Q/A pair, same shape as `sem-fact`
   statement/conclusion but *non-assertive* (a reveal is exposition,
   not an assertion).

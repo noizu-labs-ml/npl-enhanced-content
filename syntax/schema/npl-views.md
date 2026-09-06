@@ -1,10 +1,10 @@
-# Schema — `npl-views` / `npl-view`
+# Schema — `sem-views` / `sem-view`
 
 Contract per conventions.md v0.4. BDD source of truth for
-`cypress/e2e/npl-views.cy.js`. Changes here precede spec changes precede
+`cypress/e2e/sem-views.cy.js`. Changes here precede spec changes precede
 code.
 
-❓ Q3 resolved for v1: **`npl-views`** (not `npl-perspectives`) — shorter,
+❓ Q3 resolved for v1: **`sem-views`** (not `sem-perspectives`) — shorter,
 `data-name` reads naturally, tab-family semantics are the intent.
 
 ## Authoring form (v0.4 class-based)
@@ -21,7 +21,7 @@ code.
   view carries it, the first view is active** (fallback normalizes by
   setting `data-active` on the first).
 - `id`: required for deep-links (`#deploy/argocd`); `kind`, `tags` global.
-- Any content is legal inside a view — including other `npl-*` elements.
+- Any content is legal inside a view — including other `sem-*` elements.
 - Exactly one view active at a time; two `data-active` ⇒ fallback keeps
   the first, warns.
 
@@ -36,7 +36,7 @@ code.
 
 ## Events
 
-- `npl-navigate {id, name, index}` — fired on every active-view change
+- `sem-navigate {id, name, index}` — fired on every active-view change
   (click, keyboard, or hash).
 
 ## A11y contract
@@ -51,6 +51,6 @@ code.
 
 ## Machine contract
 
-- `npl-views` = same subject under named perspectives; each `data-name`
+- `sem-views` = same subject under named perspectives; each `data-name`
   is the perspective token. Deep-link form `#<id>/<name>` is canonical
   for citation.

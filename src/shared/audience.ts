@@ -26,7 +26,7 @@ export type AudienceClosure = Map<string, Set<string>>;
  */
 export function warn(message: string): void {
   if (typeof console !== 'undefined' && typeof console.warn === 'function') {
-    console.warn('npl: ' + message);
+    console.warn('semtext: ' + message);
   }
 }
 
@@ -37,26 +37,26 @@ function attr(el: Element, name: string): string | null {
 type ProfileRoot = Document | DocumentFragment | Element;
 
 /**
- * Read the `.sem-audiences` / `<npl-audiences>` block and return its profiles.
+ * Read the `.sem-audiences` / `<sem-audiences>` block and return its profiles.
  * Both attribute forms are accepted: bare `id`/`label`/`implies` and the
  * `data-` prefixed spellings.
  */
 export function parseProfiles(root: ProfileRoot): Profile[] {
   if (!root || typeof root.querySelectorAll !== 'function') return [];
 
-  const blocks = Array.from(root.querySelectorAll('.sem-audiences, npl-audiences'));
+  const blocks = Array.from(root.querySelectorAll('.sem-audiences, sem-audiences'));
   const profiles: Profile[] = [];
   const seen = new Set<string>();
 
   for (const block of blocks) {
-    for (const node of Array.from(block.querySelectorAll('.sem-profile, npl-profile'))) {
+    for (const node of Array.from(block.querySelectorAll('.sem-profile, sem-profile'))) {
       const id = (attr(node, 'id') || '').trim();
       if (id === '') {
-        warn('npl-audiences: profile without an id was ignored');
+        warn('sem-audiences: profile without an id was ignored');
         continue;
       }
       if (seen.has(id)) {
-        warn('npl-audiences: duplicate profile id "' + id + '" was ignored');
+        warn('sem-audiences: duplicate profile id "' + id + '" was ignored');
         continue;
       }
       seen.add(id);
@@ -88,13 +88,13 @@ export function buildClosure(profiles: readonly Profile[]): AudienceClosure {
     while (stack.length > 0) {
       const next = stack.pop()!;
       if (!declared.has(next)) {
-        warn('npl-audiences: profile "' + p.id + '" implies unknown profile "' + next + '"');
+        warn('sem-audiences: profile "' + p.id + '" implies unknown profile "' + next + '"');
         reached.add(next); // fail-open: honor the author's intent anyway
         continue;
       }
       if (reached.has(next)) {
         if (onPath.has(next)) {
-          warn('npl-audiences: implies cycle involving "' + next + '" was broken');
+          warn('sem-audiences: implies cycle involving "' + next + '" was broken');
         }
         continue;
       }

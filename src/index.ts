@@ -1,5 +1,5 @@
 /* Shared foundation */
-export { NplElement } from './elements/base.js';
+export { SemElement } from './elements/base.js';
 export { parseTokens, elementTokens } from './shared/tokens.js';
 export { mulberry32, shuffle, resolveSeed, randomFor } from './shared/rng.js';
 export {
@@ -21,9 +21,9 @@ export {
 } from './shared/state.js';
 
 /* Elements — importing registers the custom element */
-export { NplNote } from './elements/npl-note.js';
-import './elements/npl-note.js';
-export { NplFacts } from './elements/npl-facts.js';
-import './elements/npl-facts.js';
-export { NplDetails } from './elements/npl-details.js';
-import './elements/npl-details.js';
+export { SemNote } from './elements/sem-note.js';
+import './elements/sem-note.js';
+export { SemFacts } from './elements/sem-facts.js';
+import './elements/sem-facts.js';
+export { SemDetails } from './elements/sem-details.js';
+import './elements/sem-details.js';

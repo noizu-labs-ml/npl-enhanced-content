@@ -2,9 +2,9 @@
 
 ```
 npl-enhanced-content/
-├── syntax/                       # Canonical specs (conventions.md/.html, schema/npl-note.md)
-├── demo/                         # Standalone Lit NplNote demo (index.html)
-├── cypress/                      # E2E tests (e2e/npl-note.cy.js)
+├── syntax/                       # Canonical specs (conventions.md/.html, schema/sem-note.md)
+├── demo/                         # Standalone Lit SemNote demo (index.html)
+├── cypress/                      # E2E tests (e2e/sem-note.cy.js)
 ├── docs/                         # PROJ-ARCH / PROJ-LAYOUT / PROJ-SCHEMA
 ├── cypress.config.js
 ├── vite.config.ts

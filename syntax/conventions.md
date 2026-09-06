@@ -2,33 +2,33 @@
 
 **DRAFT v0.4 — class-based baseline.** v0.4 renders the vocabulary as
 **classes on plain elements** (`<div class="sem-agent">`), not custom
-elements: inline core CSS + Tailwind CDN refinement (`@apply` on `npl-*`
+elements: inline core CSS + Tailwind CDN refinement (`@apply` on `sem-*`
 classes) + the vanilla fallback handler. Reference implementation:
-`demo/index.html`. Semantic custom elements (`<npl-fact>`) remain the target
+`demo/index.html`. Semantic custom elements (`<sem-fact>`) remain the target
 vocabulary for the Lit milestone; the class mapping below is mechanical.
 
 **v0.4 mapping** — identity = class, parameters = `data-*` attrs:
 
 | v0.3 element | v0.4 class markup |
 | :-- | :-- |
-| `<npl-enhanced-document>` | `div.sem-enhanced-document` |
+| `<sem-enhanced-document>` | `div.sem-enhanced-document` |
 | `<agent>` + name/bio/instructions | `div.sem-agent` › `.sem-agent-name/-bio/-instructions` |
-| `<npl-note variant="warning">` | `div.sem-note[data-variant="warning"]`, body `.sem-note-body`, `collapsed` attr |
-| `<npl-facts view-as="quiz">` | `div.sem-facts[data-view-as="quiz"]` |
-| `<npl-fact>` / statement / conclusion | `div.sem-fact` › `.sem-statement`, `.sem-conclusion` |
-| `<npl-distractor>` | `div.sem-distractor` |
-| `<npl-details>` / `<npl-detail>` | `div.sem-details` › `div.sem-detail` |
+| `<sem-note variant="warning">` | `div.sem-note[data-variant="warning"]`, body `.sem-note-body`, `collapsed` attr |
+| `<sem-facts view-as="quiz">` | `div.sem-facts[data-view-as="quiz"]` |
+| `<sem-fact>` / statement / conclusion | `div.sem-fact` › `.sem-statement`, `.sem-conclusion` |
+| `<sem-distractor>` | `div.sem-distractor` |
+| `<sem-details>` / `<sem-detail>` | `div.sem-details` › `div.sem-detail` |
 | `<highlight>` | `span.sem-highlight` (occluded form: `.sem-occluded`) |
-| `<npl-procedure>` / `<npl-step status>` | `div.sem-procedure` › `div.sem-step[data-status]` |
-| `<npl-properties>` / `<npl-property key>` | `div.sem-properties` › `div.sem-property[data-key]` |
-| `<npl-views>` / `<npl-view name>` | `div.sem-views[id]` › `div.sem-view[data-name]`, `data-active` marker |
-| `<npl-reveal summary>` | `div.sem-reveal[data-summary]`, `collapsed` attr |
-| `<npl-progress value label>` | `div.sem-progress[data-value][data-label]` |
+| `<sem-procedure>` / `<sem-step status>` | `div.sem-procedure` › `div.sem-step[data-status]` |
+| `<sem-properties>` / `<sem-property key>` | `div.sem-properties` › `div.sem-property[data-key]` |
+| `<sem-views>` / `<sem-view name>` | `div.sem-views[id]` › `div.sem-view[data-name]`, `data-active` marker |
+| `<sem-reveal summary>` | `div.sem-reveal[data-summary]`, `collapsed` attr |
+| `<sem-progress value label>` | `div.sem-progress[data-value][data-label]` |
 
 CSS layering (all inline in `<head>`): (1) plain core CSS — theme tokens on
 `[data-sem-theme]` + component base, offline-safe; (2) `<style
 type="text/tailwindcss">` with `@apply` rules per class — refinement, no-op
-without the CDN script; (3) `npl-fallback` vanilla JS — interactivity.
+without the CDN script; (3) `sem-fallback` vanilla JS — interactivity.
 Supersedes v0.3 custom-element examples until the Lit milestone.
 `❓` = open questions (§10).
 
@@ -55,8 +55,8 @@ Supersedes v0.3 custom-element examples until the Lit milestone.
 One file, three consumers — human/browser (double-click, styled, interactive),
 LLM/non-visual (the same XHTML read structurally; attributes qualify every
 datum; same XML vocabulary NPL's MCP server already speaks), terminal (browser
-or DOM-text extraction). Element names are **semantic** (`npl-fact`,
-`npl-detail`) — what content *is*; presentation is parameterized
+or DOM-text extraction). Element names are **semantic** (`sem-fact`,
+`sem-detail`) — what content *is*; presentation is parameterized
 (`view-as="quiz|flashcards|list"`) — how it *renders*. NPL conventions live
 inside the tags, never as a pre-HTML grammar.
 
@@ -69,39 +69,39 @@ inside the tags, never as a pre-HTML grammar.
   <meta charset="utf-8">
   <title>Authoring Guide</title>
   <link rel="stylesheet" href="npl/themes/minimal-tech-light.css">
-  <script id="npl-fallback">/* always-embedded vanilla handler (§4) */</script>
+  <script id="sem-fallback">/* always-embedded vanilla handler (§4) */</script>
   <script defer src="npl/npl.js"></script>  <!-- Lit upgrade, optional -->
 </head>
 <body>
-<npl-enhanced-document>
+<sem-enhanced-document>
 
   <!-- document-level metadata: bare semantic children -->
   <agent>
     <name>Infra Guide</name>
     <bio>Deployment runbook assistant</bio>
-    <instructions>Answer from npl-fact ids only.</instructions>
+    <instructions>Answer from sem-fact ids only.</instructions>
   </agent>
 
   <h1 data-kind="title">Authoring Guide</h1>
 
-  <!-- content: npl-* vocabulary + ordinary semantic HTML -->
+  <!-- content: sem-* vocabulary + ordinary semantic HTML -->
 
-</npl-enhanced-document>
+</sem-enhanced-document>
 </body>
 </html>
 ```
 
-- `<npl-enhanced-document>` is the required root wrapper (fallback handler
+- `<sem-enhanced-document>` is the required root wrapper (fallback handler
   scopes to it; Lit components register against it).
 - Metadata children (`agent`, and future `org`, `context`, `audience`) are
   **bare semantic tags** — machine-facing, unstyled. ❓ **Q1** keep bare vs
-  `npl-`-prefix them?
-- Ordinary semantic HTML is always valid content; `npl-*` enhances where
+  `sem-`-prefix them?
+- Ordinary semantic HTML is always valid content; `sem-*` enhances where
   interactivity pays.
 
 ## 2. Attribute catalog
 
-Global attributes (any `npl-*` element):
+Global attributes (any `sem-*` element):
 
 | Attribute | Values | Machine meaning |
 | :-- | :-- | :-- |
@@ -114,7 +114,7 @@ Global attributes (any `npl-*` element):
 | `id` | doc-unique | stable anchor, cite target |
 | `data-*` | free | extension point |
 
-`view-as` is the core inversion: `<npl-fact>` is a fact in every view;
+`view-as` is the core inversion: `<sem-fact>` is a fact in every view;
 `view-as` only selects rendering. Unknown `view-as` ⇒ falls back to `list`/
 plain + fallback-handler warning.
 
@@ -132,18 +132,18 @@ Compact notation is legal inside element text where the schema allows;
 | Notation | Meaning | Where |
 | :-- | :-- | :-- |
 | `<highlight>` | recall target — occludes in quiz/flashcard views, `<em>` in plain view | any prose element |
-| `[[cloze]]` | inline occlusion sugar (equivalent to `<highlight>`) | `npl-detail`, `npl-fact` |
-| `term :: value` | pair | `npl-property` text, `npl-fact` compact form |
-| `✅ …` / `✗ …` | correct / distractor | `npl-option` sugar |
-| `→ …` | current | `npl-step` status sugar |
-| `[hint \| reveal]` | agent-facing instruction, human-rendered hint | instruction-bearing elements (define in `npl-note` schema first) |
+| `[[cloze]]` | inline occlusion sugar (equivalent to `<highlight>`) | `sem-detail`, `sem-fact` |
+| `term :: value` | pair | `sem-property` text, `sem-fact` compact form |
+| `✅ …` / `✗ …` | correct / distractor | `sem-option` sugar |
+| `→ …` | current | `sem-step` status sugar |
+| `[hint \| reveal]` | agent-facing instruction, human-rendered hint | instruction-bearing elements (define in `sem-note` schema first) |
 
 `<statement>`/`<conclusion>` children always win over `::` compact form when
 both present; authors pick one per fact.
 
 ## 4. Fallback handler & degradation rules
 
-1. `<script id="npl-fallback">` is embedded inline in every portable doc
+1. `<script id="sem-fallback">` is embedded inline in every portable doc
    (~2–4KB vanilla JS): `view-as` switching, reveal toggles, `<highlight>`
    occlusion, basic quiz checking, theme picker. **Zero external resources
    required for full baseline interactivity.**
@@ -151,7 +151,7 @@ both present; authors pick one per fact.
    component implementations supersede fallback behaviors. Handoff contract:
    fallback sets `data-sem-fallback` on elements it enhanced; components
    remove it on upgrade. BDD asserts both tiers + the handoff.
-3. Theme CSS styles the vocabulary via `npl-*:not(:defined)` — presentable
+3. Theme CSS styles the vocabulary via `sem-*:not(:defined)` — presentable
    JS-off; no layout shift on upgrade where feasible.
 4. Content lives in light DOM (searchable, copyable); shadow DOM carries
    interactive chrome only.
@@ -160,52 +160,52 @@ both present; authors pick one per fact.
 
 ### Tier 0
 
-**npl-note** — callout.
+**sem-note** — callout.
 ```html
-<npl-note variant="warning">Rotation is <strong>per session</strong>.</npl-note>
+<sem-note variant="warning">Rotation is <strong>per session</strong>.</sem-note>
 ```
 `variant="info|warning|tip|danger"`; `collapsed` ⇒ native `<details>`.
 Light DOM, `role="note"`. *(schema + spec exist — rename + re-attr done.)*
 
-**npl-fact** — the atomic unit; assertable Q/A pair.
+**sem-fact** — the atomic unit; assertable Q/A pair.
 ```html
-<npl-fact id="f-jwt" kind="concept">
+<sem-fact id="f-jwt" kind="concept">
   <statement>JWTs rotate per session</statement>
   <conclusion>Short-lived access; refresh grants a new pair.</conclusion>
-</npl-fact>
+</sem-fact>
 ```
-Compact form: `<npl-fact>JWT rotation :: short-lived access</npl-fact>`.
+Compact form: `<sem-fact>JWT rotation :: short-lived access</sem-fact>`.
 Machine view: statement+conclusion = structured assertion.
 
-**npl-facts** — collection; the flagship surface.
-**Normative: `syntax/schema/npl-facts.md`.**
+**sem-facts** — collection; the flagship surface.
+**Normative: `syntax/schema/sem-facts.md`.**
 ```html
-<npl-facts view-as="quiz" controls="shuffle,filter">
-  <npl-fact>…</npl-fact>
-  <npl-fact>…<npl-distractor>decoy conclusion</npl-distractor></npl-fact>
-</npl-facts>
+<sem-facts view-as="quiz" controls="shuffle,filter">
+  <sem-fact>…</sem-fact>
+  <sem-fact>…<sem-distractor>decoy conclusion</sem-distractor></sem-fact>
+</sem-facts>
 ```
 - `view-as="list"` (default): filter box, tag chips.
 - `view-as="flashcards"`: front = statement (+`<highlight>` prompt), back =
   conclusion; flip click/Space; ←/→/swipe; progress `3/12`; `shuffle`.
 - `view-as="quiz"`: statement shown; candidates = sibling conclusions,
-  `<npl-distractor>` children win when present; accuracy on `npl-complete`.
-- Events: `npl-navigate {index}`, `npl-flip {face}`, `npl-complete {correct,total,ms}`.
+  `<sem-distractor>` children win when present; accuracy on `sem-complete`.
+- Events: `sem-navigate {index}`, `sem-flip {face}`, `sem-complete {correct,total,ms}`.
 
-**npl-detail / npl-details** — prose with occludable content.
-**Normative: `syntax/schema/npl-details.md`.**
+**sem-detail / sem-details** — prose with occludable content.
+**Normative: `syntax/schema/sem-details.md`.**
 ```html
-<npl-details view-as="quiz">
-  <npl-detail>
+<sem-details view-as="quiz">
+  <sem-detail>
     The OIDC token travels in the <highlight>Authorization</highlight> header.
-  </npl-detail>
-</npl-details>
+  </sem-detail>
+</sem-details>
 ```
 Plain view: `<highlight>` renders `<em>`. Quiz view: occluded (`▮▮▮`), reveal
 per item, self-check or auto-check.
 
-**npl-procedure / npl-step** — ordered, status-annotated procedure.
-**Normative: `syntax/schema/npl-procedure.md`.**
+**sem-procedure / sem-step** — ordered, status-annotated procedure.
+**Normative: `syntax/schema/sem-procedure.md`.**
 ```html
 <div class="sem-procedure" data-kind="runbook" role="list">
   <div class="sem-step" role="listitem" data-status="done">provision Infisical path</div>
@@ -218,8 +218,8 @@ per item, self-check or auto-check.
 execution order (ordinals positional, CSS counters); status sugar
 (`✅/→/❌`) is display-only — `data-status` canonical. **Zero-JS element.**
 
-**npl-properties / npl-property** — definition/properties block.
-**Normative: `syntax/schema/npl-properties.md`.**
+**sem-properties / sem-property** — definition/properties block.
+**Normative: `syntax/schema/sem-properties.md`.**
 ```html
 <div class="sem-properties" data-kind="config">
   <div class="sem-property" data-key="token ttl"
@@ -233,8 +233,8 @@ renders via CSS `attr(data-key)`; AT gets the pair via
 `<dl>`-equivalent grid; **Q2 resolved v1: pure definition list, no
 copy/search chrome.**
 
-**npl-views / npl-view** — same content, switchable perspectives.
-**Normative: `syntax/schema/npl-views.md`.**
+**sem-views / sem-view** — same content, switchable perspectives.
+**Normative: `syntax/schema/sem-views.md`.**
 ```html
 <div class="sem-views" id="deploy">
   <div class="sem-view" data-name="Helm" data-active role="tabpanel">content…</div>
@@ -244,11 +244,11 @@ copy/search chrome.**
 `data-name` unique per container; `data-active` marks initial view
 (first wins if absent); fallback builds the tab bar (`.sem-views-tabs`,
 `role="tab"` buttons), arrow-key roving focus; deep-link `#deploy/argocd`;
-fires `npl-navigate {id, name, index}`. JS-off: all views stacked,
-`data-name`-headed. **Q3 resolved v1: `npl-views`.**
+fires `sem-navigate {id, name, index}`. JS-off: all views stacked,
+`data-name`-headed. **Q3 resolved v1: `sem-views`.**
 
-**npl-reveal** — Q→A disclosure, `<details>`-backed.
-**Normative: `syntax/schema/npl-reveal.md`.**
+**sem-reveal** — Q→A disclosure, `<details>`-backed.
+**Normative: `syntax/schema/sem-reveal.md`.**
 ```html
 <div class="sem-reveal" data-summary="Why not localStorage?" collapsed>
   Tokens in localStorage are readable by any script on the page…
@@ -257,10 +257,10 @@ fires `npl-navigate {id, name, index}`. JS-off: all views stacked,
 `data-summary` optional — first body line (≤60 chars) derives it;
 `collapsed` starts hidden, otherwise open. Fallback wraps in native
 `<details>/<summary>`; JS-off: fully visible (summary as small-caps
-heading). Non-assertive counterpart to `npl-fact` Q/A shape.
+heading). Non-assertive counterpart to `sem-fact` Q/A shape.
 
-**npl-progress** — completion meter.
-**Normative: `syntax/schema/npl-progress.md`.**
+**sem-progress** — completion meter.
+**Normative: `syntax/schema/sem-progress.md`.**
 ```html
 <div class="sem-progress" data-value="0.62" data-label="coverage"
      role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"></div>
@@ -272,24 +272,24 @@ convention.
 
 ### Tier 1 — flagship buildout
 
-- `npl-facts` full build (filter, shuffle, swipe, quiz scoring).
-- `npl-question` — 7 TRP renderers inside quiz views:
+- `sem-facts` full build (filter, shuffle, swipe, quiz scoring).
+- `sem-question` — 7 TRP renderers inside quiz views:
 ```html
-<npl-question type="mc">
+<sem-question type="mc">
   <p data-kind="prompt">Which header carries the OIDC token?</p>
-  <npl-option correct>Authorization</npl-option>
-  <npl-option>Cookie</npl-option>
-</npl-question>
+  <sem-option correct>Authorization</sem-option>
+  <sem-option>Cookie</sem-option>
+</sem-question>
 ```
 Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
 `✅` sugar; `retry` control; results block; machine view = assertable Q/A.
 
 ### Tier 2
 
-- `npl-chronology` / `npl-event when` — TRP timeline port.
-- `npl-table`, `npl-query` — data over inline `<script type="application/json">`
+- `sem-chronology` / `sem-event when` — TRP timeline port.
+- `sem-table`, `sem-query` — data over inline `<script type="application/json">`
   payloads (portable; no fetch).
-- `npl-themes controls="picker"` — floating switcher.
+- `sem-themes controls="picker"` — floating switcher.
 - md→npl authoring aid (optional, never required).
 
 ## 6. Theme conventions
@@ -327,7 +327,7 @@ This vocabulary is the **XML variant of NPL**: NPL yaml already models agents
 (name/bio/instructions), instructions, and structured prompt sections via the
 MCP server; this format is its document-shaped rendering target. Alignment
 tasks (tracked, not blocking M1): map `<agent>` children to NPL agent schema;
-map `npl-fact` to NPL fact/knowledge records; define `npl-enhanced-document`
+map `sem-fact` to NPL fact/knowledge records; define `sem-enhanced-document`
 as a valid MCP `NPLLoad`/render target. ❓ **Q4** who owns the mapping — this
 repo exports it, or NPL MCP consumes a schema file we publish?
 
@@ -335,8 +335,8 @@ repo exports it, or NPL MCP consumes a schema file we publish?
 
 | # | Question | My lean |
 | :-- | :-- | :-- |
-| Q1 | bare `<agent>` metadata children vs `npl-`-prefixed | bare (per your example; matches NPL yaml shape) |
-| Q2 | `npl-properties` pure `<dl>` v1 | **resolved (this branch)** — pure `<dl>`, chrome only if a consumer demands it |
-| Q3 | tabs-family name: `npl-views` vs `npl-perspectives` | **resolved (this branch)** — `npl-views` |
+| Q1 | bare `<agent>` metadata children vs `sem-`-prefixed | bare (per your example; matches NPL yaml shape) |
+| Q2 | `sem-properties` pure `<dl>` v1 | **resolved (this branch)** — pure `<dl>`, chrome only if a consumer demands it |
+| Q3 | tabs-family name: `sem-views` vs `sem-perspectives` | **resolved (this branch)** — `sem-views` |
 | Q4 | NPL MCP alignment ownership | we publish the schema file; MCP consumes |
 | Q5 | fallback handler scope: baseline interactivity only vs full quiz logic | full logic v1 — it's small and makes single-file form Lit-free |

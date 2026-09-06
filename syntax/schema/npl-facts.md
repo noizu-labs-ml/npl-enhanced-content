@@ -1,12 +1,12 @@
-# Schema — `npl-facts` / `npl-fact`
+# Schema — `sem-facts` / `sem-fact`
 
 Contract per conventions.md v0.4. BDD source of truth for
-`cypress/e2e/npl-facts.cy.js`. Changes here precede spec changes
+`cypress/e2e/sem-facts.cy.js`. Changes here precede spec changes
 precede code.
 
 ## Scope semantics
 
-A collection of fact/claim pairs. Each `npl-fact` is an assertable
+A collection of fact/claim pairs. Each `sem-fact` is an assertable
 statement/conclusion pair — the atomic citable unit (`id` is the citation
 token; `kind`, `tags` global). `data-view-as` is a **presentation
 parameterization, not a semantic change**: the fact *is* a fact under every
@@ -49,7 +49,7 @@ self-test, quiz = scored recall).
 - Chrome (`.sem-facts-chrome`) is the container's first child: prev/next
   buttons (`data-act`, `aria-label`) + position meter (`.sem-facts-meter`,
   text form `N/M`). **Meter class is `.sem-facts-meter` — NOT
-  `.sem-progress`, which is the npl-progress element (D1).**
+  `.sem-progress`, which is the sem-progress element (D1).**
 - Click a card to flip: front = statement, back = conclusion
   (`.sem-flipped` reveals the conclusion).
 - Wrapping navigation (prev from first card → last).
@@ -70,7 +70,7 @@ self-test, quiz = scored recall).
 - Fallback JS (vanilla, inline) implements flashcards/quiz behavior and
   sets `data-sem-fallback` on the container (hide rules key off it).
 - List view (and empty containers) get no marker and no chrome.
-- Lit upgrade (`<npl-facts>` element) supersedes: sets
+- Lit upgrade (`<sem-facts>` element) supersedes: sets
   `data-sem-upgraded`, removes `data-sem-fallback`, owns the same
   chrome/behavior imperatively in light DOM. Both tiers are BDD-asserted.
 
@@ -81,8 +81,8 @@ self-test, quiz = scored recall).
 
 ## Events
 
-- Tier-1 (future): `npl-navigate {index}`, `npl-flip {face}`,
-  `npl-complete {correct,total,ms}`. Not part of this contract yet.
+- Tier-1 (future): `sem-navigate {index}`, `sem-flip {face}`,
+  `sem-complete {correct,total,ms}`. Not part of this contract yet.
 
 ## A11y contract
 

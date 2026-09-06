@@ -1,11 +1,11 @@
-// BDD spec — npl-properties / npl-property · source: syntax/schema/npl-properties.md
+// BDD spec — sem-properties / sem-property · source: syntax/schema/sem-properties.md
 //
-// Feature: npl-properties renders a key/value definition list with zero JS
+// Feature: sem-properties renders a key/value definition list with zero JS
 //   Scenario: data-key renders as term, text as definition
 //   Scenario: roles authored for AT without JS
 //   Scenario: duplicate data-key logs a non-fatal warning
 
-describe('npl-properties', () => {
+describe('sem-properties', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
 
   it('renders data-key as term and text as definition', () => {
@@ -27,7 +27,7 @@ describe('npl-properties', () => {
       onBeforeLoad(win) { cy.spy(win.console, 'warn'); }
     });
     // fixture block intentionally reuses data-key="token ttl"
-    cy.get('#npl-props-dup .sem-property').should('have.length', 2);
+    cy.get('#sem-props-dup .sem-property').should('have.length', 2);
     cy.window().its('console.warn').should('have.been.calledWithMatch', /duplicate/i);
   });
 });

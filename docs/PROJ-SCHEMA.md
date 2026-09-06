@@ -7,7 +7,7 @@ interface contract for NPL-enhanced XHTML documents. Repo layout:
 
 | Data kind | Source | Documented here |
 |-----------|--------|-----------------|
-| Data interface schema (markup contract) | `syntax/conventions.md`, `syntax/schema/npl-note.md` | §1, §2 |
+| Data interface schema (markup contract) | `syntax/conventions.md`, `syntax/schema/sem-note.md` | §1, §2 |
 | Data files (canonical spec HTML) | `syntax/conventions.html`, `demo/index.html` | §3 |
 | Config file schemas | `package.json`, `vite.config.ts`, `tsconfig.json`, `cypress.config.js` | §4 |
 | Persistence / KV | — (none) | — |
@@ -17,22 +17,22 @@ interface contract for NPL-enhanced XHTML documents. Repo layout:
 NPL-enhanced documents are XHTML readable by three consumers: browser (styled/
 interactive), LLM (structural), terminal. Canonical form: **class-based**
 (`div.sem-*` on plain elements) with `data-*` attribute parameters; semantic
-custom elements (`<npl-fact>`) are the target vocabulary for the Lit milestone.
+custom elements (`<sem-fact>`) are the target vocabulary for the Lit milestone.
 
 ### v0.3 element → v0.4 class mapping
 
 | Element form | Class markup |
 | :-- | :-- |
-| `<npl-enhanced-document>` | `div.sem-enhanced-document` (required root wrapper) |
+| `<sem-enhanced-document>` | `div.sem-enhanced-document` (required root wrapper) |
 | `<agent>` + name/bio/instructions | `div.sem-agent` › `.sem-agent-name` / `-bio` / `-instructions` |
-| `<npl-note variant="warning">` | `div.sem-note[data-variant="warning"]` › `.sem-note-body` |
-| `<npl-facts view-as="quiz">` | `div.sem-facts[data-view-as="quiz"]` |
-| `<npl-fact>` statement/conclusion | `div.sem-fact` › `.sem-statement` / `.sem-conclusion` |
-| `<npl-distractor>` | `div.sem-distractor` |
-| `<npl-details>` / `<npl-detail>` | `div.sem-details` › `div.sem-detail` |
+| `<sem-note variant="warning">` | `div.sem-note[data-variant="warning"]` › `.sem-note-body` |
+| `<sem-facts view-as="quiz">` | `div.sem-facts[data-view-as="quiz"]` |
+| `<sem-fact>` statement/conclusion | `div.sem-fact` › `.sem-statement` / `.sem-conclusion` |
+| `<sem-distractor>` | `div.sem-distractor` |
+| `<sem-details>` / `<sem-detail>` | `div.sem-details` › `div.sem-detail` |
 | `<highlight>` | `span.sem-highlight` (occluded form `.sem-occluded`) |
 
-### Global attribute catalog (any npl-* element)
+### Global attribute catalog (any sem-* element)
 
 | Attribute | Values | Machine meaning |
 | :-- | :-- | :-- |
@@ -48,7 +48,7 @@ custom elements (`<npl-fact>`) are the target vocabulary for the Lit milestone.
 Rule: **attributes are canonical; inline `[hint | reveal]` NPL notation is
 sugar** and legal only where the element schema allows.
 
-## 2. `npl-note` element schema (syntax/schema/npl-note.md, contract v0.3)
+## 2. `sem-note` element schema (syntax/schema/sem-note.md, contract v0.3)
 
 | Field | Type | Default | Notes |
 |-------|------|---------|-------|
@@ -58,9 +58,9 @@ sugar** and legal only where the element schema allows.
 | `role` | `note` | set on upgrade by Lit component; authored pre-set for JS-off machine readers | a11y contract |
 | Events | — | none | |
 
-Rendered forms: upgraded (Lit `NplNote`, light DOM — no shadow root, content
-searchable); pre-upgrade/JS-off (`npl-note:not(:defined)` base styles via
-attribute selectors). BDD source of truth for `cypress/e2e/npl-note.cy.js`.
+Rendered forms: upgraded (Lit `SemNote`, light DOM — no shadow root, content
+searchable); pre-upgrade/JS-off (`sem-note:not(:defined)` base styles via
+attribute selectors). BDD source of truth for `cypress/e2e/sem-note.cy.js`.
 Change order: schema → spec → code.
 
 ## 3. Data files
@@ -69,7 +69,7 @@ Change order: schema → spec → code.
 |------|---------|-------|
 | `syntax/conventions.md` | Authoring spec source of truth (v0.4 draft) | Markdown, 10 sections + open questions |
 | `syntax/conventions.html` | Rendered conventions (XHTML canonical) | XHTML document exercising the vocabulary |
-| `demo/index.html` | Reference implementation of the class-based v0.4 baseline | Single-file XHTML: inline core CSS + Tailwind CDN `@apply` layer + `npl-fallback` vanilla JS |
+| `demo/index.html` | Reference implementation of the class-based v0.4 baseline | Single-file XHTML: inline core CSS + Tailwind CDN `@apply` layer + `sem-fallback` vanilla JS |
 
 ## 4. Config file schemas
 

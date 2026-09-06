@@ -1,13 +1,13 @@
-// BDD spec — npl-reveal · source: syntax/schema/npl-reveal.md
+// BDD spec — sem-reveal · source: syntax/schema/sem-reveal.md
 //
-// Feature: npl-reveal discloses body under a summary, native details
+// Feature: sem-reveal discloses body under a summary, native details
 //          semantics after fallback wrap, fully visible JS-off
 //   Scenario: data-summary becomes the toggle label; body hidden when collapsed
 //   Scenario: clicking summary reveals body
 //   Scenario: first-line summary derived when data-summary absent
 //   Scenario: JS-off — body visible regardless of collapsed
 
-describe('npl-reveal', () => {
+describe('sem-reveal', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
 
   it('data-summary becomes the toggle label; collapsed hides body', () => {

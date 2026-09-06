@@ -1,7 +1,7 @@
 /**
  * The scripts-stripped artifact — genuine JS-off degradation.
  *
- * `window.__nplJsOff` only proves the fallback handler no-ops when asked; the
+ * `window.__semJsOff` only proves the fallback handler no-ops when asked; the
  * script is still in the page, so it can never show that the CSS alone leaves
  * a document readable. `scripts/build-standalone.mjs` emits
  * `dist/demo/<name>.nojs.html` with every <script> element removed, and this
@@ -75,13 +75,13 @@ describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
     });
 
     it('renders undefined custom elements as readable content', () => {
-      cy.get('npl-note').should('have.length.greaterThan', 0).each(($n) => {
+      cy.get('sem-note').should('have.length.greaterThan', 0).each(($n) => {
         cy.wrap($n).should('be.visible');
       });
-      cy.get('npl-note[collapsed] .sem-note-body').should('be.visible');
-      cy.get('npl-facts .sem-fact .sem-conclusion').each(($c) => cy.wrap($c).should('be.visible'));
-      cy.get('npl-details .sem-highlight').should('be.visible');
-      cy.get('npl-details .sem-occluded').should('not.exist');
+      cy.get('sem-note[collapsed] .sem-note-body').should('be.visible');
+      cy.get('sem-facts .sem-fact .sem-conclusion').each(($c) => cy.wrap($c).should('be.visible'));
+      cy.get('sem-details .sem-highlight').should('be.visible');
+      cy.get('sem-details .sem-occluded').should('not.exist');
     });
   });
 });
