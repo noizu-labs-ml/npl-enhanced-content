@@ -108,7 +108,18 @@ jobs:
     # Publish the component bundles + themes to cdn.semtext.dev.
     #   <version>/  immutable, never overwritten once published
     #   latest/     mutable pointer, short max-age so it can move
+    #
+    # Gated so the pipeline stays green before the CDN exists. The bucket is
+    # created by terraform (cdn-semtext-minio.tf) and the proxy by
+    # cdn-semtext.tf; until both are applied this job would fail on a missing
+    # bucket. Job-level `if` cannot read secrets or `env`, so the switch is a
+    # repository VARIABLE, not a secret.
+    #
+    # To turn on, once the terraform is applied and the three CDN secrets
+    # exist (CDN_MINIO_URL / CDN_MINIO_ACCESS_KEY / CDN_MINIO_SECRET_KEY):
+    #   gh variable set CDN_PUBLISH --body true
     needs: build-push
+    if: vars.CDN_PUBLISH == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
