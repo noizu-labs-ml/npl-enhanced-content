@@ -1,5 +1,10 @@
 replicas: 1
 domain: semtext.dev
+
+# Additional ingress hosts sharing the same service and TLS secret. The origin
+# cert SANs are semtext.dev + *.semtext.dev, so any subdomain here is covered.
+extraHosts:
+  - www.semtext.dev
 frontend:
   # CI owns this line. It is deliberately a flat single-line string: the
   # bump-chart job in .github/workflows/ci.yml seds this exact shape.

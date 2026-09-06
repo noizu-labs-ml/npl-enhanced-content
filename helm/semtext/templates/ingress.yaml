@@ -15,6 +15,9 @@ spec:
   tls:
   - hosts:
     - {{ .Values.domain }}
+    {{- range .Values.extraHosts }}
+    - {{ . }}
+    {{- end }}
     secretName: {{ .Values.tls.secretName }}
   rules:
   - host: {{ .Values.domain }}
@@ -27,4 +30,16 @@ spec:
             name: {{ include "semtext.fullname" . }}
             port:
               number: {{ .Values.frontend.port }}
+{{- range $host := .Values.extraHosts }}
+  - host: {{ $host }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "semtext.fullname" $ }}
+            port:
+              number: {{ $.Values.frontend.port }}
+{{- end }}
 {{- end }}
