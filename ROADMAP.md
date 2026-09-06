@@ -87,7 +87,7 @@ Every row: what it costs, what it costs *per change*, and the written trigger to
 
 | ID | Item | Principal | Interest rate | Trigger to repay | Risk |
 |---|---|---|---|---|---|
-| D1 | `.npl-progress` class names both the progress element and a facts-chrome label | small rename | every element that renders both in one document misbehaves; grows with each new element | **M3 step 3** (flagship build) | correctness |
+| D1 | `.npl-progress` class names both the progress element and a facts-chrome label | small rename | every element that renders both in one document misbehaves; grows with each new element | ✅ repaid **M3 step 3** (renamed to `.npl-facts-meter`) | correctness |
 | D2 | Lit elements upgrade pre-parse — children may not exist at first `updated()`; NplNote retries via rAF | pattern, not code | every new Lit element must re-learn the children-ready problem (or copy the pattern) | document the pattern in a shared base/helper during **M3 step 3** | correctness, per-element friction |
 | D3 | PRD.md §10 milestones drifted from reality before this roadmap existed | one pointer note | confusion about which doc is authoritative | PR gets a "see ROADMAP.md" note on next PRD touch | friction |
 | D4 | CDN infra committed but unapplied (monorepo develop e8e2d35b) | apply + seed per runbook | assets ship without a distribution host; docs can't reference CDN URLs | **M5** distribution step | delivery |
@@ -96,6 +96,8 @@ Every row: what it costs, what it costs *per change*, and the written trigger to
 | D7 | Dead `./preprocess` package export (`dist/preprocess.js` never built) | remove | `npm pack` ships a stale export a consumer could resolve | ✅ repaid **this epic** | delivery |
 | D8 | `themes/` declared as a package export/`files` entry with no directory on disk | create + populate | `npm pack` ships a broken export | ✅ repaid **this epic** | delivery |
 | D9 | `"type": "module"` vs the `.` export mapping to an IIFE bundle with no ESM/CJS exports — a bundler importing `.` gets a script it can't import from | build-format decision (dual entry or drop the `.` export) | consumers hit a silent/confusing import failure | **M5** publish prep | delivery |
+| D10 | Theme CSS ships no `npl-*:not(:defined)` base, so `demo/standalone-lit.html`'s custom-element documents render unstyled before/without upgrade — contradicts `syntax/conventions.md` §4 degradation rule 3 | one CSS block in `themes/_vocabulary.css` | every new element added in element form inherits the defect | axes wave, once `npl-controls` and the no-JS build artifact both depend on it | correctness, degradation |
+| D10 | Theme CSS ships no `npl-*:not(:defined)` base — custom-element documents render unstyled before/without the Lit upgrade, contradicting conventions §4 rule 3 which promises exactly this | one CSS block in `themes/_vocabulary.css` | every element added in element form inherits the defect; the scripts-stripped no-JS artifact will fail on it | **axes wave** (`npl-controls` + no-JS build artifact both depend on it) | correctness, degradation |
 
 ## Open decisions (must close before their dependent milestone exits)
 
