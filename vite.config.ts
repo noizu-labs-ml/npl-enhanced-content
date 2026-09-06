@@ -3,8 +3,8 @@ import { defineConfig } from 'vite';
 /**
  * Shared dev/preview config. The BUILD does not go through this file.
  *
- * This package emits three independent IIFE artifacts (npl.js,
- * npl-fallback.js, npl-extract.js) and `build.lib` with `formats: ['iife']`
+ * This package emits three independent IIFE artifacts (semtext.js,
+ * semtext-fallback.js, semtext-extract.js) and `build.lib` with `formats: ['iife']`
  * accepts a single entry, so `npm run build` drives the Vite JS API from
  * scripts/build.mjs instead. Build options live there, next to the size
  * budgets they are checked against.

@@ -4,9 +4,9 @@
  * `vite build` with `build.lib.formats: ['iife']` supports exactly one entry,
  * and this package ships three independent classic scripts:
  *
- *   dist/npl.js           Lit custom elements          (global NPL)
- *   dist/npl-fallback.js  vanilla fallback tier        (global NPLFallback)
- *   dist/npl-extract.js   record extraction            (global NPLExtract)
+ *   dist/semtext.js           Lit custom elements          (global SemText)
+ *   dist/semtext-fallback.js  vanilla fallback tier        (global SemTextFallback)
+ *   dist/semtext-extract.js   record extraction            (global SemTextExtract)
  *
  * They are separate on purpose. The fallback tier must run in a document that
  * never loads Lit, so it cannot share a bundle with it.
@@ -27,9 +27,9 @@ const strict = process.argv.includes('--strict-budget');
 
 /** budgetKb is measured against the minified (not gzipped) artifact. */
 const targets = [
-  { name: 'npl.js',          entry: 'src/index.ts',          global: 'NPL',         budgetKb: 40, required: true },
-  { name: 'npl-fallback.js', entry: 'src/fallback/index.ts', global: 'NPLFallback', budgetKb: 8,  required: true },
-  { name: 'npl-extract.js',  entry: 'src/extract/index.ts',  global: 'NPLExtract',  budgetKb: 8,  required: false },
+  { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 40, required: true },
+  { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 8,  required: true },
+  { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 8,  required: false },
 ];
 
 rmSync(resolve(root, 'dist'), { recursive: true, force: true });

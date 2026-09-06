@@ -60,9 +60,9 @@ NPL conventions live **inside the tags** — attributes, `::` pairs,
 <head>
   <meta charset="utf-8">
   <title>Authoring Guide</title>
-  <link rel="stylesheet" href="npl/themes/minimal-tech-light.css">
+  <link rel="stylesheet" href="semtext/themes/minimal-tech-light.css">
   <script id="sem-fallback">/* always-embedded vanilla handler, §7 */</script>
-  <script defer src="npl/npl.js"></script>   <!-- Lit upgrade, optional -->
+  <script defer src="semtext/semtext.js"></script>   <!-- Lit upgrade, optional -->
 </head>
 <body>
 <sem-enhanced-document>
@@ -139,7 +139,7 @@ Schema + BDD spec land together, before code (§8). Tier order simplest first.
 ## 6. Theme System
 
 - `data-sem-theme="<slug>"` on `<html>`; themes compiled from TRP-format YAML
-  → `npl/themes/<slug>.css`; `--sem-*` tokens; `:not(:defined)` vocabulary base
+  → `semtext/themes/<slug>.css`; `--sem-*` tokens; `:not(:defined)` vocabulary base
   included so docs are presentable pre-upgrade and JS-off.
 - Shadow components read tokens via fallback indirection; zero-JS theme flips.
 - Ship 4 TRP ports: `minimal-tech-light` (default), `nocturne-console`,
@@ -156,8 +156,8 @@ Every portable document embeds, inline in `<head>`:
 ```
 
 - Guarantees a **fully interactive document with zero external resources** —
-  CDN unreachable, `npl.js` missing, offline MHTML: the doc still works.
-- `npl/npl.js` (Lit 3, IIFE classic script) upgrades elements in place when
+  CDN unreachable, `semtext.js` missing, offline MHTML: the doc still works.
+- `semtext/semtext.js` (Lit 3, IIFE classic script) upgrades elements in place when
   reachable; fallback behaviors yield to component implementations.
 - BDD asserts both tiers per element: fallback-only green + upgraded green.
 
@@ -165,7 +165,7 @@ Every portable document embeds, inline in `<head>`:
 
 ES modules are CORS-blocked over `file://` ⇒ IIFE classic scripts only, no
 runtime fetch; data via inline JSON payload scripts or attributes. Forms:
-(a) folder form (`doc.html` + relative `npl/`), (b) single-file inlined,
+(a) folder form (`doc.html` + relative `semtext/`), (b) single-file inlined,
 (c) MHTML bundle. Each element's BDD suite includes a file:// smoke spec.
 
 ## 9. BDD Process (binding)

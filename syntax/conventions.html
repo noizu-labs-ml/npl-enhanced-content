@@ -358,12 +358,12 @@
 &lt;head&gt;
   &lt;meta charset="utf-8"&gt;
   &lt;title&gt;…&lt;/title&gt;
-  &lt;link rel="stylesheet" href="npl/themes/minimal-tech-light.css"&gt;   &lt;!-- folder form --&gt;
+  &lt;link rel="stylesheet" href="semtext/themes/minimal-tech-light.css"&gt;   &lt;!-- folder form --&gt;
   &lt;style&gt;/* inline core CSS — theme tokens + component base */&lt;/style&gt;
   &lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;
   &lt;style type="text/tailwindcss"&gt;/* @apply refinements on sem-* */&lt;/style&gt;
   &lt;script id="sem-fallback"&gt;/* always-embedded vanilla handler */&lt;/script&gt;
-  &lt;script defer src="npl/npl.js"&gt;&lt;/script&gt;   &lt;!-- Lit upgrade, optional (later milestone) --&gt;
+  &lt;script defer src="semtext/semtext.js"&gt;&lt;/script&gt;   &lt;!-- Lit upgrade, optional (later milestone) --&gt;
 &lt;/head&gt;
 &lt;body&gt;
 &lt;div class="sem-enhanced-document"&gt;
@@ -413,7 +413,7 @@
   <h2 id="fallback">4 · Fallback handler &amp; degradation rules</h2>
   <ul>
     <li><code>&lt;script id="sem-fallback"&gt;</code> is embedded inline in every portable doc (~2–4KB vanilla JS): <code>data-view-as</code> switching, reveal toggles, highlight occlusion, basic quiz checking, theme picker. <strong>Zero external resources required for full baseline interactivity.</strong></li>
-    <li><code>npl/npl.js</code> (Lit 3, IIFE) upgrades elements in place when reachable; component implementations supersede fallback behaviors. Handoff contract: fallback sets <code>data-sem-fallback</code>; components remove it on upgrade. BDD asserts both tiers + the handoff.</li>
+    <li><code>semtext/semtext.js</code> (Lit 3, IIFE) upgrades elements in place when reachable; component implementations supersede fallback behaviors. Handoff contract: fallback sets <code>data-sem-fallback</code>; components remove it on upgrade. BDD asserts both tiers + the handoff.</li>
     <li>Core CSS (inline, plain) keeps the page presentable with JS <em>and</em> CDN absent; Tailwind refinement is a progressive enhancement layer.</li>
     <li>Content lives in light DOM (searchable, copyable); interactive chrome may use shadow DOM once Lit lands.</li>
   </ul>
@@ -529,13 +529,13 @@
   <h2 id="themes">6 · Theme conventions</h2>
   <ul>
     <li><code>data-sem-theme="&lt;slug&gt;"</code> on <code>&lt;html&gt;</code>; one theme per doc; tokens on <code>[data-sem-theme]</code> (this page uses them live).</li>
-    <li>Compiled themes from TRP-format YAML → <code>npl/themes/&lt;slug&gt;.css</code>; <code>--sem-*</code> tokens; <code>:not(:defined)</code> vocabulary base when custom elements land.</li>
+    <li>Compiled themes from TRP-format YAML → <code>semtext/themes/&lt;slug&gt;.css</code>; <code>--sem-*</code> tokens; <code>:not(:defined)</code> vocabulary base when custom elements land.</li>
     <li>Ship 4 TRP ports: <code>minimal-tech-light</code> (default), <code>nocturne-console</code>, <code>organic-warm</code>, <code>editorial-settings</code>; auto light/dark via <code>prefers-color-scheme</code>, <code>data-color-mode</code> forces.</li>
   </ul>
 
   <h2 id="distribution">7 · Distribution forms</h2>
   <ol>
-    <li><strong>Folder</strong> — <code>doc.html</code> + relative <code>npl/</code> (IIFE <code>npl.js</code> + <code>themes/</code>).</li>
+    <li><strong>Folder</strong> — <code>doc.html</code> + relative <code>semtext/</code> (IIFE <code>semtext.js</code> + <code>themes/</code>).</li>
     <li><strong>Single-file</strong> — fallback + CSS + (later) Lit bundle + data all inlined; one file shares anywhere.</li>
     <li><strong>MHTML</strong> — multi-page bundle.</li>
   </ol>

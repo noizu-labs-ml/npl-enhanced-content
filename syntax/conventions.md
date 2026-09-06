@@ -68,9 +68,9 @@ inside the tags, never as a pre-HTML grammar.
 <head>
   <meta charset="utf-8">
   <title>Authoring Guide</title>
-  <link rel="stylesheet" href="npl/themes/minimal-tech-light.css">
+  <link rel="stylesheet" href="semtext/themes/minimal-tech-light.css">
   <script id="sem-fallback">/* always-embedded vanilla handler (§4) */</script>
-  <script defer src="npl/npl.js"></script>  <!-- Lit upgrade, optional -->
+  <script defer src="semtext/semtext.js"></script>  <!-- Lit upgrade, optional -->
 </head>
 <body>
 <sem-enhanced-document>
@@ -147,7 +147,7 @@ both present; authors pick one per fact.
    (~2–4KB vanilla JS): `view-as` switching, reveal toggles, `<highlight>`
    occlusion, basic quiz checking, theme picker. **Zero external resources
    required for full baseline interactivity.**
-2. `npl/npl.js` (Lit 3, IIFE) upgrades elements in place when reachable;
+2. `semtext/semtext.js` (Lit 3, IIFE) upgrades elements in place when reachable;
    component implementations supersede fallback behaviors. Handoff contract:
    fallback sets `data-sem-fallback` on elements it enhanced; components
    remove it on upgrade. BDD asserts both tiers + the handoff.
@@ -295,7 +295,7 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
 ## 6. Theme conventions
 
 - `data-sem-theme="<slug>"` on `<html>`; one theme per doc; themes compiled
-  from TRP-format YAML → `npl/themes/<slug>.css`; `--sem-*` tokens;
+  from TRP-format YAML → `semtext/themes/<slug>.css`; `--sem-*` tokens;
   `:not(:defined)` vocabulary base included.
 - Shadow components read tokens via fallback indirection — zero-JS theme flips.
 - Ship 4 TRP ports: `minimal-tech-light` (default), `nocturne-console`,
@@ -304,7 +304,7 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
 
 ## 7. Distribution forms
 
-1. **Folder** — `doc.html` + relative `npl/` (IIFE `npl.js` + `themes/`).
+1. **Folder** — `doc.html` + relative `semtext/` (IIFE `semtext.js` + `themes/`).
 2. **Single-file** — fallback + CSS + Lit bundle + data all inlined; one file
    shares anywhere.
 3. **MHTML** — multi-page bundle.

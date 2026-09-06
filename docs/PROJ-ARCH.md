@@ -50,7 +50,7 @@ Content always lives in light DOM (searchable/copyable); shadow DOM carries inte
 
 ## Distribution Forms
 
-Folder (`doc.html` + relative `npl/`), single-file (everything inlined), MHTML.
+Folder (`doc.html` + relative `semtext/`), single-file (everything inlined), MHTML.
 Hard rules: no ES-module scripts in portable docs, no runtime fetch, fallback always embedded.
 
 ## Key Decisions

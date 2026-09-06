@@ -14,11 +14,11 @@
  *
  * Markers (HTML comments, so a source page stays valid HTML on its own):
  *
- *   <!-- npl:inline bundle -->                     dist/npl.js
- *   <!-- npl:inline fallback -->                   dist/npl-fallback.js
- *   <!-- npl:inline extract -->                    dist/npl-extract.js
- *   <!-- npl:inline theme <name> -->               themes/<name>.css
- *   <!-- npl:inline vocabulary -->                 themes/_vocabulary.css
+ *   <!-- sem:inline bundle -->                     dist/semtext.js
+ *   <!-- sem:inline fallback -->                   dist/semtext-fallback.js
+ *   <!-- sem:inline extract -->                    dist/semtext-extract.js
+ *   <!-- sem:inline theme <name> -->               themes/<name>.css
+ *   <!-- sem:inline vocabulary -->                 themes/_vocabulary.css
  *
  * A marker whose source file is missing is a hard error: silently emitting a
  * page with no behavior in it is exactly the failure this script exists to
@@ -32,7 +32,7 @@ import { dirname, resolve, basename } from 'node:path';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = resolve(root, 'dist', 'demo');
 
-const MARKER = /<!--\s*npl:inline\s+([a-z-]+)(?:\s+([A-Za-z0-9._-]+))?\s*-->/g;
+const MARKER = /<!--\s*sem:inline\s+([a-z-]+)(?:\s+([A-Za-z0-9._-]+))?\s*-->/g;
 
 function readOrDie(path, marker) {
   if (!existsSync(path)) {
@@ -44,11 +44,11 @@ function readOrDie(path, marker) {
 function expand(kind, arg) {
   switch (kind) {
     case 'bundle':
-      return `<script>\n${readOrDie(resolve(root, 'dist/npl.js'), 'bundle')}\n</script>`;
+      return `<script>\n${readOrDie(resolve(root, 'dist/semtext.js'), 'bundle')}\n</script>`;
     case 'fallback':
-      return `<script id="sem-fallback">\n${readOrDie(resolve(root, 'dist/npl-fallback.js'), 'fallback')}\n</script>`;
+      return `<script id="sem-fallback">\n${readOrDie(resolve(root, 'dist/semtext-fallback.js'), 'fallback')}\n</script>`;
     case 'extract':
-      return `<script id="sem-extract">\n${readOrDie(resolve(root, 'dist/npl-extract.js'), 'extract')}\n</script>`;
+      return `<script id="sem-extract">\n${readOrDie(resolve(root, 'dist/semtext-extract.js'), 'extract')}\n</script>`;
     case 'theme': {
       if (!arg) throw new Error('marker "theme" requires a theme name');
       return `<style data-sem-theme-source="${arg}">\n${readOrDie(resolve(root, 'themes', `${arg}.css`), 'theme')}\n</style>`;

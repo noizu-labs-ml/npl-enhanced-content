@@ -2,7 +2,7 @@
  * npl-enhanced-content — fallback tier entry point.
  *
  * This module and everything it imports must stay free of Lit. It ships as
- * `dist/npl-fallback.js`, a classic IIFE script that runs standalone in a
+ * `dist/semtext-fallback.js`, a classic IIFE script that runs standalone in a
  * document that never loads the component bundle: the fallback tier is what
  * makes a portable `file://` document interactive with zero network.
  *

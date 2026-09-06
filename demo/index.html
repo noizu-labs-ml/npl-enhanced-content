@@ -11,8 +11,8 @@
 <!-- Core CSS. Substituted at build time by scripts/build-standalone.mjs;
      the emitted dist/demo page carries the real stylesheets inline, so it
      opens from file:// with no network. Sources: themes/*.css. -->
-<!-- npl:inline theme minimal-tech-light -->
-<!-- npl:inline vocabulary -->
+<!-- sem:inline theme minimal-tech-light -->
+<!-- sem:inline vocabulary -->
 
 <!-- Tailwind refinement layer: applies utility rules to sem-* classes.
      Requires the CDN above; harmless (no-op) without it. -->
@@ -28,9 +28,9 @@
 </style>
 
 <!-- sem-fallback: vanilla interactivity, no Lit and no external resources.
-     Source lives in src/fallback/**; the built IIFE (dist/npl-fallback.js)
+     Source lives in src/fallback/**; the built IIFE (dist/semtext-fallback.js)
      is substituted here by scripts/build-standalone.mjs. -->
-<!-- npl:inline fallback -->
+<!-- sem:inline fallback -->
 </head>
 
 <body>

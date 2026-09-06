@@ -78,7 +78,7 @@ Change order: schema → spec → code.
 | Field | Value |
 |-------|-------|
 | `type` | `module` |
-| `exports` | `.` → `dist/npl.js`, `./preprocess` → `dist/preprocess.js`, `./themes/*` → `themes/*` |
+| `exports` | `.` → `dist/semtext.js`, `./preprocess` → `dist/preprocess.js`, `./themes/*` → `themes/*` |
 | `files` | `dist`, `themes` |
 | `dependencies` | `lit ^3.3.3` |
 | `devDependencies` | `cypress ^14`, `typescript ^5.6`, `vite ^6` |

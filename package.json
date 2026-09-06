@@ -1,11 +1,11 @@
 {
-  "name": "npl-enhanced-content",
+  "name": "semtext",
   "version": "0.1.0",
-  "description": "NPL-enhanced content — Unicode-block semantic markup rendered by Lit web components. Zero React.",
+  "description": "SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. Rendered by Lit web components over a zero-JS fallback tier. Zero React.",
   "type": "module",
-  "//exports.": "'.' points at dist/npl.js, an IIFE global script with no ESM/CJS exports. 'type: module' advertises an ESM package; a bundler resolving '.' via import gets a script it cannot import from. Known conflict, tracked as ROADMAP.md debt D9 — do not import '.' from JS; use it only via <script> tag until M5 resolves the entry format.",
+  "//exports.": "'.' points at dist/semtext.js, an IIFE global script with no ESM/CJS exports. 'type: module' advertises an ESM package; a bundler resolving '.' via import gets a script it cannot import from. Known conflict, tracked as ROADMAP.md debt D9 — do not import '.' from JS; use it only via <script> tag until M5 resolves the entry format.",
   "exports": {
-    ".": "./dist/npl.js",
+    ".": "./dist/semtext.js",
     "./themes/*": "./themes/*"
   },
   "files": ["dist", "themes"],
