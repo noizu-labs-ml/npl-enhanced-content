@@ -1,40 +1,854 @@
-<!DOCTYPE html>
+<!doctype html>
 <!--
-  web/site/index.html — PLACEHOLDER for the semtext.dev marketing page.
+  web/site/index.html — semtext.dev landing page.
 
-  Deliberately minimal. The real marketing page is a separate task with its
-  own design pass; this file exists so the directory is real and the
-  deployment work has a concrete build target (dist/site/index.html).
+  This page is itself a SemText document. The feature list is a `.sem-facts`
+  deck, the caveats are `<sem-note>` custom elements, the quick start is a
+  `.sem-procedure`, the shipped artifacts are a `.sem-properties` block and
+  the three-readers argument is a `.sem-views` group. Nothing here is a mock
+  of the vocabulary: the real theme CSS and the real built bundles are inlined
+  at build time by scripts/build-standalone.mjs, so the page proves its own
+  claims or visibly fails to.
+
+  Build: `npm run build` → dist/site/index.html.
 -->
-<html lang="en">
+<html lang="en" data-sem-theme="minimal-tech-light">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SemText</title>
-  <style>
-    :root { color-scheme: light dark; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-content: center;
-      gap: 0.75rem;
-      padding: 2rem;
-      font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-      text-align: center;
-    }
-    h1 { margin: 0; font-size: 2.5rem; letter-spacing: -0.02em; }
-    p { margin: 0; max-width: 34rem; opacity: 0.8; }
-    .note { font-size: 0.8125rem; opacity: 0.55; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>SemText — semantic markup that reads three ways</title>
+<meta name="description" content="SemText is an XHTML-first markup vocabulary. One file renders as a styled interactive document in a browser, extracts as structured records for a language model, and prints as annotated text in a terminal. No build step, no React.">
+<link rel="canonical" href="https://semtext.dev/">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://semtext.dev/">
+<meta property="og:site_name" content="SemText">
+<meta property="og:title" content="SemText — semantic markup that reads three ways">
+<meta property="og:description" content="One HTML file: a styled interactive document for a person, structured records for a model, annotated text for a terminal.">
+<meta property="og:image" content="https://semtext.dev/og.png">
+<meta property="og:image:alt" content="SemText — semantic markup that reads three ways">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SemText — semantic markup that reads three ways">
+<meta name="twitter:description" content="One HTML file: a styled interactive document for a person, structured records for a model, annotated text for a terminal.">
+<meta name="twitter:image" content="https://semtext.dev/og.png">
+
+<!-- Inline SVG favicon. A data URI rather than a file: this page must render
+     identically from file:// with no network and no second request. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M9 11h14M9 16h9M9 21h12' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+
+<!-- Vocabulary CSS. Substituted at build time by scripts/build-standalone.mjs
+     from themes/*.css — the same two files any SemText document links. The
+     theme carries the --sem-* token values (including its own
+     prefers-color-scheme block); the vocabulary file carries the structure. -->
+<!-- sem:inline theme minimal-tech-light -->
+<!-- sem:inline vocabulary -->
+
+<style>
+/* ---------------------------------------------------------------------------
+   Page layer. Everything above is the shipped vocabulary; everything here is
+   this one landing page. Only page-specific concerns live in this block:
+   document layout, the type scale, focus rings the vocabulary does not carry,
+   and element-scoped rules for the Lit tags. Colour comes from the --sem-*
+   tokens — no parallel palette, so light/dark follow the theme for free.
+   ------------------------------------------------------------------------ */
+
+:root {
+  --pg-measure: 38rem;
+  --pg-wide: 60rem;
+  --pg-gutter: clamp(1.15rem, 4vw, 2.5rem);
+
+  --pg-t--1: clamp(0.82rem, 0.80rem + 0.10vw, 0.875rem);
+  --pg-t-0:  clamp(1rem, 0.97rem + 0.14vw, 1.075rem);
+  --pg-t-1:  clamp(1.13rem, 1.08rem + 0.24vw, 1.28rem);
+  --pg-t-2:  clamp(1.35rem, 1.24rem + 0.52vw, 1.7rem);
+  --pg-t-3:  clamp(1.75rem, 1.45rem + 1.45vw, 2.7rem);
+
+  --pg-space: clamp(3rem, 1.8rem + 4vw, 5.5rem);
+  --pg-code-bg: color-mix(in srgb, var(--sem-border) 32%, var(--sem-surface));
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  font-size: var(--pg-t-0);
+  line-height: 1.65;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+}
+
+/* One container width for the whole page, so every section shares a left
+   edge. Prose is narrowed inside it with .pg-narrow rather than by centring a
+   second, narrower column — two centred widths made the demo block appear to
+   jump left of everything above it. */
+.pg-col {
+  width: min(var(--pg-wide), 100% - 2 * var(--pg-gutter));
+  margin-inline: auto;
+}
+.pg-narrow { max-width: var(--pg-measure); }
+
+/* --- typography ---------------------------------------------------------- */
+
+h1, h2, h3 { line-height: 1.2; letter-spacing: -0.021em; text-wrap: balance; }
+h1 { font-size: var(--pg-t-3); margin: 0 0 0.6em; font-weight: 650; }
+h2 { font-size: var(--pg-t-2); margin: 0 0 0.5em; font-weight: 620; }
+h3 { font-size: var(--pg-t-1); margin: 2em 0 0.4em; font-weight: 600; }
+p  { margin: 0 0 1em; text-wrap: pretty; }
+p:last-child { margin-bottom: 0; }
+
+.pg-lede { font-size: var(--pg-t-1); color: var(--sem-fg); }
+.pg-sub  { color: var(--sem-muted); }
+.pg-eyebrow {
+  font-size: var(--pg-t--1); text-transform: uppercase;
+  letter-spacing: 0.11em; color: var(--sem-muted);
+  margin: 0 0 0.9em; font-weight: 600;
+}
+
+a { color: var(--sem-accent); text-underline-offset: 0.18em; }
+a:hover { text-decoration-thickness: 2px; }
+
+code, pre, kbd, samp {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+}
+:not(pre) > code {
+  font-size: 0.9em;
+  background: var(--pg-code-bg);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  /* Explicit rather than inherited: a code chip inside muted prose inherited
+     --sem-muted, which does not clear 4.5:1 against the chip's own tinted
+     background. axe flagged seven of them. */
+  color: var(--sem-fg);
+}
+
+/* --- focus --------------------------------------------------------------- */
+/* The vocabulary CSS declares no focus styling, so the page supplies it once
+   for everything focusable, including the chrome the fallback generates. */
+
+:focus-visible {
+  outline: 2px solid var(--sem-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.sem-views-tabs button:focus-visible { outline-offset: -2px; }
+
+.pg-skip {
+  position: absolute; left: 0.5rem; top: -4rem; z-index: 10;
+  background: var(--sem-accent); color: var(--sem-accent-fg);
+  padding: 0.6rem 1rem; border-radius: 8px; text-decoration: none;
+  transition: top 0.15s ease;
+}
+.pg-skip:focus { top: 0.5rem; }
+
+/* --- header / footer ----------------------------------------------------- */
+
+.pg-masthead {
+  border-bottom: 1px solid var(--sem-border);
+  background: var(--sem-surface);
+}
+.pg-masthead > div {
+  display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem;
+  align-items: center; justify-content: space-between;
+  padding-block: 0.85rem;
+}
+.pg-wordmark {
+  font-weight: 680; letter-spacing: -0.02em; color: var(--sem-fg);
+  text-decoration: none; font-size: var(--pg-t-1);
+}
+.pg-wordmark span { color: var(--sem-accent); }
+.pg-nav ul {
+  list-style: none; display: flex; flex-wrap: wrap;
+  gap: 0.35rem 1.15rem; margin: 0; padding: 0;
+  font-size: var(--pg-t--1);
+}
+
+footer { border-top: 1px solid var(--sem-border); margin-top: var(--pg-space); }
+footer > div { padding-block: 2.25rem 3rem; }
+footer ul { list-style: none; margin: 0 0 1.25rem; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; }
+footer p { color: var(--sem-muted); font-size: var(--pg-t--1); }
+
+/* --- hero ---------------------------------------------------------------- */
+
+.pg-hero { padding-block: clamp(3rem, 1.5rem + 6vw, 6.5rem) 0; }
+.pg-hero .pg-lede { max-width: 34rem; }
+.pg-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
+.pg-btn {
+  display: inline-block; padding: 0.6rem 1.15rem; border-radius: 8px;
+  border: 1px solid var(--sem-border); text-decoration: none;
+  color: var(--sem-fg); background: var(--sem-surface); font-weight: 550;
+}
+.pg-btn.primary {
+  background: var(--sem-accent); border-color: var(--sem-accent);
+  color: var(--sem-accent-fg);
+}
+.pg-btn:hover { border-color: var(--sem-accent); }
+
+/* --- sections ------------------------------------------------------------ */
+
+section { padding-block: var(--pg-space) 0; }
+.pg-rule { border: 0; border-top: 1px solid var(--sem-border); margin: 0; }
+
+/* --- code ---------------------------------------------------------------- */
+
+.pg-code {
+  margin: 1.25rem 0 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--sem-border);
+  border-radius: 12px;
+  background: var(--pg-code-bg);
+  overflow-x: auto;
+  font-size: var(--pg-t--1);
+  line-height: 1.7;
+  tab-size: 2;
+}
+.pg-code code { background: none; padding: 0; font-size: inherit; }
+.pg-caption { font-size: var(--pg-t--1); color: var(--sem-muted); margin-top: 0.6rem; }
+/* A statement that opens with a code chip would otherwise sit ~6px right of
+   its neighbours, because the chip carries horizontal padding. */
+.sem-statement > code:first-child { margin-left: -0.35em; }
+
+/* --- view-as toggle ------------------------------------------------------ */
+
+.pg-toggle {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  margin: 1.25rem 0 0.25rem;
+}
+.pg-toggle button {
+  font: inherit; font-size: var(--pg-t--1); font-weight: 550;
+  padding: 0.45rem 0.9rem; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--sem-border);
+  background: var(--sem-surface); color: var(--sem-muted);
+}
+.pg-toggle button:hover { border-color: var(--sem-accent); color: var(--sem-fg); }
+.pg-toggle button[aria-pressed="true"] {
+  background: var(--sem-accent); border-color: var(--sem-accent);
+  color: var(--sem-accent-fg);
+}
+.pg-toggle button code { background: none; padding: 0; }
+
+/* minmax(0, …) rather than 1fr: a grid track defaults to min-width:auto, which
+   lets the records <pre> push the page wide instead of scrolling inside its
+   own box. This is what keeps the body free of horizontal scroll at 375px. */
+.pg-demo {
+  display: grid; gap: 1.5rem; margin-top: 1.25rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 60rem) {
+  .pg-demo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; }
+}
+.pg-panel-title {
+  font-size: var(--pg-t--1); font-weight: 620; margin: 0 0 0.35rem;
+  color: var(--sem-fg);
+}
+.pg-records {
+  margin: 0; padding: 0.9rem 1rem;
+  border: 1px solid var(--sem-border); border-radius: 12px;
+  background: var(--pg-code-bg);
+  overflow-x: auto; font-size: 0.78rem; line-height: 1.6;
+  /* pre-wrap, not pre: these records are long enough that a horizontal scroll
+     would hide the half of each line that carries the argument. Indentation
+     still reads, because it is authored as leading spaces. */
+  white-space: pre-wrap; overflow-wrap: anywhere; min-height: 12rem;
+}
+.pg-status {
+  font-size: var(--pg-t--1); color: var(--sem-muted); margin: 0.6rem 0 0;
+}
+/* Deck cards are clickable in flashcard view only; the vocabulary sets
+   cursor:pointer on .sem-fact there, so nothing is needed for list view. */
+#try-deck .sem-fact { scroll-margin-top: 2rem; }
+
+/* --- Lit tier: element-scoped rules -------------------------------------- */
+/* themes/_vocabulary.css targets `.sem-note` (the class form). The custom
+   element is `<sem-note>`, a different selector, so the page restates the
+   same rules against the tag. Hide rules stay gated on :defined and on the
+   [data-sem-upgraded] handoff marker — with the bundle absent, a collapsed
+   note's body must remain readable. */
+
+sem-note {
+  display: block; border-left: 4px solid var(--sem-note-info);
+  border-radius: 8px; padding: 0.85rem 1.1rem; margin: 1rem 0;
+  background: var(--sem-surface);
+}
+sem-note[data-variant="warning"] { border-color: var(--sem-note-warning); }
+sem-note[data-variant="tip"]     { border-color: var(--sem-note-tip); }
+sem-note[data-variant="danger"]  { border-color: var(--sem-note-danger); }
+sem-note[data-variant]::before {
+  content: attr(data-variant); display: block;
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--sem-muted); font-weight: 600;
+}
+sem-note:defined:not([data-sem-upgraded])[collapsed] > :not(.sem-note-summary) { display: none; }
+sem-note[data-sem-upgraded][collapsed] > .sem-note-body { display: none; }
+sem-note .sem-note-summary { cursor: pointer; color: var(--sem-accent); }
+
+/* --- vocabulary adjustments ---------------------------------------------- */
+/* The reveal fallback moves the body into a native <details> and synthesises
+   a <summary> from data-summary. themes/_vocabulary.css also prints that same
+   string via ::before, which is what keeps the question visible with JS off —
+   but it duplicates the text once the <details> exists. Suppress the ::before
+   only in that case. */
+/* Specificity has to beat .sem-reveal[data-summary]::before (0,2,0) in the
+   vocabulary file; :has(details) only contributes a type selector, so the
+   attribute has to be repeated here. */
+.sem-reveal[data-summary]:has(details)::before { content: none; }
+.sem-reveal summary { padding: 0.6rem 0.9rem; cursor: pointer; font-weight: 550; }
+.sem-reveal summary::marker { color: var(--sem-muted); }
+
+/* JS-off completeness for sem-views.
+   themes/_vocabulary.css hides .sem-view unconditionally and reveals only
+   [data-active]. Every other hide rule in that file is gated on an
+   enhancement marker precisely so a scripts-off document stays complete —
+   this one is not, so with no tab bar to switch panels the Model and Terminal
+   readings are unreachable. spec/schema/sem-views.md says the element
+   "degrades to stacked readable views JS-off", so this is a vocabulary gap
+   and the fix belongs upstream in _vocabulary.css. Compensated here because
+   this page must not ship a section a reader cannot finish.
+   The tab bar only exists once the fallback has run, so :has() on it is the
+   same enhancement gate the other rules use. */
+.sem-views:not(:has(.sem-views-tabs)) .sem-view {
+  display: block; border-top: 1px solid var(--sem-border);
+  border-radius: 12px; margin-bottom: 0.5rem;
+}
+.sem-views:not(:has(.sem-views-tabs)) .sem-view::before {
+  content: attr(data-name); display: block; font-weight: 620;
+  margin-bottom: 0.35rem;
+}
+
+.sem-views { margin-top: 1.25rem; }
+.sem-views-tabs button { font: inherit; font-size: var(--pg-t--1); font-weight: 550; }
+.sem-facts-chrome button { font: inherit; }
+
+/* break-word, not anywhere: a token like --sem-* fits and must not be
+   split mid-word just because the column is narrow. */
+.sem-property { align-items: baseline; overflow-wrap: break-word; }
+.sem-property::before { overflow-wrap: break-word; }
+@media (max-width: 34rem) {
+  .sem-property { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+}
+
+.sem-agent { font-size: var(--pg-t--1); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+
+<!-- Behaviour. All three artifacts are inlined from dist/ at build time, so
+     the shipped page is self-contained and works from file:// with no
+     network — which is the same guarantee every SemText document makes.
+
+     CDN SWAP POINT: once cdn.semtext.dev exists, replace the three markers
+     below with
+         <script src="https://cdn.semtext.dev/<version>/semtext-fallback.js"></script>
+         <script src="https://cdn.semtext.dev/<version>/semtext.js"></script>
+         <script src="https://cdn.semtext.dev/<version>/semtext-extract.js"></script>
+     and nothing else on this page changes. The CDN does not exist yet, so
+     the page ships self-contained today. -->
+<!-- sem:inline fallback -->
+<!-- sem:inline bundle -->
+<!-- sem:inline extract -->
 </head>
+
 <body>
-  <h1>SemText</h1>
-  <p>
-    XHTML-first semantic markup: one document that reads as a styled interactive
-    page, a structural record for LLMs, and plain text in a terminal.
-  </p>
-  <p><a href="../demo/index.html">View the demo</a></p>
-  <p class="note">Placeholder page — the semtext.dev marketing site is not designed yet.</p>
+<a class="pg-skip" href="#main">Skip to content</a>
+
+<header class="pg-masthead">
+  <div class="pg-col">
+    <a class="pg-wordmark" href="#main">Sem<span>Text</span></a>
+    <nav class="pg-nav" aria-label="Primary">
+      <ul>
+        <li><a href="#why">Why</a></li>
+        <li><a href="#try">Try it</a></li>
+        <li><a href="#start">Quick start</a></li>
+        <li><a href="#scope">Scope</a></li>
+        <li><a href="../demo/index.html">Demo</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="sem-enhanced-document">
+
+  <!-- Hero ------------------------------------------------------------- -->
+  <div class="pg-hero pg-col"><div class="pg-narrow">
+    <h1>Semantic markup that reads three ways.</h1>
+    <p class="pg-lede">
+      SemText is a markup vocabulary for HTML documents. You write what the
+      content <em>is</em> — a fact, a step, a caveat, a property — and the same
+      file renders as a styled interactive page in a browser, extracts as
+      structured records for a language model, and prints as annotated text in
+      a terminal.
+    </p>
+    <p class="pg-sub">
+      A document is one standalone <code>.html</code> file. Double-click it.
+      There is no server, no build step and no framework to install.
+    </p>
+    <p class="pg-actions">
+      <a class="pg-btn primary" href="#try">See it work</a>
+      <a class="pg-btn" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/conventions.md">Read the spec</a>
+      <a class="pg-btn" href="../demo/index.html">Open the demo</a>
+    </p>
+    <p class="pg-caption" style="margin-top:1.75rem">
+      This page is itself a SemText document. Everything below is the real
+      vocabulary, rendered by the real bundles. View source.
+    </p>
+    </div>
+  </div>
+
+  <!-- Why -------------------------------------------------------------- -->
+  <section id="why" aria-labelledby="why-h">
+    <div class="pg-col"><div class="pg-narrow">
+      <p class="pg-eyebrow">Why this exists</p>
+      <h2 id="why-h">One document, three readers who want different things.</h2>
+      <p>
+        A rich document usually ends up as three artifacts that drift: a page
+        for people, a JSON export for tooling, and a plain-text dump for
+        anything without a browser. SemText's bet is that one file can serve
+        all three, if the markup says what each piece of content means instead
+        of how it should look.
+      </p>
+      <p class="pg-sub">
+        Pick a reader to see what they get from the same file.
+      </p>
+
+      <div class="sem-views" id="readers" role="region"
+           aria-label="The three readers of a SemText document">
+        <div class="sem-view" data-name="Browser" data-active role="tabpanel" aria-label="Browser">
+          <p>
+            The theme CSS styles the vocabulary directly, so a document is
+            readable the moment it opens. Flashcards flip, quizzes score, tabs
+            switch and disclosures expand — driven by roughly 7 KB of vanilla
+            JavaScript with no dependencies and no network calls.
+          </p>
+        </div>
+        <div class="sem-view" data-name="Model" role="tabpanel" aria-label="Model">
+          <p>
+            The same file read as XHTML. Attributes qualify every datum:
+            <code>data-kind</code> says what a thing is,
+            <code>data-status</code> says where it stands,
+            <code>.sem-conclusion</code> and <code>.sem-distractor</code>
+            distinguish an answer from a decoy. A model does not have to infer
+            the structure, because the structure is written down.
+          </p>
+        </div>
+        <div class="sem-view" data-name="Terminal" role="tabpanel" aria-label="Terminal">
+          <p>
+            <code>extractText(document)</code> walks the authored markup and
+            returns annotated lines — one per record, indented by containment,
+            tagged with ids and kinds. Generated chrome is skipped, so the
+            output does not depend on whether scripts ran or which view is on
+            screen.
+          </p>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- Live demo -------------------------------------------------------- -->
+  <section id="try" aria-labelledby="try-h">
+    <div class="pg-col">
+      <p class="pg-eyebrow">The idea, in one control</p>
+      <h2 id="try-h">Change the view. The content does not move.</h2>
+      <p class="pg-narrow">
+        These four facts are authored once, as
+        <code>div.sem-fact</code> elements holding a
+        <code>.sem-statement</code> and a <code>.sem-conclusion</code>.
+        <code>data-view-as</code> selects how they render. Switching it
+        rewrites nothing about what they are, and the records a machine reads
+        stay identical.
+      </p>
+
+      <div class="pg-toggle" role="group" aria-label="Render these facts as">
+        <button type="button" data-view="list" aria-pressed="true">List</button>
+        <button type="button" data-view="flashcards" aria-pressed="false">Flashcards</button>
+        <button type="button" data-view="quiz" aria-pressed="false">Quiz</button>
+      </div>
+      <p class="pg-status" id="try-hint" aria-live="polite">
+        Rendering as <code id="try-current">list</code>. In flashcard view,
+        click a card to flip it; in quiz view, pick the conclusion.
+      </p>
+
+      <div class="pg-demo">
+        <div id="try-scope">
+          <h3 class="pg-panel-title" style="margin-top:0">What a person sees</h3>
+          <div class="sem-facts" id="try-deck" data-view-as="list" data-kind="capability">
+            <div class="sem-fact" id="f-view-as" data-kind="rule">
+              <div class="sem-statement"><code>view-as</code> is a parameter, not an identity</div>
+              <div class="sem-conclusion">A fact is a fact in every view; the attribute only selects a rendering.</div>
+              <div class="sem-distractor">Each view is a different element type.</div>
+            </div>
+            <div class="sem-fact" id="f-light-dom" data-kind="rule">
+              <div class="sem-statement">Components render into light DOM</div>
+              <div class="sem-conclusion">Content stays in the page, so find-in-page, copy and plain CSS all still reach it.</div>
+              <div class="sem-distractor">Content moves into a shadow root for encapsulation.</div>
+            </div>
+            <div class="sem-fact" id="f-invariant" data-kind="rule">
+              <div class="sem-statement">Extraction reads the authored document</div>
+              <div class="sem-conclusion">Generated chrome is skipped, so records do not depend on the view on screen.</div>
+              <div class="sem-distractor">Extraction reads whatever is currently rendered.</div>
+            </div>
+            <div class="sem-fact" id="f-no-build" data-kind="rule">
+              <div class="sem-statement">Authoring needs no build step</div>
+              <div class="sem-conclusion">Two stylesheets and one script tag in a plain HTML file.</div>
+              <div class="sem-distractor">A bundler compiles the vocabulary down to HTML.</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="pg-panel-title" style="margin-top:0">What a machine reads</h3>
+          <pre class="pg-records" id="try-records" tabindex="0" role="region"
+               aria-label="Records extracted from the facts deck">sem-facts (#try-deck kind=capability)
+  sem-fact (#f-view-as kind=rule): view-as is a parameter, not an identity :: A fact is a fact in every view; the attribute only selects a rendering.
+    distractors: Each view is a different element type.
+  sem-fact (#f-light-dom kind=rule): Components render into light DOM :: Content stays in the page, so find-in-page, copy and plain CSS all still reach it.
+    distractors: Content moves into a shadow root for encapsulation.
+  sem-fact (#f-invariant kind=rule): Extraction reads the authored document :: Generated chrome is skipped, so records do not depend on the view on screen.
+    distractors: Extraction reads whatever is currently rendered.
+  sem-fact (#f-no-build kind=rule): Authoring needs no build step :: Two stylesheets and one script tag in a plain HTML file.
+    distractors: A bundler compiles the vocabulary down to HTML.</pre>
+          <p class="pg-status" id="try-invariance" aria-live="polite">
+            Output of <code>SemTextExtract.extractText()</code> over the deck
+            above, authored into the page so it is here with scripts off too.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Degradation ------------------------------------------------------ -->
+  <section id="tiers" aria-labelledby="tiers-h">
+    <div class="pg-col"><div class="pg-narrow">
+      <p class="pg-eyebrow">Degradation</p>
+      <h2 id="tiers-h">Three tiers, and the bottom one is the contract.</h2>
+      <p>
+        Every hide rule in the vocabulary CSS is gated on an enhancement
+        marker that only a script sets. With no script, nothing is hidden and
+        the document reads as prose. Each tier above that adds behaviour
+        without moving content.
+      </p>
+
+      <div class="sem-facts" id="tier-facts" data-kind="architecture">
+        <div class="sem-fact" id="f-tier-1" data-kind="tier">
+          <div class="sem-statement">Tier 1 — CSS only</div>
+          <div class="sem-conclusion">
+            Two stylesheets render every element readably. Quiz answers, collapsed
+            notes and inactive views all stay on the page, because the rules that
+            would hide them never match.
+          </div>
+        </div>
+        <div class="sem-fact" id="f-tier-2" data-kind="tier">
+          <div class="sem-statement">Tier 2 — the fallback script</div>
+          <div class="sem-conclusion">
+            About 7 KB of vanilla JavaScript wires flashcards, quizzes, tabs,
+            disclosure and meters. No dependencies, no network, no build. It is
+            the tier a file you email still has.
+          </div>
+        </div>
+        <div class="sem-fact" id="f-tier-3" data-kind="tier">
+          <div class="sem-statement">Tier 3 — Lit components</div>
+          <div class="sem-conclusion">
+            When the component bundle loads, elements claim
+            <code>data-sem-upgraded</code>, drop the fallback marker and take
+            over in place. Content is never re-parented into a shadow root.
+          </div>
+        </div>
+      </div>
+
+      <p class="pg-caption">
+        The notes further down this page are <code>&lt;sem-note&gt;</code> custom
+        elements running tier 3. The deck above is running tier 2.
+      </p>
+    </div></div>
+  </section>
+
+  <!-- Quick start ------------------------------------------------------ -->
+  <section id="start" aria-labelledby="start-h">
+    <div class="pg-col">
+      <p class="pg-eyebrow">Quick start</p>
+      <h2 id="start-h">What you actually write.</h2>
+      <p class="pg-narrow">
+        A SemText document is an HTML file. The vocabulary is classes on plain
+        elements, so any editor, template language or generator that emits HTML
+        can emit it.
+      </p>
+
+      <pre class="pg-code" tabindex="0" role="region" aria-label="A minimal SemText document"><code>&lt;!doctype html&gt;
+&lt;html lang="en" data-sem-theme="minimal-tech-light"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;title&gt;Auth notes&lt;/title&gt;
+  &lt;link rel="stylesheet" href="semtext/themes/_vocabulary.css"&gt;
+  &lt;link rel="stylesheet" href="semtext/themes/minimal-tech-light.css"&gt;
+  &lt;script src="semtext/semtext-fallback.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="sem-enhanced-document"&gt;
+
+  &lt;h1&gt;Auth notes&lt;/h1&gt;
+
+  &lt;div class="sem-note" data-variant="warning"&gt;
+    Refresh tokens rotate per use — each exchange retires the last one.
+  &lt;/div&gt;
+
+  &lt;div class="sem-facts" data-view-as="flashcards"&gt;
+    &lt;div class="sem-fact" id="f-jwt" data-kind="concept"&gt;
+      &lt;div class="sem-statement"&gt;JWTs rotate per session&lt;/div&gt;
+      &lt;div class="sem-conclusion"&gt;Short-lived access tokens; the refresh grant issues a new pair.&lt;/div&gt;
+      &lt;div class="sem-distractor"&gt;Store the token in localStorage for durability.&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+      <p class="pg-caption">
+        Save it, double-click it. That is the whole workflow.
+      </p>
+
+      <h3 id="start-steps">Adding it to a project</h3>
+      <div class="sem-procedure" data-kind="quickstart" role="list"
+           aria-labelledby="start-steps">
+        <div class="sem-step" role="listitem">
+          Copy <code>themes/_vocabulary.css</code> and one theme file next to
+          your document, and set <code>data-sem-theme</code> on
+          <code>&lt;html&gt;</code> to that theme's name.
+        </div>
+        <div class="sem-step" role="listitem">
+          Add <code>semtext-fallback.js</code>. Link it, or paste it inline for
+          a document you intend to send as a single file.
+        </div>
+        <div class="sem-step" role="listitem">
+          Write the content with <code>sem-*</code> classes where interactivity
+          or machine-readability pays. Ordinary HTML stays ordinary HTML.
+        </div>
+        <div class="sem-step" role="listitem">
+          Optional: add <code>semtext.js</code> for the Lit tier, and
+          <code>semtext-extract.js</code> where a tool needs the records.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Surface ---------------------------------------------------------- -->
+  <section id="surface" aria-labelledby="surface-h">
+    <div class="pg-col">
+      <p class="pg-eyebrow">Surface</p>
+      <h2 id="surface-h">Everything that ships.</h2>
+      <p class="pg-narrow">
+        Three independent classic scripts, each installing one global, plus two
+        stylesheets. They are separate on purpose: the fallback tier has to run
+        in a document that never loads Lit.
+      </p>
+
+      <div class="sem-properties" data-kind="artifacts" role="group"
+           aria-label="Shipped artifacts">
+        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · 24.4 KB minified, 8.9 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · 7.1 KB minified, 2.6 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · 6.6 KB minified, 2.5 KB gzipped</span></div>
+        <div class="sem-property" data-key="_vocabulary.css" role="definition" aria-label="_vocabulary.css"><span>Structure for the <code>sem-*</code> classes. Reads <code>--sem-*</code> tokens, declares none.</span></div>
+        <div class="sem-property" data-key="theme css" role="definition" aria-label="theme css"><span>Token values only, plus a <code>prefers-color-scheme</code> block. A new theme is a copy with new values.</span></div>
+      </div>
+
+      <h3>The vocabulary</h3>
+      <p class="pg-narrow">
+        Fourteen element types mint records:
+        <code>sem-agent</code>, <code>sem-note</code>, <code>sem-facts</code>
+        and <code>sem-fact</code>, <code>sem-details</code> and
+        <code>sem-detail</code>, <code>sem-procedure</code> and
+        <code>sem-step</code>, <code>sem-properties</code> and
+        <code>sem-property</code>, <code>sem-views</code> and
+        <code>sem-view</code>, <code>sem-reveal</code>, and
+        <code>sem-progress</code>. This page uses eight of them.
+      </p>
+
+      <div class="sem-agent">
+        <div class="sem-agent-name">SemText Guide</div>
+        <div class="sem-agent-bio">Answers questions about SemText from the facts on this page.</div>
+        <div class="sem-agent-instructions">Answer only from sem-fact records in this document; cite ids.</div>
+      </div>
+      <p class="pg-caption">
+        A <code>sem-agent</code> block, above: document-level metadata aimed at
+        a model, carried by the same file a person is reading. It is inert to a
+        browser and it is a record to an extractor.
+      </p>
+    </div>
+  </section>
+
+  <!-- Scope ------------------------------------------------------------ -->
+  <section id="scope" aria-labelledby="scope-h">
+    <div class="pg-col"><div class="pg-narrow">
+      <p class="pg-eyebrow">Scope</p>
+      <h2 id="scope-h">What it is not.</h2>
+
+      <sem-note variant="info">
+        <div class="sem-note-body">
+          SemText is a markup vocabulary and three small scripts. It is not a
+          CMS, a site generator or an application framework, and it has no
+          opinion about how you produce the HTML.
+        </div>
+      </sem-note>
+
+      <sem-note variant="warning">
+        <div class="sem-note-body">
+          The spec is a draft at v0.4. The class-based vocabulary is the current
+          baseline and the custom-element form is arriving alongside it, so
+          element names and attributes can still change. Pin a version.
+        </div>
+      </sem-note>
+
+      <sem-note variant="tip">
+        <div class="sem-note-body">
+          There is no React in the dependency tree and there is not going to be
+          one. Lit 3 is the only runtime dependency, and it is optional — the
+          fallback tier has none.
+        </div>
+      </sem-note>
+
+      <h3 id="questions">Reasonable questions</h3>
+
+      <div class="sem-reveal" id="q-markdown" data-summary="Why not Markdown?" collapsed>
+        Markdown has nowhere to put the attributes that make a datum
+        machine-readable — no way to mark a conclusion as distinct from a
+        decoy, or a step as blocked. An authoring aid that compiles Markdown
+        into SemText is a reasonable thing to build, but the canonical artifact
+        stays XHTML, because that is the artifact all three readers consume.
+      </div>
+
+      <div class="sem-reveal" id="q-why-model" data-summary="Does a language model really need this?" collapsed>
+        A model can read any HTML. What it cannot do reliably is tell a
+        conclusion from a distractor, or a caveat from a heading, when nothing
+        in the markup says so. The claim here is narrow: the attributes remove
+        that guesswork, and the extraction contract makes the result stable
+        enough to cite.
+      </div>
+
+      <div class="sem-reveal" id="q-adoption" data-summary="Is anyone using it?" collapsed>
+        Not yet. This is a draft spec, a reference implementation and a Cypress
+        suite. There are no users to point at, no benchmarks to quote and no
+        production deployments beyond this page and its demos.
+      </div>
+    </div></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="pg-col">
+    <ul>
+      <li><a href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/conventions.md">Format spec</a></li>
+      <li><a href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/extraction.md">Extraction contract</a></li>
+      <li><a href="https://github.com/noizu-labs-ml/npl-enhanced-content">Repository</a></li>
+      <li><a href="../demo/index.html">Vocabulary demo</a></li>
+      <li><a href="../demo/standalone-lit.html">Lit demo</a></li>
+      <li><a href="../demo/index.nojs.html">The same demo, scripts stripped</a></li>
+    </ul>
+    <p>
+      SemText v0.1.0 · draft spec v0.4 · part of Noizu Prompt Lingua.
+      This page is a SemText document and carries its own stylesheets and
+      scripts inline, so it works from <code>file://</code> with no network.
+    </p>
+  </div>
+</footer>
+
+<script>
+/* ---------------------------------------------------------------------------
+ * Page script. Two jobs, both specific to this landing page — the vocabulary
+ * itself needs none of it.
+ *
+ *   1. The view-as toggle. `enhanceFacts` reads data-view-as once and wires
+ *      chrome into the deck, so switching views means restoring the authored
+ *      markup and re-running the handler. The pristine markup is captured
+ *      here, during parse, before the fallback's DOMContentLoaded handler has
+ *      touched anything.
+ *
+ *   2. Re-running extraction after each switch, against the LIVE deck —
+ *      chrome, quiz buttons and all. That is what makes the invariance claim
+ *      worth showing: the generated nodes are present in the DOM and the
+ *      extractor skips them.
+ *
+ * Nothing here is required for the page to be readable; with this script
+ * removed the deck renders as a plain list and the records panel keeps the
+ * authored text it already contains.
+ * ------------------------------------------------------------------------ */
+(function () {
+  var scope = document.getElementById('try-scope');
+  var deck = document.getElementById('try-deck');
+  var toggle = document.querySelector('.pg-toggle');
+  var current = document.getElementById('try-current');
+  var records = document.getElementById('try-records');
+  var status = document.getElementById('try-invariance');
+  if (!scope || !deck || !toggle) return;
+
+  var pristine = deck.innerHTML;
+  var baseline = null;
+
+  function extract() {
+    if (!window.SemTextExtract || !records) return;
+    var text = window.SemTextExtract.extractText(deck);
+    records.textContent = text;
+    if (baseline === null) {
+      baseline = text;
+      return;
+    }
+    status.textContent =
+      text === baseline
+        ? 'Recomputed live from the deck as it now stands, chrome and all. Identical to the list view.'
+        : 'Recomputed live — and it differs from the list view, which is a bug worth reporting.';
+  }
+
+  /* Flashcard flip is bound to a click on the .sem-fact <div>, with no role,
+     no tabindex and no key handler — so with the fallback tier alone the flip
+     is mouse-only (WCAG 2.1.1). The gap is in src/fallback/facts.ts and the
+     fix belongs there; this closes it for this page so the demo is not the
+     one interaction a keyboard user cannot reach. */
+  function makeCardsKeyboardOperable() {
+    Array.prototype.forEach.call(deck.querySelectorAll('.sem-fact'), function (card) {
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', 'Flip card to show the conclusion');
+      card.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+        e.preventDefault();
+        card.classList.toggle('sem-flipped');
+      });
+    });
+  }
+
+  function setView(mode) {
+    deck.innerHTML = pristine;
+    deck.removeAttribute('data-sem-fallback');
+    deck.setAttribute('data-view-as', mode);
+    if (window.SemTextFallback) window.SemTextFallback.enhanceFacts(scope);
+    if (mode === 'flashcards') makeCardsKeyboardOperable();
+    if (current) current.textContent = mode;
+    Array.prototype.forEach.call(toggle.querySelectorAll('button'), function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === mode));
+    });
+    extract();
+  }
+
+  toggle.addEventListener('click', function (e) {
+    var button = e.target.closest ? e.target.closest('button[data-view]') : null;
+    if (!button) return;
+    setView(button.getAttribute('data-view'));
+  });
+
+  /* Registered after the fallback's own listener (declared in <head>), so the
+     first extraction sees a fully enhanced document. */
+  document.addEventListener('DOMContentLoaded', extract);
+})();
+</script>
 </body>
 </html>
