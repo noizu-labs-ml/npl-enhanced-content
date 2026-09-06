@@ -1,39 +1,34 @@
-import { LitElement } from 'lit';
+import { NplElement } from './base.js';
+import { randomFor, shuffle } from '../shared/rng.js';
 
 /**
  * npl-facts — Lit upgrade of the v0.4 class-based fact collection.
  * Light DOM per PRD §4 rule 5; Lit owns the flashcard/quiz behavior,
- * not the markup. Handoff contract: sets data-npl-upgraded, removes
- * data-npl-fallback. Chrome meter is .npl-facts-meter — never
- * .npl-progress (D1: that class is the npl-progress element).
+ * not the markup. Handoff contract comes from NplElement. Chrome meter is
+ * .npl-facts-meter — never .npl-progress (D1: that class is the
+ * npl-progress element).
+ *
+ * Quiz option order is a seeded Fisher-Yates draw (shared/rng), not a
+ * `sort(() => Math.random() - .5)` comparator. The old comparator was
+ * inconsistent, so its output was both non-uniform and engine-dependent.
  */
-export class NplFacts extends LitElement {
+export class NplFacts extends NplElement {
   #wired = false;
-  #retrying = false;
+  #awaitingItems = false;
 
-  /* light DOM — theme CSS styles .npl-* classes */
-  createRenderRoot() { return this; }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute('data-npl-upgraded', '');
-    this.removeAttribute('data-npl-fallback');
-  }
-
-  updated() {
+  updated(): void {
     if (this.#wired) return;
     const view = this.getAttribute('data-view-as') || 'list';
     const items = Array.from(this.querySelectorAll(':scope > .npl-fact'));
     if (items.length === 0) {
-      // element defined pre-parse: children aren't there yet at first update
-      if (!this.#retrying) {
-        this.#retrying = true;
-        requestAnimationFrame(() => this.requestUpdate());
-      }
+      // element upgraded pre-parse: children aren't there yet at first update
+      this.#awaitItems();
       return;
     }
     if (view === 'list') return; // nothing interactive; plain layout stays
     this.#wired = true;
+
+    const rand = randomFor(this);
 
     const chrome = document.createElement('div');
     chrome.className = 'npl-facts-chrome';
@@ -55,9 +50,10 @@ export class NplFacts extends LitElement {
         .map((f) => f.querySelector('.npl-conclusion'))
         .filter(Boolean) as Element[];
       const opts = distractors.concat(others).slice(0, 3).concat([correct!]);
-      return opts
-        .sort(() => Math.random() - 0.5)
-        .map((el) => ({ text: (el.textContent || '').trim(), correct: el === correct }));
+      return shuffle(opts, rand).map((el) => ({
+        text: (el.textContent || '').trim(),
+        correct: el === correct,
+      }));
     };
 
     const renderQuiz = (item: Element) => {
@@ -108,6 +104,15 @@ export class NplFacts extends LitElement {
     }
     render();
   }
+
+  #awaitItems(): void {
+    if (this.#awaitingItems) return;
+    this.#awaitingItems = true;
+    void this.whenChildrenReady(':scope > .npl-fact').then(() => {
+      this.#awaitingItems = false;
+      this.requestUpdate();
+    });
+  }
 }
 
-customElements.define('npl-facts', NplFacts);
+NplElement.register('npl-facts', NplFacts);

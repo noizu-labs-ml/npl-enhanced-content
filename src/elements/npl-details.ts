@@ -1,33 +1,23 @@
-import { LitElement } from 'lit';
+import { NplElement } from './base.js';
 
 /**
  * npl-details — Lit upgrade of the v0.4 class-based prose-with-cloze block.
  * Light DOM per PRD §4 rule 5. quiz view occludes .npl-highlight recall
  * targets (.npl-occluded spans); plain view leaves prose untouched.
- * Handoff contract: sets data-npl-upgraded, removes data-npl-fallback.
+ * Handoff contract comes from NplElement.
  */
-export class NplDetails extends LitElement {
+export class NplDetails extends NplElement {
   #wired = false;
-  #retrying = false;
+  #awaitingHighlights = false;
 
-  /* light DOM — theme CSS styles .npl-* classes */
-  createRenderRoot() { return this; }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute('data-npl-upgraded', '');
-    this.removeAttribute('data-npl-fallback');
-  }
-
-  updated() {
+  updated(): void {
     if (this.#wired) return;
     const view = this.getAttribute('data-view-as') || 'plain';
     const highlights = Array.from(this.querySelectorAll('.npl-highlight'));
     if (view !== 'quiz' || highlights.length === 0) {
-      if (view === 'quiz' && highlights.length === 0 && !this.#retrying) {
-        // element defined pre-parse: children aren't there yet at first update
-        this.#retrying = true;
-        requestAnimationFrame(() => this.requestUpdate());
+      if (view === 'quiz' && highlights.length === 0) {
+        // element upgraded pre-parse: children aren't there yet at first update
+        this.#awaitHighlights();
       }
       return;
     }
@@ -52,6 +42,15 @@ export class NplDetails extends LitElement {
       h.replaceWith(span);
     });
   }
+
+  #awaitHighlights(): void {
+    if (this.#awaitingHighlights) return;
+    this.#awaitingHighlights = true;
+    void this.whenChildrenReady('.npl-highlight').then(() => {
+      this.#awaitingHighlights = false;
+      this.requestUpdate();
+    });
+  }
 }
 
-customElements.define('npl-details', NplDetails);
+NplElement.register('npl-details', NplDetails);
