@@ -64,10 +64,13 @@ function expand(kind, arg) {
 }
 
 /** Remove whole <script> elements. A JS string cannot contain a literal
- *  `</script>` without breaking the surrounding HTML, so this is safe. */
+ *  `</script>` without breaking the surrounding HTML, so this is safe.
+ *  The end tag allows ignored junk before `>` (`</script foo>`, and newlines
+ *  count as whitespace), so match `\b[^>]*` rather than `\s*` — otherwise a
+ *  script survives into the nojs artifact. */
 function stripScripts(html) {
   return html
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, '')
     .replace(/\n{3,}/g, '\n\n');
 }
 
