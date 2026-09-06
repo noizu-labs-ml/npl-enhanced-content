@@ -91,6 +91,11 @@ Every row: what it costs, what it costs *per change*, and the written trigger to
 | D2 | Lit elements upgrade pre-parse — children may not exist at first `updated()`; NplNote retries via rAF | pattern, not code | every new Lit element must re-learn the children-ready problem (or copy the pattern) | document the pattern in a shared base/helper during **M3 step 3** | correctness, per-element friction |
 | D3 | PRD.md §10 milestones drifted from reality before this roadmap existed | one pointer note | confusion about which doc is authoritative | PR gets a "see ROADMAP.md" note on next PRD touch | friction |
 | D4 | CDN infra committed but unapplied (monorepo develop e8e2d35b) | apply + seed per runbook | assets ship without a distribution host; docs can't reference CDN URLs | **M5** distribution step | delivery |
+| D5 | Vanilla fallback handler duplicated verbatim between `demo/index.html` and the Lit elements (compare `demo/index.html:249-268` against `src/elements/npl-details.ts:36-53`) | copy-paste, two homes | any fallback bugfix must be applied twice or drifts | fallback-extraction work, **this epic** | correctness |
+| D6 | Quiz option shuffle used `sort(() => Math.random() - 0.5)` — not a uniform shuffle, engine-dependent | small rewrite | quiz distractor order is biased and non-portable | seeded Fisher-Yates, **this epic** | correctness |
+| D7 | Dead `./preprocess` package export (`dist/preprocess.js` never built) | remove | `npm pack` ships a stale export a consumer could resolve | ✅ repaid **this epic** | delivery |
+| D8 | `themes/` declared as a package export/`files` entry with no directory on disk | create + populate | `npm pack` ships a broken export | ✅ repaid **this epic** | delivery |
+| D9 | `"type": "module"` vs the `.` export mapping to an IIFE bundle with no ESM/CJS exports — a bundler importing `.` gets a script it can't import from | build-format decision (dual entry or drop the `.` export) | consumers hit a silent/confusing import failure | **M5** publish prep | delivery |
 
 ## Open decisions (must close before their dependent milestone exits)
 

@@ -118,6 +118,12 @@ Global attributes (any `npl-*` element):
 `view-as` only selects rendering. Unknown `view-as` ⇒ falls back to `list`/
 plain + fallback-handler warning.
 
+**Class namespace.** Each element owns exactly the class namespace
+`.npl-<element>` and `.npl-<element>-*`; no other element may reuse that
+bare class name for its own chrome. `.npl-progress` names only the progress
+element — a facts-chrome label needing similar styling is `.npl-facts-meter`,
+never `.npl-progress` borrowed from another element.
+
 ## 3. NPL notation inside tags
 
 Compact notation is legal inside element text where the schema allows;

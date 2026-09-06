@@ -1,0 +1,23 @@
+/* npl-enhanced-content — theme: minimal-tech-light
+   Token layer only. Structural/component rules live in themes/_vocabulary.css.
+   A new theme is a copy of this file with new --npl-* values — no selectors
+   beyond [data-npl-theme="<name>"] and its dark-mode media block. */
+
+[data-npl-theme="minimal-tech-light"] {
+  --npl-bg: #fafafa; --npl-surface: #ffffff; --npl-fg: #1e293b;
+  --npl-muted: #64748b; --npl-border: #e2e8f0; --npl-accent: #2563eb;
+  --npl-accent-fg: #ffffff;
+  --npl-note-info: #2563eb; --npl-note-tip: #059669;
+  --npl-note-warning: #d97706; --npl-note-danger: #dc2626;
+  --npl-correct: #059669; --npl-wrong: #dc2626; --npl-occluded: #94a3b8;
+}
+@media (prefers-color-scheme: dark) {
+  [data-npl-theme="minimal-tech-light"] {
+    --npl-bg: #0f172a; --npl-surface: #1e293b; --npl-fg: #e2e8f0;
+    --npl-muted: #94a3b8; --npl-border: #334155; --npl-accent: #60a5fa;
+    --npl-accent-fg: #0f172a;
+    --npl-note-info: #60a5fa; --npl-note-tip: #34d399;
+    --npl-note-warning: #fbbf24; --npl-note-danger: #f87171;
+    --npl-correct: #34d399; --npl-wrong: #f87171; --npl-occluded: #475569;
+  }
+}
