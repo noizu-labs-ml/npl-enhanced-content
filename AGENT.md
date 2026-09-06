@@ -1,4 +1,4 @@
-# AGENT.md — npl-enhanced-content
+# AGENT.md — SemText
 
 Guidance for **Codex**, **Grok**, **Cursor**, and other `AGENTS.md` / `AGENT.md` tools.
 

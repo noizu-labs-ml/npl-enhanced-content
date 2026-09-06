@@ -1,4 +1,4 @@
-# CLAUDE.md — npl-enhanced-content
+# CLAUDE.md — SemText
 
 XHTML-first rich-content spec for NPL (Tier-0 schemas, Lit `SemNote` component + standalone demo, cypress e2e). Monorepo role: NPL-ecosystem spec + JS demo; couples to NPL framework and Libs Lit components.
 

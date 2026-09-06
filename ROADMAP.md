@@ -1,4 +1,4 @@
-# ROADMAP — npl-enhanced-content
+# ROADMAP — SemText
 
 Living planning doc. **Supersedes PRD.md §10 for forward planning**; PRD.md remains the
 format/spec authority (§1–§9 unchanged and binding). Update this file at every milestone

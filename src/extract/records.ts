@@ -1,10 +1,10 @@
 /**
- * npl-enhanced-content — canonical record extraction.
+ * SemText — canonical record extraction.
  *
  * Normative contract: syntax/extraction.md
  * BDD source of truth:  cypress/e2e/extraction.cy.js
  *
- * Extraction projects an npl document to a flat, ordered array of records.
+ * Extraction projects a SemText document to a flat, ordered array of records.
  * It is PURE: it never writes an attribute, never inserts or removes a node,
  * never dispatches an event. It reads only authored semantics — generated
  * chrome, runtime state classes, and mutable presentation attributes
@@ -154,7 +154,7 @@ function recordType(el: Element): string | null {
 }
 
 /**
- * The minting test: plain semantic HTML carrying an npl global qualifier
+ * The minting test: plain semantic HTML carrying an sem global qualifier
  * (`kind` or `tags`) is a record too. `id` alone does not mint — ids are
  * ubiquitous anchors, not semantic claims.
  */

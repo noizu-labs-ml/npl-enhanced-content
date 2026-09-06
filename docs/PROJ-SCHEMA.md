@@ -1,4 +1,4 @@
-# Data Schema — npl-enhanced-content
+# Data Schema — SemText
 
 No relational persistence, KV store, or runtime config layer exists in this
 repo. The repo is **spec-first**: its primary "schema" is the markup/data

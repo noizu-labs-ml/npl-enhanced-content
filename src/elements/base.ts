@@ -3,7 +3,7 @@ import { parseTokens } from '../shared/tokens.js';
 import { closureFor, matches, warn as semWarn, type AudienceClosure } from '../shared/audience.js';
 
 /**
- * SemElement — the shared base for every npl custom element.
+ * SemElement — the shared base for every SemText custom element.
  *
  * Repays debt D2. Three things were being copy-pasted per element and drifting:
  * the light-DOM render root, the fallback→upgrade handoff, and a

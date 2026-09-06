@@ -1,8 +1,8 @@
-# Project Architecture — npl-enhanced-content
+# Project Architecture — SemText
 
 ## Overview
 
-npl-enhanced-content defines an XHTML-first rich-content format for NPL
+SemText defines an XHTML-first rich-content format for NPL
 (Noizu Prompt Lingua): documents that are simultaneously human-readable styled
 HTML, structurally parseable data for LLMs/agents, and terminal-extractable
 text. One file, three consumers. The repo is **spec-first** — tier-0 specs in

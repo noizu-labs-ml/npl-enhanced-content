@@ -14,7 +14,7 @@
 //   Scenario: field mapping — sem-view name and index
 //   Scenario: field mapping — sem-reveal authored vs derived summary
 //   Scenario: field mapping — sem-progress clamped value and raw attribute
-//   Scenario: minting test — plain HTML with npl global attributes
+//   Scenario: minting test — plain HTML with sem global attributes
 //   Scenario: purity — extraction does not mutate the DOM
 //   Scenario: INVARIANT — JS-off extraction deep-equals JS-on extraction
 //   Scenario: INVARIANT — extraction is identical under every view-as mode
@@ -278,7 +278,7 @@ describe('extraction', () => {
     });
   });
 
-  describe('minting test — plain HTML carrying npl global attributes', () => {
+  describe('minting test — plain HTML carrying sem global attributes', () => {
     beforeEach(() => cy.visit('/demo/index.html'));
 
     it('extracts plain semantic HTML as records; id alone does not mint', () => {

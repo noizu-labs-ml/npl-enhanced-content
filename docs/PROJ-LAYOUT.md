@@ -1,8 +1,8 @@
 # Project Layout
 
 ```
-npl-enhanced-content/
-├── syntax/                       # Canonical NPL enhanced-content specifications
+semtext/
+├── syntax/                       # Canonical SemText format specifications
 │   ├── conventions.html          # Rendered conventions spec (XHTML-first canonical)
 │   ├── conventions.md            # Markdown conventions spec (source of truth)
 │   └── schema/

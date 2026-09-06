@@ -241,7 +241,7 @@ present; `text` = `label :: N%` with `N` the rounded clamped percentage.
 
 ### Minted plain-HTML records
 
-Plain semantic HTML carrying an npl global qualifier is extracted as a record
+Plain semantic HTML carrying an sem global qualifier is extracted as a record
 too: `type` is the lowercased tag name (`figure`, `table`, `blockquote`,
 `h1`, …), `fields: {}`, `text` = the element's own prose, with `id`, `kind`,
 and `tags` read as usual.

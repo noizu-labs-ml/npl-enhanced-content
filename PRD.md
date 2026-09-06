@@ -1,4 +1,4 @@
-# PRD — `npl-enhanced-content` · The XML Variant of NPL
+# PRD — `SemText` · The XML Variant of NPL
 
 v0.3 · 2026-09-01 · Status: DRAFT — sem- prefix, semantic naming, universal
 fallback handler (v0.2 XHTML-first model retained; v0.1 was a false start)
@@ -8,7 +8,7 @@ Session: noizu-labs / noizu-infra `8a675934-4fd9-4899-8678-2137f051ae78`
 
 ## 1. Vision
 
-`npl-enhanced-content` defines the **XML/HTML variant of NPL**: rich documents
+`SemText` defines the **XML/HTML variant of NPL**: rich documents
 whose canonical artifact is a **standalone XHTML file**. Element names are
 **semantic** (`sem-fact`, `sem-detail`, `sem-procedure`), never
 UI-descriptive; presentation is a parameter (`view-as="quiz|flashcards|list"`),
@@ -38,7 +38,7 @@ NPL conventions live **inside the tags** — attributes, `::` pairs,
 
 **Non-Goals (v1)**
 
-- Markdown (or any non-HTML) as canonical source; an md→npl authoring aid is
+- Markdown (or any non-HTML) as canonical source; an md→SemText authoring aid is
   optional Tier 2, never required.
 - WYSIWYG editor; SSR; React wrappers.
 
@@ -134,7 +134,7 @@ Schema + BDD spec land together, before code (§8). Tier order simplest first.
 - `sem-chronology` / `sem-event when` — TRP timeline port.
 - `sem-table`, `sem-query` — data surfaces over inline JSON payload scripts.
 - `sem-themes controls="picker"` — floating theme switcher.
-- md→npl authoring aid (optional, never required).
+- md→SemText authoring aid (optional, never required).
 
 ## 6. Theme System
 
@@ -180,7 +180,7 @@ runtime fetch; data via inline JSON payload scripts or attributes. Forms:
 ## 10. Repo Layout & Roadmap
 
 ```
-npl-enhanced-content/
+semtext/
 ├── PRD.md
 ├── syntax/{conventions.md,schema/}
 ├── src/{elements/,themes/build.ts,index.ts}

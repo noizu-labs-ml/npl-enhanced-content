@@ -1,4 +1,4 @@
-# npl-enhanced-content — Format Spec & Conventions
+# SemText — Format Spec & Conventions
 
 **DRAFT v0.4 — class-based baseline.** v0.4 renders the vocabulary as
 **classes on plain elements** (`<div class="sem-agent">`), not custom
@@ -290,7 +290,7 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
 - `sem-table`, `sem-query` — data over inline `<script type="application/json">`
   payloads (portable; no fetch).
 - `sem-themes controls="picker"` — floating switcher.
-- md→npl authoring aid (optional, never required).
+- md→SemText authoring aid (optional, never required).
 
 ## 6. Theme conventions
 

@@ -1,5 +1,5 @@
 /**
- * npl-enhanced-content — extraction entry point.
+ * SemText — extraction entry point.
  *
  * Normative contract: syntax/extraction.md
  *

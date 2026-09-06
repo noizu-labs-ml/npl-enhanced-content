@@ -1,4 +1,4 @@
-/* npl-enhanced-content — vocabulary base
+/* SemText — vocabulary base
    Theme-independent structure: layout, spacing, the .sem-* component rules,
    and the fallback-tier hide/show gating keyed on [data-sem-fallback]. Reads
    --sem-* custom properties but declares none — pair with a theme file such

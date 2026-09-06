@@ -1,7 +1,7 @@
 # Project Layout — Summary
 
 ```
-npl-enhanced-content/
+semtext/
 ├── syntax/                       # Canonical specs (conventions.md/.html, schema/sem-note.md)
 ├── demo/                         # Standalone Lit SemNote demo (index.html)
 ├── cypress/                      # E2E tests (e2e/sem-note.cy.js)

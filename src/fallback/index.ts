@@ -1,5 +1,5 @@
 /**
- * npl-enhanced-content — fallback tier entry point.
+ * SemText — fallback tier entry point.
  *
  * This module and everything it imports must stay free of Lit. It ships as
  * `dist/semtext-fallback.js`, a classic IIFE script that runs standalone in a

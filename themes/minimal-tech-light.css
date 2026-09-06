@@ -1,4 +1,4 @@
-/* npl-enhanced-content — theme: minimal-tech-light
+/* SemText — theme: minimal-tech-light
    Token layer only. Structural/component rules live in themes/_vocabulary.css.
    A new theme is a copy of this file with new --sem-* values — no selectors
    beyond [data-sem-theme="<name>"] and its dark-mode media block. */
