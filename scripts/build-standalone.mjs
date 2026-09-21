@@ -157,7 +157,7 @@ for (const file of sources) {
   const page = resolve(outDir, `${name}.html`);
   const nojs = resolve(outDir, `${name}.nojs.html`);
   writeFileSync(page, built);
-  writeFileSync(nojs, stripScripts(built));
+  writeFileSync(nojs, stripScripts(built, `web/demo/${basename(file)}`));
 
   const kb = (p) => (statSync(p).size / 1024).toFixed(1).padStart(6) + ' KB';
   console.log(`  ${file.padEnd(30)}${String(count).padStart(5)}  ${kb(page)}${kb(nojs)}`);
@@ -240,7 +240,7 @@ if (specPages.length) {
     const page = resolve(specOutDir, `${name}.html`);
     const nojs = resolve(specOutDir, `${name}.nojs.html`);
     writeFileSync(page, built);
-    writeFileSync(nojs, stripScripts(built));
+    writeFileSync(nojs, stripScripts(built, `spec/${file}`));
     const kb = (p) => (statSync(p).size / 1024).toFixed(1).padStart(6) + ' KB';
     console.log(`  ${file.padEnd(30)}${kb(page)}${kb(nojs)}`);
   }

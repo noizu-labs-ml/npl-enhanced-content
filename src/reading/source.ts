@@ -44,8 +44,14 @@ function clean(nodes: DocumentFragment): string {
     e.removeAttribute('data-sem-fallback');
   });
   const keep: string[] = [];
-  let mark = '\u0001';
-  while (tpl.innerHTML.indexOf(mark) >= 0) mark = String.fromCharCode(mark.charCodeAt(0) + 1);
+  // Sentinel: a C0 control (U+0001–U+001F) absent from the text; bounded
+  // so the search never wanders into printable or surrogate ranges. If all
+  // 31 occur (pathological), fall back to a run of U+0001 longer than any
+  // present, which is absent by construction.
+  const html = tpl.innerHTML;
+  let mark = '';
+  for (let c = 1; c < 0x20 && !mark; c++) if (html.indexOf(String.fromCharCode(c)) < 0) mark = String.fromCharCode(c);
+  if (!mark) { mark = '\u0001'; while (html.indexOf(mark) >= 0) mark += '\u0001'; }
   root.querySelectorAll('pre, textarea').forEach((e) => {
     if (e.parentElement?.closest('pre, textarea')) return; // inner: kept whole with its outer
     e.replaceWith(document.createTextNode(mark + (keep.push(e.outerHTML) - 1) + mark));

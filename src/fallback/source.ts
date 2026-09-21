@@ -22,6 +22,8 @@ export function enhanceSource(scope: ParentNode): void {
     if (el.parentElement?.closest(SOURCE)) { warn('sem-source: nested wrapper ignored'); return; }
     const t = document.createElement('template');
     t.className = 'sem-source-raw';
+    // Iterates the LIVE childNodes list: only clones are appended, so the
+    // list never mutates mid-walk. Never switch this to moving the originals.
     el.childNodes.forEach((n) => t.content.appendChild(n.cloneNode(true)));
     el.insertBefore(t, el.firstChild);
   });

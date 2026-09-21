@@ -12,6 +12,10 @@
 //   Scenario: INVARIANT — records are identical JS-off and JS-on, before and after interaction
 //   Scenario: the page renders at 1280 and 390 without horizontal overflow (screenshots)
 
+// The build's own helper (loops to a fixed point; throws on an unclosed
+// opener), imported rather than re-implemented so the two cannot drift.
+import { stripComments } from '../../scripts/standalone-lib.mjs';
+
 const clone = (v) => JSON.parse(JSON.stringify(v));
 // Records come from the SHIPPED extractor (dist/semtext-extract.js), which
 // the spec page loads itself. The .nojs artifact carries no script, so the
@@ -58,12 +62,6 @@ const PAGES = [
   },
 ];
 
-// Repeated until stable so a nested opener (`<!<!---->--`) cannot survive one pass.
-const stripComments = (html) => {
-  let prev;
-  do { prev = html; html = html.replace(/<!--[\s\S]*?-->/g, ''); } while (html !== prev);
-  return html;
-};
 // A <style> element or a style= attribute on a real tag both count.
 const inlineStyles = (html) => {
   const h = stripComments(html);
