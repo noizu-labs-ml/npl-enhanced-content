@@ -55,6 +55,8 @@ function run(): void {
     const target = resolve(segment);
     if (!target) continue;
     // Outermost first, so a card inside a view is selected after the view shows.
+    // Every ancestor is in the chain, so a source-mode wrapper anywhere above
+    // the target (not only the target itself) is flipped below.
     const chain: Element[] = [];
     for (let el: Element | null = target; el; el = el.parentElement) chain.unshift(el);
     chain.forEach((el) => {

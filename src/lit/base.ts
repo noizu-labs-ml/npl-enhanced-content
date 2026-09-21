@@ -93,7 +93,12 @@ export class SemElement extends LitElement {
 
   /**
    * Run `fn` once the document has finished parsing (immediately when it
-   * already has). Attribute writes an element makes at parse time land
+   * already has). `key` names the write: while the parse is still running,
+   * a repeated key replaces the pending function, so one element flushes
+   * each write once at DOMContentLoaded. After the parse the key is not a
+   * memo — each call runs, because each call is a fresh write from a
+   * later update. Pending writes of an element that has disconnected by
+   * the time the flush runs are dropped (it has nothing to write to). Attribute writes an element makes at parse time land
    * BEFORE the fallback core's DOMContentLoaded pass — including the
    * `sem-source` snapshot, which must see the authored markup — so
    * anything that is not needed for anti-flash gating goes through here.

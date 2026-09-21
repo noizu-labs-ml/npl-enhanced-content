@@ -29,8 +29,13 @@ export const SOURCE = ':is(sem-source, .sem-source)';
  *    listing that happens to contain the marker text is untouched.
  *    Re-serialising a serialisation is stable, so nothing else changes.
  * 3. Remove the common leading indentation of the section, computed and
- *    applied only OUTSIDE preformatted ranges (`<pre>`, `<textarea>`),
- *    whose line content is verbatim.
+ *    applied only OUTSIDE preformatted elements (`<pre>`, `<textarea>`),
+ *    whose line content is verbatim. The elements are located in the
+ *    parsed clone (so a `<pre` inside an attribute or a comment is not a
+ *    range, and an unclosed one is whatever the parser closed) and swapped
+ *    for a one-line sentinel before the dedent. The sentinel is a control
+ *    character chosen to be absent from the serialised text, so authored
+ *    content can never collide with it.
  */
 function clean(raw: string): string {
   const tpl = document.createElement('template');
@@ -40,8 +45,13 @@ function clean(raw: string): string {
     e.removeAttribute('data-sem-fallback');
   });
   const keep: string[] = [];
-  const text = tpl.innerHTML.replace(/<(pre|textarea)\b[\s\S]*?<\/\1\s*>/gi, (m) => '\u0001' + (keep.push(m) - 1) + '\u0001');
-  const lines = text.split('\n');
+  let mark = '\u0001';
+  while (tpl.innerHTML.indexOf(mark) >= 0) mark = String.fromCharCode(mark.charCodeAt(0) + 1);
+  tpl.content.querySelectorAll('pre, textarea').forEach((e) => {
+    if (e.parentElement?.closest('pre, textarea')) return; // inner: kept whole with its outer
+    e.replaceWith(document.createTextNode(mark + (keep.push(e.outerHTML) - 1) + mark));
+  });
+  const lines = tpl.innerHTML.split('\n');
   while (lines.length && !lines[0].trim()) lines.shift();
   while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
   let indent = Infinity;
@@ -49,7 +59,7 @@ function clean(raw: string): string {
     if (l.trim()) indent = Math.min(indent, l.match(/^[ \t]*/)![0].length);
   });
   return lines.map((l) => l.slice(indent < Infinity ? indent : 0)).join('\n')
-    .replace(/\u0001(\d+)\u0001/g, (_m, i: string) => keep[+i]);
+    .split(mark).map((s, i) => (i % 2 ? keep[+s] : s)).join('');
 }
 
 export function enhanceSourceElement(el: Element): void {

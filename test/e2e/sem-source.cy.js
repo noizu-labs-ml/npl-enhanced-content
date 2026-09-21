@@ -207,7 +207,11 @@ describe('sem-source', () => {
       it('dedent never touches lines inside a preformatted block', () => {
         fence().then((t) => {
           expect(t).to.contain('<pre id="s-fid-pre"><code>top\n      keep six\n  keep two</code></pre>');
+          // negative case: every non-preformatted line lost the section indent
           expect(t).to.match(/^<p id="s-fid-text">/);
+          expect(t).to.contain('\n<pre id="s-fid-pre">');
+          expect(t).to.contain('\n<script type="text/plain" id="s-fid-raw">');
+          expect(t).not.to.match(/\n[ \t]+</);
         });
       });
 
@@ -217,7 +221,9 @@ describe('sem-source', () => {
         });
       });
 
-      it('a deep link into a source-mode wrapper resolves with the core alone (no chrome)', () => {
+      it('a deep link to a DESCENDANT of a source-mode wrapper resolves with the core alone (no chrome)', () => {
+        // #s-initial-p is a <p> inside #s-initial: the resolver's ancestor
+        // chain, not the target itself, is what matches the wrapper.
         cy.visit('/demo/index.html');
         cy.get('#s-initial').should('have.attr', 'data-view-as', 'source');
         cy.get('#s-initial > .sem-source-chrome').then(($c) => $c.remove());
