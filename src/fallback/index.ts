@@ -15,8 +15,11 @@
  * for hide rules whose host element is deliberately unmarked (a list-view
  * deck's distractors).
  *
- * SIZE BUDGET: 12 KB minified, raised from 8 KB in the reading-experience
- * W0 wave (deep-link resolver + audience gating). Raw bytes are what a
+ * SIZE BUDGET: 14 KB minified — raised from 8 KB in the reading-experience
+ * W0 wave (deep-link resolver + audience gating), to 13 KB for the
+ * sem-source snapshot, and to 14 KB when the canonical tag form became a
+ * first-class input of every handler (`:is(sem-x, .sem-x)` selectors, the
+ * bare→data-* attribute mirror, the tag-form note body wrap). Raw bytes are what a
  * file:// document carries, since nothing gzips an inlined <script>, so the
  * budget is stated raw. Most of the weight is irreducible string literals:
  * markup templates, class names and warning text. `scripts/build.mjs`
@@ -25,6 +28,7 @@
  */
 
 import { enhanceSource } from './source.js';
+import { enhanceAttrs } from './attrs.js';
 import { enhanceFacts } from './facts.js';
 import { enhanceDetails } from './details.js';
 import { enhanceNote } from './note.js';
@@ -55,6 +59,7 @@ export type FallbackHandler = (scope: ParentNode) => void;
  */
 export const handlers: FallbackHandler[] = [
   enhanceSource, // FIRST: snapshots sem-source markup before anything touches it
+  enhanceAttrs, // then: bare tag-form attributes get their data-* twin
   enhanceFacts,
   enhanceDetails,
   enhanceNote,
@@ -74,6 +79,7 @@ export function enhance(scope: ParentNode = document): void {
 
 export {
   enhanceSource,
+  enhanceAttrs,
   enhanceFacts,
   enhanceDetails,
   enhanceNote,

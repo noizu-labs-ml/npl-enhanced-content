@@ -1,6 +1,6 @@
 # Schema — `sem-md`
 
-Contract per conventions.md v0.4. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-md.cy.js`. Changes here precede spec changes precede code.
 
 ## Scope semantics
@@ -21,30 +21,29 @@ raw Markdown shows as readable preformatted text with JS off).
 
 ## Authoring form
 
-Class form (v0.4):
-
 ```html
-<div class="sem-md" id="m-lifetimes" data-label="Token lifetimes" data-controls="toggle,copy">
+<sem-md id="m-lifetimes" label="Token lifetimes" controls="toggle,copy">
   | Token   | Lifetime | Rotates |
   | :------ | -------: | :-----: |
   | access  | 15 min   | no      |
   | refresh | 30 days  | yes     |
-</div>
+</sem-md>
 ```
 
-Element form: `<sem-md label view-as controls>` with the same text child.
-Parameters are read as `data-<name>` first, then bare `<name>`.
+Class-form alias (conventions Appendix A): `div.sem-md[data-label][data-view-as][data-controls]` with the same
+text child. Parameters are read as `data-<name>` first, then bare `<name>`.
 
 - Content: the element's **text** is the Markdown. Authors indent freely:
   the common leading whitespace of the non-blank lines is stripped and
   leading / trailing blank lines are dropped (**normalised source**). The
   document is still HTML, so `<` and `&` in the Markdown are written
   `&lt;` and `&amp;`; entities decode before parsing.
-- `data-view-as` (optional): `rendered` (default) or `raw` — the initial
-  mode. **Mutable presentation attribute**: the toggle rewrites it at
-  runtime and extraction ignores it (spec/extraction.md §5c).
-- `data-label` (optional): a short caption rendered in the chrome.
-- `data-controls` (optional): comma flags from `toggle`, `copy`; default
+- `view-as` (optional): `rendered` (default) or `raw` — the initial
+  mode. **Mutable presentation**: the toggle rewrites `data-view-as` at
+  runtime (the authored bare attribute is left alone) and extraction
+  ignores it (spec/extraction.md §5c).
+- `label` (optional): a short caption rendered in the chrome.
+- `controls` (optional): comma flags from `toggle`, `copy`; default
   both, also when the attribute is present but empty. Unknown flags are
   ignored.
 - `id`, `kind`, `tags`, `audience` per the global catalog.

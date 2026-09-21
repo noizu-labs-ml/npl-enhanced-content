@@ -4,7 +4,21 @@ Living planning doc. **Supersedes PRD.md §10 for forward planning**; PRD.md rem
 format/spec authority (§1–§9 unchanged and binding). Update this file at every milestone
 exit — status drift here is a bug.
 
-Status snapshot: **2026-09-21 · develop = f6cf10f (W0 + W1 merged) + R/W2 PR open**
+Status snapshot: **2026-09-22 · develop = 7e88ea4 (W0–W2.2 merged) + PR #30 `feature/tags-canonical` open**
+
+**Tag form canonical (2026-09-22).** conventions.md is re-baselined as
+v0.5: the XHTML custom-element form with bare attributes
+(`<sem-facts view-as="quiz">`, `<sem-fact>` › `<statement>`) is the
+canonical vocabulary; the v0.4 `div.sem-*` + `data-*` spelling is a
+compatibility alias (Appendix A), still accepted by every tier and still
+what `web/demo/index.html` / `reading.html` exercise. The spec page,
+schemas, extraction worked example, site quick-start and README now show
+the tag form first. Code: the fallback core's handlers and the Lit
+facts/details/note wrappers select both forms (`shared/sel`), a
+first-pass handler mirrors bare parameters to `data-*` after the
+`sem-source` snapshot, a collapsed tag-form note wraps its own body, and
+the vocabulary CSS reads the bare spelling wherever a rule must hold with
+no script. Fallback budget **14 KB** (measured 13.0).
 
 ## Non-negotiable invariants (guardrails — every milestone inherits these)
 
@@ -25,7 +39,7 @@ Status snapshot: **2026-09-21 · develop = f6cf10f (W0 + W1 merged) + R/W2 PR op
 | # | Milestone | Status |
 |---|---|---|
 | M1 | Format spec v0 + Tier-0 schemas + BDD | ✅ complete (re-baselined, see note) |
-| M2 | v0.4 class-based baseline demo | ✅ complete (main) |
+| M2 | v0.4 class-based baseline demo (now the class-form alias) | ✅ complete (main) |
 | M3 | sem-facts / sem-details flagship + Lit upgrade path | 🔶 in progress |
 | T  | Theme pipeline (parallel track) | ⬜ not started |
 | M4 | sem-question 7 types + highlight occlusion | ⬜ not started |
@@ -39,10 +53,13 @@ progress). **Re-baseline decision:** `sem-fact(s)` and `sem-detail(s)` schemas a
 criteria for M3*, not M1 debt — §9 requires schema+spec before code anyway, and those two
 schemas exist to serve the flagship build, so they belong where they get used.
 
-### M2 — v0.4 class-based baseline ✅
+### M2 — v0.4 class-based baseline ✅ (demoted to alias, 2026-09-22)
 
 `web/demo/index.html`: inline CSS + fallback handler, class-based vocabulary
-(`div.sem-*`, `data-*` canonical; sugar is display-only). Double-click demo works.
+(`div.sem-*`, `data-*`; sugar is display-only). Double-click demo works. Since
+conventions v0.5 this spelling is the **class-form alias** (Appendix A); the
+canonical form is the custom element with bare attributes, and this demo stays
+as the alias's reference document and regression surface.
 
 ### M3 — Flagship + Lit upgrade path 🔶 in progress
 
@@ -93,13 +110,28 @@ extraction restores authored order.
 
 **Size budgets (raw minified, enforced by `npm run build:strict`)**
 
-| Artifact | W0 | W1 | W2 | W3 |
-|---|---|---|---|---|
-| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **13** (measured 12.5 after W2.1; 12.54 after the W2.1 watcher fixes — see W2.1 decisions) | 13 |
-| `semtext-reading.js` | — | **8** (measured 6.8) | **19.5** (measured 16.6 at W2, 18.8 after W2.1, 19.1 after the W2.1 watcher fixes — see W2 and W2.1 decisions) | 20 |
-| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 48.3 after W2.1 + W2.2 review fixes) | 57 |
-| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 |
-| `semtext-md.js` | — | — | **8.5** (W2.2, measured 8.0 — 8170 bytes after review; raised from 8 during the CodeQL fixes; final form: `new URL()` + protocol allowlist, `url.href` written) | 8.5 |
+| Artifact | W0 | W1 | W2 | Tag form (PR #30) | W3 |
+|---|---|---|---|---|---|
+| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **13** (measured 12.5 after W2.1; 12.54 after the W2.1 watcher fixes — see W2.1 decisions) | **14** (measured 13.0 — see tag-form decisions) | 14 |
+| `semtext-reading.js` | — | **8** (measured 6.8) | **19.5** (measured 16.6 at W2, 18.8 after W2.1, 19.1 after the W2.1 watcher fixes — see W2 and W2.1 decisions) | 19.5 (measured 19.4 — at the line; the next reading-bundle feature must raise it deliberately) | 20 |
+| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 48.3 after W2.1 + W2.2 review fixes) | 56 (measured 49.5) | 57 |
+| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 (9.7) | 12 |
+| `semtext-md.js` | — | — | **8.5** (W2.2, measured 8.0 — 8170 bytes after review; raised from 8 during the CodeQL fixes; final form: `new URL()` + protocol allowlist, `url.href` written) | 8.5 (8.0) | 8.5 |
+
+**Tag-form canonical decisions (recorded, PR #30).** The fallback core
+budget is **14 KB** (measured 13.0; 13,345 bytes against the old 13,312):
+the growth is the `:is(sem-x, .sem-x)` selector in every core handler
+(+ the child parts `:is(conclusion, .sem-conclusion)`), the first-pass
+bare→`data-*` attribute mirror (`src/fallback/attrs.ts`), the
+`:not([data-sem-upgraded])` guards and the tag-form note body wrap. The
+alias path is not separable: the same selector string serves both forms,
+so making the class form optional would save nothing. Precedence keeps
+extraction §3.6 unchanged — `data-<name>` wins over a bare `<name>` on
+one element — because a mixed spelling on one element is an authoring
+error, not a use case, and the runtime state the tiers write is always
+`data-*`; the `sem-source` fence always shows the authored markup. The
+fallback budget is a guardrail, not an aspiration: any future bump goes
+through this section and `scripts/build.mjs` together.
 
 **W1 decisions (recorded).** Glossary mode lives in the *reading* bundle,
 not the fallback core: the core sits at 11.9 / 12 KB after W0 and the

@@ -832,9 +832,11 @@ section { padding-block: var(--pg-space) 0; }
       <p class="pg-eyebrow">Quick start</p>
       <h2 id="start-h">What you actually write.</h2>
       <p class="pg-narrow">
-        A SemText document is an HTML file. The vocabulary is classes on plain
-        elements, so any editor, template language or generator that emits HTML
-        can emit it.
+        A SemText document is an HTML file. The vocabulary is custom elements
+        with plain attributes — <code>&lt;sem-facts view-as="flashcards"&gt;</code>,
+        <code>&lt;sem-step status="done"&gt;</code> — so any editor, template
+        language or generator that emits HTML can emit it, and the browser
+        parses it with or without a script.
       </p>
 
       <pre class="pg-code" tabindex="0" role="region" aria-label="A minimal SemText document"><code>&lt;!doctype html&gt;
@@ -847,50 +849,53 @@ section { padding-block: var(--pg-space) 0; }
   &lt;script src="semtext/semtext-fallback.js"&gt;&lt;/script&gt;
 &lt;/head&gt;
 &lt;body&gt;
-&lt;div class="sem-enhanced-document"&gt;
+&lt;sem-enhanced-document&gt;
 
   &lt;h1&gt;Auth notes&lt;/h1&gt;
 
-  &lt;div class="sem-note" data-variant="warning"&gt;
+  &lt;sem-note variant="warning"&gt;
     Refresh tokens rotate per use — each exchange retires the last one.
-  &lt;/div&gt;
+  &lt;/sem-note&gt;
 
-  &lt;div class="sem-facts" data-view-as="flashcards"&gt;
-    &lt;div class="sem-fact" id="f-jwt" data-kind="concept"&gt;
-      &lt;div class="sem-statement"&gt;JWTs rotate per session&lt;/div&gt;
-      &lt;div class="sem-conclusion"&gt;Short-lived access tokens; the refresh grant issues a new pair.&lt;/div&gt;
-      &lt;div class="sem-distractor"&gt;Store the token in localStorage for durability.&lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
+  &lt;sem-facts view-as="flashcards"&gt;
+    &lt;sem-fact id="f-jwt" kind="concept"&gt;
+      &lt;statement&gt;JWTs rotate per session&lt;/statement&gt;
+      &lt;conclusion&gt;Short-lived access tokens; the refresh grant issues a new pair.&lt;/conclusion&gt;
+      &lt;sem-distractor&gt;Store the token in localStorage for durability.&lt;/sem-distractor&gt;
+    &lt;/sem-fact&gt;
+  &lt;/sem-facts&gt;
 
-&lt;/div&gt;
+&lt;/sem-enhanced-document&gt;
 &lt;/body&gt;
 &lt;/html&gt;</code></pre>
       <p class="pg-caption">
-        Save it, double-click it. That is the whole workflow.
+        Save it, double-click it. That is the whole workflow. Written the older
+        way — <code>&lt;div class="sem-note" data-variant="warning"&gt;</code> —
+        it renders and extracts the same; that spelling is the compatibility
+        alias, documented once in the spec's Appendix A.
       </p>
 
       <h3 id="start-steps">Adding it to a project</h3>
-      <div class="sem-procedure" data-kind="quickstart" role="list"
+      <sem-procedure id="start-procedure" kind="quickstart" role="list"
            aria-labelledby="start-steps">
-        <div class="sem-step" role="listitem">
+        <sem-step role="listitem">
           Copy <code>themes/_vocabulary.css</code> and one theme file next to
           your document, and set <code>data-sem-theme</code> on
           <code>&lt;html&gt;</code> to that theme's name.
-        </div>
-        <div class="sem-step" role="listitem">
+        </sem-step>
+        <sem-step role="listitem">
           Add <code>semtext-fallback.js</code>. Link it, or paste it inline for
           a document you intend to send as a single file.
-        </div>
-        <div class="sem-step" role="listitem">
-          Write the content with <code>sem-*</code> classes where interactivity
+        </sem-step>
+        <sem-step role="listitem">
+          Write the content with <code>sem-*</code> elements where interactivity
           or machine-readability pays. Ordinary HTML stays ordinary HTML.
-        </div>
-        <div class="sem-step" role="listitem">
+        </sem-step>
+        <sem-step role="listitem">
           Optional: add <code>semtext.js</code> for the Lit tier, and
           <code>semtext-extract.js</code> where a tool needs the records.
-        </div>
-      </div>
+        </sem-step>
+      </sem-procedure>
     </div>
   </section>
 

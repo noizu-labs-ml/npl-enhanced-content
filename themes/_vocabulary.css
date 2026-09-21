@@ -5,10 +5,18 @@
    for values.
 
    BOTH AUTHORING FORMS FROM ONE RULE (D10). Every vocabulary selector is
-   `:is(sem-x, .sem-x)`: the v0.3 custom element and the v0.4 classed div
-   render identically, before or without the Lit upgrade (conventions §4
-   rule 3). Element-form children use their bare tags (`<statement>`,
-   `<highlight>`, `<name>`); class-form children use `.sem-*`.
+   `:is(sem-x, .sem-x)`: the canonical custom element and its class-form
+   alias (conventions Appendix A) render identically, before or without
+   the Lit upgrade (conventions §4 rule 3). Element-form children use their
+   bare tags (`<statement>`, `<highlight>`, `<name>`); the alias uses
+   `.sem-*`. Parameters are read in both spellings where a rule must hold
+   with NO script (`[status]`/`[data-status]`); a bare-spelling rule that
+   renders `attr(<name>)` is guarded with `:not([data-<name>])` so `data-*`
+   wins when both are present (conventions §2), while a value selector
+   (`:is([data-status="done"], [status="done"])`) needs no guard — both
+   spellings of one value yield one declaration. Rules that only apply once a tier is driving
+   the element key on the `data-*` spelling alone, which the fallback core
+   mirrors from the bare attribute before any handler runs.
 
    HIDE RULES ARE GATED (D12). Nothing in this file hides content unless a
    tier marker says a script is driving it: `[data-sem-fallback]` (vanilla
@@ -57,15 +65,16 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
   padding: .1rem .6rem; background: var(--sem-surface); }
 :is(sem-profile, .sem-profile)::before { content: attr(id); }
 :is(sem-profile, .sem-profile)[data-label]::before { content: attr(data-label); }
-:is(sem-profile, .sem-profile)[label]::before { content: attr(label); }
+:is(sem-profile, .sem-profile)[label]:not([data-label])::before { content: attr(label); }
 
 /* note */
 :is(sem-note, .sem-note) { border-left: 4px solid var(--sem-note-info); border-radius: 8px;
   padding: .75rem 1rem; margin: 1rem 0; background: var(--sem-surface); }
-:is(sem-note, .sem-note)[data-variant="warning"] { border-color: var(--sem-note-warning); }
-:is(sem-note, .sem-note)[data-variant="tip"]     { border-color: var(--sem-note-tip); }
-:is(sem-note, .sem-note)[data-variant="danger"]  { border-color: var(--sem-note-danger); }
-:is(sem-note, .sem-note)[data-variant]::before { content: attr(data-variant) " · ";
+:is(sem-note, .sem-note):is([data-variant="warning"], [variant="warning"]) { border-color: var(--sem-note-warning); }
+:is(sem-note, .sem-note):is([data-variant="tip"], [variant="tip"])     { border-color: var(--sem-note-tip); }
+:is(sem-note, .sem-note):is([data-variant="danger"], [variant="danger"])  { border-color: var(--sem-note-danger); }
+:is(sem-note, .sem-note)[variant]:not([data-variant])::before { content: attr(variant) " · "; }
+:is(sem-note, .sem-note):is([data-variant], [variant])::before { content: attr(data-variant) " · ";
   font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
   color: var(--sem-muted); display: block; }
 :is(sem-note, .sem-note):is([data-sem-fallback], [data-sem-upgraded])[collapsed] > .sem-note-body { display: none; }
@@ -75,7 +84,7 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
    wrapper has a gutter can push it out with
    --sem-margin-offset: calc(-1 * (var(--sem-margin-width) + 1.5rem)). */
 @media (min-width: 64rem) {
-  :is(sem-note, .sem-note)[data-view-as="margin"] { float: right; clear: right;
+  :is(sem-note, .sem-note):is([data-view-as="margin"], [view-as="margin"]) { float: right; clear: right;
     width: var(--sem-margin-width, 14rem);
     margin: 0 var(--sem-margin-offset, 0) 1rem 1.5rem;
     font-size: .875rem; }
@@ -293,13 +302,15 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
   border-radius: 12px; margin: .5rem 0; }
 :is(sem-views, .sem-views):not([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view)::before { content: attr(data-name);
   display: block; font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); margin-bottom: .25rem; }
+:is(sem-views, .sem-views):not([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view)[name]:not([data-name])::before { content: attr(name); }
 
 /* reveal */
 :is(sem-reveal, .sem-reveal) { margin: 1rem 0; border: 1px solid var(--sem-border);
   border-radius: 12px; background: var(--sem-surface); }
-:is(sem-reveal, .sem-reveal)[data-summary]::before { content: attr(data-summary);
+:is(sem-reveal, .sem-reveal):is([data-summary], [summary])::before { content: attr(data-summary);
   display: block; font-variant-caps: all-small-caps; color: var(--sem-muted);
   padding: .6rem .9rem 0; }
+:is(sem-reveal, .sem-reveal)[summary]:not([data-summary])::before { content: attr(summary); }
 :is(sem-reveal, .sem-reveal) .sem-reveal-body { padding: .5rem .9rem .75rem; }
 :is(sem-reveal, .sem-reveal) details:not([open]) .sem-reveal-body { display: none; }
 /* Once a script has built the <details>, its <summary> carries the
@@ -384,7 +395,7 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 :root[data-sem-mode="focus"] body > :not(:is(sem-enhanced-document, .sem-enhanced-document), script, style, .sem-popover):not(:has(:is(sem-enhanced-document, .sem-enhanced-document))) { display: none; }
 :root[data-sem-mode="focus"] :is(sem-enhanced-document, .sem-enhanced-document) {
   max-width: var(--sem-focus-measure, 42rem); margin-inline: auto; line-height: 1.75; }
-:root[data-sem-mode="focus"] :is(sem-note, .sem-note)[data-view-as="margin"] { float: none; width: auto; margin: 1rem 0; }
+:root[data-sem-mode="focus"] :is(sem-note, .sem-note):is([data-view-as="margin"], [view-as="margin"]) { float: none; width: auto; margin: 1rem 0; }
 
 /* source — rendered/source section wrapper (spec/schema/sem-source.md).
    The fence is display:none until the reader asks for it; the hide rule
@@ -452,11 +463,12 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
   :is(sem-facts, .sem-facts) :is(sem-fact, .sem-fact) { display: block !important; min-height: 0 !important; }
   :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { display: block !important; visibility: visible !important; }
   :is(sem-note, .sem-note)[collapsed] > .sem-note-body { display: block !important; }
-  :is(sem-note, .sem-note)[data-view-as="margin"] { float: none !important; width: auto !important; margin: 1rem 0 !important; }
+  :is(sem-note, .sem-note):is([data-view-as="margin"], [view-as="margin"]) { float: none !important; width: auto !important; margin: 1rem 0 !important; }
   :is(sem-views, .sem-views) :is(sem-view, .sem-view) { display: block !important; border-top: 1px solid var(--sem-border);
     border-radius: 12px; margin: .5rem 0; }
   :is(sem-views, .sem-views) :is(sem-view, .sem-view)::before { content: attr(data-name); display: block;
     font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); margin-bottom: .25rem; }
+  :is(sem-views, .sem-views) :is(sem-view, .sem-view)[name]:not([data-name])::before { content: attr(name); }
   :is(sem-reveal, .sem-reveal) summary { list-style: none; }
   .sem-occluded { color: inherit !important; background: none !important; }
   :is(sem-fact, .sem-fact), :is(sem-step, .sem-step), :is(sem-note, .sem-note), :is(sem-detail, .sem-detail),

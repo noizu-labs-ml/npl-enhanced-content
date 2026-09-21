@@ -1,6 +1,6 @@
 # Schema — `sem-source`
 
-Contract per conventions.md v0.4. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-source.cy.js`. Changes here precede spec changes precede code.
 
 ## Scope semantics
@@ -22,25 +22,24 @@ only, nothing hidden, JS-off).
 
 ## Authoring form
 
-Class form (v0.4):
-
 ```html
-<div class="sem-source" id="s-facts" data-label="Facts — flashcards" data-view-as="html">
+<sem-source id="s-facts" label="Facts — flashcards">
   <h2>Facts — flashcards</h2>
-  <div class="sem-facts" data-view-as="flashcards">…</div>
-</div>
+  <sem-facts view-as="flashcards">…</sem-facts>
+</sem-source>
 ```
 
-Element form: `<sem-source label view-as>` with the same children.
+Class-form alias (conventions Appendix A): `div.sem-source[data-label][data-view-as]` with the same children.
 Parameters are read as `data-<name>` first, then bare `<name>`.
 
 - Children: any SemText content — vocabulary elements, headings, prose.
   `sem-source` must not nest inside another `sem-source` (the inner one's
   markup is part of the outer one's source; the inner toggle is undefined).
-- `data-view-as` (optional): `html` (default) or `source` — the initial
-  mode. **Mutable presentation attribute**: the toggle rewrites it at
-  runtime, and extraction ignores it (spec/extraction.md §5c).
-- `data-label` (optional): a short caption rendered in the chrome.
+- `view-as` (optional): `html` (default) or `source` — the initial
+  mode. **Mutable presentation**: the toggle rewrites `data-view-as` at
+  runtime (the authored bare attribute is left alone), and extraction
+  ignores it (spec/extraction.md §5c).
+- `label` (optional): a short caption rendered in the chrome.
 - `id`, `audience` per the global catalog. `kind` / `tags` are **not**
   honoured on the wrapper: a wrapper carrying them would mint a plain
   record under the minting test, and this element is defined to mint

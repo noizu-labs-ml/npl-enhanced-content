@@ -1,34 +1,38 @@
 # Schema — `sem-progress`
 
-Contract per conventions.md v0.4. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-progress.cy.js`. Changes here precede spec changes
 precede code.
 
-## Authoring form (v0.4 class-based)
+## Authoring form
 
 ```html
-<div class="sem-progress" data-value="0.62" data-label="coverage"></div>
+<sem-progress value="0.62" label="coverage"
+     role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"></sem-progress>
 ```
 
-- `data-value`: **required, canonical unit 0..1.** Out-of-range values
+Class-form alias (conventions Appendix A): `div.sem-progress[data-value][data-label]`.
+
+- `value`: **required, canonical unit 0..1.** Out-of-range values
   clamp for rendering; the raw attr stays untouched (machine readers
   see the author's value, the render shows the clamp).
-- `data-label`: optional; default `progress`.
+- `label`: optional; default `progress`.
 - `id`, `kind`, `tags` global.
-- Status semantics pair naturally: `data-status="done"` renders the
+- Status semantics pair naturally: `status="done"` renders the
   full/accent state (same catalog as `sem-step`).
 
-## Rendered form (v0.4)
+## Rendered form
 
 - Fallback JS builds a meter: track bar + fill width `value*100%` +
   text `label :: 62%` (percentage, rounded).
-- JS-off: **text-only via CSS** — `content: attr(data-label) " :: "
-  attr(data-value)` rendered in the element (no fake bar, no lie).
-- Lit milestone may animate fill transitions; v0.4 static.
+- JS-off: **text-only via CSS** — `content: attr(label) " :: "
+  attr(value)` (either spelling) rendered in the element (no fake bar,
+  no lie).
+- Lit milestone may animate fill transitions; static for now.
 
 ## Events
 
-None (v0.4).
+None.
 
 ## A11y contract
 
@@ -41,4 +45,4 @@ None (v0.4).
 
 - One scalar completion assertion: `label ∈ [0,1]`. Embedded docs use
   it for checklist/pipeline state (pairs with `sem-procedure`
-  statuses); `data-status="done"` ⇔ value 1 by convention.
+  statuses); `status="done"` ⇔ value 1 by convention.

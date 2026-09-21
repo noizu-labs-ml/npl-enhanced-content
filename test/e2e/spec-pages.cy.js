@@ -2,10 +2,13 @@
 //
 // Feature: every HTML spec document is itself a SemText document — it
 //          carries no inline CSS or JS, links the shipped theme + vocabulary
-//          and loads the shipped bundles by <script src>; the vocabulary it
+//          and loads the shipped bundles by <script src>; it is written in
+//          the canonical tag form (custom elements, bare attributes; the
+//          class-form alias appears only inside listings); the vocabulary it
 //          uses mounts on the enhanced tier; the scripts-stripped artifact
 //          reads whole; and extraction is identical JS-off and JS-on
 //   Scenario: the source carries no inline <style> and no inline <script> body
+//   Scenario: the body is pure tag form — no class="sem-… outside sem-code / sem-md listings
 //   Scenario: every linked stylesheet and script resolves (200)
 //   Scenario: the reader and every used element mount on the enhanced tier
 //   Scenario: the .nojs artifact ships no script and hides nothing
@@ -46,19 +49,21 @@ const PAGES = [
     // element → the chrome / marker that proves the enhanced tier mounted it
     mounts: [
       ['#rd', '#rd > .sem-reader-chrome[role="region"]'],
-      ['.sem-source', '.sem-source > .sem-source-chrome[role="group"]'],
-      ['.sem-facts', '.sem-facts > .sem-facts-chrome'],
-      ['.sem-details[data-view-as="quiz"]', '.sem-details .sem-occluded'],
-      ['.sem-views', '.sem-views > .sem-views-tabs[role="tablist"]'],
-      ['.sem-reveal', '.sem-reveal > details > summary'],
-      ['.sem-progress', '.sem-progress > .sem-progress-track'],
-      ['.sem-code', '.sem-code > .sem-code-chrome'],
-      ['.sem-table[data-controls]', '.sem-table th .sem-table-sort'],
-      ['.sem-references', '.sem-references .sem-references-backlinks'],
-      ['.sem-md', '.sem-md[data-sem-fallback], .sem-md[data-sem-upgraded]'],
+      ['sem-source', 'sem-source > .sem-source-chrome[role="group"]'],
+      ['sem-facts', 'sem-facts > .sem-facts-chrome'],
+      ['sem-details[view-as="quiz"]', 'sem-details .sem-occluded'],
+      ['sem-views', 'sem-views > .sem-views-tabs[role="tablist"]'],
+      ['sem-reveal', 'sem-reveal > details > summary'],
+      ['sem-progress', 'sem-progress > .sem-progress-track'],
+      ['sem-code', 'sem-code > .sem-code-chrome'],
+      ['sem-table[controls]', 'sem-table th .sem-table-sort'],
+      ['sem-references', 'sem-references .sem-references-backlinks'],
+      ['sem-md', 'sem-md[data-sem-fallback], sem-md[data-sem-upgraded]'],
+      ['sem-md#md-attributes', 'sem-md#md-attributes > .sem-md-body > table th[scope="col"]'],
+      ['sem-note[collapsed]', 'sem-note[collapsed] > .sem-note-summary'],
     ],
     // zero-JS elements: present and visible in every tier
-    present: ['.sem-note', '.sem-audiences .sem-profile', '.sem-procedure .sem-step', '.sem-properties .sem-property', '.sem-chronology .sem-event'],
+    present: ['sem-note', 'sem-audiences sem-profile', 'sem-procedure sem-step', 'sem-properties sem-property', 'sem-chronology sem-event'],
   },
 ];
 
@@ -85,6 +90,58 @@ PAGES.forEach((page) => {
         expect(inlineScripts(html), 'inline <script> bodies').to.equal(0);
         expect(html).to.match(/<link[^>]+_vocabulary\.css/);
         expect(html).to.match(/<link[^>]+minimal-tech-light\.css/);
+      });
+    });
+
+    it('is written in the tag form: no class="sem-… outside sem-code / sem-md listings', () => {
+      cy.request(page.url).its('body').then((html) => {
+        const body = stripComments(html).replace(/^[\s\S]*<body[^>]*>/i, '');
+        // listings document the alias; everything else on the page is a tag
+        const prose = body.replace(/<sem-code\b[\s\S]*?<\/sem-code>/gi, '').replace(/<sem-md\b[\s\S]*?<\/sem-md>/gi, '');
+        expect(prose, 'class="sem-… in the page body').not.to.match(/class="sem-/);
+        expect(prose, 'data-<parameter> on a vocabulary element').not.to.match(/<sem-[a-z-]+[^>]*\sdata-(?!sem-)/);
+        expect(body).to.match(/<sem-enhanced-document\b/);
+        expect(body).to.match(/<sem-facts id="x-facts" view-as="flashcards"/);
+      });
+    });
+
+    it('authors every table as sem-md with rows identical to the normative Markdown', () => {
+      cy.readFile('spec/conventions.md').then((md) => {
+        cy.request(page.url).its('body').then((html) => {
+          const body = stripComments(html).replace(/^[\s\S]*<body[^>]*>/i, '');
+          // no hand-written <table> outside the one live sem-table example
+          const tables = (body.match(/<table\b/gi) || []).length;
+          expect(tables, 'authored <table> elements').to.equal(1);
+          const unescape = (t) => t.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+          // the live §5 example inside a sem-source is a demo, not a spec table
+          const spec = body.replace(/<sem-source\b[\s\S]*?<\/sem-source>/gi, '');
+          const tableRows = (text) => text.split('\n').map((l) => l.trim()).filter((l) => /^\|/.test(l));
+          // A Markdown table is a run of consecutive `|` lines; it is identified by
+          // its header row (the first line), not by its position in the file.
+          const tablesIn = (text) => {
+            const out = [];
+            let cur = null;
+            text.split('\n').forEach((raw) => {
+              const l = raw.trim();
+              if (/^\|/.test(l)) { (cur = cur || []).push(l); }
+              else if (cur) { out.push(cur); cur = null; }
+            });
+            if (cur) out.push(cur);
+            return out;
+          };
+          // fenced listings in the .md (the sem-md example in §5) are not spec tables.
+          // Arrays, in order of appearance: two tables sharing a header line stay
+          // distinct, and a dropped table changes the count.
+          const mdTables = tablesIn(md.replace(/```[\s\S]*?```/g, ''));
+          const pageTables = [...spec.matchAll(/<sem-md\b[^>]*>([\s\S]*?)<\/sem-md>/gi)].map((m) => tableRows(unescape(m[1])));
+          expect(pageTables.length, 'sem-md tables on the page = GFM tables in the .md').to.equal(mdTables.length);
+          pageTables.forEach((rows, i) => {
+            const want = mdTables[i];
+            expect(rows[0], `table ${i + 1} header row`).to.equal(want[0]);
+            // sorted ARRAYS: multiplicity preserved, order-insensitive, both directions
+            expect([...rows].sort(), `rows under ${rows[0]}`).to.deep.equal([...want].sort());
+          });
+        });
       });
     });
 
@@ -127,8 +184,8 @@ PAGES.forEach((page) => {
 
     it('is a SemText document whose reader and every used element mount on the enhanced tier', () => {
       cy.visit(page.url);
-      cy.get('main.sem-enhanced-document').should('have.length', 1);
-      cy.get('.sem-enhanced-document > :first-child').should('have.class', 'sem-reader');
+      cy.get('sem-enhanced-document[role="main"]').should('have.length', 1);
+      cy.get('sem-enhanced-document > :first-child').should('match', 'sem-reader');
       cy.get('html').should('have.attr', 'data-sem-fallback');
       page.mounts.forEach(([element, proof]) => {
         cy.get(element).should('have.length.greaterThan', 0);
@@ -147,8 +204,10 @@ PAGES.forEach((page) => {
       cy.visit(page.url);
       cy.get('#s-facts [data-act="source"]').click();
       cy.get('#s-facts > .sem-source-fence code').invoke('text').then((t) => {
-        expect(t).to.contain('class="sem-facts" id="x-facts" data-view-as="flashcards"');
-        expect(t).not.to.match(/sem-facts-chrome|sem-current|data-sem-fallback/);
+        expect(t).to.contain('<sem-facts id="x-facts" view-as="flashcards"');
+        expect(t).to.contain('<statement>');
+        // as authored: no mirrored data-* twin, no chrome, no runtime state
+        expect(t).not.to.match(/sem-facts-chrome|sem-current|data-sem-fallback|data-view-as/);
       });
       cy.get('#s-facts [data-act="html"]').click();
       cy.get('#s-facts > .sem-source-fence').should('not.be.visible');
@@ -163,10 +222,24 @@ PAGES.forEach((page) => {
         cy.visit(page.nojs);
         cy.get('[data-sem-fallback], [data-sem-upgraded]').should('not.exist');
         cy.get('.sem-reader-chrome, .sem-source-chrome, .sem-source-fence, .sem-facts-chrome, .sem-views-tabs, .sem-code-chrome, .sem-table-chrome, .sem-occluded').should('not.exist');
-        ['.sem-note-body', '.sem-conclusion', '.sem-distractor', '.sem-view', '.sem-reveal', '.sem-highlight', '.sem-step', '.sem-property', '.sem-event', '.sem-code pre', '.sem-table table', '.sem-reference', '[data-audience]', '.sem-md']
+        ['sem-note[collapsed]', 'sem-fact conclusion', 'sem-distractor', 'sem-view', 'sem-reveal', 'highlight', 'sem-step', 'sem-property', 'sem-event', 'sem-code pre', 'sem-table table', 'sem-reference', '[audience]', 'sem-md']
           .forEach((sel) => cy.get(sel).should('have.length.greaterThan', 0).each(($el) => cy.wrap($el).should('be.visible')));
         // the source wrapper is transparent: its rendered children are in flow
-        cy.get('.sem-source > :not(.sem-source-chrome, .sem-source-fence, script)').each(($el) => cy.wrap($el).should('be.visible'));
+        cy.get('sem-source > :not(.sem-source-chrome, .sem-source-fence, script)').each(($el) => cy.wrap($el).should('be.visible'));
+        // no script mirrored anything: the bare spelling alone renders the JS-off captions
+        cy.get('sem-view[name]:not([data-name])').should('have.length.greaterThan', 0);
+        cy.get('sem-reveal[summary]:not([data-summary])').should('have.length.greaterThan', 0);
+        cy.get('sem-note[variant="warning"]:not([data-variant])').should('have.length.greaterThan', 0);
+        // data-* wins over the bare spelling when both are present, in every bare-spelling caption
+        cy.get('sem-profile[label]:not([data-label])').should('have.length.greaterThan', 0);
+        cy.document().then((doc) => {
+          const p = doc.createElement('sem-profile');
+          p.setAttribute('label', 'Bare');
+          p.setAttribute('data-label', 'Data');
+          doc.querySelector('sem-audiences').appendChild(p);
+          expect(doc.defaultView.getComputedStyle(p, '::before').content).to.equal('"Data"');
+          p.remove();
+        });
       });
     });
 

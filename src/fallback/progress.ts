@@ -7,8 +7,10 @@
  * test/e2e/sem-progress.cy.js.
  */
 
+import { sel } from '../shared/sel.js';
+
 export function enhanceProgress(scope: ParentNode): void {
-  scope.querySelectorAll('.sem-progress[data-value]').forEach((p) => {
+  scope.querySelectorAll(sel('progress') + '[data-value]').forEach((p) => {
     const raw = parseFloat(p.getAttribute('data-value') as string);
     const v = Math.min(1, Math.max(0, isNaN(raw) ? 0 : raw));
     const label = p.getAttribute('data-label') || 'progress';
