@@ -1,6 +1,6 @@
 # Schema — `sem-references` / `sem-reference`
 
-Contract per conventions.md v0.4. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-references.cy.js`. Changes here precede spec changes
 precede code.
 
@@ -14,31 +14,29 @@ backlinks and hover previews are reading affordances that need JS.
 
 ## Authoring form
 
-Class form (v0.4):
-
 ```html
-<p>Rotate refresh tokens per use<a href="#r-rfc" class="cite">[1]</a>.</p>
+<p>Rotate refresh tokens per use<a href="#r-rfc">[1]</a>.</p>
 
-<div class="sem-references" id="refs" data-kind="bibliography" role="list">
-  <div class="sem-reference" id="r-rfc" role="listitem"
-       data-href="https://www.rfc-editor.org/rfc/rfc6749" data-cite="RFC 6749">
+<sem-references id="refs" kind="bibliography" role="list">
+  <sem-reference id="r-rfc" role="listitem"
+       href="https://www.rfc-editor.org/rfc/rfc6749" cite="RFC 6749">
     The OAuth 2.0 Authorization Framework, §10.4.
-  </div>
-  <div class="sem-reference" id="r-note" role="listitem">
+  </sem-reference>
+  <sem-reference id="r-note" role="listitem">
     A footnote with no external target.
-  </div>
-</div>
+  </sem-reference>
+</sem-references>
 ```
 
-Element form: `<sem-references kind>` › `<sem-reference id href cite>`.
+Class-form alias (conventions Appendix A): `div.sem-references[data-kind]` › `div.sem-reference[id][data-href][data-cite]`.
 Parameters are read as `data-<name>` first, then bare `<name>`.
 
-- `data-kind`: `footnotes` | `bibliography` (free token; these two get
+- `kind`: `footnotes` | `bibliography` (free token; these two get
   distinct styling). Optional.
 - `sem-reference`:
   - `id` (required): the citation target.
-  - `data-href` (optional): external location.
-  - `data-cite` (optional): short citation label (`RFC 6749`).
+  - `href` (optional): external location.
+  - `cite` (optional): short citation label (`RFC 6749`).
   - Text = the reference's description.
 - Inline citation: any `<a href="#<reference-id>">` outside the references
   container. Its text is the author's (`[1]`, `¹`, a name) — the vocabulary

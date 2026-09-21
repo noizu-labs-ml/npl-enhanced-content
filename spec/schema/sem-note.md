@@ -1,19 +1,23 @@
 # Schema — `sem-note`
 
-Contract per conventions.md v0.3. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-note.cy.js`. Changes here precede spec changes precede code.
 
-## Authoring form (canonical — no preprocessing layer)
+## Authoring form
 
 ```html
 <sem-note variant="warning">body HTML</sem-note>
 <sem-note variant="tip" collapsed>body HTML</sem-note>
 ```
 
+Class-form alias (conventions Appendix A): `div.sem-note[data-variant]` › `div.sem-note-body`, same `collapsed`
+attribute. In the tag form the body is the element's own content; the tier
+that hides a collapsed body wraps it in `.sem-note-body` first.
+
 - `variant`: `info` (default) | `warning` | `tip` | `danger`.
-- `collapsed`: boolean attr — body wraps in native `<details>`; summary =
-  first text line, max 60 chars.
-- `view-as="margin"` (`data-view-as` in class form): presentation only. On
+- `collapsed`: boolean attr — the body is hidden behind a ten-word teaser
+  (`.sem-note-summary`) that expands on click.
+- `view-as="margin"`: presentation only. On
   wide viewports the note floats right beside the prose that follows it
   (width `--sem-margin-width`, default 14rem), inside the container; a
   document whose column has a gutter pushes it out with
@@ -46,8 +50,9 @@ None.
 ## A11y contract
 
 - `role="note"` present in DOM (authored or set on upgrade).
-- Variant by accent + `data-variant`; no aria-live.
-- Collapsed form native `<details>` — keyboard operable.
+- Variant by accent + the `variant` attribute; no aria-live.
+- Collapsed form: the teaser is a click target; the deep-link resolver
+  opens it for a hash inside.
 
 ## Machine contract
 

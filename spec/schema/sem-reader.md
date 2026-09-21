@@ -1,6 +1,6 @@
 # Schema — `sem-reader`
 
-Contract per conventions.md v0.4. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-reader.cy.js`. Changes here precede spec changes precede code.
 
 ## Scope semantics
@@ -19,22 +19,19 @@ One per document, a direct child of the root wrapper.
 
 ## Authoring form
 
-Class form (v0.4):
-
 ```html
-<div class="sem-reader" data-controls="outline,progress,focus,type,color,print,audience"
-     data-outline-depth="3"></div>
+<sem-reader controls="outline,progress,focus,type,color,print,audience" outline-depth="3"></sem-reader>
 ```
 
-Element form: `<sem-reader controls outline-depth>`. Parameters are read as
-`data-<name>` first, then bare `<name>`.
+Class-form alias (conventions Appendix A): `div.sem-reader[data-controls][data-outline-depth]`. Parameters are read
+as `data-<name>` first, then bare `<name>`.
 
-- `data-controls` (optional): comma flags, in any order, from `outline`,
+- `controls` (optional): comma flags, in any order, from `outline`,
   `progress`, `focus`, `type`, `color`, `print`, `audience`. Default
   `outline,progress`. Unknown flags (including `theme`, reserved for R/W3)
   are ignored. Controls render in the **canonical order** above, not in
   attribute order.
-- `data-outline-depth` (optional): deepest heading level in the generated
+- `outline-depth` (optional): deepest heading level in the generated
   outline, `2`–`6`; default `3`. The outline always starts at `h2` — `h1`
   is the document title.
 - Child (optional): an authored `<nav aria-label="Contents">`. When

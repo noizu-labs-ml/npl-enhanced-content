@@ -12,9 +12,10 @@
  */
 
 import { deriveSummary, normalize } from '../shared/summary.js';
+import { sel } from '../shared/sel.js';
 
 export function enhanceReveal(scope: ParentNode): void {
-  scope.querySelectorAll('.sem-reveal').forEach((r) => {
+  scope.querySelectorAll(sel('reveal')).forEach((r) => {
     const d = document.createElement('details');
     if (!r.hasAttribute('collapsed')) d.setAttribute('open', '');
     const s = document.createElement('summary');

@@ -6,10 +6,12 @@
  * asserted by test/e2e/sem-properties.cy.js.
  */
 
+import { sel } from '../shared/sel.js';
+
 export function enhanceProperties(scope: ParentNode): void {
-  scope.querySelectorAll('.sem-properties').forEach((root) => {
+  scope.querySelectorAll(sel('properties')).forEach((root) => {
     const seen: Record<string, boolean> = {};
-    root.querySelectorAll('.sem-property[data-key]').forEach((p) => {
+    root.querySelectorAll(sel('property') + '[data-key]').forEach((p) => {
       const k = p.getAttribute('data-key') as string;
       if (seen[k]) console.warn('sem-properties: duplicate data-key "' + k + '"');
       seen[k] = true;

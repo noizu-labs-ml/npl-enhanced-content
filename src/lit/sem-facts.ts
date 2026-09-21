@@ -1,8 +1,13 @@
 import { SemElement } from './base.js';
 import { randomFor, shuffle } from '../shared/rng.js';
+import { param } from '../shared/attr.js';
+import { sel, part } from '../shared/sel.js';
+
+const FACT = ':scope > ' + sel('fact');
+const CONCLUSION = part('conclusion');
 
 /**
- * sem-facts — Lit upgrade of the v0.4 class-based fact collection.
+ * sem-facts — Lit upgrade of the fact collection (tag form or class alias).
  * Light DOM per PRD §4 rule 5; Lit owns the flashcard/quiz behavior,
  * not the markup. Handoff contract comes from SemElement. Chrome meter is
  * .sem-facts-meter — never .sem-progress (D1: that class is the
@@ -18,8 +23,10 @@ export class SemFacts extends SemElement {
 
   updated(): void {
     if (this.#wired) return;
-    const view = this.getAttribute('data-view-as') || 'list';
-    const items = Array.from(this.querySelectorAll(':scope > .sem-fact'));
+    const view = param(this, 'view-as') || 'list';
+    // the vocabulary's gated hide rules key on the data-* spelling
+    if (view !== 'list') this.afterParse('view-as', () => this.setAttribute('data-view-as', view));
+    const items = Array.from(this.querySelectorAll(FACT));
     if (items.length === 0) {
       // element upgraded pre-parse: children aren't there yet at first update
       this.#awaitItems();
@@ -43,11 +50,11 @@ export class SemFacts extends SemElement {
     const meter = chrome.querySelector('.sem-facts-meter')!;
 
     const optionsFor = (item: Element) => {
-      const correct = item.querySelector('.sem-conclusion');
-      const distractors = Array.from(item.querySelectorAll('.sem-distractor'));
+      const correct = item.querySelector(CONCLUSION);
+      const distractors = Array.from(item.querySelectorAll(sel('distractor')));
       const others = items
         .filter((f) => f !== item)
-        .map((f) => f.querySelector('.sem-conclusion'))
+        .map((f) => f.querySelector(CONCLUSION))
         .filter(Boolean) as Element[];
       const opts = distractors.concat(others).slice(0, 3).concat([correct!]);
       return shuffle(opts, rand).map((el) => ({
@@ -113,7 +120,7 @@ export class SemFacts extends SemElement {
   #awaitItems(): void {
     if (this.#awaitingItems) return;
     this.#awaitingItems = true;
-    void this.whenChildrenReady(':scope > .sem-fact').then(() => {
+    void this.whenChildrenReady(FACT).then(() => {
       this.#awaitingItems = false;
       this.requestUpdate();
     });

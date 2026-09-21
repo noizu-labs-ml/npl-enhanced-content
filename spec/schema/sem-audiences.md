@@ -1,6 +1,6 @@
 # Schema — `sem-audiences` / `sem-profile` and the `audience` qualifier
 
-Contract per conventions.md v0.4 §2 (global attribute catalog). BDD source
+Contract per conventions.md v0.5 §2 (global attribute catalog). BDD source
 of truth for `test/e2e/sem-audiences.cy.js`. Changes here precede spec
 changes precede code. Closes the forward declaration in
 `spec/extraction.md` §7.
@@ -17,21 +17,21 @@ Declaration block — document metadata, one per document, anywhere inside the
 root wrapper (conventionally next to `sem-agent`):
 
 ```html
-<div class="sem-audiences">
-  <div class="sem-profile" id="reader" data-label="Reader"></div>
-  <div class="sem-profile" id="operator" data-label="Operator" data-implies="reader"></div>
-</div>
+<sem-audiences>
+  <sem-profile id="reader" label="Reader"></sem-profile>
+  <sem-profile id="operator" label="Operator" implies="reader"></sem-profile>
+</sem-audiences>
 ```
 
-Element form: `<sem-audiences><sem-profile id label implies>`. Both forms
-are accepted; parameters are read as `data-<name>` first, then bare
-`<name>`.
+Class-form alias (conventions Appendix A): `div.sem-audiences` › `div.sem-profile[id][data-label][data-implies]`.
+Both forms are accepted; parameters are read as `data-<name>` first, then
+bare `<name>`.
 
 - `id` (required, document-unique): the profile token that `audience`
   specs and the hash parameter refer to. It is an ordinary element id, so it
   shares the document's id space.
-- `data-label` (optional): human label; the id renders when absent.
-- `data-implies` (optional, comma list): profiles this one satisfies as
+- `label` (optional): human label; the id renders when absent.
+- `implies` (optional, comma list): profiles this one satisfies as
   well. `operator implies reader` means an operator sees reader content.
   Closure is transitive; a cycle is an authoring error, warned once and
   broken.
@@ -39,10 +39,13 @@ are accepted; parameters are read as `data-<name>` first, then bare
 Qualifier — on any `sem-*` element or plain semantic HTML:
 
 ```html
-<div class="sem-note" data-audience="operator">Operators only.</div>
-<div class="sem-note" data-audience="!operator">Everyone except operators.</div>
+<sem-note audience="operator">Operators only.</sem-note>
+<sem-note audience="!operator">Everyone except operators.</sem-note>
 <p data-audience="reader, operator">Either profile.</p>
 ```
+
+(`data-audience` is the alias spelling on a `sem-*` element, and the
+required spelling on a standard HTML element — conventions §2.)
 
 Spec grammar (`src/shared/audience.ts` is the reference):
 
@@ -66,8 +69,8 @@ Resolved in this order; first hit wins:
 
 1. hash parameter `sem-audience` (`#…&sem-audience=operator`, composed via
    `src/shared/state.ts` so the sem-views bare segment survives beside it);
-2. `data-audience` on the root wrapper (`.sem-enhanced-document`) — the
-   author's default;
+2. `audience` / `data-audience` on the root wrapper
+   (`sem-enhanced-document`) — the author's default;
 3. `data-audience` on `<html>` — the same default, spelled on the document.
 
 The fallback reflects the resolved profile onto `<html data-audience>` and

@@ -1,6 +1,6 @@
 # Schema — `sem-code`
 
-Contract per conventions.md v0.4. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-code.cy.js`. Changes here precede spec changes precede code.
 
 ## Scope semantics
@@ -13,32 +13,29 @@ inside `<code>` is content, never normalised.
 
 ## Authoring form
 
-Class form (v0.4):
-
 ```html
-<div class="sem-code" id="c-rotate" data-lang="ts" data-filename="src/rotate.ts"
-     data-mark="2,4-5" data-controls="copy,wrap">
+<sem-code id="c-rotate" lang="ts" filename="src/rotate.ts" mark="2,4-5" controls="copy,wrap">
 <pre><code>export function rotate(pair: Pair): Pair {
   const next = mint();
   retire(pair.refresh);
   return next;
 }</code></pre>
-</div>
+</sem-code>
 ```
 
-Element form: `<sem-code lang filename mark wrap controls>` with the same
-`<pre><code>` child. Parameters are read as `data-<name>` first, then bare
-`<name>`.
+Class-form alias (conventions Appendix A): `div.sem-code[data-lang][data-filename][data-mark][data-wrap][data-controls]`
+with the same `<pre><code>` child. Parameters are read as `data-<name>`
+first, then bare `<name>`.
 
 - Child: **exactly one `<pre>`**, conventionally wrapping one `<code>`. The
   listing is the `<code>`'s text (the `<pre>`'s when no `<code>` is
   authored).
-- `data-lang` (optional): language token, rendered as a badge.
-- `data-filename` (optional): provenance label.
-- `data-mark` (optional): emphasised lines, 1-based, comma list of numbers
+- `lang` (optional): language token, rendered as a badge.
+- `filename` (optional): provenance label.
+- `mark` (optional): emphasised lines, 1-based, comma list of numbers
   and `a-b` ranges (`2,4-5`). Out-of-range entries are ignored.
-- `data-wrap` / `wrap` (boolean, optional): start with soft-wrapped lines.
-- `data-controls` (optional): comma flags from `copy`, `wrap`; default
+- `wrap` (boolean, optional): start with soft-wrapped lines.
+- `controls` (optional): comma flags from `copy`, `wrap`; default
   `copy`. Unknown flags are ignored.
 - `id`, `kind`, `tags`, `audience` per the global catalog.
 
@@ -48,7 +45,7 @@ Element form: `<sem-code lang filename mark wrap controls>` with the same
 
 - `.sem-code-chrome` is inserted as the element's **first child**: filename
   (`.sem-code-filename`), language badge (`.sem-code-lang`), then the
-  control buttons in `data-controls` order — `button[data-act="copy"]` and
+  control buttons in `controls` order — `button[data-act="copy"]` and
   `button[data-act="wrap"][aria-pressed]` — and a `.sem-code-status` live
   region.
 - Lines are wrapped: every line of the listing becomes
@@ -77,7 +74,7 @@ Element form: `<sem-code lang filename mark wrap controls>` with the same
 ### JS-off
 
 - Plain `<pre>`; the filename renders as a caption through
-  `::before { content: attr(data-filename) }`; the language badge likewise.
+  `::before { content: attr(filename) }` (either spelling); the language badge likewise.
 - No chrome, no line marks (they are runtime spans), nothing hidden.
 - Print: `white-space: pre-wrap` so long lines do not clip.
 

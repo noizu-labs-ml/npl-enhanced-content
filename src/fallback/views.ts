@@ -16,13 +16,16 @@
  */
 
 import { bareSegments, setBare } from '../shared/state.js';
+import { sel } from '../shared/sel.js';
+
+const VIEW = sel('view');
 
 export function enhanceViews(scope: ParentNode): void {
-  scope.querySelectorAll<HTMLElement>('.sem-views[id]').forEach((root) => {
-    const views = Array.from(root.querySelectorAll<HTMLElement>('.sem-view'));
+  scope.querySelectorAll<HTMLElement>(sel('views') + '[id]').forEach((root) => {
+    const views = Array.from(root.querySelectorAll<HTMLElement>(VIEW));
     if (!views.length) return;
     root.setAttribute('data-sem-fallback', '');
-    if (!root.querySelector('.sem-view[data-active]')) views[0].setAttribute('data-active', '');
+    if (!root.querySelector(VIEW + '[data-active]')) views[0].setAttribute('data-active', '');
     let active = Math.max(0, views.findIndex((v) => v.hasAttribute('data-active')));
 
     const bar = document.createElement('div');

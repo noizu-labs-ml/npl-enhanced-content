@@ -1,6 +1,6 @@
 # Schema — `sem-details` / `sem-detail` / `highlight`
 
-Contract per conventions.md v0.4. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-details.cy.js`. Changes here precede spec changes
 precede code.
 
@@ -10,8 +10,8 @@ Three candidate readings existed for `sem-details`; this schema adopts the
 **PRD §5 catalog reading — prose passage with occludable content**:
 
 1. **Adopted**: container of `sem-detail` prose passages whose
-   `span.sem-highlight` children mark cloze/recall targets;
-   `data-view-as="quiz"` occludes them (the universal `<highlight>` cloze,
+   `<highlight>` children mark cloze/recall targets;
+   `view-as="quiz"` occludes them (the universal `<highlight>` cloze,
    PRD §4 rule 3). The demo prototype (web/demo/index.html) already implements
    this — M3 formalizes it.
 2. *Rejected — collapsible detail block*: `sem-reveal` already owns
@@ -26,31 +26,33 @@ Three candidate readings existed for `sem-details`; this schema adopts the
 `sem-reveal` (block disclosure) and `sem-views` (perspective switching):
 same prose, different interaction model per view.
 
-## Authoring form (v0.4 class-based)
+## Authoring form
 
 ```html
-<div class="sem-details" id="oidc-details" data-view-as="quiz">
-  <div class="sem-detail">
+<sem-details id="oidc-details" view-as="quiz">
+  <sem-detail>
     The OIDC token travels in the
-    <span class="sem-highlight">Authorization</span> header.
-  </div>
-</div>
+    <highlight>Authorization</highlight> header.
+  </sem-detail>
+</sem-details>
 ```
 
-- `data-view-as`: `plain` (default) | `quiz`. Display-only sugar — the
+Class-form alias (conventions Appendix A): `div.sem-details[data-view-as]` › `div.sem-detail` › `span.sem-highlight`.
+
+- `view-as`: `plain` (default) | `quiz`. Display-only sugar — the
   prose is identical; quiz view additionally occludes highlights.
-- `.sem-detail`: one prose passage; any inline content, `span.sem-highlight`
-  marks a recall target. `[[cloze]]` sugar maps to `span.sem-highlight`.
+- `sem-detail`: one prose passage; any inline content, `<highlight>`
+  marks a recall target. `[[cloze]]` sugar maps to `<highlight>`.
 - `id` on the container; `kind`, `tags` global. Facts may also carry
-  `sem-highlight` prompts (schema sem-facts), but occlusion wiring for
+  `<highlight>` prompts (schema sem-facts), but occlusion wiring for
   prose lives here.
 
-## Rendered form (v0.4)
+## Rendered form
 
-- `plain` (default): highlights render emphasized (`.sem-highlight` —
+- `plain` (default): highlights render emphasized (`:is(highlight, .sem-highlight)` —
   accent-tinted, non-italic-safe inline emphasis). No JS needed, no
   fallback marker.
-- `quiz`: fallback JS replaces each `.sem-highlight` with an occluded
+- `quiz`: fallback JS replaces each highlight with an occluded
   span (`.sem-occluded`): text masked (background chip, transparent
   color), `role="button"`, `tabindex="0"`, `aria-label="reveal"`.
   Container gets `data-sem-fallback`; hide/mask rules key off it.

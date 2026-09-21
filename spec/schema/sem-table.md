@@ -1,6 +1,6 @@
 # Schema — `sem-table`
 
-Contract per conventions.md v0.4. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-table.cy.js`. Changes here precede spec changes precede code.
 
 ## Scope semantics
@@ -16,10 +16,8 @@ sorts.
 
 ## Authoring form
 
-Class form (v0.4):
-
 ```html
-<div class="sem-table" id="t-tokens" data-kind="comparison" data-controls="sort,filter" data-sticky>
+<sem-table id="t-tokens" kind="comparison" controls="sort,filter" sticky>
   <table>
     <caption>Token lifetimes</caption>
     <thead><tr><th scope="col">Token</th><th scope="col">Lifetime</th><th scope="col">Rotates</th></tr></thead>
@@ -28,11 +26,13 @@ Class form (v0.4):
       <tr><td>refresh</td><td data-value="2592000">30 days</td><td>yes</td></tr>
     </tbody>
   </table>
-</div>
+</sem-table>
 ```
 
-Element form: `<sem-table controls sticky>` around the same `<table>`.
-Parameters are read as `data-<name>` first, then bare `<name>`.
+Class-form alias (conventions Appendix A): `div.sem-table[data-kind][data-controls][data-sticky]` around the same
+`<table>`. Parameters are read as `data-<name>` first, then bare `<name>`.
+`td[data-value]` is a sort key on a plain HTML cell, not a vocabulary
+parameter — it is `data-*` in both forms.
 
 - Child: **exactly one `<table>`** with a `<thead>` whose header row uses
   `<th scope="col">`, one `<tbody>`, and optionally a `<caption>`. A table
@@ -41,9 +41,9 @@ Parameters are read as `data-<name>` first, then bare `<name>`.
 - `data-value` (optional, on `<td>`): the sort key for that cell when the
   visible text is not the key (`15 min` vs `900`). Two numeric keys compare
   numerically; anything else compares as text, locale-aware.
-- `data-controls` (optional): comma flags from `sort`, `filter`; default
+- `controls` (optional): comma flags from `sort`, `filter`; default
   `sort`. Unknown flags are ignored.
-- `data-sticky` / `sticky` (boolean, optional): the header row sticks to
+- `sticky` (boolean, optional): the header row sticks to
   the top of the scroll container. CSS only — works with scripts off.
 - `id`, `kind`, `tags`, `audience` per the global catalog. `kind="comparison"`
   — on the `sem-table` or on a plain `<table>` — additionally sticks the
