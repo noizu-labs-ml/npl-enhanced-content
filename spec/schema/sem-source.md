@@ -56,23 +56,26 @@ in the reading bundle.
 
 **Core fallback (`dist/semtext-fallback.js`) — snapshot, registered
 FIRST.** Before any other handler runs, every `sem-source` receives a
-child `<script type="text/plain" class="sem-source-raw">` holding the
-element's `innerHTML` as it stood at that moment — the section before
-chrome, before line spans, before any `hidden`. This is the parser's
-serialisation, not the file's bytes: attribute quoting and order,
-self-closing forms and entity spelling follow the DOM, so the fence is
-"the document as parsed", never a byte-for-byte copy of the source file. Idempotent: an
-element that already has a snapshot is left alone; a wrapper nested in
-another wrapper is skipped with a console warning (unsupported); the
-reading bundle gives it no chrome either, so the outer wrapper owns it. The
-snapshot is inert (text/plain), invisible, and skipped by extraction.
-Lit elements claim `data-sem-upgraded` at parse time (anti-flash gating
-needs it) and the fence strips that marker when it renders; every other
-attribute a Lit element writes is deferred until the parse has finished
+child `<template class="sem-source-raw">` whose content is a DOM clone of
+the element's children as they stood at that moment — the section before
+chrome, before line spans, before any `hidden`. The snapshot is nodes,
+never a string: nothing is serialised and re-parsed, so there is no HTML
+sink and no `</script` escaping; the fence text is a serialisation of the
+clone (`template.innerHTML` read). It is the parser's serialisation, not
+the file's bytes: attribute quoting and order, self-closing forms and
+entity spelling follow the DOM, so the fence is "the document as parsed",
+never a byte-for-byte copy of the source file. Idempotent: an element that
+already has a snapshot is left alone; a wrapper nested in another wrapper
+is skipped with a console warning (unsupported); the reading bundle gives
+it no chrome either, so the outer wrapper owns it. Template content is not
+part of the document tree, so it is inert, invisible, unreachable by CSS
+and `querySelectorAll`, and skipped by extraction. Lit elements claim
+`data-sem-upgraded` at parse time (anti-flash gating needs it) and the
+fence strips that marker when it renders; every other attribute a Lit
+element writes is deferred until the parse has finished
 (`SemElement.afterParse`), i.e. after the snapshot, so the fence is the
-authored markup. Every `<\*/script` sequence gains one
-backslash in the snapshot and loses exactly one on read, so a real end
-tag and an authored `<\/script` both round-trip unambiguously.
+authored markup. An authored `<\/script` sequence and a real end tag both
+round-trip as written, because nothing is escaped.
 
 **Reading bundle (`dist/semtext-reading.js`) — chrome and fence.**
 

@@ -7,8 +7,19 @@
 
 /** Remove HTML comments. A comment is prose about markup, not markup: a
  *  literal `<script` inside one must neither be stripped nor counted. */
-export function stripComments(html) {
-  return html.replace(/<!--[\s\S]*?-->/g, '');
+export function stripComments(html, label = 'page') {
+  // Repeat until stable: a single pass can leave a fresh `<!--` behind
+  // (`<!<!---->--` → `<!--`), which would then hide a `<script` from the
+  // stripper below. An opener that never closes is a malformed page: the
+  // build fails loudly (naming the page) rather than emitting a truncated
+  // or comment-swallowed artifact — callers pass `label` for that message.
+  let prev;
+  do {
+    prev = html;
+    html = html.replace(/<!--[\s\S]*?-->/g, '');
+  } while (html !== prev);
+  if (/<!--/.test(html)) throw new Error(`stripComments: unclosed <!-- in ${label}`);
+  return html;
 }
 
 /** Remove whole <script> elements. A JS string cannot contain a literal
@@ -22,8 +33,8 @@ export function stripComments(html) {
  *  once ate a spec page's <head>). An opener with no end tag is a build
  *  failure, not something to truncate around: the input is malformed and
  *  the artifact would be missing everything after it. */
-export function stripScripts(html) {
-  let out = stripComments(html);
+export function stripScripts(html, label = 'page') {
+  let out = stripComments(html, label);
   // Removing one pair can reveal another, so run to a fixed point rather
   // than single-pass.
   let prev;

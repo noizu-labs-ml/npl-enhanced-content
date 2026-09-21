@@ -177,7 +177,7 @@ both present; authors pick one per fact.
    wired with `data-sem-fallback` and skips elements a Lit wrapper already
    upgraded. Documents without those elements need not carry it. The
    core's first handler snapshots every `sem-source` wrapper's markup
-   (an inert `script.sem-source-raw[type="text/plain"]` child) before
+   (a DOM clone in an inert `template.sem-source-raw` child) before
    any other handler runs; the reading bundle renders that copy. The
    `sem-md` renderer is a third vanilla script, `dist/semtext-md.js` (≤8 KB
    raw, marker `<!-- sem:inline md -->`, global `SemTextMd`), under the

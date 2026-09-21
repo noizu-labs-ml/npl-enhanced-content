@@ -115,7 +115,7 @@ const CHROME_CLASSES = [
   'sem-table-status',
   'sem-table-filter',
   // sem-source: the toggle chrome, the derived fence (and the sem-code in
-  // it) and the core's text/plain snapshot are never content
+  // it) and the core's template snapshot are never content
   'sem-source-chrome',
   'sem-source-fence',
   'sem-source-raw',

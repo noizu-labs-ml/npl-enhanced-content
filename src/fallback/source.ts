@@ -3,9 +3,12 @@
  *
  * Registered FIRST in the handler list: the snapshot must see the subtree
  * before any handler adds chrome, wraps lines or sets `hidden`. The copy
- * lives in an inert `script.sem-source-raw[type="text/plain"]` child so
- * the reading bundle (a separate IIFE) can read it; extraction skips it.
- * Idempotent. Spec: spec/schema/sem-source.md.
+ * is a DOM CLONE of the children placed in an inert
+ * `template.sem-source-raw` child — never a string: nothing is serialised
+ * and re-parsed, so there is no HTML sink and no `</script` escaping. The
+ * reading bundle (a separate IIFE) reads the template's content; template
+ * content is not part of the document tree, so extraction, CSS and the
+ * no-JS artifact never see it. Idempotent. Spec: spec/schema/sem-source.md.
  */
 
 import { warn } from '../shared/audience.js';
@@ -14,15 +17,14 @@ const SOURCE = ':is(sem-source, .sem-source)';
 
 export function enhanceSource(scope: ParentNode): void {
   scope.querySelectorAll(SOURCE).forEach((el) => {
-    if (el.querySelector(':scope > script.sem-source-raw')) return;
+    if (el.querySelector(':scope > template.sem-source-raw')) return;
     // Nested wrappers are unsupported: the inner markup is part of the outer's.
     if (el.parentElement?.closest(SOURCE)) { warn('sem-source: nested wrapper ignored'); return; }
-    const s = document.createElement('script');
-    s.type = 'text/plain';
-    s.className = 'sem-source-raw';
-    // Add one backslash to every `<\*/script` (zero included): the reader
-    // removes exactly one, so an authored `<\/script` survives the round trip.
-    s.textContent = el.innerHTML.replace(/<(\\*)\/script/gi, (_m, bs: string) => '<' + bs + '\\/script');
-    el.insertBefore(s, el.firstChild);
+    const t = document.createElement('template');
+    t.className = 'sem-source-raw';
+    // Iterates the LIVE childNodes list: only clones are appended, so the
+    // list never mutates mid-walk. Never switch this to moving the originals.
+    el.childNodes.forEach((n) => t.content.appendChild(n.cloneNode(true)));
+    el.insertBefore(t, el.firstChild);
   });
 }

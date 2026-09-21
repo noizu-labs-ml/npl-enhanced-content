@@ -67,7 +67,7 @@ function assertSource(url, id, marker, authored) {
       expect(t).to.match(/^\S/);
     });
     // every rendered child other than the chrome and fence is hidden
-    cy.get(`${id} > :not(.sem-source-chrome, .sem-source-fence, script)`).each(($c) => {
+    cy.get(`${id} > :not(.sem-source-chrome, .sem-source-fence, script, template)`).each(($c) => {
       cy.wrap($c).should('not.be.visible');
     });
   });
@@ -89,7 +89,7 @@ function assertSource(url, id, marker, authored) {
     cy.get(`${id} [data-act="html"]`).click();
     cy.get(id).should('have.attr', 'data-view-as', 'html');
     cy.get(`${id} > .sem-source-fence`).should('not.be.visible');
-    cy.get(`${id} > :not(.sem-source-chrome, .sem-source-fence, script)`).first().should('be.visible');
+    cy.get(`${id} > :not(.sem-source-chrome, .sem-source-fence, script, template)`).first().should('be.visible');
     cy.get(`${id} [data-act="source"]`).click();
     cy.get(`${id} > .sem-source-fence`).should('have.length', 1);
     cy.get(`${id} .sem-source-fence .sem-code`).should('have.length', 1);
@@ -102,10 +102,12 @@ function assertSource(url, id, marker, authored) {
     cy.focused().should('have.attr', 'data-act', 'html');
   });
 
-  it('the snapshot is an inert text/plain script, present once', () => {
-    cy.get(`${id} > script.sem-source-raw`).should('have.length', 1)
-      .and('have.attr', 'type', 'text/plain');
-    cy.get(`${id} > script.sem-source-raw`).invoke('text').should('contain', authored);
+  it('the snapshot is an inert template of cloned nodes, present once', () => {
+    cy.get(`${id} > template.sem-source-raw`).should('have.length', 1);
+    // template content is not in the document tree: serialise it to check.
+    cy.get(`${id} > template.sem-source-raw`).then(($t) => {
+      expect($t[0].innerHTML).to.contain(authored);
+    });
   });
 }
 
@@ -167,8 +169,8 @@ describe('sem-source', () => {
           }, true);
         }
       });
-      cy.get('#s-outer > script.sem-source-raw').should('have.length', 1);
-      cy.get('#s-inner > script.sem-source-raw').should('not.exist');
+      cy.get('#s-outer > template.sem-source-raw').should('have.length', 1);
+      cy.get('#s-inner > template.sem-source-raw').should('not.exist');
       cy.get('@warn').should('have.been.calledWithMatch', /sem-source: nested/);
       cy.get('#s-inner > .sem-source-chrome').should('not.exist');
       cy.get('#s-outer > .sem-source-chrome [data-act="source"]').click();

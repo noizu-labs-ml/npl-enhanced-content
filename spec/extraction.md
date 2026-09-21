@@ -99,7 +99,7 @@ interface SemRecord {
    `.sem-reader-outline`, `.sem-reader-progress`, `.sem-table-chrome`,
    `.sem-table-status`, `.sem-table-filter`, `.sem-source-chrome`,
    `.sem-source-fence` (the derived markup fence, `sem-code` inside it
-   included), `.sem-source-raw` (the core's `text/plain` snapshot),
+   included), `.sem-source-raw` (the core's inert `template` snapshot),
    `.sem-md-chrome`, `.sem-md-body` (the rendering — a projection of
    `source`, never content of its own), `.sem-md-raw` (the source fence,
    the `sem-code` inside it included; §4 reads `source` from it on
