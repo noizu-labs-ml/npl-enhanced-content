@@ -12,10 +12,27 @@
 //   Scenario: INVARIANT — records are identical JS-off and JS-on, before and after interaction
 //   Scenario: the page renders at 1280 and 390 without horizontal overflow (screenshots)
 
-import { extractRecords } from '../../src/extract/records';
-
 const clone = (v) => JSON.parse(JSON.stringify(v));
-const records = () => cy.document().then((doc) => clone(extractRecords(doc)));
+// Records come from the SHIPPED extractor (dist/semtext-extract.js), which
+// the spec page loads itself. The .nojs artifact carries no script, so the
+// same bundle is injected after load there — extraction never writes, and
+// the vocabulary's tier markers are set by other bundles, not this one.
+const loadExtractor = () =>
+  cy.window().then((win) => {
+    if (win.SemTextExtract) return;
+    return new Cypress.Promise((ok, fail) => {
+      const s = win.document.createElement('script');
+      s.src = '/semtext-extract.js';
+      s.onload = ok;
+      s.onerror = () => fail(new Error('dist/semtext-extract.js did not load'));
+      win.document.head.appendChild(s);
+    });
+  });
+const records = () => loadExtractor().then(() => cy.window().then((win) => clone(win.SemTextExtract.extractRecords(win.document))));
+
+// GitHub-style slug of a Markdown heading, so the .md outline anchors and the
+// HTML ids can be compared mechanically.
+const slug = (h) => h.toLowerCase().replace(/[`*]/g, '').replace(/[^\p{L}\p{N} -]/gu, '').trim().replace(/ /g, '-');
 
 const PAGES = [
   {
@@ -42,7 +59,11 @@ const PAGES = [
 ];
 
 const stripComments = (html) => html.replace(/<!--[\s\S]*?-->/g, '');
-const inlineStyles = (html) => (stripComments(html).match(/<style[\s>]/gi) || []).length;
+// A <style> element or a style= attribute on a real tag both count.
+const inlineStyles = (html) => {
+  const h = stripComments(html);
+  return (h.match(/<style[\s>]/gi) || []).length + (h.match(/<[a-z][^>]*\sstyle\s*=/gi) || []).length;
+};
 const inlineScripts = (html) =>
   (stripComments(html).match(/<script\b[^>]*>/gi) || []).filter((tag) => !/\bsrc\s*=/.test(tag) && !/application\/ld\+json/.test(tag)).length;
 const assetUrls = (html, pageUrl) => {
@@ -64,6 +85,35 @@ PAGES.forEach((page) => {
       });
     });
 
+    it('inlineStyles() counts a style attribute as inline CSS', () => {
+      expect(inlineStyles('<p style="color:red">x</p>')).to.equal(1);
+      expect(inlineStyles('<!-- <style> --><p>x</p>')).to.equal(0);
+    });
+
+    it('carries an id for every heading of the normative Markdown', () => {
+      cy.readFile('spec/conventions.md').then((md) => {
+        const headings = [...md.matchAll(/^#{2,3} (.+)$/gm)].map((m) => m[1]).filter((h) => h !== 'Outline');
+        expect(headings.length, 'markdown headings').to.be.greaterThan(12);
+        cy.request(page.url).its('body').then((html) => {
+          headings.forEach((h) => {
+            expect(html, `heading "${h}"`).to.contain(`id="${slug(h)}"`);
+          });
+        });
+      });
+    });
+
+    it('is shipped to dist/spec/ with rewritten asset paths and a themes copy', () => {
+      cy.request(page.url).its('body').then((html) => {
+        expect(html).not.to.contain('../dist/');
+        expect(html).to.match(/<script src="\.\.\/semtext-fallback\.js">/);
+        expect(html).to.match(/<link rel="stylesheet" href="\.\.\/themes\/_vocabulary\.css">/);
+        // escaped examples are text, not tags: the rewrite must not touch them
+        expect(html).to.contain('href="semtext/themes/minimal-tech-light.css"');
+      });
+      cy.request('/themes/_vocabulary.css').its('status').should('eq', 200);
+      cy.request('/spec/spec.css').its('status').should('eq', 200);
+    });
+
     it('every linked stylesheet and script resolves', () => {
       cy.request(page.url).its('body').then((html) => {
         const urls = assetUrls(html, page.url);
@@ -74,7 +124,7 @@ PAGES.forEach((page) => {
 
     it('is a SemText document whose reader and every used element mount on the enhanced tier', () => {
       cy.visit(page.url);
-      cy.get('.sem-enhanced-document').should('have.length', 1);
+      cy.get('main.sem-enhanced-document').should('have.length', 1);
       cy.get('.sem-enhanced-document > :first-child').should('have.class', 'sem-reader');
       cy.get('html').should('have.attr', 'data-sem-fallback');
       page.mounts.forEach(([element, proof]) => {
@@ -86,6 +136,8 @@ PAGES.forEach((page) => {
       cy.get('#rd .sem-reader-toggle').click();
       cy.get('#rd nav[aria-label="Contents"] a[href="#0-model"]').should('exist');
       cy.get('#rd nav[aria-label="Contents"] a[href="#10-open-questions"]').should('exist');
+      // depth 4: the element entries are in the outline
+      cy.get('#rd nav[aria-label="Contents"] a[href="#e-source"]').should('exist');
     });
 
     it('sem-source shows the markup as written, for the example it wraps', () => {
