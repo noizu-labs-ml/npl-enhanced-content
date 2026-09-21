@@ -263,29 +263,10 @@ section { padding-block: var(--pg-space) 0; }
    cursor:pointer on .sem-fact there, so nothing is needed for list view. */
 #try-deck .sem-fact { scroll-margin-top: 2rem; }
 
-/* --- Lit tier: element-scoped rules -------------------------------------- */
-/* themes/_vocabulary.css targets `.sem-note` (the class form). The custom
-   element is `<sem-note>`, a different selector, so the page restates the
-   same rules against the tag. Hide rules stay gated on :defined and on the
-   [data-sem-upgraded] handoff marker — with the bundle absent, a collapsed
-   note's body must remain readable. */
-
-sem-note {
-  display: block; border-left: 4px solid var(--sem-note-info);
-  border-radius: 8px; padding: 0.85rem 1.1rem; margin: 1rem 0;
-  background: var(--sem-surface);
-}
-sem-note[data-variant="warning"] { border-color: var(--sem-note-warning); }
-sem-note[data-variant="tip"]     { border-color: var(--sem-note-tip); }
-sem-note[data-variant="danger"]  { border-color: var(--sem-note-danger); }
-sem-note[data-variant]::before {
-  content: attr(data-variant); display: block;
-  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--sem-muted); font-weight: 600;
-}
-sem-note:defined:not([data-sem-upgraded])[collapsed] > :not(.sem-note-summary) { display: none; }
-sem-note[data-sem-upgraded][collapsed] > .sem-note-body { display: none; }
-sem-note .sem-note-summary { cursor: pointer; color: var(--sem-accent); }
+/* --- Lit tier ------------------------------------------------------------- */
+/* themes/_vocabulary.css styles both authoring forms from one rule
+   (`:is(sem-note, .sem-note)`, D10), so the `<sem-note>` elements below need
+   no page-local restatement. */
 
 /* --- vocabulary adjustments ---------------------------------------------- */
 /* The reveal fallback moves the body into a native <details> and synthesises
@@ -655,7 +636,7 @@ sem-note .sem-note-summary { cursor: pointer; color: var(--sem-accent); }
       <div class="sem-properties" data-kind="artifacts" role="group"
            aria-label="Shipped artifacts">
         <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · 24.4 KB minified, 8.9 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · 7.1 KB minified, 2.6 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · 11.9 KB minified, 4.3 KB gzipped</span></div>
         <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · 6.6 KB minified, 2.5 KB gzipped</span></div>
         <div class="sem-property" data-key="_vocabulary.css" role="definition" aria-label="_vocabulary.css"><span>Structure for the <code>sem-*</code> classes. Reads <code>--sem-*</code> tokens, declares none.</span></div>
         <div class="sem-property" data-key="theme css" role="definition" aria-label="theme css"><span>Token values only, plus a <code>prefers-color-scheme</code> block. A new theme is a copy with new values.</span></div>
