@@ -22,6 +22,7 @@ semtext/
 │       ├── sem-reader.md
 │       ├── sem-references.md
 │       ├── sem-reveal.md
+│       ├── sem-source.md
 │       ├── sem-table.md
 │       └── sem-views.md
 ├── src/
@@ -35,6 +36,7 @@ semtext/
 │   │   ├── sem-properties.ts
 │   │   ├── sem-reader.ts              # thin wrappers over src/reading/* (R/W2)
 │   │   ├── sem-references.ts
+│   │   ├── sem-source.ts              # rendered/source wrapper (W2.1)
 │   │   └── sem-table.ts
 │   ├── fallback/                    # Vanilla tier — NO Lit dependency → dist/semtext-fallback.js
 │   │   ├── index.ts
@@ -45,6 +47,7 @@ semtext/
 │   │   ├── progress.ts
 │   │   ├── properties.ts
 │   │   ├── reveal.ts
+│   │   ├── source.ts                  # sem-source markup snapshot (registered FIRST)
 │   │   ├── target.ts                  # deep-link resolver + print disclosure (registered last)
 │   │   └── views.ts
 │   ├── reading/                     # Prose-reading tier — NO Lit → dist/semtext-reading.js (R/W1+W2)
@@ -53,6 +56,7 @@ semtext/
 │   │   ├── glossary.ts                # sem-properties view-as=glossary previews
 │   │   ├── reader.ts                  # sem-reader outline/progress/focus/type/colour/print/audience (R/W2)
 │   │   ├── references.ts              # citation previews, backlinks
+│   │   ├── source.ts                  # sem-source chrome + sem-code fence (W2.1)
 │   │   └── table.ts                   # sem-table sort/filter, source-index stamp (R/W2)
 │   ├── extract/                     # Record extraction → dist/semtext-extract.js
 │   │   ├── index.ts
@@ -97,6 +101,7 @@ semtext/
 │   │   ├── sem-reader.cy.js
 │   │   ├── sem-references.cy.js
 │   │   ├── sem-reveal.cy.js
+│   │   ├── sem-source.cy.js
 │   │   ├── sem-table.cy.js
 │   │   ├── sem-views.cy.js
 │   │   └── standalone-lit.cy.js

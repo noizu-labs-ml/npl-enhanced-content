@@ -7,8 +7,8 @@ NPL-enhanced XHTML (see [PROJ-SCHEMA.md](PROJ-SCHEMA.md), layout in
 ## Core entities
 
 - **Enhanced document** — root `sem-enhanced-document` (v0.4: `div.sem-enhanced-document`); metadata children (`agent`, …) + semantic HTML + `sem-*` vocabulary.
-- **Element↔class mapping** — v0.3 custom elements map mechanically to `div/span.sem-*` classes with `data-*` parameters (sem-agent, sem-note, sem-facts, sem-fact, sem-distractor, sem-details/detail, sem-highlight, …, sem-code, sem-references, sem-reader, sem-table).
-- **Extraction** — 20 minting types; `sem-reader` is chrome (skipped whole); `sem-table` rows return in authored order via `data-sem-source-index` (the one DOM-reorder exception).
+- **Element↔class mapping** — v0.3 custom elements map mechanically to `div/span.sem-*` classes with `data-*` parameters (sem-agent, sem-note, sem-facts, sem-fact, sem-distractor, sem-details/detail, sem-highlight, …, sem-code, sem-references, sem-reader, sem-table, sem-source).
+- **Extraction** — 20 minting types; `sem-reader` is chrome (skipped whole); `sem-source` is transparent (children extract as if unwrapped); `sem-table` rows return in authored order via `data-sem-source-index` (the one DOM-reorder exception).
 - **Global attributes** — `kind`, `tags`, `view-as` (unknown ⇒ list fallback), `status` (`done|current|todo|blocked|pass|fail`), `controls`, `collapsed`, `id`, `data-*`. Attributes canonical; inline notation is sugar.
 
 ## sem-note schema

@@ -86,15 +86,16 @@ extraction restores authored order.
 |---|---|---|
 | **W0 Foundations** | D10 + D12 repaid; print stylesheet; `prefers-reduced-motion`; `src/fallback/target.ts` deep-link resolver (opens reveal/note/view/card, `.sem-target`, `beforeprint` disclosure); **audience close-out** (`spec/schema/sem-audiences.md`, `src/fallback/audience.ts`, `data-audience` canonical in `lit/base.ts`, extraction populates `audience`, extraction.md §7 closed); `sem-note view-as="margin"`; `src/shared/summary.ts` shared by render + extraction; budgets below | ✅ merged (#10) |
 | W1 Prose | `sem-chronology`/`sem-event` (CSS-only), `sem-code`, `sem-references`/`sem-reference`, glossary mode, `src/shared/popover.ts`, reading bundle + `<!-- sem:inline reading -->` | ✅ merged (#12) |
-| W2 Chrome + data | `sem-reader` (outline, progress, focus, type, color, print, audience controls; theme deferred), `sem-table` (sort/filter, source-index ordering), site dogfoods `sem-reader` + shows a live `sem-table`; explicit `[data-color-mode="dark"]` token block | 🔶 in PR (`feature/reading-experience-w2`) |
+| W2 Chrome + data | `sem-reader` (outline, progress, focus, type, color, print, audience controls; theme deferred), `sem-table` (sort/filter, source-index ordering), site dogfoods `sem-reader` + shows a live `sem-table`; explicit `[data-color-mode="dark"]` token block | ✅ merged (#14) |
+| **W2.1 Source** | `sem-source` rendered/source section wrapper (core snapshot + reading-bundle fence over `sem-code`); every `web/demo/index.html` section wrapped; site example | 🔶 in PR (`feature/demo-source-toggle`) |
 | W3 Themes | reader `theme` control, dark tokens, retire planned `sem-themes` | ⬜ after Track T |
 
 **Size budgets (raw minified, enforced by `npm run build:strict`)**
 
 | Artifact | W0 | W1 | W2 | W3 |
 |---|---|---|---|---|
-| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | 12 | 12 |
-| `semtext-reading.js` | — | **8** (measured 6.8) | **17** (measured 16.6; planned 14 — see W2 decisions) | 17.5 |
+| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **12.5** (measured 12.2 after W2.1 — see W2.1 decisions) | 12.5 |
+| `semtext-reading.js` | — | **8** (measured 6.8) | **19** (measured 16.6 at W2, 18.6 after W2.1 — see W2 and W2.1 decisions) | 19.5 |
 | `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9) | 57 |
 | `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1) | 12 |
 
@@ -106,6 +107,23 @@ per-element enhance functions — one behaviour implementation, idempotent
 on DOM state so either script may run first. `sem-chronology` mints no
 custom element (CSS-only, pattern `sem-procedure`). `sem-code.source` is
 extracted verbatim (second recorded exception to normalised text).
+
+**W2.1 decisions (recorded).** `sem-source` is user-directed follow-on to
+W2: a per-section wrapper that flips between rendered content and the
+literal authored markup. The snapshot has to happen in the **core**
+fallback (registered first) because the fence must show the document as
+written and every other handler mutates the subtree on DOMContentLoaded;
+that pass costs **0.3 KB** and takes the core from 11.9 to 12.2 KB, so
+the core budget is 12.5 KB. The chrome, dedent and fence (built once,
+through the existing `sem-code` enhancer) cost **1.9 KB** in the reading
+bundle (16.7 → 18.6 KB); budget 19 KB. The snapshot is an inert
+`text/plain` script child rather than a WeakMap because the reading
+bundle is a sibling IIFE and cannot share module state with the core.
+`sem-source` is the vocabulary's first **transparent** element in
+extraction (§3 rule 8): not skipped like `sem-reader`, not a record —
+its children extract as if it were absent, which is what keeps
+`test/e2e/extraction.cy.js`'s positional record list valid after every
+demo section was wrapped.
 
 **W2 decisions (recorded).** The reading bundle measured **16.6 KB**
 against the planned 14 KB, so the budget is set at 17 KB rather than the

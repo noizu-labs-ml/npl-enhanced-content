@@ -28,6 +28,7 @@ vocabulary for the Lit milestone; the class mapping below is mechanical.
 | `<sem-code lang filename mark wrap controls>` › `<pre><code>` | `div.sem-code[data-lang][data-filename][data-mark][data-controls]` › `<pre><code>` |
 | `<sem-references kind>` / `<sem-reference id href cite>` | `div.sem-references[data-kind]` › `div.sem-reference[id][data-href][data-cite]`; citations are plain `<a href="#id">` |
 | `<sem-properties view-as="glossary">` | `div.sem-properties[data-view-as="glossary"]` › `div.sem-property[id][data-key]`; term anchors `<a href="#id">`, `<dfn>` optional |
+| `<sem-source label view-as="html\|source">` › any content | `div.sem-source[data-label][data-view-as]` › any content; transparent wrapper, mints nothing |
 | `<sem-reader controls outline-depth>` › optional `<nav aria-label="Contents">` | `div.sem-reader[data-controls][data-outline-depth]` › same optional nav; chrome, mints nothing |
 | `<sem-table controls sticky>` › `<table>` | `div.sem-table[data-controls][data-sticky]` › authored `<table>` (`<th scope="col">`, `td[data-value]` sort keys) |
 
@@ -168,7 +169,10 @@ both present; authors pick one per fact.
    second vanilla script, `dist/semtext-reading.js` (≤17 KB raw, marker
    `<!-- sem:inline reading -->`), under the same rules; it marks what it
    wired with `data-sem-fallback` and skips elements a Lit wrapper already
-   upgraded. Documents without those elements need not carry it.
+   upgraded. Documents without those elements need not carry it. The
+   core's first handler snapshots every `sem-source` wrapper's markup
+   (an inert `script.sem-source-raw[type="text/plain"]` child) before
+   any other handler runs; the reading bundle renders that copy.
 2. `semtext/semtext.js` (Lit 3, IIFE) upgrades elements in place when reachable;
    component implementations supersede fallback behaviors. Handoff contract:
    fallback sets `data-sem-fallback` on elements it enhanced; components
@@ -334,6 +338,19 @@ Reading bundle adds `.sem-code-chrome` (filename, lang, buttons, status
 region), wraps lines (`span|mark.sem-code-line`, text byte-identical),
 `tabindex="0"` on an overflowing `<pre>`. JS-off: plain `<pre>` with a
 CSS caption. Extraction keeps `source` **verbatim**.
+
+**sem-source** — a section that flips between rendered and authored markup.
+**Normative: `spec/schema/sem-source.md`.**
+```html
+<div class="sem-source" data-label="Facts — flashcards">
+  <h2>Facts — flashcards</h2>
+  <div class="sem-facts" data-view-as="flashcards">…</div>
+</div>
+```
+Chrome `Rendered | Source` (`aria-pressed`); `data-view-as="source"` shows
+the literal markup in a `sem-code` (copy, wrap) built from the core's
+pre-enhancement snapshot. Transparent to extraction; JS-off: the rendered
+children, nothing else.
 
 **sem-references / sem-reference** — numbered citable entries.
 **Normative: `spec/schema/sem-references.md`.**

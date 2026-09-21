@@ -77,7 +77,8 @@ interface SemRecord {
    `sem-progress`, (R/W1) `sem-chronology`, `sem-event`, `sem-code`,
    `sem-references`, `sem-reference`, and (R/W2) `sem-table`. Inline
    citations and glossary term anchors are plain `<a>` and mint nothing;
-   `sem-reader` is chrome and mints nothing (rule 7).
+   `sem-reader` is chrome and mints nothing (rule 7); `sem-source` is a
+   transparent wrapper and mints nothing (rule 8).
 2. **Parts are not records.** `.sem-statement`, `.sem-conclusion`,
    `.sem-distractor`, `.sem-highlight`, `.sem-note-body`, and the
    `.sem-agent-*` children are fields of their owning record, never entries
@@ -95,7 +96,9 @@ interface SemRecord {
    `.sem-references-link`, `.sem-popover` (the reading bundle's preview
    surface, appended to `<body>`), `.sem-reader-chrome`,
    `.sem-reader-outline`, `.sem-reader-progress`, `.sem-table-chrome`,
-   `.sem-table-status`, `.sem-table-filter`, and the
+   `.sem-table-status`, `.sem-table-filter`, `.sem-source-chrome`,
+   `.sem-source-fence` (the derived markup fence, `sem-code` inside it
+   included), `.sem-source-raw` (the core's `text/plain` snapshot), and the
    `<summary>` the reveal fallback synthesizes inside its `<details>`. An
    authored `<details>`/`<summary>` elsewhere in the document is ordinary
    content and is not skipped.
@@ -113,6 +116,12 @@ interface SemRecord {
    (rule 3) and the reader are the two authored elements in the skip set.
    The reader assigns runtime ids (`sem-h-<n>`) only to headings that mint
    no record, so the outline cannot change a record's `id`.
+8. **`sem-source` is transparent.** The wrapper (spec/schema/sem-source.md)
+   mints nothing — it is exempt from the plain-record minting test even
+   when it carries `kind` / `tags` — and extraction descends into its
+   children as if it were not there, so a document extracts identically
+   with and without it and identically in `html` and `source` mode. Its
+   chrome, fence and snapshot are skipped whole (rule 4).
 
 ## 4. Per-element field mapping
 
@@ -395,7 +404,7 @@ attributes describe initial *display* state and are rewritten at runtime:
 
 | Attribute | Who mutates it | Why it is excluded |
 | :-- | :-- | :-- |
-| `data-view-as` | author only (today) | Presentation parameter by definition (conventions §2: "identity unchanged"). Including it would make `E(V(D, m)) ≠ E(D)` by construction and contradict every schema's "`view-as` never changes extraction". |
+| `data-view-as` | author; the `sem-source` toggle rewrites it (`html` / `source`) | Presentation parameter by definition (conventions §2: "identity unchanged"). Including it would make `E(V(D, m)) ≠ E(D)` by construction and contradict every schema's "`view-as` never changes extraction". |
 | `data-active` | fallback normalizes it onto the first view; every tab click moves it | Reports which tab a reader is looking at. Not a property of the document. |
 | `collapsed` | fallback removes it when the reader expands a note | Initial disclosure state. Not a property of the document. |
 
