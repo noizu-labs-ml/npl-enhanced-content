@@ -54,9 +54,13 @@ function place(anchor: Element, b: HTMLElement): void {
   const h = b.offsetHeight;
   let left = r.left;
   if (left + w > window.innerWidth - 8) left = Math.max(8, window.innerWidth - w - 8);
+  // The top bound clears a pinned sem-reader bar (`--sem-reader-offset`,
+  // set on <html> by reading/reader.ts) so a preview flipped above its
+  // anchor never slides underneath the chrome.
+  const min = 8 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sem-reader-offset')) || 0);
   let top = r.bottom + 6;
-  if (top + h > window.innerHeight - 8 && r.top - h - 6 > 0) top = r.top - h - 6;
-  top = Math.max(8, Math.min(top, window.innerHeight - h - 8));
+  if (top + h > window.innerHeight - 8 && r.top - h - 6 >= min) top = r.top - h - 6;
+  top = Math.max(min, Math.min(top, window.innerHeight - h - 8));
   b.style.left = left + 'px';
   b.style.top = top + 'px';
 }

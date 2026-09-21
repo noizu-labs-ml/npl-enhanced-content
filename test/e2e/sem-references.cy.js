@@ -84,8 +84,15 @@ function assertReferences(url, marker) {
       const win = $p[0].ownerDocument.defaultView;
       const a = win.document.getElementById('cite-rfc-1').getBoundingClientRect();
       const p = $p[0].getBoundingClientRect();
-      expect(p.top, 'popover sits under its anchor after a scroll').to.be.closeTo(a.bottom + 6, 2);
-      expect(p.top).to.be.at.least(0);
+      // Attached to the anchor: below it, or above it when the viewport has
+      // no room below (font metrics and viewport height decide which — CI
+      // renders the anchor lower than a local run does).
+      const below = Math.abs(p.top - (a.bottom + 6)) <= 2;
+      const above = Math.abs(p.bottom - (a.top - 6)) <= 2;
+      expect(below || above, 'popover is attached to its anchor after a scroll').to.equal(true);
+      // …and never under a pinned reader bar
+      const bar = parseFloat(win.getComputedStyle(win.document.documentElement).getPropertyValue('--sem-reader-offset')) || 0;
+      expect(p.top).to.be.at.least(bar);
       expect(p.bottom).to.be.at.most(win.innerHeight);
     });
     cy.get('.sem-popover').should('be.visible');
