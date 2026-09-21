@@ -202,6 +202,18 @@
     <p id="s-initial-p">Plain prose inside a wrapper that opens on its own markup.</p>
   </div>
 
+  <!-- sem-source fidelity fixtures (watcher notes on #17): prose that looks
+       like a tier marker, a preformatted block whose own indentation must
+       survive the section dedent, and a raw-text child holding the escape
+       sequence. Plain HTML only: mints nothing. -->
+  <div class="sem-source" id="s-fidelity" data-label="Fidelity fixtures">
+    <p id="s-fid-text">The marker text data-sem-fallback="" is prose here, not an attribute.</p>
+    <pre id="s-fid-pre"><code>top
+      keep six
+  keep two</code></pre>
+    <script type="text/plain" id="s-fid-raw">before <\/script after</script>
+  </div>
+
 </div>
 </body>
 </html>
