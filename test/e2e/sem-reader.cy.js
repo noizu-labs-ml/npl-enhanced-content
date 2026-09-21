@@ -166,6 +166,45 @@ function assertReader(url, marker) {
     cy.get('#rd .sem-reader-audience').should('have.value', 'dev');
   });
 
+  it('an outline link into a closed reveal or an inactive view opens it (deep-link resolver)', () => {
+    cy.get('#rv-keys details').should('not.have.attr', 'open');
+    cy.get('#rd .sem-reader-toggle').click();
+    cy.get('#rd nav[aria-label="Contents"] a[href="#rv-h"]').click();
+    cy.get('#rv-keys details').should('have.attr', 'open');
+    cy.get('#rv-h').should('be.visible');
+    cy.get('#rd .sem-reader-toggle').click();
+    cy.get('#rd nav[aria-label="Contents"] a[href="#vw-h"]').click();
+    cy.get('#clients .sem-view[data-name="Native"]').should('have.attr', 'data-active');
+    cy.get('#vw-h').should('be.visible');
+  });
+
+  it('persisted preferences apply only for the controls this reader offers', () => {
+    cy.visit(url, {
+      onBeforeLoad(win) {
+        win.localStorage.setItem('sem-reader:type', 'l');
+        win.localStorage.setItem('sem-reader:mode', 'focus');
+        win.localStorage.setItem('sem-reader:color', 'dark');
+        // window capture runs before the bundle's document-level DOMContentLoaded listener
+        win.addEventListener('DOMContentLoaded', () => {
+          win.document.getElementById('rd').setAttribute('data-controls', 'outline,progress,color');
+        }, true);
+      }
+    });
+    cy.get('#rd .sem-reader-color').should('have.value', 'dark');
+    cy.get('html').should('have.attr', 'data-color-mode', 'dark');
+    cy.get('html').should('not.have.attr', 'data-sem-type');
+    cy.get('html').should('not.have.attr', 'data-sem-mode');
+    cy.get('#rd [data-act="focus"], #rd [data-act="type-up"]').should('not.exist');
+  });
+
+  it('publishes the bar height as --sem-reader-offset so targets and sticky headers clear it', () => {
+    cy.get('html').then(($h) => {
+      const v = parseFloat($h[0].style.getPropertyValue('--sem-reader-offset'));
+      const bar = $h[0].querySelector('#rd .sem-reader-chrome').getBoundingClientRect().height;
+      expect(v).to.be.greaterThan(bar);
+    });
+  });
+
   it('binds no global single-key shortcut', () => {
     cy.get('body').type('f');
     cy.get('html').should('not.have.attr', 'data-sem-mode');
@@ -182,22 +221,24 @@ describe('sem-reader', () => {
       cy.get('#rd nav.sem-reader-outline[aria-label="Contents"]').should('have.length', 1);
       cy.get('.sem-enhanced-document h2, .sem-enhanced-document h3').then(($h) => {
         cy.get('#rd nav.sem-reader-outline a').should('have.length', $h.length);
-        $h.each((_, h) => expect(h.id).to.match(/^sem-h-\d+$/));
+        // authored ids (rv-h, vw-h) are kept; the rest get runtime ids
+        $h.each((_, h) => expect(h.id).to.match(/^(sem-h-\d+|rv-h|vw-h)$/));
       });
       cy.get('#rd nav.sem-reader-outline a').each(($a) => {
         cy.get($a.attr('href')).should('exist');
       });
       cy.get('#rd nav.sem-reader-outline a').first().should('have.text', 'Glossary');
-      // every heading here is an h2: the list is flat, nothing nests under its predecessor
-      cy.get('#rd nav.sem-reader-outline a').then(($a) => {
-        cy.get('#rd nav.sem-reader-outline > ol > li > a').should('have.length', $a.length);
+      // sibling h2s stay flat; the two h3s under "Disclosures" nest in one sub-list
+      cy.get('.sem-enhanced-document h2').then(($h2) => {
+        cy.get('#rd nav.sem-reader-outline > ol > li > a').should('have.length', $h2.length);
       });
-      cy.get('#rd nav.sem-reader-outline ol ol').should('not.exist');
+      cy.get('#rd nav.sem-reader-outline ol ol').should('have.length', 1);
+      cy.get('#rd nav.sem-reader-outline ol ol a').should('have.length', 2);
     });
 
     it('aria-current="location" follows the scroll position, one link at a time', () => {
       cy.get('#rd .sem-reader-toggle').click();
-      cy.get('#rd nav.sem-reader-outline a').last().then(($a) => {
+      cy.get('#rd nav.sem-reader-outline a').contains('Tables').then(($a) => {
         cy.get($a.attr('href')).scrollIntoView();
       });
       cy.get('#rd nav.sem-reader-outline a[aria-current="location"]').should('have.length', 1);
@@ -219,11 +260,24 @@ describe('sem-reader', () => {
       cy.get('#rd > nav#toc').should('exist');
       cy.get('#rd .sem-reader-outline').should('not.exist');
       cy.get('#rd .sem-reader-toggle').should('have.attr', 'aria-controls', 'toc');
-      cy.get('#toc a').should('have.length', 3);
+      cy.get('#toc a').should('have.length', 5);
       cy.get('#toc a').first().should('have.attr', 'href', '#glossary-h');
       // no runtime ids were minted on headings the nav did not name
       cy.get('sem-enhanced-document h2:not([id])').should('have.length.greaterThan', 0);
       cy.get('[id^="sem-h-"]').should('not.exist');
+    });
+
+    it('releases its listeners and observers when the element is removed', () => {
+      cy.window().then((win) => {
+        const fill = win.document.querySelector('#rd .sem-reader-progress-fill');
+        win.document.getElementById('rd').remove();
+        expect(win.document.documentElement.style.getPropertyValue('--sem-reader-offset')).to.equal('');
+        win.scrollTo(0, win.document.documentElement.scrollHeight);
+        return cy.wrap(fill);
+      }).then(($fill) => {
+        cy.wait(100);
+        cy.wrap($fill).should(($f) => expect($f[0].style.width).to.equal('0%'));
+      });
     });
   });
 
@@ -239,7 +293,7 @@ describe('sem-reader', () => {
       cy.visit('/demo/reading-lit.nojs.html');
       cy.get('.sem-reader-chrome, .sem-reader-toggle').should('not.exist');
       cy.get('#toc').should('be.visible');
-      cy.get('#toc a').should('have.length', 3);
+      cy.get('#toc a').should('have.length', 5);
       cy.get('#toc a').first().click();
       cy.location('hash').should('equal', '#glossary-h');
     });

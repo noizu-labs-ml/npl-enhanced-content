@@ -165,7 +165,7 @@ both present; authors pick one per fact.
    required for full baseline interactivity.** Prose-reading behaviours
    (sem-code chrome, reference / glossary previews, backlinks, and from
    R/W2 the `sem-reader` chrome and `sem-table` sort / filter) ship in a
-   second vanilla script, `dist/semtext-reading.js` (≤16 KB raw, marker
+   second vanilla script, `dist/semtext-reading.js` (≤17 KB raw, marker
    `<!-- sem:inline reading -->`), under the same rules; it marks what it
    wired with `data-sem-fallback` and skips elements a Lit wrapper already
    upgraded. Documents without those elements need not carry it.

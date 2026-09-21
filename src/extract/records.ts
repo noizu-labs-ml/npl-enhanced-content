@@ -520,18 +520,20 @@ function buildTable(el: Element): Payload {
   // `data-sem-source-index` before its sort ever moves a row, so the
   // stamp — not DOM order — is the order (spec/extraction.md §5, recorded
   // exception). `hidden` (filter) is never consulted.
-  const table = el.querySelector('table');
+  // Scoped selectors throughout: a table nested inside a cell is that
+  // cell's content, and only the first header row names the columns.
+  const table = el.querySelector(':scope > table');
   const cellText = function (c: Element): string { return norm(collectText(c, proseSkip)); };
   const columns: string[] = [];
   const rows: string[][] = [];
   let caption = '';
   if (table) {
-    const cap = table.querySelector('caption');
+    const cap = table.querySelector(':scope > caption');
     if (cap) caption = norm(collectText(cap, isChrome));
-    const heads = table.querySelectorAll('thead th, thead td');
+    const heads = table.querySelectorAll(':scope > thead > tr:first-of-type > :is(th, td)');
     for (let i = 0; i < heads.length; i++) columns.push(cellText(heads[i]));
     const trs: { tr: Element; idx: number }[] = [];
-    const list = table.querySelectorAll('tbody tr');
+    const list = table.querySelectorAll(':scope > tbody > tr');
     for (let i = 0; i < list.length; i++) {
       const raw = list[i].getAttribute('data-sem-source-index');
       const idx = raw === null ? NaN : parseInt(raw, 10);

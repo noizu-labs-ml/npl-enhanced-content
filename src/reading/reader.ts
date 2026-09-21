@@ -10,6 +10,14 @@
  * localStorage (fail-open) for the per-reader preferences. It never sets
  * `hidden` and never touches content — extraction skips it entirely.
  *
+ * Outline links are plain `#id` anchors: the fallback core's deep-link
+ * resolver (fallback/target.ts) answers the resulting `hashchange` and
+ * opens whatever encloses the heading (closed reveal, inactive view), so
+ * the outline stays complete instead of skipping hidden headings.
+ *
+ * Every listener and observer is recorded and released by
+ * `disposeReaderElement`, which the Lit wrapper calls on disconnect.
+ *
  * No global key bindings: `Escape` is handled only while focus is inside
  * the reader (spec a11y contract). Written tight: this is the largest
  * module in a budgeted bundle.
@@ -23,13 +31,15 @@ export const READER = ':is(sem-reader, .sem-reader)';
 const WRAPPER = ':is(sem-enhanced-document, .sem-enhanced-document)';
 const SIZES = ['s', 'm', 'l'];
 const KEY = 'sem-reader:';
-/** Attribute on <html> per persisted preference. */
-const ATTR: Record<string, string> = {
-  mode: 'data-sem-mode', type: 'data-sem-type', font: 'data-sem-font', color: 'data-color-mode',
+/** preference → [attribute on <html>, control that owns it]. */
+const PREF: Record<string, [string, string]> = {
+  mode: ['data-sem-mode', 'focus'], type: ['data-sem-type', 'type'],
+  font: ['data-sem-font', 'type'], color: ['data-color-mode', 'color'],
 };
 /** Two-state toggles: act → [preference, on-value]. */
 const TOGGLE: Record<string, [string, string]> = { focus: ['mode', 'focus'], font: ['font', 'serif'] };
 
+const disposers = new WeakMap<Element, (() => void)[]>();
 const root = (): HTMLElement => document.documentElement;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, text?: string): HTMLElementTagNameMap[K] {
@@ -40,14 +50,18 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, text?: s
 }
 
 function get(pref: string): string {
-  return root().getAttribute(ATTR[pref]) || '';
+  return root().getAttribute(PREF[pref][0]) || '';
 }
 
 /** Apply a preference to <html> (empty removes) and persist it, fail-open. */
 function set(pref: string, value: string): void {
-  if (value) root().setAttribute(ATTR[pref], value);
-  else root().removeAttribute(ATTR[pref]);
+  if (value) root().setAttribute(PREF[pref][0], value);
+  else root().removeAttribute(PREF[pref][0]);
   writeLocal(KEY + pref, value);
+}
+
+function decode(s: string): string {
+  try { return decodeURIComponent(s); } catch { return s; }
 }
 
 function outline(reader: Element, depth: number): HTMLElement {
@@ -67,7 +81,8 @@ function outline(reader: Element, depth: number): HTMLElement {
     if (!h.id && (param(h, 'kind') !== null || param(h, 'tags') !== null)) return;
     if (!h.id) h.id = 'sem-h-' + ++n;
     const level = +h.tagName[1];
-    while (stack.length > 1 && stack[stack.length - 1].level >= level) stack.pop();
+    // Pop only deeper levels: sibling h3s share one sub-list.
+    while (stack.length > 1 && stack[stack.length - 1].level > level) stack.pop();
     let top = stack[stack.length - 1];
     const last = top.list.lastElementChild;
     if (level > top.level && last) {
@@ -83,14 +98,16 @@ function outline(reader: Element, depth: number): HTMLElement {
 }
 
 /** `aria-current="location"` on the link of the topmost heading in view. */
-function track(nav: HTMLElement): void {
+function track(nav: HTMLElement, bin: (() => void)[]): void {
   if (typeof IntersectionObserver == 'undefined') return;
   const links = new Map<Element, Element>();
   nav.querySelectorAll('a[href^="#"]').forEach((a) => {
-    const t = document.getElementById(decodeURIComponent(a.getAttribute('href')!.slice(1)));
+    const t = document.getElementById(decode(a.getAttribute('href')!.slice(1)));
     if (t) links.set(t, a);
   });
-  const targets = Array.from(links.keys());
+  // Document order, not link order: an authored nav may list out of order.
+  const targets = Array.from(links.keys()).sort((a, b) =>
+    a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
   const visible = new Set<Element>();
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => (e.isIntersecting ? visible.add(e.target) : visible.delete(e.target)));
@@ -98,9 +115,15 @@ function track(nav: HTMLElement): void {
     if (first) links.forEach((a, t) => (t == first ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current')));
   }, { rootMargin: '0px 0px -40% 0px' });
   targets.forEach((t) => io.observe(t));
+  bin.push(() => io.disconnect());
 }
 
-function progress(chrome: HTMLElement): void {
+function on(bin: (() => void)[], target: EventTarget, type: string, fn: EventListener, opts?: AddEventListenerOptions): void {
+  target.addEventListener(type, fn, opts);
+  bin.push(() => target.removeEventListener(type, fn, opts));
+}
+
+function progress(chrome: HTMLElement, bin: (() => void)[]): void {
   const bar = el('div', 'sem-reader-progress');
   bar.setAttribute('aria-hidden', 'true');
   const fill = bar.appendChild(el('div', 'sem-reader-progress-fill'));
@@ -110,8 +133,8 @@ function progress(chrome: HTMLElement): void {
     const max = d.scrollHeight - d.clientHeight;
     fill.style.width = (max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0).toFixed(1) + '%';
   };
-  addEventListener('scroll', update, { passive: true });
-  addEventListener('resize', update);
+  on(bin, window, 'scroll', update, { passive: true });
+  on(bin, window, 'resize', update);
   update();
 }
 
@@ -125,14 +148,24 @@ function select(cls: string, label: string, options: [string, string][]): HTMLSe
   return s;
 }
 
+/** Release every listener and observer the reader installed; chrome stays. */
+export function disposeReaderElement(reader: Element): void {
+  (disposers.get(reader) || []).forEach((f) => f());
+  disposers.delete(reader);
+}
+
 export function enhanceReaderElement(reader: Element): void {
   if (reader.querySelector(':scope > .sem-reader-chrome')) return;
-  for (const pref in ATTR) {
-    const v = readLocal(KEY + pref);
-    if (v) root().setAttribute(ATTR[pref], v);
-  }
+  const bin: (() => void)[] = [];
+  disposers.set(reader, bin);
   const controls = (param(reader, 'controls') ?? 'outline,progress').split(/[,\s]+/);
   const has = (c: string): boolean => controls.indexOf(c) >= 0;
+  // Persisted preferences are restored only for the controls this reader
+  // offers: a document without a colour control keeps its own scheme.
+  for (const pref in PREF) {
+    const v = readLocal(KEY + pref);
+    if (v && has(PREF[pref][1])) root().setAttribute(PREF[pref][0], v);
+  }
 
   const chrome = el('div', 'sem-reader-chrome');
   chrome.setAttribute('role', 'region');
@@ -159,9 +192,9 @@ export function enhanceReaderElement(reader: Element): void {
     toggle.className = 'sem-reader-toggle';
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-controls', nav.id);
-    track(nav);
+    track(nav, bin);
   }
-  if (has('progress')) progress(chrome);
+  if (has('progress')) progress(chrome, bin);
   if (has('focus')) button('focus', 'Focus', get('mode') == 'focus');
 
   const size = (): number => Math.max(0, SIZES.indexOf(get('type') || 'm'));
@@ -182,7 +215,7 @@ export function enhanceReaderElement(reader: Element): void {
   if (has('color')) {
     const s = chrome.appendChild(select('sem-reader-color', 'Colour scheme', [['auto', 'Auto'], ['light', 'Light'], ['dark', 'Dark']]));
     s.value = get('color') || 'auto';
-    s.addEventListener('change', () => set('color', s.value == 'auto' ? '' : s.value));
+    on(bin, s, 'change', () => set('color', s.value == 'auto' ? '' : s.value));
   }
   if (has('print')) button('print', 'Print');
   if (has('audience')) {
@@ -191,32 +224,43 @@ export function enhanceReaderElement(reader: Element): void {
       const s = chrome.appendChild(select('sem-reader-audience', 'Audience',
         [['', 'Everyone'] as [string, string]].concat(profiles.map((p) => [p.id, p.label || p.id] as [string, string]))));
       const reflect = (): void => { s.value = getParam('sem-audience') || ''; };
-      s.addEventListener('change', () => setParam('sem-audience', s.value || null));
-      addEventListener('hashchange', reflect);
+      on(bin, s, 'change', () => setParam('sem-audience', s.value || null));
+      on(bin, window, 'hashchange', reflect);
       reflect();
     }
   }
 
   reader.insertBefore(chrome, reader.firstChild);
 
-  const open = (on: boolean): void => {
+  // The bar's measured height feeds `scroll-margin-top` and sticky table
+  // headers (`--sem-reader-offset`), so nothing lands underneath it.
+  const measure = (): void => root().style.setProperty('--sem-reader-offset', chrome.offsetHeight + 8 + 'px');
+  if (typeof ResizeObserver != 'undefined') {
+    const ro = new ResizeObserver(measure);
+    ro.observe(chrome);
+    bin.push(() => ro.disconnect());
+  } else on(bin, window, 'resize', measure);
+  measure();
+  bin.push(() => root().style.removeProperty('--sem-reader-offset'));
+
+  const open = (o: boolean): void => {
     if (!nav) return;
-    nav.hidden = !on;
-    toggle!.setAttribute('aria-expanded', String(on));
+    nav.hidden = !o;
+    toggle!.setAttribute('aria-expanded', String(o));
   };
 
-  chrome.addEventListener('click', (e) => {
+  on(bin, chrome, 'click', (e) => {
     const b = (e.target as Element).closest('button');
     const act = b && b.getAttribute('data-act');
     if (!act) return;
     if (act == 'outline') open(nav!.hidden);
     else if (act == 'print') window.print();
     else if (TOGGLE[act]) {
-      const [pref, on] = TOGGLE[act];
-      const next = get(pref) != on;
-      set(pref, next ? on : '');
+      const [pref, onValue] = TOGGLE[act];
+      const next = get(pref) != onValue;
+      set(pref, next ? onValue : '');
       b.setAttribute('aria-pressed', String(next));
-    } else {
+    } else if (act == 'type-up' || act == 'type-down') {
       const i = size() + (act == 'type-up' ? 1 : -1);
       if (SIZES[i]) set('type', SIZES[i]);
       syncType();
@@ -224,8 +268,8 @@ export function enhanceReaderElement(reader: Element): void {
   });
 
   if (nav) {
-    nav.addEventListener('click', (e) => { if ((e.target as Element).closest('a')) open(false); });
-    reader.addEventListener('keydown', (e) => {
+    on(bin, nav, 'click', (e) => { if ((e.target as Element).closest('a')) open(false); });
+    on(bin, reader, 'keydown', (e) => {
       if ((e as KeyboardEvent).key != 'Escape' || nav!.hidden) return;
       open(false);
       toggle!.focus();

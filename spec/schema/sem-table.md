@@ -54,7 +54,8 @@ Parameters are read as `data-<name>` first, then bare `<name>`.
 ### Fallback (reading bundle, `dist/semtext-reading.js`)
 
 - Every `<tbody>` row is stamped `data-sem-source-index` (0-based document
-  order) **once, at enhancement**, and never rewritten. This is the
+  order across every `<tbody>`) **once, at enhancement**, and never
+  rewritten. This is the
   authored order; sorting moves rows, the stamp does not move with the
   meaning. The Lit tier stamps identically, and a row already stamped is
   left alone.
@@ -65,15 +66,20 @@ Parameters are read as `data-<name>` first, then bare `<name>`.
 - **sort** — each header cell's content is wrapped in
   `button.sem-table-sort[type="button"]`; the `<th>` carries
   `aria-sort="none"`. Activating a header sorts the body rows by that
-  column: first `ascending`, again `descending`, again `ascending`. The
-  active header carries `aria-sort="ascending|descending"`; every other
-  header returns to `none`. The sort is stable — ties keep authored order
-  — and re-appends the rows, so the DOM order is the visible order. The
-  status region announces `Sorted by <column>, <direction>`.
+  column: first `ascending`, again `descending`, a third time **`none`**,
+  which restores the authored order. The active header carries
+  `aria-sort`; every other header returns to `none`. Ties fall back to
+  `data-sem-source-index`, so authored order survives any earlier sort on
+  another column. Rows move only **within their own `<tbody>`** — a sort
+  reorders, it never re-parents — and are re-appended so the DOM order is
+  the visible order. Only the first `<thead>` row is sortable. The status
+  region reads `Sorted by <column>, <direction>`.
 - **filter** — typing in the filter sets `hidden` on every body row whose
   text does not contain the query (case-insensitive) and clears it on the
-  rest. The status region announces `<n> of <m> rows`; clearing the query
-  restores every row and announces `<m> rows`.
+  rest, at once. The status region reads `<n> of <m> rows` (clearing the
+  query: `<m> rows`), updated ~200 ms after typing settles. Filter and
+  sort compose in one sentence: `2 of 4 rows, sorted by Lifetime,
+  ascending`.
 - The element carries `data-sem-fallback` once wired.
 
 ### Upgraded (Lit `SemTable`)
@@ -98,20 +104,26 @@ None.
   `<th scope="col">`, so the column header semantics survive and the
   control is keyboard-operable. `aria-sort` on the `<th>` is the sort
   state — exactly one header is ever not `none`.
-- `.sem-table-status` is `role="status"` (`aria-live="polite"`): sort and
-  filter results are announced without moving focus.
+- `.sem-table-status` is `role="status"` (implicit polite live region;
+  no explicit `aria-live`, and the filter announcement is debounced so a
+  screen reader is not read every keystroke). Sort and filter results are
+  announced without moving focus.
 - The filter is a labelled `<input type="search">`.
 - Filtered-out rows carry the native `hidden` attribute, so they leave the
   accessibility tree with the visual.
 - The `<caption>` is authored, never generated, and stays first in the
   table.
+- In print, filtered-out rows are shown again (`tr[hidden]` →
+  `table-row`) so the paper copy is the whole table.
 
 ## Machine contract
 
 - `fields: { caption, columns: string[], rows: string[][] }`; `text` = the
   caption (`""` when absent).
-  - `columns`: the header row's cell texts, in authored order. The sort
-    button is read *through* — it is a wrapper, not chrome.
+  - `columns`: the **first** header row's cell texts, in authored order,
+    read from `:scope > thead > tr:first-of-type`. The sort button is read
+    *through* — it is a wrapper, not chrome. A table nested inside a cell
+    is that cell's content, never a second set of columns or rows.
   - `rows`: one array per `<tbody>` row, cell texts normalised, **in
     authored order**: rows are sorted by `data-sem-source-index` when the
     stamp is present and taken in DOM order otherwise. Both orders are the

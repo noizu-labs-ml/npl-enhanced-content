@@ -23,7 +23,7 @@
 import { CODE, enhanceCodeElement } from './code.js';
 import { REFERENCES, enhanceReferencesElement } from './references.js';
 import { PROPERTIES, enhanceGlossaryElement } from './glossary.js';
-import { READER, enhanceReaderElement } from './reader.js';
+import { READER, enhanceReaderElement, disposeReaderElement } from './reader.js';
 import { TABLE, enhanceTableElement } from './table.js';
 
 declare global {
@@ -82,7 +82,7 @@ export function enhance(scope: ParentNode = document): void {
   for (const handler of handlers) handler(scope);
 }
 
-export { enhanceCodeElement, enhanceReferencesElement, enhanceGlossaryElement, enhanceTableElement, enhanceReaderElement };
+export { enhanceCodeElement, enhanceReferencesElement, enhanceGlossaryElement, enhanceTableElement, enhanceReaderElement, disposeReaderElement };
 
 function init(): void {
   if (typeof window !== 'undefined' && window.__semJsOff) return;

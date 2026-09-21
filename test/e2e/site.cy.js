@@ -146,8 +146,11 @@ describe('semtext.dev landing page', () => {
       cy.get('#pg-reader').should('have.attr', 'data-sem-fallback');
       cy.get('#pg-reader > .sem-reader-chrome').should('have.attr', 'role', 'region');
       cy.get('#pg-reader .sem-reader-toggle').click();
+      // every h2 outside a view panel — the site's panels only carry h3s, so the
+      // depth-2 outline is exactly the section headings
       cy.get('main h2').then(($h) => {
-        cy.get('#pg-reader nav.sem-reader-outline a').should('have.length', $h.length);
+        const outside = Array.from($h).filter((h) => !h.closest('.sem-view'));
+        cy.get('#pg-reader nav.sem-reader-outline a').should('have.length', outside.length);
       });
       cy.get('#pg-reader nav.sem-reader-outline a').first().should('have.attr', 'href', '#why-h');
       cy.get('#pg-reader nav.sem-reader-outline a').contains('What it is not.').click();
@@ -192,7 +195,7 @@ describe('semtext.dev landing page', () => {
       });
       cy.get('#rd-table .sem-table-filter').type('fallback');
       cy.get('#rd-table tbody tr[hidden]').should('have.length', 3);
-      cy.get('#rd-table .sem-table-status').should('have.text', '1 of 4 rows');
+      cy.get('#rd-table .sem-table-status').should('have.text', '1 of 4 rows, sorted by Minified, ascending');
       cy.window().then((win) => {
         const t = win.SemTextExtract.extractRecords(win.document).find((r) => r.id === 'rd-table');
         expect(t.type).to.equal('sem-table');

@@ -45,7 +45,8 @@ const EXPECTED_TYPES = [
   'sem-code', 'sem-code',
   'sem-references', 'sem-reference', 'sem-reference',
   'sem-properties', 'sem-property', 'sem-property',
-  'sem-table', 'sem-table'
+  'sem-table', 'sem-table', 'sem-table',
+  'sem-reveal', 'sem-views', 'sem-view', 'sem-view'
 ];
 
 const ROWS = [
@@ -168,6 +169,10 @@ describe('extraction — reading elements', () => {
         expect(c.fields.columns).to.deep.equal(['Concern', 'Rotation', 'Static refresh token']);
         expect(c.fields.rows).to.have.length(3);
         expect(c.text).to.equal('');
+        // multi-<tbody>: rows in authored order across bodies; only the first header row names columns
+        const g = byId(records, 't-groups');
+        expect(g.fields.columns).to.deep.equal(['Grant', 'Lifetime']);
+        expect(g.fields.rows.map((row) => row[0])).to.deep.equal(['code', 'device', 'refresh', 'client credentials']);
         // the inner <table data-kind="comparison"> is the wrapper's contract, not a second record
         expect(records.some((r) => r.type === 'table')).to.equal(false);
         expect(records.filter((r) => r.parent === t.sourceOrder)).to.have.length(0);

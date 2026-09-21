@@ -1,5 +1,5 @@
 import { SemElement } from './base.js';
-import { enhanceReaderElement } from '../reading/reader.js';
+import { enhanceReaderElement, disposeReaderElement } from '../reading/reader.js';
 
 /**
  * sem-reader — thin Lit wrapper over src/reading/reader.ts.
@@ -9,6 +9,7 @@ import { enhanceReaderElement } from '../reading/reader.js';
  * instead of `whenChildrenReady` it waits for the parse to finish: the
  * outline must see every heading, not the ones streamed so far. The same
  * idempotent enhance the bundle runs; chrome present means nothing added.
+ * On disconnect the reader's window listeners and observers are released.
  */
 export class SemReader extends SemElement {
   #wired = false;
@@ -23,6 +24,11 @@ export class SemReader extends SemElement {
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go, { once: true });
     else go();
+  }
+
+  disconnectedCallback(): void {
+    disposeReaderElement(this);
+    super.disconnectedCallback();
   }
 }
 

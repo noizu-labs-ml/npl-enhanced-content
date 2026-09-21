@@ -6,6 +6,7 @@
    drives (R/W2). The media block yields to an explicit "light". */
 
 [data-sem-theme="minimal-tech-light"] {
+  color-scheme: light;
   --sem-bg: #fafafa; --sem-surface: #ffffff; --sem-fg: #1e293b;
   --sem-muted: #64748b; --sem-border: #e2e8f0; --sem-accent: #2563eb;
   --sem-accent-fg: #ffffff;
@@ -14,6 +15,7 @@
   --sem-correct: #059669; --sem-wrong: #dc2626; --sem-occluded: #94a3b8;
 }
 [data-sem-theme="minimal-tech-light"][data-color-mode="dark"] {
+  color-scheme: dark;
   --sem-bg: #0f172a; --sem-surface: #1e293b; --sem-fg: #e2e8f0;
   --sem-muted: #94a3b8; --sem-border: #334155; --sem-accent: #60a5fa;
   --sem-accent-fg: #0f172a;
@@ -23,6 +25,7 @@
 }
 @media (prefers-color-scheme: dark) {
   [data-sem-theme="minimal-tech-light"]:not([data-color-mode="light"]) {
+    color-scheme: dark;
     --sem-bg: #0f172a; --sem-surface: #1e293b; --sem-fg: #e2e8f0;
     --sem-muted: #94a3b8; --sem-border: #334155; --sem-accent: #60a5fa;
     --sem-accent-fg: #0f172a;

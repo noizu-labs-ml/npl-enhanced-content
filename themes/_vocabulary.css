@@ -313,8 +313,7 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 :root[data-sem-type="l"] :is(sem-enhanced-document, .sem-enhanced-document) { font-size: 1.15rem; }
 :root[data-sem-font="serif"] :is(sem-enhanced-document, .sem-enhanced-document) {
   font-family: Charter, Georgia, "Times New Roman", serif; }
-:root[data-color-mode="dark"] { color-scheme: dark; }
-:root[data-color-mode="light"] { color-scheme: light; }
+/* color-scheme for [data-color-mode] lives in the theme file, beside its tokens */
 /* focus mode: page chrome outside the root wrapper goes away, the measure
    narrows, margin notes fall back inline */
 :root[data-sem-mode="focus"] body > :not(:is(sem-enhanced-document, .sem-enhanced-document), script, style, .sem-popover):not(:has(:is(sem-enhanced-document, .sem-enhanced-document))) { display: none; }
@@ -333,7 +332,7 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 :is(sem-table, .sem-table) th { font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted);
   background: var(--sem-surface); }
 :is(sem-table, .sem-table) tbody tr:last-child :is(th, td) { border-bottom: 0; }
-:is(sem-table, .sem-table):is([data-sticky], [sticky]) thead th { position: sticky; top: 0; z-index: 1; }
+:is(sem-table, .sem-table):is([data-sticky], [sticky]) thead th { position: sticky; top: var(--sem-reader-offset, 0); z-index: 1; }
 :is(sem-table, .sem-table) table:is([data-kind="comparison"], [kind="comparison"]) :is(th, td):first-child,
 :is(sem-table, .sem-table):is([data-kind="comparison"], [kind="comparison"]) :is(th, td):first-child,
 :is(sem-enhanced-document, .sem-enhanced-document) > table:is([data-kind="comparison"], [kind="comparison"]) :is(th, td):first-child {

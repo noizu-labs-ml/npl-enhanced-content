@@ -59,10 +59,18 @@ Element form: `<sem-reader controls outline-depth>`. Parameters are read as
     inside the reader itself excluded). A heading without an `id` receives
     a runtime id `sem-h-<n>` **unless it mints a record** (`kind` / `tags`
     present — an id on a record would change extraction); such a heading
-    is left out of the outline. The panel starts closed (`hidden`). While
-    the document scrolls, the anchor whose heading is the topmost one in
-    view carries `aria-current="location"` (IntersectionObserver; one at a
-    time). Activating an outline link closes the panel.
+    is left out of the outline. Headings inside a closed `sem-reveal` or
+    an inactive `sem-view` **are included**: an outline link is a plain
+    `#id` anchor, and the fallback core's deep-link resolver
+    (`src/fallback/target.ts`) answers the `hashchange` by opening what
+    encloses the heading. The panel starts closed (`hidden`). While the
+    document scrolls, the anchor whose heading is the topmost one in view
+    carries `aria-current="location"` (IntersectionObserver over the
+    targets in **document order**, whatever order an authored nav lists
+    them; one at a time). Activating an outline link closes the panel.
+    The outline is generated **once**, when the document has finished
+    parsing; a heading injected later does not appear (recorded limit —
+    re-run the enhance on a fresh reader, or author the nav).
   - **progress** — `.sem-reader-progress[aria-hidden="true"]` with a
     `.sem-reader-progress-fill` whose width is the fraction of the
     document scrolled, updated on scroll and resize. Purely visual; a
@@ -91,10 +99,19 @@ Element form: `<sem-reader controls outline-depth>`. Parameters are read as
     **not rendered** when the document declares no profiles.
 - **Persistence.** `focus`, `type`, `font` and `color` are written to
   `localStorage` under `sem-reader:<name>` through `shared/state.writeLocal`
-  and re-applied on the next load **before** the chrome renders. Storage is
+  and re-applied on the next load **before** the chrome renders — but only
+  for the controls this reader offers: a document without a `color`
+  control keeps its own scheme however the reader of another document
+  set theirs. Storage is
   fail-open: a document on `file://` in a browser that refuses storage
   behaves identically for the session and simply forgets. Audience lives
   in the hash (shareable), not in storage.
+- The bar's measured height is published as `--sem-reader-offset` on
+  `<html>` (ResizeObserver); the vocabulary uses it for `scroll-margin-top`
+  on in-document targets and for the `top` of sticky table headers, so
+  nothing lands underneath the bar.
+- Every listener and observer is recorded; `disposeReaderElement`
+  releases them (the Lit wrapper calls it on disconnect). Chrome stays.
 - The element carries `data-sem-fallback` once wired.
 
 ### Upgraded (Lit `SemReader`)

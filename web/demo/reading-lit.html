@@ -38,6 +38,8 @@
         <li><a href="#glossary-h">Glossary</a></li>
         <li><a href="#code-h">Code</a></li>
         <li><a href="#tables-h">Tables</a></li>
+        <li><a href="#rv-h">Signing keys</a></li>
+        <li><a href="#vw-h">Native clients</a></li>
       </ul>
     </nav>
   </sem-reader>
@@ -120,6 +122,33 @@
       </tbody>
     </table>
   </sem-table>
+  <sem-table id="t-groups" kind="grants">
+    <table>
+      <caption>Grants by client type</caption>
+      <thead><tr><th scope="col">Grant</th><th scope="col">Lifetime</th></tr></thead>
+      <tbody>
+        <tr><td>code</td><td data-value="600">10 min</td></tr>
+        <tr><td>device</td><td data-value="300">5 min</td></tr>
+      </tbody>
+      <tbody>
+        <tr><td>refresh</td><td data-value="2592000">30 days</td></tr>
+        <tr><td>client credentials</td><td data-value="3600">1 hour</td></tr>
+      </tbody>
+    </table>
+  </sem-table>
+
+  <h2>Disclosures</h2>
+  <!-- Class form on both pages: the reveal and views fallbacks (core) drive
+       `.sem-reveal` / `.sem-views` only. Headings inside them are reached
+       from the outline through the deep-link resolver. -->
+  <div class="sem-reveal" id="rv-keys" data-summary="Key rotation detail" collapsed>
+    <h3 id="rv-h">Signing keys</h3>
+    <p>Rotate the signing key on the refresh cadence; publish both keys during the overlap.</p>
+  </div>
+  <div class="sem-views" id="clients">
+    <div class="sem-view" data-name="Web" data-active><p>Browser clients keep the pair in an httpOnly cookie.</p></div>
+    <div class="sem-view" data-name="Native"><h3 id="vw-h">Native clients</h3><p>Native clients keep the pair in the platform keychain.</p></div>
+  </div>
 
 </sem-enhanced-document>
 </body>

@@ -94,9 +94,9 @@ extraction restores authored order.
 | Artifact | W0 | W1 | W2 | W3 |
 |---|---|---|---|---|
 | `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | 12 | 12 |
-| `semtext-reading.js` | — | **8** (measured 6.8) | **16** (measured 15.5; planned 14 — see W2 decisions) | 16.5 |
-| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 37.8) | 57 |
-| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.0) | 12 |
+| `semtext-reading.js` | — | **8** (measured 6.8) | **17** (measured 16.6; planned 14 — see W2 decisions) | 17.5 |
+| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9) | 57 |
+| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1) | 12 |
 
 **W1 decisions (recorded).** Glossary mode lives in the *reading* bundle,
 not the fallback core: the core sits at 11.9 / 12 KB after W0 and the
@@ -107,9 +107,12 @@ on DOM state so either script may run first. `sem-chronology` mints no
 custom element (CSS-only, pattern `sem-procedure`). `sem-code.source` is
 extracted verbatim (second recorded exception to normalised text).
 
-**W2 decisions (recorded).** The reading bundle measured **15.5 KB**
-against the planned 14 KB, so the budget is set at 16 KB rather than the
-plan's figure. The reader alone bundles to 6.4 KB: 4.2 KB of its own
+**W2 decisions (recorded).** The reading bundle measured **16.6 KB**
+against the planned 14 KB, so the budget is set at 17 KB rather than the
+plan's figure (15.5 before code review; the review added teardown,
+per-`<tbody>` sorting, the three-state `aria-sort`, composed status,
+document-order tracking and the measured `--sem-reader-offset`, and the
+W1 popover fix (#15) added 0.2 KB of its own). The reader alone bundles to 6.4 KB: 4.2 KB of its own
 plus the shared `state` (hash + storage) and `audience` (profile parsing)
 modules it needs to write the hash and list profiles — both already in
 the fallback core, but the reading bundle cannot import from a sibling

@@ -60,8 +60,10 @@ function assertTable(url, marker) {
     cy.get('#t-tokens .sem-table-status').should('have.text', 'Sorted by Lifetime, descending');
   });
 
-  it('a text column sorts locale-aware, only one header is ever active, ties keep authored order', () => {
+  it('a text column sorts locale-aware, only one header is ever active, ties keep AUTHORED order after a prior sort', () => {
     cy.get('#t-tokens th').eq(1).find('button').click();
+    cy.get('#t-tokens th').eq(1).find('button').click();
+    cy.get('#t-tokens th').eq(1).should('have.attr', 'aria-sort', 'descending');
     cy.get('#t-tokens th').eq(0).find('button').click();
     cy.get('#t-tokens th').eq(0).should('have.attr', 'aria-sort', 'ascending');
     cy.get('#t-tokens th').eq(1).should('have.attr', 'aria-sort', 'none');
@@ -69,9 +71,53 @@ function assertTable(url, marker) {
       expect(firstCells($r)).to.deep.equal(['access', 'id', 'refresh', 'session']);
     });
     // Rotates has two "no" and two "yes": ties keep authored order (access, id · refresh, session)
+    // even though the DOM currently holds Token order — the tie-break is the stamp, not the DOM.
+    cy.get('#t-tokens th').eq(1).find('button').click();
+    cy.get('#t-tokens th').eq(1).find('button').click();
+    cy.get('#t-tokens tbody tr').then(($r) => expect(firstCells($r)).to.deep.equal(['refresh', 'session', 'id', 'access']));
     cy.get('#t-tokens th').eq(2).find('button').click();
     cy.get('#t-tokens tbody tr').then(($r) => {
       expect(firstCells($r)).to.deep.equal(['access', 'id', 'refresh', 'session']);
+    });
+  });
+
+  it('a third activation returns to aria-sort="none" and the authored order', () => {
+    cy.get('#t-tokens th').eq(1).find('button').click();
+    cy.get('#t-tokens th').eq(1).find('button').click();
+    cy.get('#t-tokens th').eq(1).find('button').click();
+    cy.get('#t-tokens th').eq(1).should('have.attr', 'aria-sort', 'none');
+    cy.get('#t-tokens tbody tr').then(($r) => expect(firstCells($r)).to.deep.equal(['access', 'refresh', 'id', 'session']));
+    cy.get('#t-tokens .sem-table-status').should('have.text', '');
+  });
+
+  it('a multi-<tbody> table sorts within each body and never re-parents a row', () => {
+    cy.get('#t-groups tbody').should('have.length', 2);
+    cy.get('#t-groups th').eq(1).find('button').click();
+    cy.get('#t-groups tbody').eq(0).find('tr').then(($r) => expect(firstCells($r)).to.deep.equal(['device', 'code']));
+    cy.get('#t-groups tbody').eq(1).find('tr').then(($r) => expect(firstCells($r)).to.deep.equal(['client credentials', 'refresh']));
+    cy.get('#t-groups tbody tr').then(($r) => {
+      expect(Array.from($r, (r) => r.getAttribute('data-sem-source-index'))).to.deep.equal(['1', '0', '3', '2']);
+    });
+  });
+
+  it('the status region composes filter and sort, without aria-live', () => {
+    cy.get('#t-tokens .sem-table-status').should('not.have.attr', 'aria-live');
+    cy.get('#t-tokens .sem-table-filter').type('yes');
+    cy.get('#t-tokens th').eq(1).find('button').click();
+    cy.get('#t-tokens .sem-table-status').should('have.text', '2 of 4 rows, sorted by Lifetime, ascending');
+    cy.get('#t-tokens .sem-table-filter').clear();
+    cy.get('#t-tokens .sem-table-status').should('have.text', '4 rows, sorted by Lifetime, ascending');
+  });
+
+  it('the print stylesheet shows filtered-out rows', () => {
+    cy.document().then((doc) => {
+      const rules = [];
+      Array.from(doc.styleSheets).forEach((sheet) => {
+        Array.from(sheet.cssRules).forEach((r) => {
+          if (r.media && /print/.test(r.media.mediaText)) Array.from(r.cssRules).forEach((x) => rules.push(x.cssText));
+        });
+      });
+      expect(rules.some((t) => /tr\[hidden\]/.test(t) && /table-row/.test(t))).to.equal(true);
     });
   });
 
