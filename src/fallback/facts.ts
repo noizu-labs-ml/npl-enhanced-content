@@ -110,6 +110,11 @@ export function enhanceFacts(scope: ParentNode): void {
         f.addEventListener('click', () => f.classList.toggle('sem-flipped'));
       });
     }
+    // Deep link into a card (fallback/target): make it the current one.
+    root.addEventListener('sem-activate', (e) => {
+      const k = items.indexOf(e.target as HTMLElement);
+      if (k >= 0 && k !== i) { i = k; render(); }
+    });
     render();
   });
 }

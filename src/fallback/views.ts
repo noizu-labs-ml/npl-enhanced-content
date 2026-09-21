@@ -2,15 +2,26 @@
  * fallback/views — `.sem-views[id]` tab bar, arrow-key navigation and
  * `#<container-id>/<view>` deep links.
  *
- * The hash write stays a whole-hash assignment, matching the original inline
- * handler exactly: the deep-link format and the `sem-navigate` CustomEvent
- * payload are both asserted by test/e2e/sem-views.cy.js.
+ * The deep link is the bare hash segment `<id>/<view>`; it is read and
+ * written through shared/state so a named parameter beside it
+ * (`&sem-audience=…`) survives a tab switch. Format and the `sem-navigate`
+ * CustomEvent payload are asserted by test/e2e/sem-views.cy.js.
+ *
+ * Marks the container `data-sem-fallback`: the inactive-view hide rule is
+ * gated on that marker (D12), so with no script every view renders stacked.
+ *
+ * `sem-activate` dispatched on a view (by fallback/target for a deep link
+ * into a view's descendant) activates it WITHOUT rewriting the hash, so the
+ * descendant's own anchor stays in the address bar.
  */
+
+import { bareSegments, setBare } from '../shared/state.js';
 
 export function enhanceViews(scope: ParentNode): void {
   scope.querySelectorAll<HTMLElement>('.sem-views[id]').forEach((root) => {
     const views = Array.from(root.querySelectorAll<HTMLElement>('.sem-view'));
     if (!views.length) return;
+    root.setAttribute('data-sem-fallback', '');
     if (!root.querySelector('.sem-view[data-active]')) views[0].setAttribute('data-active', '');
     let active = Math.max(0, views.findIndex((v) => v.hasAttribute('data-active')));
 
@@ -33,7 +44,7 @@ export function enhanceViews(scope: ParentNode): void {
     });
     root.insertBefore(bar, root.firstChild);
 
-    function activate(k: number, focus?: boolean): void {
+    function activate(k: number, focus?: boolean, silent?: boolean): void {
       active = k;
       views.forEach((v, j) => {
         if (j === k) v.setAttribute('data-active', ''); else v.removeAttribute('data-active');
@@ -42,8 +53,7 @@ export function enhanceViews(scope: ParentNode): void {
         b.setAttribute('aria-selected', String(j === k));
       });
       const v = views[k];
-      if (v.id) location.hash = root.id + '/' + v.id;
-      else location.hash = root.id + '/' + (v.getAttribute('data-name') || '').toLowerCase();
+      if (!silent) setBare(root.id, v.id || (v.getAttribute('data-name') || '').toLowerCase());
       v.dispatchEvent(new CustomEvent('sem-navigate', {
         bubbles: true, detail: { id: root.id, name: v.getAttribute('data-name'), index: k },
       }));
@@ -51,14 +61,20 @@ export function enhanceViews(scope: ParentNode): void {
     }
 
     function fromHash(): void {
-      const m = location.hash.match(new RegExp('^#' + root.id + '/(.+)$'));
-      if (!m) return;
+      const head = root.id + '/';
+      const seg = bareSegments().find((b) => b.startsWith(head));
+      if (!seg) return;
+      const want = seg.slice(head.length);
       const k = views.findIndex(
-        (v) => v.id === m[1] || (v.getAttribute('data-name') || '').toLowerCase() === m[1],
+        (v) => v.id === want || (v.getAttribute('data-name') || '').toLowerCase() === want,
       );
       if (k >= 0 && k !== active) activate(k);
     }
     window.addEventListener('hashchange', fromHash);
+    root.addEventListener('sem-activate', (e) => {
+      const k = views.indexOf(e.target as HTMLElement);
+      if (k >= 0 && k !== active) activate(k, false, true);
+    });
     fromHash();
   });
 }

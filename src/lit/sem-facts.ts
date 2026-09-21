@@ -102,6 +102,11 @@ export class SemFacts extends SemElement {
         f.addEventListener('click', () => f.classList.toggle('sem-flipped'));
       });
     }
+    // Deep link into a card (fallback/target): make it the current one.
+    this.addEventListener('sem-activate', (e) => {
+      const k = items.indexOf(e.target as Element);
+      if (k >= 0 && k !== i) { i = k; render(); }
+    });
     render();
   }
 

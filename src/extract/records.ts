@@ -17,6 +17,8 @@
  * classic IIFE script.
  */
 
+import { deriveSummary } from '../shared/summary.js';
+
 /** One extracted record. Shape is normative; see spec/extraction.md §2. */
 export interface SemRecord {
   /** Vocabulary token, normalized across authoring forms (`sem-fact`), or
@@ -28,7 +30,8 @@ export interface SemRecord {
   kind: string | null;
   /** `data-tags` / `tags` split on commas; [] when absent. */
   tags: string[];
-  /** Forward-declared audience qualifier (wave 1). Always null in v0.4. */
+  /** `data-audience` / `audience` verbatim, or null. Never parsed, never
+   *  used to suppress a record (spec/schema/sem-audiences.md). */
   audience: string | null;
   /** `sourceOrder` of the nearest enclosing record, or null at top level. */
   parent: number | null;
@@ -263,17 +266,11 @@ function splitCompact(text: string): { left: string; right: string } | null {
 }
 
 /**
- * Normative derived summary for `sem-reveal` without `data-summary`:
- * the leading run of the body text, at most 60 characters, cut at the last
- * word boundary, no ellipsis. Deterministic from the body alone, so it
- * survives the fallback's <details> rewrite unchanged.
+ * Normative derived summary for `sem-reveal` without `data-summary` lives in
+ * `shared/summary` so the fallback's `<summary>` and this field agree.
+ * Re-exported for consumers that imported it from here.
  */
-export function deriveSummary(body: string): string {
-  if (body.length <= 60) return body;
-  const cut = body.slice(0, 60);
-  const sp = cut.lastIndexOf(' ');
-  return (sp > 0 ? cut.slice(0, sp) : cut).replace(/[\s,;:.—-]+$/, '');
-}
+export { deriveSummary } from '../shared/summary.js';
 
 function clamp01(raw: string | null): number {
   const n = raw === null ? NaN : parseFloat(raw);

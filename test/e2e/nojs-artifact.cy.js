@@ -7,10 +7,9 @@
  * `dist/demo/<name>.nojs.html` with every <script> element removed, and this
  * spec asserts against that file.
  *
- * KNOWN GAP (ROADMAP D12): `.sem-distractor` and inactive `.sem-view` are
- * hidden by ungated `display:none` rules in themes/_vocabulary.css, so they
- * stay hidden here. That is asserted below as the current state rather than
- * papered over — when D12 is repaid these two expectations flip.
+ * D12 (repaid): the `.sem-distractor` and inactive `.sem-view` hide rules in
+ * themes/_vocabulary.css are gated on a tier marker, so with no script in the
+ * page both render — distractors labelled, views stacked under their names.
  */
 describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
   describe('class vocabulary — index.nojs.html', () => {
@@ -57,12 +56,22 @@ describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
       cy.get('.sem-property').should('have.length', 5).each(($p) => cy.wrap($p).should('be.visible'));
     });
 
-    it('D12 — distractors and inactive views are still hidden by ungated CSS', () => {
+    it('D12 — distractors render, labelled, and every view is stacked under its name', () => {
       cy.get('.sem-distractor').should('have.length', 4).each(($d) => {
-        cy.wrap($d).should('not.be.visible');
+        cy.wrap($d).should('be.visible');
+        const before = $d[0].ownerDocument.defaultView.getComputedStyle($d[0], '::before');
+        expect(before.content).to.contain('distractor');
       });
-      cy.get('.sem-view[data-active]').should('be.visible');
-      cy.get('.sem-view:not([data-active])').should('not.be.visible');
+      cy.get('.sem-view').should('have.length', 2).each(($v) => {
+        cy.wrap($v).should('be.visible');
+        const before = $v[0].ownerDocument.defaultView.getComputedStyle($v[0], '::before');
+        expect(before.content).to.match(/attr\(data-name\)|Helm|ArgoCD/);
+      });
+    });
+
+    it('leaves audience-qualified content visible and the margin note inline', () => {
+      cy.get('#n-op, #n-public, #n-reader').each(($n) => cy.wrap($n).should('be.visible'));
+      cy.get('#n-margin').should('be.visible');
     });
   });
 

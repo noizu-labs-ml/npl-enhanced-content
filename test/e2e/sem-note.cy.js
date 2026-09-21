@@ -10,6 +10,7 @@
 //   Scenario: quiz view — conclusion hidden, options scored
 //   Scenario: highlight occlusion — hidden until reveal, then visible
 //   Scenario: JS-off — all content still readable (list layout, no occlusion)
+//   Scenario: sem-note view-as="margin" — right gutter wide, inline narrow
 
 describe('v0.4 baseline (web/demo/index.html)', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
@@ -59,5 +60,19 @@ describe('v0.4 baseline (web/demo/index.html)', () => {
     cy.get('.sem-fact .sem-conclusion').should('be.visible');
     cy.get('.sem-highlight').should('be.visible');
     cy.get('.sem-occluded').should('not.exist');
+  });
+
+  it('view-as="margin": floats into the right gutter on wide viewports, inline on phones', () => {
+    const cs = (el) => el.ownerDocument.defaultView.getComputedStyle(el);
+    cy.viewport(1280, 800);
+    cy.get('#n-margin').should(($n) => {
+      expect(cs($n[0]).float).to.equal('right');
+    });
+    cy.viewport(390, 800);
+    cy.get('#n-margin').should(($n) => {
+      expect(cs($n[0]).float).to.equal('none');
+    });
+    // presentation only — the record is a plain note
+    cy.get('#n-margin').should('have.attr', 'data-view-as', 'margin').and('be.visible');
   });
 });
