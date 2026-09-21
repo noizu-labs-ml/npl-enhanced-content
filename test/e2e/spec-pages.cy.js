@@ -129,20 +129,18 @@ PAGES.forEach((page) => {
             if (cur) out.push(cur);
             return out;
           };
-          // fenced listings in the .md (the sem-md example in §5) are not spec tables
-          const mdTables = new Map(tablesIn(md.replace(/```[\s\S]*?```/g, '')).map((t) => [t[0], t]));
+          // fenced listings in the .md (the sem-md example in §5) are not spec tables.
+          // Arrays, in order of appearance: two tables sharing a header line stay
+          // distinct, and a dropped table changes the count.
+          const mdTables = tablesIn(md.replace(/```[\s\S]*?```/g, ''));
           const pageTables = [...spec.matchAll(/<sem-md\b[^>]*>([\s\S]*?)<\/sem-md>/gi)].map((m) => tableRows(unescape(m[1])));
-          expect(pageTables.length, 'sem-md tables on the page').to.be.greaterThan(3);
-          const seen = new Set();
-          pageTables.forEach((rows) => {
-            const header = rows[0];
-            expect([...mdTables.keys()], `a Markdown table headed ${header}`).to.include(header);
-            seen.add(header);
-            // same row SET (order-insensitive); a dropped or added row fails either way
-            expect([...rows].sort(), `rows under ${header}`).to.deep.equal([...mdTables.get(header)].sort());
+          expect(pageTables.length, 'sem-md tables on the page = GFM tables in the .md').to.equal(mdTables.length);
+          pageTables.forEach((rows, i) => {
+            const want = mdTables[i];
+            expect(rows[0], `table ${i + 1} header row`).to.equal(want[0]);
+            // sorted ARRAYS: multiplicity preserved, order-insensitive, both directions
+            expect([...rows].sort(), `rows under ${rows[0]}`).to.deep.equal([...want].sort());
           });
-          // every Markdown table is on the page, too
-          [...mdTables.keys()].forEach((header) => expect([...seen], `page table headed ${header}`).to.include(header));
         });
       });
     });
