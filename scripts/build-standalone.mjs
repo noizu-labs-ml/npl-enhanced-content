@@ -26,6 +26,15 @@
  *        raw fence, and the md bundle re-checks on every scan)
  *   <!-- sem:inline theme <name> -->               themes/<name>.css
  *   <!-- sem:inline vocabulary -->                 themes/_vocabulary.css
+ *   <!-- sem:inline size <script> -->              "N.N KB (N.N KB gzipped)"
+ *   <!-- sem:inline size-mg <script> -->            "N.N KB minified, N.N KB gzipped"
+ *   <!-- sem:inline size-kb <script> -->            "N.N"  (bare minified KB)
+ *   <!-- sem:inline size-gzkb <script> -->          "N.N"  (bare gzipped KB)
+ *                                                   all measured from the
+ *                                                   built dist/semtext-<script>.js
+ *                                                   (or dist/semtext.js for
+ *                                                   "bundle") — never
+ *                                                   hardcode a size in copy.
  *
  * A marker whose source file is missing is a hard error: silently emitting a
  * page with no behavior in it is exactly the failure this script exists to
@@ -33,6 +42,7 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, basename } from 'node:path';
 
@@ -66,9 +76,56 @@ function expand(kind, arg) {
     }
     case 'vocabulary':
       return `<style data-sem-vocabulary>\n${readOrDie(resolve(root, 'themes/_vocabulary.css'), 'vocabulary')}\n</style>`;
+    case 'size':
+      return sizeParts(arg, 'size').text;
+    case 'size-mg':
+      return sizeParts(arg, 'size-mg').textMinGzip;
+    case 'size-kb':
+      return sizeParts(arg, 'size-kb').rawKb;
+    case 'size-gzkb':
+      return sizeParts(arg, 'size-gzkb').gzipKb;
     default:
       throw new Error(`unknown inline marker "${kind}"`);
   }
+}
+
+/** Path (relative to repo root) of the built script a `sem:inline size` /
+ *  `sem:inline size-mg` marker's argument names. Keep in sync with the
+ *  `expand()` script cases above — this is the single source of truth other
+ *  copy should measure against instead of hardcoding a number. */
+const SIZE_SOURCES = {
+  bundle: 'dist/semtext.js',
+  fallback: 'dist/semtext-fallback.js',
+  reading: 'dist/semtext-reading.js',
+  extract: 'dist/semtext-extract.js',
+  md: 'dist/semtext-md.js',
+};
+
+/** Measure a built script's real size (and gzip size) so page copy states
+ *  the truth instead of a number that silently goes stale when the script
+ *  changes. `size` marker text reads "9.2 KB (3.3 KB gzipped)"; `size-mg`
+ *  reads "9.2 KB minified, 3.3 KB gzipped" for the artifacts table. */
+function sizeParts(arg, marker) {
+  if (!arg || !SIZE_SOURCES[arg]) {
+    throw new Error(`marker "${marker}" needs a known script name (${Object.keys(SIZE_SOURCES).join(', ')}), got "${arg}"`);
+  }
+  const path = resolve(root, SIZE_SOURCES[arg]);
+  if (!existsSync(path)) {
+    throw new Error(`marker "${marker} ${arg}" needs ${path}, which does not exist — run scripts/build.mjs first`);
+  }
+  const buf = readFileSync(path);
+  const rawKb = (buf.length / 1024).toFixed(1);
+  // gzipSync defaults to zlib level 6. That's an assumption pinned here on
+  // purpose: it approximates typical gzip-negotiated transfer, not whatever
+  // level (or brotli) the production server actually negotiates, so the
+  // advertised "gzipped" figure is a representative estimate, not a promise.
+  const gzipKb = (gzipSync(buf).length / 1024).toFixed(1);
+  return {
+    rawKb,
+    gzipKb,
+    text: `${rawKb} KB (${gzipKb} KB gzipped)`,
+    textMinGzip: `${rawKb} KB minified, ${gzipKb} KB gzipped`
+  };
 }
 
 /** Remove whole <script> elements. A JS string cannot contain a literal
