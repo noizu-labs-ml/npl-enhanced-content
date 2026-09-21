@@ -10,6 +10,15 @@
  * same job. `Esc` closes; leaving or blurring the anchor closes; clicking
  * the anchor closes so navigation is never hidden behind the preview.
  *
+ * PLACEMENT TRACKS THE ANCHOR. The box is `position: fixed`, so it is
+ * placed from the anchor's viewport rect — and that rect moves. Focusing
+ * an off-screen anchor scrolls it into view, and with the vocabulary's
+ * `scroll-behavior: smooth` that scroll is an animation: the `focus` event
+ * fires while the anchor is still off-screen, so a one-shot placement
+ * parked the preview outside the viewport (CI caught it; a fast local
+ * scroll had already landed). While open, every scroll and resize
+ * re-places the box, and the placement is clamped into the viewport.
+ *
  * Content is CLONED from the source element with ids and chrome stripped
  * (`cloneContent`), so a preview can never mint a duplicate id, and the
  * box itself carries a chrome class extraction skips (spec/extraction.md
@@ -31,6 +40,11 @@ function ensure(): HTMLElement {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') hide();
   });
+  const track = (): void => {
+    if (current && box && !box.hidden) place(current, box);
+  };
+  window.addEventListener('scroll', track, { passive: true, capture: true });
+  window.addEventListener('resize', track, { passive: true });
   return box;
 }
 
@@ -42,6 +56,7 @@ function place(anchor: Element, b: HTMLElement): void {
   if (left + w > window.innerWidth - 8) left = Math.max(8, window.innerWidth - w - 8);
   let top = r.bottom + 6;
   if (top + h > window.innerHeight - 8 && r.top - h - 6 > 0) top = r.top - h - 6;
+  top = Math.max(8, Math.min(top, window.innerHeight - h - 8));
   b.style.left = left + 'px';
   b.style.top = top + 'px';
 }

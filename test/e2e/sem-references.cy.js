@@ -70,6 +70,27 @@ function assertReferences(url, marker) {
     cy.get('.sem-popover').should('not.be.visible');
   });
 
+  it('the preview follows its anchor through a scroll and stays in the viewport', () => {
+    // Regression: focus() scrolls the anchor into view; under smooth
+    // scrolling the focus event fires before the scroll lands, so a
+    // one-shot placement parked the preview off-screen (CI, site.cy.js).
+    cy.scrollTo('top');
+    cy.get('#cite-rfc-1').focus();
+    cy.get('.sem-popover').should('be.visible');
+    cy.scrollTo(0, 120);
+    // Retried: the scroll event that re-places the box is dispatched at the
+    // next rendering opportunity, after scrollTo has already moved the rect.
+    cy.get('.sem-popover').should(($p) => {
+      const win = $p[0].ownerDocument.defaultView;
+      const a = win.document.getElementById('cite-rfc-1').getBoundingClientRect();
+      const p = $p[0].getBoundingClientRect();
+      expect(p.top, 'popover sits under its anchor after a scroll').to.be.closeTo(a.bottom + 6, 2);
+      expect(p.top).to.be.at.least(0);
+      expect(p.bottom).to.be.at.most(win.innerHeight);
+    });
+    cy.get('.sem-popover').should('be.visible');
+  });
+
   it('the preview never carries backlink chrome or duplicate ids', () => {
     cy.get('#cite-rfc-1').focus();
     cy.get('.sem-popover .sem-references-backlinks').should('not.exist');
