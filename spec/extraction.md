@@ -70,12 +70,13 @@ interface SemRecord {
 
 ## 3. Emission rules
 
-1. **One record per vocabulary element**, in document order. Twenty
+1. **One record per vocabulary element**, in document order. Twenty-one
    element types mint records: `sem-agent`, `sem-note`, `sem-facts`,
    `sem-fact`, `sem-details`, `sem-detail`, `sem-procedure`, `sem-step`,
    `sem-properties`, `sem-property`, `sem-views`, `sem-view`, `sem-reveal`,
    `sem-progress`, (R/W1) `sem-chronology`, `sem-event`, `sem-code`,
-   `sem-references`, `sem-reference`, and (R/W2) `sem-table`. Inline
+   `sem-references`, `sem-reference`, (R/W2) `sem-table` and (R/W2.2)
+   `sem-md`. Inline
    citations and glossary term anchors are plain `<a>` and mint nothing;
    `sem-reader` is chrome and mints nothing (rule 7); `sem-source` is a
    transparent wrapper and mints nothing (rule 8).
@@ -98,7 +99,11 @@ interface SemRecord {
    `.sem-reader-outline`, `.sem-reader-progress`, `.sem-table-chrome`,
    `.sem-table-status`, `.sem-table-filter`, `.sem-source-chrome`,
    `.sem-source-fence` (the derived markup fence, `sem-code` inside it
-   included), `.sem-source-raw` (the core's `text/plain` snapshot), and the
+   included), `.sem-source-raw` (the core's inert `template` snapshot),
+   `.sem-md-chrome`, `.sem-md-body` (the rendering — a projection of
+   `source`, never content of its own), `.sem-md-raw` (the source fence,
+   the `sem-code` inside it included; §4 reads `source` from it on
+   purpose), and the
    `<summary>` the reveal fallback synthesizes inside its `<details>`. An
    authored `<details>`/`<summary>` elsewhere in the document is ordinary
    content and is not skipped.
@@ -291,6 +296,25 @@ normalised single-line form of `source`.
   out-of-range lines dropped; the parser is shared with the renderer.
 - `data-wrap` is presentation and is not extracted.
 
+### `sem-md`
+
+`fields: { source }`; `text` = the normalised single-line form of `source`.
+
+- `source` is the **normalised Markdown** — the element's text with the
+  common leading indentation of its non-blank lines stripped and leading /
+  trailing blank lines dropped (`src/shared/mdsource.ts`, the one rule the
+  renderer and the extractor share). Third recorded exception to the
+  normalised-text rule: Markdown is whitespace-sensitive, so a consumer
+  gets a string it can parse.
+- Once enhanced the element's text lives in the raw fence's `<code>`
+  (`.sem-md-raw`); the extractor reads it there, and from the element's
+  own text when no fence exists, and applies the (idempotent)
+  normalisation on **both** paths — so the §5 invariant is enforced by the
+  extractor, not by the fence happening to stay byte-identical. The rendered `.sem-md-body` is never read: a rendering is a
+  projection of the source, not a second copy of the content.
+- `data-view-as` (`rendered` | `raw`) is presentation, rewritten by the
+  toggle, and is not extracted (§5c).
+
 ### `sem-references` / `sem-reference`
 
 `sem-references` is a container: `fields: {}`, `text: ""`, carrying
@@ -404,7 +428,7 @@ attributes describe initial *display* state and are rewritten at runtime:
 
 | Attribute | Who mutates it | Why it is excluded |
 | :-- | :-- | :-- |
-| `data-view-as` | author; the `sem-source` toggle rewrites it (`html` / `source`) | Presentation parameter by definition (conventions §2: "identity unchanged"). Including it would make `E(V(D, m)) ≠ E(D)` by construction and contradict every schema's "`view-as` never changes extraction". |
+| `data-view-as` | author; the `sem-source` toggle rewrites it (`html` / `source`), the `sem-md` toggle (`rendered` / `raw`) | Presentation parameter by definition (conventions §2: "identity unchanged"). Including it would make `E(V(D, m)) ≠ E(D)` by construction and contradict every schema's "`view-as` never changes extraction". |
 | `data-active` | fallback normalizes it onto the first view; every tab click moves it | Reports which tab a reader is looking at. Not a property of the document. |
 | `collapsed` | fallback removes it when the reader expands a note | Initial disclosure state. Not a property of the document. |
 
@@ -436,10 +460,10 @@ summary, a note's variant, an agent's bio and instructions, a view's name,
 an event's `when` / `until` / `status`, a code listing's `lang` and
 `filename`, a reference's `href` and `cite`, a table's `columns`);
 `text` already carries the rest. A `sem-table` additionally emits one
-indented line per row, cells joined with ` | `. `sem-code` is the one type whose head line carries no `: text`:
-its verbatim `source` follows as a `source:` line and an indented block
-(four spaces deeper than the head), so the listing survives the rendering
-intact.
+indented line per row, cells joined with ` | `. `sem-code` and `sem-md` are
+the two types whose head line carries no `: text`: their `source` follows
+as a `source:` line and an indented block (four spaces deeper than the
+head), so the listing — or the Markdown — survives the rendering intact.
 
 ## 7. The audience qualifier
 

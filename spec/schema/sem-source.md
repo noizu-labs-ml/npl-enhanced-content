@@ -6,7 +6,8 @@ Contract per conventions.md v0.4. BDD source of truth for
 ## Scope semantics
 
 A transparent wrapper around ordinary SemText content that lets a reader
-flip between the **rendered** section and the **literal authored markup**
+flip between the **rendered** section and its **markup as parsed, before
+any enhancement** (the pre-enhancement serialisation of the section)
 of the same section. It exists for documents that teach or demonstrate the
 vocabulary: the reader sees what a fact deck renders as, then sees exactly
 what was written to get it, without a second copy of the markup that could
@@ -55,19 +56,26 @@ in the reading bundle.
 
 **Core fallback (`dist/semtext-fallback.js`) — snapshot, registered
 FIRST.** Before any other handler runs, every `sem-source` receives a
-child `<script type="text/plain" class="sem-source-raw">` holding the
-element's `innerHTML` as it stood at that moment — the authored markup,
-before chrome, before line spans, before any `hidden`. Idempotent: an
-element that already has a snapshot is left alone; a wrapper nested in
-another wrapper is skipped with a console warning (unsupported); the
-reading bundle gives it no chrome either, so the outer wrapper owns it. The
-snapshot is inert (text/plain), invisible, and skipped by extraction.
-Lit elements claim `data-sem-upgraded` at parse time (anti-flash gating
-needs it) and the fence strips that marker when it renders; every other
-attribute a Lit element writes is deferred until the parse has finished
+child `<template class="sem-source-raw">` whose content is a DOM clone of
+the element's children as they stood at that moment — the section before
+chrome, before line spans, before any `hidden`. The snapshot is nodes,
+never a string: nothing is serialised and re-parsed, so there is no HTML
+sink and no `</script` escaping; the fence text is a serialisation of the
+clone (`template.innerHTML` read). It is the parser's serialisation, not
+the file's bytes: attribute quoting and order, self-closing forms and
+entity spelling follow the DOM, so the fence is "the document as parsed",
+never a byte-for-byte copy of the source file. Idempotent: an element that
+already has a snapshot is left alone; a wrapper nested in another wrapper
+is skipped with a console warning (unsupported); the reading bundle gives
+it no chrome either, so the outer wrapper owns it. Template content is not
+part of the document tree, so it is inert, invisible, unreachable by CSS
+and `querySelectorAll`, and skipped by extraction. Lit elements claim
+`data-sem-upgraded` at parse time (anti-flash gating needs it) and the
+fence strips that marker when it renders; every other attribute a Lit
+element writes is deferred until the parse has finished
 (`SemElement.afterParse`), i.e. after the snapshot, so the fence is the
-authored markup. A `</script` sequence inside the markup is
-escaped as `<\/script` in the snapshot and restored on read.
+authored markup. An authored `<\/script` sequence and a real end tag both
+round-trip as written, because nothing is escaped.
 
 **Reading bundle (`dist/semtext-reading.js`) — chrome and fence.**
 
@@ -80,8 +88,11 @@ escaped as `<\/script` in the snapshot and restored on read.
 - Activating `Source` builds the fence **once**: a `.sem-source-fence`
   appended as the element's last child, holding one class-form
   `div.sem-code[data-lang="html"][data-controls="copy,wrap"]` whose
-  `<pre><code>` text is the snapshot with the common leading indentation
-  removed and leading/trailing blank lines trimmed. The fence's `sem-code`
+  `<pre><code>` text is the snapshot with the parse-time tier markers
+  removed as attributes (on a parsed clone, never by string replacement),
+  the section's common leading indentation removed **outside**
+  preformatted ranges (`<pre>`, `<textarea>` content is verbatim), and
+  leading/trailing blank lines trimmed. The fence's `sem-code`
   is enhanced by the same `enhanceCodeElement` the reading bundle uses, so
   copy and wrap work in it. `textContent` only — the markup is never
   parsed as HTML on the way in.
@@ -93,9 +104,12 @@ escaped as `<\/script` in the snapshot and restored on read.
   enhance time and starts in source mode.
 - The fence is built at most once; switching back and forth shows and
   hides it. Nothing is persisted. Focus stays on the activated button.
-- A deep link or outline link into a wrapper in source mode switches it
-  back to rendered first (fallback core `target.ts`), so the target is
-  visible when it scrolls into view.
+- A deep link or outline link into a wrapper in source mode (the target
+  may be the wrapper or any descendant — the resolver walks every
+  ancestor) switches it back to rendered first (fallback core
+  `target.ts`): through the chrome's `Rendered` button when the reading
+  bundle built one, else by setting `data-view-as="html"` directly, so
+  the core keeps its reveal contract on its own.
 - Without a snapshot (a document that loaded the reading bundle but not
   the core) the fence reads `innerHTML` at build time, chrome and all,
   and a console warning names the cause — recorded limit; ship both

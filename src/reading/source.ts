@@ -4,9 +4,10 @@
  *
  * Spec: spec/schema/sem-source.md. The markup comes from the snapshot the
  * fallback CORE takes before any handler runs (`src/fallback/source.ts`,
- * a `script.sem-source-raw[type="text/plain"]` child); this module only
- * builds the chrome and, on first request, a fence holding one class-form
- * `sem-code` enhanced by the same `enhanceCodeElement` as any listing.
+ * a DOM clone of the children inside a `template.sem-source-raw`); this
+ * module only builds the chrome and, on first request, a fence holding one
+ * class-form `sem-code` enhanced by the same `enhanceCodeElement` as any
+ * listing.
  * Idempotent on the chrome's presence, so bundle scan and Lit wrapper may
  * both run. Mode is `data-view-as` on the element (presentation, never
  * extracted); nothing is persisted.
@@ -18,28 +19,68 @@ import { enhanceCodeElement } from './code.js';
 
 export const SOURCE = ':is(sem-source, .sem-source)';
 
-/** Snapshot text → fence text: unescape, drop parse-time tier markers, dedent, trim. */
-function clean(raw: string): string {
-  const lines = raw
-    .replace(/<\\\/script/gi, '</script')
-    .replace(/ data-sem-(?:upgraded|fallback)=""/g, '')
-    .split('\n');
+/**
+ * Snapshot nodes → fence text.
+ *
+ * 1. Work on a CLONE of the snapshot's nodes inside a fresh, inert
+ *    `<template>`: no string is ever parsed as HTML, so there is no sink;
+ *    serialisation (`template.innerHTML` read) is the only text step.
+ * 2. Drop the parse-time tier markers by removing the ATTRIBUTES — never
+ *    a string replace, so prose or a listing that happens to contain the
+ *    marker text is untouched.
+ * 3. Remove the common leading indentation of the section, computed and
+ *    applied only OUTSIDE preformatted elements (`<pre>`, `<textarea>`),
+ *    whose line content is verbatim. The elements are located in the
+ *    clone and swapped for a one-line sentinel before the dedent. The
+ *    sentinel is a control character chosen to be absent from the
+ *    serialised text, so authored content can never collide with it.
+ */
+function clean(nodes: DocumentFragment): string {
+  const tpl = document.createElement('template');
+  tpl.content.appendChild(nodes.cloneNode(true));
+  const root = tpl.content;
+  root.querySelectorAll('[data-sem-upgraded], [data-sem-fallback]').forEach((e) => {
+    e.removeAttribute('data-sem-upgraded');
+    e.removeAttribute('data-sem-fallback');
+  });
+  const keep: string[] = [];
+  // Sentinel: a C0 control (U+0001–U+001F) absent from the text; bounded
+  // so the search never wanders into printable or surrogate ranges. If all
+  // 31 occur (pathological), fall back to a run of U+0001 longer than any
+  // present, which is absent by construction.
+  const html = tpl.innerHTML;
+  let mark = '';
+  for (let c = 1; c < 0x20 && !mark; c++) if (html.indexOf(String.fromCharCode(c)) < 0) mark = String.fromCharCode(c);
+  if (!mark) { mark = '\u0001'; while (html.indexOf(mark) >= 0) mark += '\u0001'; }
+  root.querySelectorAll('pre, textarea').forEach((e) => {
+    if (e.parentElement?.closest('pre, textarea')) return; // inner: kept whole with its outer
+    e.replaceWith(document.createTextNode(mark + (keep.push(e.outerHTML) - 1) + mark));
+  });
+  const lines = tpl.innerHTML.split('\n');
   while (lines.length && !lines[0].trim()) lines.shift();
   while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
   let indent = Infinity;
   lines.forEach((l) => {
     if (l.trim()) indent = Math.min(indent, l.match(/^[ \t]*/)![0].length);
   });
-  return lines.map((l) => l.slice(indent < Infinity ? indent : 0)).join('\n');
+  return lines.map((l) => l.slice(indent < Infinity ? indent : 0)).join('\n')
+    .split(mark).map((s, i) => (i % 2 ? keep[+s] : s)).join('');
 }
 
 export function enhanceSourceElement(el: Element): void {
   if (el.querySelector(':scope > .sem-source-chrome')) return;
   if (el.parentElement?.closest(SOURCE)) return; // nested: the outer wrapper owns it (core warned)
-  const snap = el.querySelector(':scope > script.sem-source-raw');
-  // No core snapshot (reading bundle alone): best effort, chrome and all.
+  const snap = el.querySelector<HTMLTemplateElement>(':scope > template.sem-source-raw');
+  // No core snapshot (reading bundle alone): best effort, chrome and all —
+  // clone the live children now (a DOM clone, still never parsed text).
   if (!snap) warn('sem-source: no snapshot (load semtext-fallback.js before the reading bundle); showing the live DOM');
-  const raw = snap ? snap.textContent || '' : el.innerHTML;
+  let raw: DocumentFragment;
+  if (snap) {
+    raw = snap.content;
+  } else {
+    raw = document.createDocumentFragment();
+    el.childNodes.forEach((n) => raw.appendChild(n.cloneNode(true)));
+  }
 
   const chrome = document.createElement('div');
   chrome.className = 'sem-source-chrome';

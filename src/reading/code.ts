@@ -14,36 +14,9 @@
 
 import { param, hasParam } from '../shared/attr.js';
 import { parseMarks } from '../shared/marks.js';
+import { copyText, canCopy } from '../shared/clipboard.js';
 
 export const CODE = ':is(sem-code, .sem-code)';
-
-function legacyCopy(text: string): boolean {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.setAttribute('aria-hidden', 'true');
-  ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-  document.body.appendChild(ta);
-  ta.select();
-  let ok = false;
-  try { ok = document.execCommand('copy'); } catch { ok = false; }
-  ta.remove();
-  return ok;
-}
-
-function copy(text: string, status: HTMLElement): void {
-  let timer = 0;
-  const done = (ok: boolean): void => {
-    status.textContent = ok ? 'Copied' : 'Copy failed';
-    clearTimeout(timer);
-    timer = window.setTimeout(() => { status.textContent = ''; }, 2000);
-  };
-  const clip = navigator.clipboard;
-  if (clip && typeof clip.writeText === 'function') {
-    clip.writeText(text).then(() => done(true), () => done(legacyCopy(text)));
-  } else {
-    done(legacyCopy(text));
-  }
-}
 
 function wrapLines(code: Element, marks: number[]): void {
   if (code.children.length) return; // author-side markup: leave as authored
@@ -87,7 +60,7 @@ export function enhanceCodeElement(el: Element): void {
   status.setAttribute('role', 'status');
   status.setAttribute('aria-live', 'polite');
 
-  const canCopy = !!(navigator.clipboard || document.queryCommandSupported?.('copy'));
+  const copyOk = canCopy();
   const button = (act: string, text: string): HTMLButtonElement => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -98,7 +71,7 @@ export function enhanceCodeElement(el: Element): void {
   };
   let wrapBtn: HTMLButtonElement | null = null;
   controls.forEach((c) => {
-    if (c === 'copy' && canCopy) button('copy', 'Copy');
+    if (c === 'copy' && copyOk) button('copy', 'Copy');
     if (c === 'wrap' && !wrapBtn) {
       wrapBtn = button('wrap', 'Wrap');
       wrapBtn.setAttribute('aria-pressed', String(hasParam(el, 'wrap')));
@@ -109,7 +82,7 @@ export function enhanceCodeElement(el: Element): void {
 
   chrome.addEventListener('click', (e) => {
     const act = (e.target as Element).closest('button')?.getAttribute('data-act');
-    if (act === 'copy') copy(code.textContent || '', status);
+    if (act === 'copy') copyText(code.textContent || '', status);
     if (act === 'wrap' && wrapBtn) {
       const on = !hasParam(el, 'wrap');
       el.toggleAttribute('data-wrap', on);

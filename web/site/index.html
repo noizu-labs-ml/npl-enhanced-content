@@ -23,20 +23,20 @@
 
 <!-- GA_MEASUREMENT_ID_SNIPPET -->
 
-<title>SemText — semantic markup that reads three ways</title>
-<meta name="description" content="SemText is an XHTML-first markup vocabulary. One file renders as a styled interactive document in a browser, extracts as structured records for a language model, and prints as annotated text in a terminal. No build step, no React.">
+<title>SemText — one XHTML file, in place of Markdown</title>
+<meta name="description" content="SemText: one XHTML file that models read and write instead of Markdown. Readable as text as-is; opened in a browser, the same markup becomes working web components.">
 <link rel="canonical" href="https://semtext.dev/">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://semtext.dev/">
 <meta property="og:site_name" content="SemText">
-<meta property="og:title" content="SemText — semantic markup that reads three ways">
-<meta property="og:description" content="One HTML file: a styled interactive document for a person, structured records for a model, annotated text for a terminal.">
+<meta property="og:title" content="SemText — one XHTML file, in place of Markdown">
+<meta property="og:description" content="SemText: one XHTML file that models read and write instead of Markdown. Readable as text as-is; opened in a browser, the same markup becomes working web components.">
 <meta property="og:image" content="https://semtext.dev/og.png">
-<meta property="og:image:alt" content="SemText — semantic markup that reads three ways">
+<meta property="og:image:alt" content="SemText — one XHTML file, in place of Markdown">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="SemText — semantic markup that reads three ways">
-<meta name="twitter:description" content="One HTML file: a styled interactive document for a person, structured records for a model, annotated text for a terminal.">
+<meta name="twitter:title" content="SemText — one XHTML file, in place of Markdown">
+<meta name="twitter:description" content="SemText: one XHTML file that models read and write instead of Markdown. Readable as text as-is; opened in a browser, the same markup becomes working web components.">
 <meta name="twitter:image" content="https://semtext.dev/og.png">
 
 <!-- Inline SVG favicon. A data URI rather than a file: this page must render
@@ -354,18 +354,20 @@ section { padding-block: var(--pg-space) 0; }
      the shipped page is self-contained and works from file:// with no
      network — which is the same guarantee every SemText document makes.
 
-     CDN SWAP POINT: once cdn.semtext.dev exists, replace the four markers
+     CDN SWAP POINT: once cdn.semtext.dev exists, replace the five markers
      below with
          <script src="https://cdn.semtext.dev/<version>/semtext-fallback.js"></script>
          <script src="https://cdn.semtext.dev/<version>/semtext-reading.js"></script>
          <script src="https://cdn.semtext.dev/<version>/semtext.js"></script>
          <script src="https://cdn.semtext.dev/<version>/semtext-extract.js"></script>
+         <script src="https://cdn.semtext.dev/<version>/semtext-md.js"></script>
      and nothing else on this page changes. The CDN does not exist yet, so
      the page ships self-contained today. -->
 <!-- sem:inline fallback -->
 <!-- sem:inline reading -->
 <!-- sem:inline bundle -->
 <!-- sem:inline extract -->
+<!-- sem:inline md -->
 </head>
 
 <body>
@@ -397,17 +399,27 @@ section { padding-block: var(--pg-space) 0; }
 
   <!-- Hero ------------------------------------------------------------- -->
   <div class="pg-hero pg-col"><div class="pg-narrow">
-    <h1>Semantic markup that reads three ways.</h1>
+    <h1>One XHTML file, in place of Markdown.</h1>
     <p class="pg-lede">
-      SemText is a markup vocabulary for HTML documents. You write what the
-      content <em>is</em> — a fact, a step, a caveat, a property — and the same
-      file renders as a styled interactive page in a browser, extracts as
-      structured records for a language model, and prints as annotated text in
-      a terminal.
+      SemText is a semantic text format: a single XHTML file that a language
+      model reads and writes the way it reads and writes Markdown today. The
+      difference is what the text can say. A fact, a step, a caveat, a
+      distractor, a term and its definition are each written as what they
+      <em>are</em> — a class and a few attributes on a plain element — so the
+      structure is in the text itself, not inferred from it.
     </p>
     <p class="pg-sub">
-      A document is one standalone <code>.html</code> file. Double-click it.
-      There is no server, no build step and no framework to install.
+      Read it as-is. A model, a diff, a terminal, or a person with the file
+      open in an editor sees readable text in document order, with every
+      qualifier spelled out next to the thing it qualifies. Nothing has to
+      run first.
+    </p>
+    <p class="pg-sub">
+      Open it in a browser and the same markup becomes working web
+      components: flashcards flip, quizzes score, tabs switch, code copies,
+      terms preview, and a reader bar tracks the outline. That works in any
+      current browser from a double-clicked file, and none of it changes the
+      text the model wrote.
     </p>
     <p class="pg-actions">
       <a class="pg-btn primary" href="#try">See it work</a>
@@ -425,16 +437,19 @@ section { padding-block: var(--pg-space) 0; }
   <section id="why" aria-labelledby="why-h">
     <div class="pg-col"><div class="pg-narrow">
       <p class="pg-eyebrow">Why this exists</p>
-      <h2 id="why-h">One document, three readers who want different things.</h2>
+      <h2 id="why-h">One file, read as text, as structure, and as a page.</h2>
       <p>
-        A rich document usually ends up as three artifacts that drift: a page
-        for people, a JSON export for tooling, and a plain-text dump for
-        anything without a browser. SemText's bet is that one file can serve
-        all three, if the markup says what each piece of content means instead
-        of how it should look.
+        Markdown carries prose well and rich content poorly: it has no place
+        to mark a conclusion as distinct from a decoy, a step as blocked, or a
+        term as defined, so rich content ends up as a page for people plus a
+        separate structured copy for tooling, and the two drift. SemText keeps
+        one file. It stays XHTML, so a browser already knows how to display
+        it and web components can enhance it in place, and it stays text, so
+        a model can read and write it directly with no conversion step in
+        either direction.
       </p>
       <p class="pg-sub">
-        Pick a reader to see what they get from the same file.
+        Pick a reader to see what each one gets from the same file.
       </p>
 
       <div class="sem-views" id="readers" role="region"
@@ -457,13 +472,14 @@ section { padding-block: var(--pg-space) 0; }
             the structure, because the structure is written down.
           </p>
         </div>
-        <div class="sem-view" data-name="Terminal" role="tabpanel" aria-label="Terminal">
+        <div class="sem-view" data-name="Text" role="tabpanel" aria-label="Text">
           <p>
-            <code>extractText(document)</code> walks the authored markup and
-            returns annotated lines — one per record, indented by containment,
-            tagged with ids and kinds. Generated chrome is skipped, so the
-            output does not depend on whether scripts ran or which view is on
-            screen.
+            The file opened in an editor, a diff, or a terminal is readable
+            as it is: prose in document order, each qualifier written beside
+            the thing it qualifies, no generated markup to skip past. A model
+            writes the same text back. When a condensed record view is
+            useful, an optional script derives one from the markup, but
+            nothing depends on it.
           </p>
         </div>
       </div>
@@ -741,10 +757,11 @@ section { padding-block: var(--pg-space) 0; }
           <caption>Shipped scripts, measured by the build</caption>
           <thead><tr><th scope="col">Artifact</th><th scope="col">Minified</th><th scope="col">Gzipped</th><th scope="col">Global</th></tr></thead>
           <tbody>
-            <tr><td>semtext.js</td><td data-value="41.4">41.4 KB</td><td data-value="14.1">14.1 KB</td><td>SemText</td></tr>
-            <tr><td>semtext-fallback.js</td><td data-value="12.5">12.5 KB</td><td data-value="4.4">4.4 KB</td><td>SemTextFallback</td></tr>
-            <tr><td>semtext-reading.js</td><td data-value="18.8">18.8 KB</td><td data-value="6.6">6.6 KB</td><td>SemTextReading</td></tr>
-            <tr><td>semtext-extract.js</td><td data-value="9.2">9.2 KB</td><td data-value="3.3">3.3 KB</td><td>SemTextExtract</td></tr>
+            <tr><td>semtext.js</td><td data-value="<!-- sem:inline size-kb bundle -->"><!-- sem:inline size-kb bundle --> KB</td><td data-value="<!-- sem:inline size-gzkb bundle -->"><!-- sem:inline size-gzkb bundle --> KB</td><td>SemText</td></tr>
+            <tr><td>semtext-fallback.js</td><td data-value="<!-- sem:inline size-kb fallback -->"><!-- sem:inline size-kb fallback --> KB</td><td data-value="<!-- sem:inline size-gzkb fallback -->"><!-- sem:inline size-gzkb fallback --> KB</td><td>SemTextFallback</td></tr>
+            <tr><td>semtext-reading.js</td><td data-value="<!-- sem:inline size-kb reading -->"><!-- sem:inline size-kb reading --> KB</td><td data-value="<!-- sem:inline size-gzkb reading -->"><!-- sem:inline size-gzkb reading --> KB</td><td>SemTextReading</td></tr>
+            <tr><td>semtext-extract.js</td><td data-value="<!-- sem:inline size-kb extract -->"><!-- sem:inline size-kb extract --> KB</td><td data-value="<!-- sem:inline size-gzkb extract -->"><!-- sem:inline size-gzkb extract --> KB</td><td>SemTextExtract</td></tr>
+            <tr><td>semtext-md.js</td><td data-value="<!-- sem:inline size-kb md -->"><!-- sem:inline size-kb md --> KB</td><td data-value="<!-- sem:inline size-gzkb md -->"><!-- sem:inline size-gzkb md --> KB</td><td>SemTextMd</td></tr>
           </tbody>
         </table>
       </div>
@@ -755,7 +772,7 @@ section { padding-block: var(--pg-space) 0; }
         between the rendered result and the markup that produced it. The
         core fallback copies each wrapper's <code>innerHTML</code> into an
         inert <code>text/plain</code> script before any other handler runs,
-        so the fence shows the document as written, not the DOM after the
+        so the fence shows the section as parsed, before any chrome went in, not the DOM after the
         chrome went in; the reading bundle renders that copy through a
         <code>sem-code</code> (copy, wrap) on the first switch. The wrapper
         mints nothing and its children extract as if it were absent.
@@ -769,6 +786,29 @@ section { padding-block: var(--pg-space) 0; }
           <div class="sem-step" role="listitem" data-status="current">exchange the refresh token</div>
           <div class="sem-step" role="listitem">retire the presented token</div>
         </div>
+      </div>
+
+      <h3 id="rd-md-h">Markdown</h3>
+      <p>
+        <code>sem-md</code> holds Markdown as its text and renders it in the
+        browser; tables are the case it exists for. The renderer is a small
+        recursive-descent parser that builds nodes with
+        <code>createElement</code> and <code>textContent</code>, so markup
+        inside the Markdown arrives as characters rather than elements, and
+        a link with a <code>javascript:</code> URL loses its href. The
+        normalised source is kept in a <code>sem-code</code> fence behind
+        the toggle, and that fence is what extraction reads back as the
+        record. It ships as its own script, <code>semtext-md.js</code>, so a
+        document with no Markdown never loads the parser.
+      </p>
+      <div class="sem-md" id="rd-md" data-label="Who renders sem-md" aria-labelledby="rd-md-h">
+        | Tier     | Script            | Renders `sem-md` as              |
+        | :------- | :---------------- | :------------------------------- |
+        | none     | —                 | the source, pre-wrapped          |
+        | fallback | `semtext-md.js`   | rendered HTML plus a raw fence   |
+        | upgraded | `semtext.js`      | the same, from the Lit wrapper   |
+
+        Both scripted tiers call **one** enhance function; the *tier marker* is the only difference.
       </div>
 
       <h3 id="rd-refs-h">References</h3>
@@ -860,25 +900,27 @@ section { padding-block: var(--pg-space) 0; }
       <p class="pg-eyebrow">Surface</p>
       <h2 id="surface-h">Everything that ships.</h2>
       <p class="pg-narrow">
-        Four independent classic scripts, each installing one global, plus two
+        Five independent classic scripts, each installing one global, plus two
         stylesheets. They are separate on purpose: the fallback tier has to run
-        in a document that never loads Lit, and a document with no listings or
-        references need not carry the reading bundle.
+        in a document that never loads Lit, a document with no listings or
+        references need not carry the reading bundle, and one with no Markdown
+        need not carry the parser.
       </p>
 
       <div class="sem-properties" data-kind="artifacts" role="group"
            aria-label="Shipped artifacts">
-        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · 38.9 KB minified, 13.5 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · 11.9 KB minified, 4.3 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews, the reader bar, table sort and filter · global <code>SemTextReading</code> · 16.6 KB minified, 6.0 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · 9.1 KB minified, 3.3 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · <!-- sem:inline size-mg bundle --></span></div>
+        <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · <!-- sem:inline size-mg fallback --></span></div>
+        <div class="sem-property" data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews, the reader bar, table sort and filter · global <code>SemTextReading</code> · <!-- sem:inline size-mg reading --></span></div>
+        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · <!-- sem:inline size-mg extract --></span></div>
+        <div class="sem-property" data-key="semtext-md.js" role="definition" aria-label="semtext-md.js"><span>The <code>sem-md</code> Markdown renderer · global <code>SemTextMd</code> · <!-- sem:inline size-mg md --></span></div>
         <div class="sem-property" data-key="_vocabulary.css" role="definition" aria-label="_vocabulary.css"><span>Structure for the <code>sem-*</code> classes. Reads <code>--sem-*</code> tokens, declares none.</span></div>
         <div class="sem-property" data-key="theme css" role="definition" aria-label="theme css"><span>Token values only, plus a <code>prefers-color-scheme</code> block. A new theme is a copy with new values.</span></div>
       </div>
 
       <h3>The vocabulary</h3>
       <p class="pg-narrow">
-        Twenty element types mint records:
+        Twenty-one element types mint records:
         <code>sem-agent</code>, <code>sem-note</code>, <code>sem-facts</code>
         and <code>sem-fact</code>, <code>sem-details</code> and
         <code>sem-detail</code>, <code>sem-procedure</code> and
@@ -887,10 +929,10 @@ section { padding-block: var(--pg-space) 0; }
         <code>sem-view</code>, <code>sem-reveal</code>,
         <code>sem-progress</code>, <code>sem-chronology</code> and
         <code>sem-event</code>, <code>sem-code</code>,
-        <code>sem-references</code> and <code>sem-reference</code>, and
-        <code>sem-table</code>. <code>sem-reader</code> is chrome and mints
-        nothing. This page
-        mints records for seventeen of them; the three it leaves out are
+        <code>sem-references</code> and <code>sem-reference</code>,
+        <code>sem-table</code> and <code>sem-md</code>. <code>sem-reader</code>
+        is chrome and mints nothing. This page
+        mints records for eighteen of them; the three it leaves out are
         <code>sem-details</code>, <code>sem-detail</code> and
         <code>sem-progress</code>, because nothing here is an occlusion
         exercise and there is no honest number to meter.

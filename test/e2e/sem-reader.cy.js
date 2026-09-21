@@ -219,7 +219,8 @@ describe('sem-reader', () => {
 
     it('generates one link per h2/h3 in the wrapper, assigning runtime ids', () => {
       cy.get('#rd nav.sem-reader-outline[aria-label="Contents"]').should('have.length', 1);
-      cy.get('.sem-enhanced-document h2, .sem-enhanced-document h3').then(($h) => {
+      // headings rendered inside a sem-md body are that record's content, not outline entries
+      cy.get('.sem-enhanced-document :is(h2, h3):not(.sem-md-body *)').then(($h) => {
         cy.get('#rd nav.sem-reader-outline a').should('have.length', $h.length);
         // authored ids (rv-h, vw-h) are kept; the rest get runtime ids
         $h.each((_, h) => expect(h.id).to.match(/^(sem-h-\d+|rv-h|vw-h)$/));
@@ -229,7 +230,7 @@ describe('sem-reader', () => {
       });
       cy.get('#rd nav.sem-reader-outline a').first().should('have.text', 'Glossary');
       // sibling h2s stay flat; the two h3s under "Disclosures" nest in one sub-list
-      cy.get('.sem-enhanced-document h2').then(($h2) => {
+      cy.get('.sem-enhanced-document h2:not(.sem-md-body *)').then(($h2) => {
         cy.get('#rd nav.sem-reader-outline > ol > li > a').should('have.length', $h2.length);
       });
       cy.get('#rd nav.sem-reader-outline ol ol').should('have.length', 1);
@@ -296,6 +297,38 @@ describe('sem-reader', () => {
       cy.get('#toc a').should('have.length', 5);
       cy.get('#toc a').first().click();
       cy.location('hash').should('equal', '#glossary-h');
+    });
+
+    it('/demo/reading-lit.nojs.html — the reader is not sticky (no chrome to stay pinned above)', () => {
+      cy.visit('/demo/reading-lit.nojs.html');
+      cy.get('#rd').should(($r) => expect(cs($r[0]).position).to.equal('static'));
+    });
+
+    it('/demo/reading-lit.nojs.html — no overlap regression: the authored nav never covers the first heading after scrolling', () => {
+      // Guards the static-position assertion above: position:static alone
+      // doesn't prove the nav stays out of the reading flow's way. Scroll
+      // past it and check the authored nav's box and the first content
+      // heading's box don't intersect — a future regression to overlapping
+      // content without sticky would fail here even if `position` still
+      // read `static` for some other reason.
+      cy.visit('/demo/reading-lit.nojs.html');
+      cy.scrollTo(0, 400);
+      cy.get('#toc').then(($nav) => {
+        const navBox = $nav[0].getBoundingClientRect();
+        cy.get('h1').first().then(($h1) => {
+          const headingBox = $h1[0].getBoundingClientRect();
+          const intersects = navBox.left < headingBox.right
+            && navBox.right > headingBox.left
+            && navBox.top < headingBox.bottom
+            && navBox.bottom > headingBox.top;
+          expect(intersects, 'authored nav bounding box does not intersect the first heading').to.be.false;
+        });
+      });
+    });
+
+    it('/demo/reading-lit.html — the upgraded reader is sticky', () => {
+      cy.visit('/demo/reading-lit.html');
+      cy.get('#rd').should(($r) => expect(cs($r[0]).position).to.equal('sticky'));
     });
   });
 });
