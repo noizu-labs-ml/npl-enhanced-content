@@ -8,7 +8,16 @@
 /** Remove HTML comments. A comment is prose about markup, not markup: a
  *  literal `<script` inside one must neither be stripped nor counted. */
 export function stripComments(html) {
-  return html.replace(/<!--[\s\S]*?-->/g, '');
+  // Repeat until stable: a single pass can leave a fresh `<!--` behind
+  // (`<!<!---->--` → `<!--`), which would then hide a `<script` from the
+  // stripper below. An opener that never closes is a malformed page.
+  let prev;
+  do {
+    prev = html;
+    html = html.replace(/<!--[\s\S]*?-->/g, '');
+  } while (html !== prev);
+  if (/<!--/.test(html)) throw new Error('stripComments: unclosed <!-- in page');
+  return html;
 }
 
 /** Remove whole <script> elements. A JS string cannot contain a literal

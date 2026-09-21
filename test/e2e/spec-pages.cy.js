@@ -58,7 +58,12 @@ const PAGES = [
   },
 ];
 
-const stripComments = (html) => html.replace(/<!--[\s\S]*?-->/g, '');
+// Repeated until stable so a nested opener (`<!<!---->--`) cannot survive one pass.
+const stripComments = (html) => {
+  let prev;
+  do { prev = html; html = html.replace(/<!--[\s\S]*?-->/g, ''); } while (html !== prev);
+  return html;
+};
 // A <style> element or a style= attribute on a real tag both count.
 const inlineStyles = (html) => {
   const h = stripComments(html);

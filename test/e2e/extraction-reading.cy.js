@@ -322,7 +322,7 @@ describe('extraction — reading elements', () => {
       let before;
       cy.visit('/demo/reading.html');
       extract().then((r) => { before = r; });
-      cy.get('#s-code > script.sem-source-raw').should('exist');
+      cy.get('#s-code > template.sem-source-raw').should('exist');
       cy.get('#s-code [data-act="source"]').click();
       cy.get('#s-code .sem-source-fence .sem-code').should('exist');
       extract().then((after) => {

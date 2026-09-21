@@ -4,9 +4,10 @@
  *
  * Spec: spec/schema/sem-source.md. The markup comes from the snapshot the
  * fallback CORE takes before any handler runs (`src/fallback/source.ts`,
- * a `script.sem-source-raw[type="text/plain"]` child); this module only
- * builds the chrome and, on first request, a fence holding one class-form
- * `sem-code` enhanced by the same `enhanceCodeElement` as any listing.
+ * a DOM clone of the children inside a `template.sem-source-raw`); this
+ * module only builds the chrome and, on first request, a fence holding one
+ * class-form `sem-code` enhanced by the same `enhanceCodeElement` as any
+ * listing.
  * Idempotent on the chrome's presence, so bundle scan and Lit wrapper may
  * both run. Mode is `data-view-as` on the element (presentation, never
  * extracted); nothing is persisted.
@@ -19,42 +20,35 @@ import { enhanceCodeElement } from './code.js';
 export const SOURCE = ':is(sem-source, .sem-source)';
 
 /**
- * Snapshot text → fence text.
+ * Snapshot nodes → fence text.
  *
- * 1. Unescape the core's `</script` guard: one backslash is removed from
- *    every `<\…\/script`, the exact inverse of what the core added, so an
- *    authored `<\/script` comes back as written.
- * 2. Drop the parse-time tier markers by parsing into an inert template
- *    and removing the ATTRIBUTES — never a string replace, so prose or a
- *    listing that happens to contain the marker text is untouched.
- *    Re-serialising a serialisation is stable, so nothing else changes.
+ * 1. Work on a CLONE of the snapshot's nodes inside a fresh, inert
+ *    `<template>`: no string is ever parsed as HTML, so there is no sink;
+ *    serialisation (`template.innerHTML` read) is the only text step.
+ * 2. Drop the parse-time tier markers by removing the ATTRIBUTES — never
+ *    a string replace, so prose or a listing that happens to contain the
+ *    marker text is untouched.
  * 3. Remove the common leading indentation of the section, computed and
  *    applied only OUTSIDE preformatted elements (`<pre>`, `<textarea>`),
  *    whose line content is verbatim. The elements are located in the
- *    parsed clone (so a `<pre` inside an attribute or a comment is not a
- *    range, and an unclosed one is whatever the parser closed) and swapped
- *    for a one-line sentinel before the dedent. The sentinel is a control
- *    character chosen to be absent from the serialised text, so authored
- *    content can never collide with it.
+ *    clone and swapped for a one-line sentinel before the dedent. The
+ *    sentinel is a control character chosen to be absent from the
+ *    serialised text, so authored content can never collide with it.
  */
-function clean(raw: string): string {
-  // Parsed into an INERT document (no scripts run, nothing loads, not a
-  // live DOM), never assigned to a live element's innerHTML. The explicit
-  // <body> puts the parser in "in body" mode from the first character, so
-  // the snapshot's leading whitespace (the dedent baseline) survives.
-  const doc = new DOMParser().parseFromString(
-    '<body>' + raw.replace(/<(\\+)\/script/gi, (_m, bs: string) => '<' + bs.slice(1) + '/script'), 'text/html');
-  const tpl = doc.body;
-  tpl.querySelectorAll('[data-sem-upgraded], [data-sem-fallback]').forEach((e) => {
+function clean(nodes: DocumentFragment): string {
+  const tpl = document.createElement('template');
+  tpl.content.appendChild(nodes.cloneNode(true));
+  const root = tpl.content;
+  root.querySelectorAll('[data-sem-upgraded], [data-sem-fallback]').forEach((e) => {
     e.removeAttribute('data-sem-upgraded');
     e.removeAttribute('data-sem-fallback');
   });
   const keep: string[] = [];
   let mark = '\u0001';
   while (tpl.innerHTML.indexOf(mark) >= 0) mark = String.fromCharCode(mark.charCodeAt(0) + 1);
-  tpl.querySelectorAll('pre, textarea').forEach((e) => {
+  root.querySelectorAll('pre, textarea').forEach((e) => {
     if (e.parentElement?.closest('pre, textarea')) return; // inner: kept whole with its outer
-    e.replaceWith(doc.createTextNode(mark + (keep.push(e.outerHTML) - 1) + mark));
+    e.replaceWith(document.createTextNode(mark + (keep.push(e.outerHTML) - 1) + mark));
   });
   const lines = tpl.innerHTML.split('\n');
   while (lines.length && !lines[0].trim()) lines.shift();
@@ -70,10 +64,17 @@ function clean(raw: string): string {
 export function enhanceSourceElement(el: Element): void {
   if (el.querySelector(':scope > .sem-source-chrome')) return;
   if (el.parentElement?.closest(SOURCE)) return; // nested: the outer wrapper owns it (core warned)
-  const snap = el.querySelector(':scope > script.sem-source-raw');
-  // No core snapshot (reading bundle alone): best effort, chrome and all.
+  const snap = el.querySelector<HTMLTemplateElement>(':scope > template.sem-source-raw');
+  // No core snapshot (reading bundle alone): best effort, chrome and all —
+  // clone the live children now (a DOM clone, still never parsed text).
   if (!snap) warn('sem-source: no snapshot (load semtext-fallback.js before the reading bundle); showing the live DOM');
-  const raw = snap ? snap.textContent || '' : el.innerHTML;
+  let raw: DocumentFragment;
+  if (snap) {
+    raw = snap.content;
+  } else {
+    raw = document.createDocumentFragment();
+    el.childNodes.forEach((n) => raw.appendChild(n.cloneNode(true)));
+  }
 
   const chrome = document.createElement('div');
   chrome.className = 'sem-source-chrome';
