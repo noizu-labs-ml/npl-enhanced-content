@@ -251,12 +251,15 @@ if (specPages.length) {
   console.log('  ---------------------------------------------------------');
   for (const file of specPages) {
     const src = readFileSync(resolve(specSrcDir, file), 'utf8');
-    // Every linked asset must exist, for the same reason a missing marker
-    // source is a hard error above: a spec page that loads no behaviour
-    // would silently stop proving anything.
-    for (const m of src.matchAll(/(?:href|src)=["'](\.\.\/(?:dist|themes)\/[^"']+|[^"':/]+\.css)["']/g)) {
-      const rel = m[1].startsWith('../') ? m[1].slice(3) : `spec/${m[1]}`;
-      if (!existsSync(resolve(root, rel))) throw new Error(`spec/${file} links ${m[1]}, which does not exist`);
+    // Every RELATIVE linked asset must exist, for the same reason a missing
+    // marker source is a hard error above: a spec page that loads no
+    // behaviour would silently stop proving anything. Absolute URLs,
+    // fragments and data: URIs are not files this build can check.
+    for (const m of src.matchAll(/\b(?:href|src)=["']([^"'#][^"']*)["']/g)) {
+      const ref = m[1];
+      if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(ref)) continue;
+      const rel = ref.startsWith('../') ? ref.slice(3) : `spec/${ref}`;
+      if (!existsSync(resolve(root, rel))) throw new Error(`spec/${file} links ${ref}, which does not exist`);
     }
     const built = src.replace(/(href|src)=(["'])\.\.\/dist\//g, '$1=$2../');
     const name = basename(file, '.html');
