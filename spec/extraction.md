@@ -44,7 +44,7 @@ interface SemRecord {
   id: string | null;               // citation token
   kind: string | null;             // data-kind / kind
   tags: string[];                  // data-tags / tags, comma-split, [] when absent
-  audience: string | null;         // forward-declared (§7); null in v0.4
+  audience: string | null;         // data-audience / audience, verbatim (§7)
   parent: number | null;           // sourceOrder of the enclosing record
   fields: Record<string, unknown>; // per-type payload (§4)
   text: string;                    // one-line human rendering of this record
@@ -81,7 +81,9 @@ interface SemRecord {
    of their own.
 3. **The root wrapper is scope, not content.** `.sem-enhanced-document`
    delimits extraction and mints nothing. Given a `Document`, extraction
-   scopes to the wrapper when present, otherwise to `<body>`.
+   scopes to the wrapper when present, otherwise to `<body>`. The
+   `sem-audiences` / `sem-profile` declaration block is metadata of the same
+   standing: it is walked, and it mints nothing.
 4. **Generated nodes are invisible.** The following are skipped entirely,
    contributing neither records nor text: `.sem-facts-chrome`,
    `.sem-facts-meter`, `.sem-quiz-options`, `.sem-views-tabs`,
@@ -215,12 +217,12 @@ deep links cite.
   reveal, and from the element itself otherwise. Both yield the same text.
 - `collapsed` is not extracted (§5).
 
-**Recorded divergence.** The v0.4 fallback derives its `<summary>` as the
-first eight words plus `" …"`. `spec/schema/sem-reveal.md` specifies "first
-line of body, max 60 chars". The two rules disagree. Extraction implements
-the schema's rule; the fallback's string is a display artifact and is skipped
-outright. Reconciling the fallback to the schema is tracked separately —
-extraction does not wait on it.
+**Divergence closed.** The v0.4 fallback used to derive its `<summary>` as
+the first eight words plus `" …"` while extraction implemented the schema's
+60-character rule. Both now call `deriveSummary` in `src/shared/summary.ts`,
+so the label a reader sees is the `summary` a machine receives. The
+generated `<summary>` is still skipped as chrome — the field is derived from
+the body, never read from the DOM.
 
 ### `sem-progress`
 
@@ -284,10 +286,12 @@ look at.
 **(a) Generated chrome is skipped** (§3.4). Everything the fallback adds is
 enumerated and excluded by class.
 
-**(b) Runtime state classes are ignored.** `.sem-current`, `.sem-flipped`,
-`.sem-answered`, `.sem-wrong-pick`, `.sem-revealed`, `data-sem-fallback`,
-`data-sem-upgraded`, `data-answered` are session facts, not document facts.
-Extraction matches on vocabulary classes only.
+**(b) Runtime state classes and attributes are ignored.** `.sem-current`,
+`.sem-flipped`, `.sem-answered`, `.sem-wrong-pick`, `.sem-revealed`,
+`.sem-target` (the transient deep-link marker), `data-sem-fallback`,
+`data-sem-upgraded`, `data-answered`, and the `hidden` attribute the
+audience fallback sets are session facts, not document facts. Extraction
+matches on vocabulary classes only and never consults visibility.
 
 **(c) Mutable presentation attributes are excluded from the record.** Three
 attributes describe initial *display* state and are rewritten at runtime:
@@ -325,28 +329,33 @@ highlights, a step's status, a progress element's raw value, a reveal's
 summary, a note's variant, an agent's bio and instructions, a view's name);
 `text` already carries the rest.
 
-## 7. Forward declaration — the audience qualifier
+## 7. The audience qualifier
 
-The next wave adds an `audience` qualifier to the global attribute catalog.
-It is declared here now so that the record shape does not churn when it
-lands:
+Declared here in v0.4 as a forward declaration; closed by
+`spec/schema/sem-audiences.md`. The rules that were fixed then still hold:
 
-- `audience` is **already a field on every record**, populated from
-  `data-audience` / `audience`, `null` when absent. In v0.4 it is always
-  `null`.
+- `audience` is **a field on every record**, populated from
+  `data-audience` / `audience` **verbatim** — the spec string (`operator`,
+  `reader, operator`, `!operator`), not a parsed structure and not a
+  resolved boolean. `null` when absent.
 - **Audience never removes a record from canonical extraction.** Filtering by
   audience is a consumer operation performed on the extracted array, never a
-  suppression performed during extraction. An extractor that dropped
-  off-audience records would produce different output for different readers,
-  which is the same failure mode as extracting the rendered document (§1).
-- Audience contract rules stated in terms of "what extraction sees" therefore
-  have a fixed referent: the full array, every record, `audience` carried as
-  a qualifier on each.
-
-The wave-1 audience spec may add rules about *inheritance* (does a record
-inherit its container's audience?) and *conflict* (a record whose audience
-contradicts its container's). Those are open; the field and the
-never-suppress rule are not.
+  suppression performed during extraction. The fallback's `hidden` attribute
+  is invisible to extraction (§5b); an extractor that dropped off-audience
+  records would produce different output for different readers, which is
+  the same failure mode as extracting the rendered document (§1).
+- **No inheritance.** A record reports only its own attribute. A fact inside
+  an operator-only `sem-facts` carries `audience: null`; a consumer that
+  wants the container's audience applied downward has `parent` for it.
+  Recording the inherited value would let one attribute rewrite every
+  descendant record, which is the instability this section exists to
+  prevent.
+- **Conflict** (a record whose audience contradicts its container's) is
+  therefore not an extraction question: both values are reported, each on
+  its own record, and the consumer's filter decides.
+- The invariant in §5 holds across profile switches: `E(D)` is the same
+  with any profile active, with none, and JS-off.
+  `test/e2e/sem-audiences.cy.js` asserts it.
 
 ## 8. Worked example
 
