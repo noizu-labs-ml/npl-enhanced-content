@@ -301,6 +301,12 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 :is(sem-reader, .sem-reader) > nav a:hover { text-decoration: underline; }
 :is(sem-reader, .sem-reader) > nav a[aria-current="location"] { color: var(--sem-accent); font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .sem-reader-progress-fill { transition: none; } }
+/* Once a script pins the bar, in-document targets (outline links, deep
+   links, citations, glossary terms) stop short of it instead of landing
+   underneath; --sem-reader-offset = the bar's height plus a little air. */
+:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) ~ * :is(h1, h2, h3, h4, h5, h6, [id]),
+:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) ~ [id] {
+  scroll-margin-top: var(--sem-reader-offset, 4.5rem); }
 
 /* reader-driven document state on <html> (session facts, never extracted) */
 :root[data-sem-type="s"] :is(sem-enhanced-document, .sem-enhanced-document) { font-size: .9rem; }
