@@ -17,8 +17,9 @@ function assertReferences(url, marker) {
   beforeEach(() => cy.visit(url));
 
   it('numbers entries by CSS counter, keeps authored roles, carries the tier marker', () => {
-    cy.get('#refs').should('have.attr', 'role', 'list').and('have.attr', marker.present)
-      .and('not.have.attr', marker.absent);
+    cy.get('#refs').should('have.attr', 'role', 'list');
+    cy.get('#refs').should('have.attr', marker.present);
+    cy.get('#refs').should('not.have.attr', marker.absent);
     cy.get('#r-rfc').should('have.attr', 'role', 'listitem');
     cy.get('#r-rfc').then(($r) => expect(cs($r[0], '::before').content).to.match(/counter\(/));
   });
@@ -52,8 +53,8 @@ function assertReferences(url, marker) {
 
   it('previews the reference on focus, describes the anchor, closes on Esc', () => {
     cy.get('#cite-rfc-1').focus();
-    cy.get('.sem-popover').should('be.visible').and('have.attr', 'role', 'tooltip')
-      .and('contain.text', 'OAuth 2.0');
+    cy.get('.sem-popover').should('be.visible').and('contain.text', 'OAuth 2.0');
+    cy.get('.sem-popover').should('have.attr', 'role', 'tooltip');
     cy.get('.sem-popover').then(($p) => {
       cy.get('#cite-rfc-1').should('have.attr', 'aria-describedby', $p[0].id);
     });

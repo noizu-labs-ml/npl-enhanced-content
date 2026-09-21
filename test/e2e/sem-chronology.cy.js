@@ -13,11 +13,12 @@ const cs = (el, pseudo) => el.ownerDocument.defaultView.getComputedStyle(el, pse
 
 function assertChronology(root) {
   it('authored roles and DOM order; no tier marker', () => {
-    cy.get(root + '#history').should('have.attr', 'role', 'list')
-      .and('not.have.attr', 'data-sem-fallback')
-      .and('not.have.attr', 'data-sem-upgraded');
+    cy.get(root + '#history').should('have.attr', 'role', 'list');
+    cy.get(root + '#history').should('not.have.attr', 'data-sem-fallback');
+    cy.get(root + '#history').should('not.have.attr', 'data-sem-upgraded');
     cy.get(root + '#history > *').should('have.length', 3).each(($e) => {
-      cy.wrap($e).should('have.attr', 'role', 'listitem').and('be.visible');
+      cy.wrap($e).should('have.attr', 'role', 'listitem');
+      cy.wrap($e).should('be.visible');
     });
     cy.get(root + '#history > *').first().should('have.id', 'e-v01');
   });

@@ -16,7 +16,8 @@ function assertGlossary(url, marker) {
   beforeEach(() => cy.visit(url));
 
   it('marks the glossary block, not the plain properties block', () => {
-    cy.get('#glossary').should('have.attr', marker.present).and('not.have.attr', marker.absent);
+    cy.get('#glossary').should('have.attr', marker.present);
+    cy.get('#glossary').should('not.have.attr', marker.absent);
     cy.get('#config').should('not.have.attr', 'data-sem-fallback');
   });
 
@@ -29,8 +30,8 @@ function assertGlossary(url, marker) {
 
   it('previews key and value on focus; Esc closes and clears aria-describedby', () => {
     cy.get('#term-jwt').focus();
-    cy.get('.sem-popover').should('be.visible').and('have.attr', 'role', 'tooltip')
-      .and('contain.text', 'JWT').and('contain.text', 'self-describing');
+    cy.get('.sem-popover').should('be.visible').and('contain.text', 'JWT').and('contain.text', 'self-describing');
+    cy.get('.sem-popover').should('have.attr', 'role', 'tooltip');
     cy.get('.sem-popover').then(($p) => {
       cy.get('#term-jwt').should('have.attr', 'aria-describedby', $p[0].id);
     });

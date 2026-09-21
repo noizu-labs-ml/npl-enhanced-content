@@ -74,13 +74,14 @@ function assertCode(url, marker) {
   });
 
   it('an overflowing <pre> is keyboard-reachable and labelled', () => {
-    cy.get('#c-long pre').should('have.attr', 'tabindex', '0').and('have.attr', 'aria-label');
+    cy.get('#c-long pre').should('have.attr', 'tabindex', '0');
+    cy.get('#c-long pre').should('have.attr', 'aria-label');
     cy.get('#c-rotate pre').should('not.have.attr', 'tabindex');
   });
 
   it('default controls render copy only', () => {
-    cy.get('#c-long .sem-code-chrome button').should('have.length', 1)
-      .and('have.attr', 'data-act', 'copy');
+    cy.get('#c-long .sem-code-chrome button').should('have.length', 1);
+    cy.get('#c-long .sem-code-chrome button').should('have.attr', 'data-act', 'copy');
     cy.get('#c-long .sem-code-filename').should('not.exist');
   });
 }

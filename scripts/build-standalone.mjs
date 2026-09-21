@@ -19,6 +19,7 @@
  *
  *   <!-- sem:inline bundle -->                     dist/semtext.js
  *   <!-- sem:inline fallback -->                   dist/semtext-fallback.js
+ *   <!-- sem:inline reading -->                    dist/semtext-reading.js
  *   <!-- sem:inline extract -->                    dist/semtext-extract.js
  *   <!-- sem:inline theme <name> -->               themes/<name>.css
  *   <!-- sem:inline vocabulary -->                 themes/_vocabulary.css
@@ -50,6 +51,8 @@ function expand(kind, arg) {
       return `<script>\n${readOrDie(resolve(root, 'dist/semtext.js'), 'bundle')}\n</script>`;
     case 'fallback':
       return `<script id="sem-fallback">\n${readOrDie(resolve(root, 'dist/semtext-fallback.js'), 'fallback')}\n</script>`;
+    case 'reading':
+      return `<script id="sem-reading">\n${readOrDie(resolve(root, 'dist/semtext-reading.js'), 'reading')}\n</script>`;
     case 'extract':
       return `<script id="sem-extract">\n${readOrDie(resolve(root, 'dist/semtext-extract.js'), 'extract')}\n</script>`;
     case 'theme': {
