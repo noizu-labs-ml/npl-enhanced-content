@@ -38,18 +38,23 @@ export const SOURCE = ':is(sem-source, .sem-source)';
  *    content can never collide with it.
  */
 function clean(raw: string): string {
-  const tpl = document.createElement('template');
-  tpl.innerHTML = raw.replace(/<(\\+)\/script/gi, (_m, bs: string) => '<' + bs.slice(1) + '/script');
-  tpl.content.querySelectorAll('[data-sem-upgraded], [data-sem-fallback]').forEach((e) => {
+  // Parsed into an INERT document (no scripts run, nothing loads, not a
+  // live DOM), never assigned to a live element's innerHTML. The explicit
+  // <body> puts the parser in "in body" mode from the first character, so
+  // the snapshot's leading whitespace (the dedent baseline) survives.
+  const doc = new DOMParser().parseFromString(
+    '<body>' + raw.replace(/<(\\+)\/script/gi, (_m, bs: string) => '<' + bs.slice(1) + '/script'), 'text/html');
+  const tpl = doc.body;
+  tpl.querySelectorAll('[data-sem-upgraded], [data-sem-fallback]').forEach((e) => {
     e.removeAttribute('data-sem-upgraded');
     e.removeAttribute('data-sem-fallback');
   });
   const keep: string[] = [];
   let mark = '\u0001';
   while (tpl.innerHTML.indexOf(mark) >= 0) mark = String.fromCharCode(mark.charCodeAt(0) + 1);
-  tpl.content.querySelectorAll('pre, textarea').forEach((e) => {
+  tpl.querySelectorAll('pre, textarea').forEach((e) => {
     if (e.parentElement?.closest('pre, textarea')) return; // inner: kept whole with its outer
-    e.replaceWith(document.createTextNode(mark + (keep.push(e.outerHTML) - 1) + mark));
+    e.replaceWith(doc.createTextNode(mark + (keep.push(e.outerHTML) - 1) + mark));
   });
   const lines = tpl.innerHTML.split('\n');
   while (lines.length && !lines[0].trim()) lines.shift();

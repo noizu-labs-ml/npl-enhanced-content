@@ -83,27 +83,24 @@ list item is not part of the item (it is not indented), so it is a rule. `_` nev
 or closes emphasis inside a word (`snake_case_name`, `foo_bar_baz` stay
 text; `*` has no such rule).
 
-**Destination allowlist.** A destination is first normalised the way the
-WHATWG URL parser does it — leading and trailing C0 controls and spaces
-trimmed, tab / LF / CR removed anywhere (so `java&#9;script:` is
-`javascript:` to a browser and to this check alike); interior spaces are
-kept, since a bare destination cannot contain one (CommonMark) and an
-angle-bracket destination such as `<my file.html>` is a legitimate
-relative link — and then admitted
-only when it has no scheme (relative path, fragment, or a
-protocol-relative `//host/path`, which reaches exactly what `https:` can)
-or the scheme is `http`, `https`, `mailto`, `tel` or `ftp`. The admitted
-value is then percent-encoded (`encodeURI`) before it is written to
-`href` / `src`; escapes the author already wrote (`%20`, `%23`, even
-`%2541`) pass through untouched, because only the text between `%XX`
-tokens is encoded — so `<my file.html>` becomes `my%20file.html`,
-`docs/a%20b|c.html` becomes `docs/a%20b%7Cc.html`, and `docs/%2541.html`
-stays as written. A destination `encodeURI` rejects (a lone surrogate)
-renders as text. This second
-layer is what makes the write visibly sanitised to static analysis
-(CodeQL `js/xss-through-dom`), on top of the allowlist. Anything else (`javascript:`,
-`data:`, `vbscript:`, any casing, angle-bracket form included) renders as
-the link text, or the alt text for an image. Anchors carry
+**Destination allowlist.** A destination is parsed with the WHATWG URL
+parser (`new URL(dest, document.baseURI)`) — which trims leading and
+trailing C0 controls and spaces and removes tab / LF / CR anywhere, so
+`java&#9;script:` and `javascript:` yield the same protocol — and the
+**parsed object's protocol** is checked: admitted when it is `http:`,
+`https:`, `mailto:`, `tel:`, `ftp:` or the document's own (`file:` for a
+double-clicked document; a relative path, fragment or `//host` resolves
+to it). What is written to `href` / `src` is that object's `href`, never
+the authored string, so relative destinations render as absolute URLs
+resolved against the document (`#id` becomes `<document>#id`). Anything
+else (`javascript:`, `data:`, `vbscript:`, any casing, angle-bracket form
+included) and any destination the parser rejects renders as the link
+text, or the alt text for an image. Percent-encoding is the parser's:
+`<my file.html>` becomes `…/my%20file.html`, authored escapes (`%20`,
+`%23`, even `%2541`) pass through untouched, a lone surrogate becomes
+`%EF%BF%BD`. This is the form static analysis recognises as sanitised
+(CodeQL `js/xss-through-dom`): a protocol check on a parsed URL object,
+followed by writing that object's `href`. Anchors carry
 `rel="noopener noreferrer"`.
 
 **Bounds.** Nesting (quotes, lists, emphasis, link text) is capped at 16
