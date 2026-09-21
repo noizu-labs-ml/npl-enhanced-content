@@ -17,7 +17,7 @@ export class SemMd extends SemElement {
   updated(): void {
     // afterParse: the content is text, so there is no child element to
     // wait for, but writes must not land mid-parse (sem-source snapshots).
-    this.afterParse(() => {
+    this.afterParse('enhance', () => {
       enhanceMdElement(this, enhanceCodeElement);
       this.setAttribute('data-sem-upgraded', '');
       this.removeAttribute('data-sem-fallback');

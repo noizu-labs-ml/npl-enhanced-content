@@ -23,6 +23,7 @@ import { closureFor, matches, warn as semWarn, type AudienceClosure } from '../s
  */
 export class SemElement extends LitElement {
   #observers = new Set<MutationObserver>();
+  #deferred: Map<string, () => void> | null = null;
 
   /** Light DOM — theme CSS styles the `.sem-*` classes directly. */
   createRenderRoot(): HTMLElement | DocumentFragment {
@@ -97,9 +98,19 @@ export class SemElement extends LitElement {
    * `sem-source` snapshot, which must see the authored markup — so
    * anything that is not needed for anti-flash gating goes through here.
    */
-  afterParse(fn: () => void): void {
+  afterParse(key: string, fn: () => void): void {
     if (typeof document !== 'undefined' && document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => { if (this.isConnected) fn(); }, { once: true });
+      // One listener per element; repeated calls with the same key (a
+      // reactive update during parse) replace the pending write.
+      if (!this.#deferred) {
+        this.#deferred = new Map();
+        document.addEventListener('DOMContentLoaded', () => {
+          const pending = this.#deferred!;
+          this.#deferred = null;
+          if (this.isConnected) pending.forEach((f) => f());
+        }, { once: true });
+      }
+      this.#deferred.set(key, fn);
       return;
     }
     fn();

@@ -31,8 +31,8 @@ const strict = process.argv.includes('--strict-budget');
 /** budgetKb is measured against the minified (not gzipped) artifact. */
 const targets = [
   { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 56, required: true },
-  { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 12.5, required: true },
-  { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 19, required: true },
+  { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 13, required: true },
+  { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 19.5, required: true },
   { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 12, required: false },
   { name: 'semtext-md.js',       entry: 'src/md/index.ts',       global: 'SemTextMd',       budgetKb: 8,  required: true },
 ];

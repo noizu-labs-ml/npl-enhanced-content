@@ -62,7 +62,12 @@ function run(): void {
       // whether the target is the reveal itself or something inside it.
       if (el.matches(REVEAL)) el.querySelector(':scope > details')?.setAttribute('open', '');
       // A wrapper showing its markup hides the target: switch it back to rendered.
-      if (el.matches(SOURCE)) el.querySelector<HTMLElement>(':scope > .sem-source-chrome [data-act="html"]')?.click();
+      // Prefer the chrome (keeps aria-pressed in step); without the reading
+      // bundle the attribute is presentation-only, so flip it directly.
+      if (el.matches(SOURCE)) {
+        const b = el.querySelector<HTMLElement>(':scope > .sem-source-chrome [data-act="html"]');
+        if (b) b.click(); else el.setAttribute('data-view-as', 'html');
+      }
       if (!el.matches(OPENERS)) return;
       const sum = el.querySelector<HTMLElement>(':scope > .sem-note-summary');
       if (sum) sum.click();

@@ -95,8 +95,8 @@ extraction restores authored order.
 
 | Artifact | W0 | W1 | W2 | W3 |
 |---|---|---|---|---|
-| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **12.5** (measured 12.5 after W2.1 — see W2.1 decisions) | 12.5 |
-| `semtext-reading.js` | — | **8** (measured 6.8) | **19** (measured 16.6 at W2, 18.8 after W2.1 — see W2 and W2.1 decisions) | 19.5 |
+| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **13** (measured 12.5 after W2.1; 12.54 after the W2.1 watcher fixes — see W2.1 decisions) | 13 |
+| `semtext-reading.js` | — | **8** (measured 6.8) | **19.5** (measured 16.6 at W2, 18.8 after W2.1, 19.1 after the W2.1 watcher fixes — see W2 and W2.1 decisions) | 20 |
 | `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 48.3 after W2.1 + W2.2 review fixes) | 57 |
 | `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 |
 | `semtext-md.js` | — | — | **8** (W2.2, measured 8.0 — 8170 bytes after review) | 8 |
@@ -112,13 +112,17 @@ extracted verbatim (second recorded exception to normalised text).
 
 **W2.1 decisions (recorded).** `sem-source` is user-directed follow-on to
 W2: a per-section wrapper that flips between rendered content and the
-literal authored markup. The snapshot has to happen in the **core**
+pre-enhancement markup (as parsed, not the file's bytes). The snapshot has to happen in the **core**
 fallback (registered first) because the fence must show the document as
 written and every other handler mutates the subtree on DOMContentLoaded;
 that pass plus the nested-wrapper guard and the deep-link resolver's
 source-mode step cost **0.6 KB** and take the core from 11.9 to 12.5 KB,
-so the core budget is 12.5 KB — at the line; the next core addition
-must raise it. The chrome, dedent and fence (built once,
+so the core budget was 12.5 KB — at the line. The watcher-note fixes
+(unambiguous `</script` escape, core-only source-mode flip in the deep-link
+resolver) added ~0.1 KB, so the core budget is now **13 KB** (measured
+12.5). The reading bundle's marker removal moved from a string replace to
+an attribute removal on a parsed clone, and the dedent now protects
+preformatted ranges: +0.3 KB, budget **19.5 KB** (measured 19.1). The chrome, dedent and fence (built once,
 through the existing `sem-code` enhancer) cost **2.1 KB** in the reading
 bundle (16.7 → 18.8 KB); budget 19 KB. The snapshot is an inert
 `text/plain` script child rather than a WeakMap because the reading

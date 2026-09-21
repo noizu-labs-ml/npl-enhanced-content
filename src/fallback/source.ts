@@ -20,7 +20,9 @@ export function enhanceSource(scope: ParentNode): void {
     const s = document.createElement('script');
     s.type = 'text/plain';
     s.className = 'sem-source-raw';
-    s.textContent = el.innerHTML.replace(/<\/script/gi, '<\\/script');
+    // Add one backslash to every `<\*/script` (zero included): the reader
+    // removes exactly one, so an authored `<\/script` survives the round trip.
+    s.textContent = el.innerHTML.replace(/<(\\*)\/script/gi, (_m, bs: string) => '<' + bs + '\\/script');
     el.insertBefore(s, el.firstChild);
   });
 }
