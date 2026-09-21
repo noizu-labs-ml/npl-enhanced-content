@@ -150,8 +150,10 @@ function assertMd(url, marker) {
       expect(t).to.contain('click');
     });
     cy.get('#m-inject .sem-md-body a').then(($a) => {
+      // hrefs are absolute: the parsed URL's href is what is written
+      const abs = (u) => new URL(u, $a[0].ownerDocument.baseURI).href;
       const hrefs = Array.from($a, (a) => a.getAttribute('href'));
-      expect(hrefs).to.deep.equal(['docs/x.html', '#m-table', 'https://example.com/a?b=1']);
+      expect(hrefs).to.deep.equal(['docs/x.html', '#m-table', 'https://example.com/a?b=1'].map(abs));
       $a.each((_, a) => expect(a.getAttribute('rel')).to.equal('noopener noreferrer'));
     });
     // the bypass attempts are still readable as their link text
@@ -159,7 +161,9 @@ function assertMd(url, marker) {
       ['click', 'tab', 'ctl', 'up', 'data', 'vb', 'tabimg', 'dataimg'].forEach((w) => expect(t).to.contain(w));
       expect(t).not.to.contain('[rel]');
     });
-    cy.get('#m-inject .sem-md-body img').should('have.length', 1).and('have.attr', 'src', '/img/ok.png');
+    cy.get('#m-inject .sem-md-body img').should('have.length', 1).then(($i) => {
+      expect($i[0].getAttribute('src')).to.equal(new URL('/img/ok.png', $i[0].ownerDocument.baseURI).href);
+    });
     cy.get('#m-inject .sem-md-body a').last().should('have.text', 'https://example.com/a?b=1');
   });
 
@@ -189,7 +193,9 @@ function assertMd(url, marker) {
     // adversarial: unmatched openers stay literal, the real ones still parse
     cy.get('#m-edge .sem-md-body p em').should('have.length', 2).last().should('have.text', 'real');
     cy.get('#m-edge .sem-md-body a').should('have.length', 5);
-    cy.get('#m-edge .sem-md-body a').first().should('have.text', 'linked').and('have.attr', 'href', '#m-table');
+    cy.get('#m-edge .sem-md-body a').first().should('have.text', 'linked').then(($a) => {
+      expect($a[0].getAttribute('href')).to.match(/#m-table$/);
+    });
     cy.get('#m-edge .sem-md-body').invoke('text').then((t) => {
       expect(t).to.contain('*unclosed emphasis and real');
       expect(t).to.contain('[unclosed link and linked');
@@ -197,13 +203,19 @@ function assertMd(url, marker) {
     // the closing backtick run must match the opener's length
     cy.get('#m-edge .sem-md-body p code').last().should('have.text', 'a` b');
     // a space inside an angle-bracket destination is kept (percent-encoded), not stripped
-    cy.get('#m-edge .sem-md-body a').last().should('have.attr', 'href', 'my%20file.html');
-    // authored escapes survive untouched (no double-encoding, no decoding)
-    cy.get('#m-edge .sem-md-body a[href="docs/a%20b%23c.html"]').should('have.length', 1);
-    // an authored escape next to a character encodeURI newly encodes
-    cy.get('#m-edge .sem-md-body a[href="docs/a%20b%7Cc.html"]').should('have.length', 1);
-    // a literal %25 followed by hex digits is NOT collapsed to %41
-    cy.get('#m-edge .sem-md-body a[href="docs/%2541.html"]').should('have.length', 1);
+    cy.get('#m-edge .sem-md-body a').then(($a) => {
+      const abs = (u) => new URL(u, $a[0].ownerDocument.baseURI).href;
+      const hrefs = Array.from($a, (a) => a.getAttribute('href'));
+      expect(hrefs[hrefs.length - 1]).to.equal(abs('my file.html'));
+      expect(hrefs[hrefs.length - 1]).to.match(/my%20file\.html$/);
+      // authored escapes survive untouched (no double-encoding, no decoding)
+      expect(hrefs).to.include(abs('docs/a%20b%23c.html'));
+      expect(hrefs.some((h) => h.endsWith('/docs/a%20b%23c.html'))).to.equal(true);
+      // an authored escape next to a character the URL parser leaves alone
+      expect(hrefs).to.include(abs('docs/a%20b|c.html'));
+      // a literal %25 followed by hex digits is NOT collapsed to %41
+      expect(hrefs.some((h) => h.endsWith('/docs/%2541.html'))).to.equal(true);
+    });
     // a bare --- under a paragraph line is a setext heading even when the line has a pipe;
     // a table needs a delimiter row with pipes
     cy.get('#m-edge .sem-md-body > h2').should('have.length', 2).last().should('have.text', 'a | b');
@@ -293,8 +305,10 @@ describe('sem-md', () => {
       cy.get('#p-list .sem-md-body ul').should('have.length.greaterThan', 10);
       cy.get('#p-nl .sem-md-body a, #p-nl .sem-md-body img').should('not.exist');
       cy.get('#p-nl .sem-md-body').should('contain.text', 'nl');
-      // encodeURI throws on a lone surrogate: that link renders as text, the block still renders
-      cy.get('#p-surrogate .sem-md-body a').should('not.exist');
+      // a lone surrogate is replaced by the URL parser (U+FFFD, percent-encoded); nothing throws
+      cy.get('#p-surrogate .sem-md-body a').should('have.length', 1).then(($a) => {
+        expect($a[0].getAttribute('href')).to.match(/%EF%BF%BD\.html$/);
+      });
       cy.get('#p-surrogate .sem-md-body').should('contain.text', 'lone').and('contain.text', 'after');
       cy.get('#p-surrogate > .sem-md-chrome').should('exist');
       cy.get('#p-stars, #p-quotes, #p-list').each(($e) => cy.wrap($e).should('have.attr', 'data-sem-fallback'));

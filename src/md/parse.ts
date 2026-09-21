@@ -36,27 +36,28 @@ function txt(parent: Node, s: string): void {
   if (s) parent.appendChild(document.createTextNode(s));
 }
 
+/** Protocols a rendered link or image may carry, plus the document's own
+ *  (a relative destination in a file:// document resolves to file:). */
+const ALLOWED = new Set(['http:', 'https:', 'mailto:', 'tel:', 'ftp:']);
+
 /**
- * Allowlisted destination, or null when the URL must render as text.
+ * The destination as a parsed URL, or null when it must render as text.
  *
- * Two layers, both required. (1) Scheme allowlist after WHATWG-style
- * normalisation: leading/trailing C0 + space trimmed, tab/LF/CR removed
- * anywhere (a scheme containing an interior space is not a scheme).
- * (2) The value that reaches `href` / `src` is percent-encoded with
- * `encodeURI`, so no character that could be reinterpreted survives —
- * this is the sanitising step a static analyser can see (CodeQL
- * js/xss-through-dom flagged the raw attribute write). Escapes the author
- * already wrote (`%20`, `%23`, `%2541`) are passed through untouched: the
- * string is split on `%XX` tokens and only the pieces between them are
- * encoded, so nothing is double-encoded and nothing is decoded. A lone
- * surrogate makes encodeURI throw; that destination renders as text.
+ * The WHATWG parser does the normalisation (leading/trailing C0 + space
+ * trimmed, tab/LF/CR removed anywhere, the rest percent-encoded), so
+ * `java&#9;script:` and `javascript:` land on the same protocol, and the
+ * protocol of the PARSED object is checked against an allowlist — the
+ * form a static analyser recognises (CodeQL js/xss-through-dom): what
+ * reaches `href` / `src` is `url.href`, never the authored string.
+ * Relative destinations resolve against the document, so the attribute
+ * is absolute; an unparsable destination renders as text.
  */
-export function safeUrl(raw: string): string | null {
-  const u = raw.replace(/^[\u0000- ]+|[\u0000- ]+$/g, '').replace(/[\t\n\r]/g, '');
-  const m = /^([a-z][a-z0-9+.-]*):/i.exec(u);
-  if (m && !/^(https?|mailto|tel|ftp)$/i.test(m[1])) return null;
+export function safeUrl(raw: string): URL | null {
   try {
-    return u.split(/(%[0-9a-f]{2})/i).map((p, k) => (k % 2 ? p : encodeURI(p))).join('');
+    const url = new URL(raw, document.baseURI);
+    // `file:` only, never `location.protocol`: a page served under blob:
+    // or another scheme must not widen the allowlist.
+    return ALLOWED.has(url.protocol) || url.protocol === 'file:' ? url : null;
   } catch {
     return null;
   }
@@ -131,8 +132,8 @@ export function inline(s: string, out: Node, depth = 0): void {
       const url = safeUrl(m[2] !== undefined ? m[2] : m[3]);
       if (c === '!') {
         if (url) {
-          const img = el('img', out);
-          img.setAttribute('src', url);
+          const img = el('img', out) as HTMLImageElement;
+          img.src = url.href;
           img.setAttribute('alt', m[1]);
         } else txt(out, m[1]);
       } else inline(m[1], url ? link(out, url) : out, depth + 1);
@@ -146,9 +147,9 @@ export function inline(s: string, out: Node, depth = 0): void {
 }
 
 /** A link title (`"…"` after the destination) is accepted and dropped. */
-function link(out: Node, url: string): HTMLElement {
-  const a = el('a', out);
-  a.setAttribute('href', url);
+function link(out: Node, url: URL): HTMLElement {
+  const a = el('a', out) as HTMLAnchorElement;
+  a.href = url.href;
   a.setAttribute('rel', 'noopener noreferrer');
   return a;
 }

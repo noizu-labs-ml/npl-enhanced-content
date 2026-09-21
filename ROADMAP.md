@@ -99,7 +99,7 @@ extraction restores authored order.
 | `semtext-reading.js` | — | **8** (measured 6.8) | **19.5** (measured 16.6 at W2, 18.8 after W2.1, 19.1 after the W2.1 watcher fixes — see W2 and W2.1 decisions) | 20 |
 | `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 48.3 after W2.1 + W2.2 review fixes) | 57 |
 | `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 |
-| `semtext-md.js` | — | — | **8.5** (W2.2, measured 8.0 — 8170 bytes after review; raised from 8 for the CodeQL fix: `encodeURI` between authored `%XX` tokens, try/catch — 8269 bytes) | 8.5 |
+| `semtext-md.js` | — | — | **8.5** (W2.2, measured 8.0 — 8170 bytes after review; raised from 8 during the CodeQL fixes; final form: `new URL()` + protocol allowlist, `url.href` written) | 8.5 |
 
 **W1 decisions (recorded).** Glossary mode lives in the *reading* bundle,
 not the fallback core: the core sits at 11.9 / 12 KB after W0 and the
