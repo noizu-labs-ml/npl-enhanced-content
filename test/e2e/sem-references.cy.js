@@ -1,0 +1,103 @@
+// BDD spec — sem-references / sem-reference · source: spec/schema/sem-references.md
+//
+// Feature: a numbered reference list; plain-anchor citations get previews
+//          and backlinks in both script tiers; JS-off it is a numbered list
+//   Scenario: CSS numbering, authored roles, tier marker
+//   Scenario: citing anchors get the runtime class; anchors keep navigating
+//   Scenario: backlinks — one per citation, labelled, targeting the citation
+//   Scenario: external link rendered for href-bearing references only
+//   Scenario: preview popover on focus and hover; Esc closes; aria-describedby
+//   Scenario: upgraded tier — one backlinks block, same behaviour
+//   Scenario: JS-off — numbered list, no chrome, no popover
+
+const cs = (el, pseudo) => el.ownerDocument.defaultView.getComputedStyle(el, pseudo);
+const RFC = 'https://www.rfc-editor.org/rfc/rfc6749';
+
+function assertReferences(url, marker) {
+  beforeEach(() => cy.visit(url));
+
+  it('numbers entries by CSS counter, keeps authored roles, carries the tier marker', () => {
+    cy.get('#refs').should('have.attr', 'role', 'list').and('have.attr', marker.present)
+      .and('not.have.attr', marker.absent);
+    cy.get('#r-rfc').should('have.attr', 'role', 'listitem');
+    cy.get('#r-rfc').then(($r) => expect(cs($r[0], '::before').content).to.match(/counter\(/));
+  });
+
+  it('stamps citing anchors and leaves navigation alone', () => {
+    cy.get('a[href="#r-rfc"]').should('have.length', 2).each(($a) => {
+      cy.wrap($a).should('have.class', 'sem-references-ref');
+    });
+    cy.get('#cite-rfc-1').click();
+    cy.location('hash').should('equal', '#r-rfc');
+  });
+
+  it('appends one labelled backlink per citation', () => {
+    cy.get('#r-rfc > .sem-references-backlinks').should('have.length', 1);
+    cy.get('#r-rfc .sem-references-backlinks a').should('have.length', 2).then(($a) => {
+      expect($a[0].getAttribute('aria-label')).to.equal('Back to citation 1');
+      expect($a[1].getAttribute('aria-label')).to.equal('Back to citation 2');
+      expect($a[0].getAttribute('href')).to.equal('#cite-rfc-1');
+      // The second citation had no authored id; the bundle gave it one.
+      const target = $a[1].getAttribute('href').slice(1);
+      expect(target).to.have.length.greaterThan(0);
+      cy.get('#' + target).should('have.attr', 'href', '#r-rfc');
+    });
+    cy.get('#r-note .sem-references-backlinks a').should('have.length', 1);
+  });
+
+  it('renders an external link only for references with an href', () => {
+    cy.get('#r-rfc .sem-references-link').should('have.attr', 'href', RFC);
+    cy.get('#r-note .sem-references-link').should('not.exist');
+  });
+
+  it('previews the reference on focus, describes the anchor, closes on Esc', () => {
+    cy.get('#cite-rfc-1').focus();
+    cy.get('.sem-popover').should('be.visible').and('have.attr', 'role', 'tooltip')
+      .and('contain.text', 'OAuth 2.0');
+    cy.get('.sem-popover').then(($p) => {
+      cy.get('#cite-rfc-1').should('have.attr', 'aria-describedby', $p[0].id);
+    });
+    cy.get('body').type('{esc}');
+    cy.get('.sem-popover').should('not.be.visible');
+    cy.get('#cite-rfc-1').should('not.have.attr', 'aria-describedby');
+  });
+
+  it('previews on hover and hides on leave', () => {
+    cy.get('a[href="#r-note"]').trigger('mouseenter');
+    cy.get('.sem-popover').should('be.visible').and('contain.text', 'footnote');
+    cy.get('a[href="#r-note"]').trigger('mouseleave');
+    cy.get('.sem-popover').should('not.be.visible');
+  });
+
+  it('the preview never carries backlink chrome or duplicate ids', () => {
+    cy.get('#cite-rfc-1').focus();
+    cy.get('.sem-popover .sem-references-backlinks').should('not.exist');
+    cy.get('.sem-popover [id]').should('not.exist');
+  });
+}
+
+describe('sem-references', () => {
+  describe('fallback tier — /demo/reading.html', () => {
+    assertReferences('/demo/reading.html', { present: 'data-sem-fallback', absent: 'data-sem-upgraded' });
+  });
+
+  describe('upgraded tier — /demo/reading-lit.html', () => {
+    it('registers the custom element', () => {
+      cy.visit('/demo/reading-lit.html');
+      cy.window().then((win) => expect(win.customElements.get('sem-references')).to.exist);
+    });
+    assertReferences('/demo/reading-lit.html', { present: 'data-sem-upgraded', absent: 'data-sem-fallback' });
+  });
+
+  describe('JS-off', () => {
+    ['/demo/reading.nojs.html', '/demo/reading-lit.nojs.html'].forEach((url) => {
+      it(url + ' — numbered list, no chrome, target highlight still works', () => {
+        cy.visit(url + '#r-rfc');
+        cy.get('.sem-references-backlinks, .sem-references-link, .sem-popover, .sem-references-ref')
+          .should('not.exist');
+        cy.get('#r-rfc').should('be.visible').and('contain.text', 'OAuth 2.0');
+        cy.get('#r-rfc').then(($r) => expect(cs($r[0], '::before').content).to.match(/counter\(/));
+      });
+    });
+  });
+});
