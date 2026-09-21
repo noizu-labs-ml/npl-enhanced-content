@@ -253,15 +253,15 @@ if (specPages.length) {
     const src = readFileSync(resolve(specSrcDir, file), 'utf8');
     // Every RELATIVE linked asset must exist, for the same reason a missing
     // marker source is a hard error above: a spec page that loads no
-    // behaviour would silently stop proving anything. Absolute URLs,
-    // fragments and data: URIs are not files this build can check. Code
-    // listings and comments are prose about markup, not markup, so they are
-    // removed before the scan.
-    const scannable = src.replace(/<!--[\s\S]*?-->/g, '').replace(/<pre\b[\s\S]*?<\/pre>/gi, '');
-    for (const m of scannable.matchAll(/\b(?:href|src)=["']([^"'#][^"']*)["']/g)) {
-      const ref = m[1];
+    // behaviour would silently stop proving anything. Only real tags are
+    // scanned (an escaped listing starts with &lt;, so it never matches);
+    // a fragment or query is dropped before resolving; ../ resolves against
+    // the repo root, / against the repo root, anything else against spec/.
+    // Absolute URLs and data: URIs are not files this build can check.
+    for (const m of src.matchAll(/<(?:link|script|img|a|source)\b[^>]*?\b(?:href|src)=["']([^"'#?][^"']*)["']/gi)) {
+      const ref = m[1].replace(/[#?].*$/, '');
       if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(ref)) continue;
-      const rel = ref.startsWith('../') ? ref.slice(3) : `spec/${ref}`;
+      const rel = ref.startsWith('../') ? ref.slice(3) : ref.startsWith('/') ? ref.slice(1) : `spec/${ref}`;
       if (!existsSync(resolve(root, rel))) throw new Error(`spec/${file} links ${ref}, which does not exist`);
     }
     const built = src.replace(/(href|src)=(["'])\.\.\/dist\//g, '$1=$2../');
