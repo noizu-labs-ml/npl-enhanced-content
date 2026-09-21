@@ -33,12 +33,17 @@ vocabulary for the Lit milestone; the class mapping below is mechanical.
 | `<sem-md label view-as="rendered\|raw" controls>` › Markdown text | `div.sem-md[data-label][data-view-as][data-controls]` › Markdown text; `data-view-as` is runtime-mutable presentation |
 | `<sem-table controls sticky>` › `<table>` | `div.sem-table[data-controls][data-sticky]` › authored `<table>` (`<th scope="col">`, `td[data-value]` sort keys) |
 
-CSS layering (all inline in `<head>`): (1) plain core CSS — theme tokens on
-`[data-sem-theme]` + component base, offline-safe; (2) `<style
-type="text/tailwindcss">` with `@apply` rules per class — refinement, no-op
-without the CDN script; (3) `sem-fallback` vanilla JS — interactivity.
-Supersedes v0.3 custom-element examples until the Lit milestone.
-`❓` = open questions (§10).
+CSS and script layering, in both distribution forms (§7): (1) the theme
+file — `--sem-*` tokens on `[data-sem-theme]` — and `themes/_vocabulary.css`
+— the component base, offline-safe; (2) the `sem-fallback` vanilla handler
+and, where the document needs them, the reading and Markdown bundles —
+interactivity; (3) `semtext.js` — the optional Lit upgrade. The
+**single-file** form inlines all of it in `<head>` (the build's `sem:inline`
+markers); the **folder** form links the same files by relative path. Neither
+form carries page-local CSS or JS beyond a small layout layer. The
+Tailwind-refinement layer of the v0.3 demos is retired. Supersedes v0.3
+custom-element examples until the Lit milestone. `❓` = open questions
+(§10).
 
 ---
 

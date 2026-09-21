@@ -106,7 +106,7 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
 :is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="flashcards"] :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { visibility: hidden; }
 :is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="flashcards"] :is(sem-fact, .sem-fact).sem-flipped :is(conclusion, .sem-conclusion) { visibility: visible; }
 .sem-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
-.sem-quiz-options button { text-align: left; border: 1px solid var(--sem-border);
+.sem-quiz-options button { font: inherit; text-align: left; border: 1px solid var(--sem-border);
   background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
   padding: .5rem .75rem; cursor: pointer; }
 .sem-quiz-options button[data-correct="true"].sem-answered { border-color: var(--sem-correct); }
@@ -302,11 +302,11 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
   padding: .6rem .9rem 0; }
 :is(sem-reveal, .sem-reveal) .sem-reveal-body { padding: .5rem .9rem .75rem; }
 :is(sem-reveal, .sem-reveal) details:not([open]) .sem-reveal-body { display: none; }
-/* Once the fallback has built the <details>, its <summary> carries the
+/* Once a script has built the <details>, its <summary> carries the
    question; the ::before caption above is the JS-off rendering of the same
-   string and would duplicate it. The attribute is repeated so this rule
-   beats [data-summary]::before on specificity. */
-:is(sem-reveal, .sem-reveal)[data-summary]:has(> details)::before { content: none; }
+   string and would duplicate it. Gated on the tier marker like every other
+   rule that depends on a script having run (D12). */
+:is(sem-reveal, .sem-reveal):is([data-sem-fallback], [data-sem-upgraded])[data-summary]::before { content: none; }
 :is(sem-reveal, .sem-reveal) summary { padding: .6rem .9rem; cursor: pointer; font-weight: 600; }
 :is(sem-reveal, .sem-reveal) summary::marker { color: var(--sem-muted); }
 
@@ -429,7 +429,7 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 .sem-table-filter { font: inherit; color: var(--sem-fg); background: var(--sem-bg); border: 1px solid var(--sem-border);
   border-radius: 6px; padding: .25rem .5rem; min-width: 12rem; }
 .sem-table-status { min-height: 1em; }
-.sem-table-sort { all: unset; cursor: pointer; display: inline-block; padding-right: 1.1em; position: relative; }
+.sem-table-sort { all: unset; font: inherit; cursor: pointer; display: inline-block; padding-right: 1.1em; position: relative; }
 .sem-table-sort::after { content: "↕"; position: absolute; right: 0; opacity: .5; }
 th[aria-sort="ascending"] .sem-table-sort::after { content: "↑"; opacity: 1; color: var(--sem-accent); }
 th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; color: var(--sem-accent); }

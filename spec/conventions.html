@@ -15,8 +15,7 @@
   are loaded from dist/ by src attribute. Served from the repo root the
   ../ paths reach themes/ and dist/; scripts/build-standalone.mjs copies
   this page to dist/spec/ with the paths rewritten, plus a .nojs.html
-  variant with every script element removed. (Do not write the literal
-  script tag inside this comment: the nojs stripper matches it.)
+  variant with every script element removed.
 -->
 <html lang="en" data-sem-theme="minimal-tech-light">
 <head>
@@ -33,12 +32,13 @@
 <script src="../dist/semtext-reading.js"></script>
 <script src="../dist/semtext-md.js"></script>
 <script src="../dist/semtext.js"></script>
+<script src="../dist/semtext-extract.js"></script>
 </head>
 
 <body>
-<div class="sem-enhanced-document" id="doc">
+<main class="sem-enhanced-document" id="doc">
 
-  <div class="sem-reader" id="rd" data-controls="outline,progress,focus,type,color,print,audience" data-outline-depth="3"></div>
+  <div class="sem-reader" id="rd" data-controls="outline,progress,focus,type,color,print,audience" data-outline-depth="4"></div>
 
   <h1>SemText — Format Spec &amp; Conventions</h1>
   <p>DRAFT v0.4 · class-based baseline · this page is written in the format it specifies. Normative source: <a href="#r-conventions-md">spec/conventions.md</a><a href="#r-conventions-md" id="cite-md">[1]</a>; where the two diverge, the Markdown wins.</p>
@@ -46,7 +46,7 @@
   <p>v0.4 renders the vocabulary as <strong>classes on plain elements</strong> (<code>&lt;div class="sem-agent"&gt;</code>), not custom elements: inline core CSS + Tailwind CDN refinement (<code>@apply</code> on <code>sem-*</code> classes) + the vanilla fallback handler. Reference implementation: <code>web/demo/index.html</code>. Semantic custom elements (<code>&lt;sem-fact&gt;</code>) remain the target vocabulary for the Lit milestone; the class mapping below is mechanical.</p>
 
   <div class="sem-note" id="n-dogfood" data-variant="tip">
-    <div class="sem-note-body">Every vocabulary element on this page is live. Each entry in <a href="#5-element-entries">§5</a> sits inside a <code>sem-source</code> wrapper: press <em>Source</em> to see the markup exactly as it was written here.</div>
+    <div class="sem-note-body">Every vocabulary element on this page is live. Each entry in <a href="#5-element-entries-rough">§5</a> sits inside a <code>sem-source</code> wrapper: press <em>Source</em> to see the markup exactly as it was written here.</div>
   </div>
 
   <h2 id="mapping">v0.4 mapping</h2>
@@ -78,7 +78,11 @@
     | `&lt;sem-table controls sticky&gt;` › `&lt;table&gt;` | `div.sem-table[data-controls][data-sticky]` › authored `&lt;table&gt;` (`&lt;th scope="col"&gt;`, `td[data-value]` sort keys) |
   </div>
 
-  <p>CSS layering (all inline in <code>&lt;head&gt;</code>): (1) plain core CSS — theme tokens on <code>[data-sem-theme]</code> + component base, offline-safe; (2) <code>&lt;style type="text/tailwindcss"&gt;</code> with <code>@apply</code> rules per class — refinement, no-op without the CDN script; (3) <code>sem-fallback</code> vanilla JS — interactivity. Supersedes v0.3 custom-element examples until the Lit milestone. <strong>❓</strong> = open questions (<a href="#10-open-questions">§10</a>).</p>
+  <p>CSS and script layering, in both distribution forms (<a href="#7-distribution-forms">§7</a>): (1) the theme file — <code>--sem-*</code> tokens on <code>[data-sem-theme]</code> — and <code>themes/_vocabulary.css</code> — the component base, offline-safe; (2) the <code>sem-fallback</code> vanilla handler and, where the document needs them, the reading and Markdown bundles — interactivity; (3) <code>semtext.js</code> — the optional Lit upgrade. The <strong>single-file</strong> form inlines all of it in <code>&lt;head&gt;</code> (the build's <code>sem:inline</code> markers); the <strong>folder</strong> form links the same files by relative path. Neither form carries page-local CSS or JS beyond a small layout layer. The Tailwind-refinement layer of the v0.3 demos is retired. Supersedes v0.3 custom-element examples until the Lit milestone. <strong>❓</strong> = open questions (<a href="#10-open-questions">§10</a>).</p>
+
+  <div class="sem-note" id="n-folder-form" data-variant="info">
+    <div class="sem-note-body">This page ships the <strong>folder</strong> form: two theme stylesheets, one layout stylesheet and the bundles linked from <code>&lt;head&gt;</code>, no inline CSS or JS. Its scripts-stripped twin, <code>conventions.nojs.html</code>, is the JS-off proof.</div>
+  </div>
 
   <h2 id="0-model">0. Model</h2>
   <p>One file, three consumers. Element names are <strong>semantic</strong> (<code>sem-fact</code>, <code>sem-detail</code>) — what content <em>is</em>; presentation is parameterized (<code>view-as="quiz|flashcards|list"</code>) — how it <em>renders</em>. NPL conventions live inside the tags, never as a pre-HTML grammar.</p>
@@ -191,7 +195,7 @@
     <div class="sem-step" id="rule-4-6" role="listitem">Cross-cutting, also in the vocabulary CSS: <code>@media print</code> shows everything a reader could open and no chrome (<code>beforeprint</code> opens reveal disclosures; CSS cannot); <code>prefers-reduced-motion</code> drops transitions and smooth scrolling.</div>
   </div>
 
-  <h2 id="5-element-entries">5. Element entries (rough)</h2>
+  <h2 id="5-element-entries-rough">5. Element entries (rough)</h2>
   <p>Each entry shows the authoring forms side by side — the v0.3 custom element the Lit milestone targets and the v0.4 class markup this baseline ships — followed by a live example wrapped in <code>sem-source</code>. The example is the spec executing itself; its <em>Source</em> view is the markup of this page, not a second copy.</p>
 
   <h3 id="tier-0">Tier 0</h3>
@@ -598,7 +602,7 @@
     <div class="sem-progress" id="x-progress" data-value="0.7" data-label="Tier-0 spec coverage" role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7"></div>
   </div>
 
-  <h3 id="tier-1">Tier 1 — flagship buildout</h3>
+  <h3 id="tier-1--flagship-buildout">Tier 1 — flagship buildout</h3>
   <ul>
     <li><code>sem-facts</code> full build (filter, shuffle, swipe, quiz scoring).</li>
     <li><code>sem-question</code> — 7 TRP renderers inside quiz views:</li>
