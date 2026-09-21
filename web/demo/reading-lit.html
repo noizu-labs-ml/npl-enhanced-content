@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en" data-sem-theme="minimal-tech-light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SemText · reading elements (element form)</title>
+
+<!-- Core CSS, substituted at build time by scripts/build-standalone.mjs so
+     the emitted dist/demo page opens from file:// with no network. -->
+<!-- sem:inline theme minimal-tech-light -->
+<!-- sem:inline vocabulary -->
+
+<style>
+  sem-enhanced-document { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem; }
+  h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.01em; margin: 0 0 .5rem; }
+  h2 { font-size: 1.15rem; font-weight: 600; margin: 2.25rem 0 .5rem; }
+  p  { margin: .6rem 0; }
+</style>
+
+<!-- All three scripts on one page: the fallback core, the reading bundle
+     and the Lit bundle. Elements the Lit bundle upgraded are skipped by the
+     reading bundle's scan; the wrapper enhances them itself. -->
+<!-- sem:inline fallback -->
+<!-- sem:inline reading -->
+<!-- Lit 3 bundle: thin wrappers that claim the upgrade marker and call the
+     same enhance functions the reading bundle uses. -->
+<!-- sem:inline bundle -->
+</head>
+
+<body>
+<sem-enhanced-document>
+
+  <h1>Token Rotation — a reading document</h1>
+  <p>Exercises the R/W1 prose elements in the v0.3 <strong>element form</strong>: a glossary, a chronology, code listings and references. Open this file directly in any browser; <code>reading.html</code> is the same document in class form.</p>
+
+  <h2>Glossary</h2>
+  <sem-properties id="glossary" kind="glossary" view-as="glossary">
+    <sem-property id="g-jwt" key="JWT" role="definition" aria-label="JWT">JSON Web Token — a signed, self-describing bearer token.</sem-property>
+    <sem-property id="g-pkce" key="PKCE" role="definition" aria-label="PKCE">Proof Key for Code Exchange — binds an authorization code to the client that requested it.</sem-property>
+    <sem-property id="g-refresh" key="refresh token" role="definition" aria-label="refresh token">A long-lived grant exchanged for a new access token; retired on every use.</sem-property>
+  </sem-properties>
+
+  <h2>Rotation</h2>
+  <p>Every session mints a short-lived <a href="#g-jwt" id="term-jwt">JWT</a> and a <a href="#g-refresh">refresh token</a>. A public client proves possession of its authorization code with <dfn><a href="#g-pkce">PKCE</a></dfn>. Rotate the refresh token per use<a href="#r-rfc" id="cite-rfc-1">[1]</a>: each exchange retires the token that was presented<a href="#r-note">[2]</a>. The framework itself recommends it<a href="#r-rfc">[1]</a>. The token <a href="#p-ttl">ttl</a> is a configuration value, not a glossary term.</p>
+
+  <h2>Chronology — timeline</h2>
+  <sem-chronology id="history" kind="release-history" view-as="timeline" role="list">
+    <sem-event id="e-v01" role="listitem" when="2026-03-02" status="done"><time datetime="2026-03-02">2 Mar 2026</time> v0.1 tagged — fallback tier ships.</sem-event>
+    <sem-event id="e-waves" role="listitem" when="2026-06" until="2026-08" status="current"><time datetime="2026-06">Jun–Aug 2026</time> Reading-experience waves land one PR at a time.</sem-event>
+    <sem-event id="e-themes" role="listitem" when="2026-Q4">Theme pipeline: four TRP ports behind one token set.</sem-event>
+  </sem-chronology>
+
+  <h2>Chronology — list</h2>
+  <sem-chronology id="milestones" kind="milestones" view-as="list" role="list">
+    <sem-event id="m-spec" role="listitem" when="2026-01" status="done"><time datetime="2026-01">Jan 2026</time> Format spec v0 and the Tier-0 schemas.</sem-event>
+    <sem-event id="m-lit" role="listitem" when="2026-04" status="done"><time datetime="2026-04">Apr 2026</time> Lit upgrade path proven on <code>sem-note</code>.</sem-event>
+  </sem-chronology>
+
+  <h2>Code</h2>
+  <sem-code id="c-rotate" lang="ts" filename="src/rotate.ts" mark="2,4-5" controls="copy,wrap">
+<pre><code>export function rotate(pair: Pair): Pair {
+  const next = mint();
+  retire(pair.refresh);
+  return next;
+}</code></pre>
+  </sem-code>
+  <sem-code id="c-long" lang="sh">
+<pre><code>curl -sS -X POST "$TOKEN_ENDPOINT" -d grant_type=refresh_token -d refresh_token="$REFRESH" -d client_id="$CLIENT_ID" -d code_verifier="$VERIFIER" -H 'Accept: application/json' | jq -r '.access_token'</code></pre>
+  </sem-code>
+
+  <h2>References</h2>
+  <sem-references id="refs" kind="bibliography" role="list">
+    <sem-reference id="r-rfc" role="listitem" href="https://www.rfc-editor.org/rfc/rfc6749" cite="RFC 6749">The OAuth 2.0 Authorization Framework, §10.4.</sem-reference>
+    <sem-reference id="r-note" role="listitem">A footnote with no external target: rotation is a policy, not a protocol feature.</sem-reference>
+  </sem-references>
+
+  <h2>Config</h2>
+  <sem-properties id="config" kind="config">
+    <sem-property id="p-ttl" key="token ttl" role="definition" aria-label="token ttl">15m</sem-property>
+    <sem-property id="p-store" key="storage" role="definition" aria-label="storage">httpOnly cookie</sem-property>
+  </sem-properties>
+
+</sem-enhanced-document>
+</body>
+</html>

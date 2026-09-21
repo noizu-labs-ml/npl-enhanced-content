@@ -2,10 +2,11 @@
  * scripts/build.mjs — three artifacts, one command.
  *
  * `vite build` with `build.lib.formats: ['iife']` supports exactly one entry,
- * and this package ships three independent classic scripts:
+ * and this package ships four independent classic scripts:
  *
  *   dist/semtext.js           Lit custom elements          (global SemText)
  *   dist/semtext-fallback.js  vanilla fallback tier        (global SemTextFallback)
+ *   dist/semtext-reading.js   prose-reading behaviours     (global SemTextReading)
  *   dist/semtext-extract.js   record extraction            (global SemTextExtract)
  *
  * They are separate on purpose. The fallback tier must run in a document that
@@ -28,9 +29,10 @@ const strict = process.argv.includes('--strict-budget');
 
 /** budgetKb is measured against the minified (not gzipped) artifact. */
 const targets = [
-  { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 40, required: true },
+  { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 48, required: true },
   { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 12, required: true },
-  { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 10, required: false },
+  { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 8,  required: true },
+  { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 12, required: false },
 ];
 
 rmSync(resolve(root, 'dist'), { recursive: true, force: true });

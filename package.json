@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "description": "SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. Rendered by Lit web components over a zero-JS fallback tier. Zero React.",
   "type": "module",
-  "//exports": "Three subpaths, one per shipped artifact, plus raw theme CSS. Each artifact is a classic IIFE script that installs a global (SemText, SemTextFallback, SemTextExtract) and exports NOTHING — so consume a subpath either as a <script src> tag / CDN asset, or as a side-effect ESM import (`import 'semtext/lit'`, which registers the custom elements). Named imports are not available from any subpath. There is deliberately no '.' export: ROADMAP debt D9 was 'type: module' advertising an ESM package whose root mapped to a non-importable script. Dropping '.' removes the false promise rather than papering over it.",
+  "//exports": "Four subpaths, one per shipped artifact, plus raw theme CSS. Each artifact is a classic IIFE script that installs a global (SemText, SemTextFallback, SemTextReading, SemTextExtract) and exports NOTHING — so consume a subpath either as a <script src> tag / CDN asset, or as a side-effect ESM import (`import 'semtext/lit'`, which registers the custom elements). Named imports are not available from any subpath. There is deliberately no '.' export: ROADMAP debt D9 was 'type: module' advertising an ESM package whose root mapped to a non-importable script. Dropping '.' removes the false promise rather than papering over it.",
   "exports": {
     "./lit": "./dist/semtext.js",
     "./fallback": "./dist/semtext-fallback.js",
+    "./reading": "./dist/semtext-reading.js",
     "./extract": "./dist/semtext-extract.js",
     "./themes/*": "./themes/*"
   },

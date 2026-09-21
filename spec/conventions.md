@@ -24,6 +24,10 @@ vocabulary for the Lit milestone; the class mapping below is mechanical.
 | `<sem-views>` / `<sem-view name>` | `div.sem-views[id]` › `div.sem-view[data-name]`, `data-active` marker |
 | `<sem-reveal summary>` | `div.sem-reveal[data-summary]`, `collapsed` attr |
 | `<sem-progress value label>` | `div.sem-progress[data-value][data-label]` |
+| `<sem-chronology view-as>` / `<sem-event when until status>` | `div.sem-chronology[data-view-as]` › `div.sem-event[data-when][data-until][data-status]` (+ `<time datetime>`) |
+| `<sem-code lang filename mark wrap controls>` › `<pre><code>` | `div.sem-code[data-lang][data-filename][data-mark][data-controls]` › `<pre><code>` |
+| `<sem-references kind>` / `<sem-reference id href cite>` | `div.sem-references[data-kind]` › `div.sem-reference[id][data-href][data-cite]`; citations are plain `<a href="#id">` |
+| `<sem-properties view-as="glossary">` | `div.sem-properties[data-view-as="glossary"]` › `div.sem-property[id][data-key]`; term anchors `<a href="#id">`, `<dfn>` optional |
 
 CSS layering (all inline in `<head>`): (1) plain core CSS — theme tokens on
 `[data-sem-theme]` + component base, offline-safe; (2) `<style
@@ -118,7 +122,9 @@ Global attributes (any `sem-*` element):
 `view-as` is the core inversion: `<sem-fact>` is a fact in every view;
 `view-as` only selects rendering. Unknown `view-as` ⇒ falls back to `list`/
 plain + fallback-handler warning. CSS-only modes exist too:
-`sem-note view-as="margin"` (right-gutter aside on wide viewports).
+`sem-note view-as="margin"` (right-gutter aside on wide viewports),
+`sem-chronology view-as="timeline|list"`. `sem-properties
+view-as="glossary"` adds term previews from the reading bundle.
 
 **Hash state.** The hash is `&`-joined segments (`src/shared/state.ts`):
 bare `id` / `container/child` deep links, and `name=value` parameters
@@ -154,7 +160,12 @@ both present; authors pick one per fact.
    (`dist/semtext-fallback.js`, ≤12 KB raw): `view-as` switching, reveal
    toggles, `<highlight>` occlusion, basic quiz checking, audience gating,
    deep-link resolution, print disclosure. **Zero external resources
-   required for full baseline interactivity.**
+   required for full baseline interactivity.** Prose-reading behaviours
+   (sem-code chrome, reference / glossary previews, backlinks) ship in a
+   second vanilla script, `dist/semtext-reading.js` (≤8 KB raw, marker
+   `<!-- sem:inline reading -->`), under the same rules; it marks what it
+   wired with `data-sem-fallback` and skips elements a Lit wrapper already
+   upgraded. Documents without those elements need not carry it.
 2. `semtext/semtext.js` (Lit 3, IIFE) upgrades elements in place when reachable;
    component implementations supersede fallback behaviors. Handoff contract:
    fallback sets `data-sem-fallback` on elements it enhanced; components
@@ -296,6 +307,45 @@ one rule in `src/shared/summary.ts` that render and extraction share;
 `<details>/<summary>`; JS-off: fully visible (summary as small-caps
 heading). Non-assertive counterpart to `sem-fact` Q/A shape.
 
+**sem-chronology / sem-event** — dated, ordered events; CSS-only timeline.
+**Normative: `spec/schema/sem-chronology.md`.**
+```html
+<div class="sem-chronology" data-kind="release-history" role="list">
+  <div class="sem-event" role="listitem" data-when="2026-03-02" data-status="done">
+    <time datetime="2026-03-02">2 Mar 2026</time> v0.1 tagged.</div>
+</div>
+```
+`data-when`/`data-until` canonical; `<time>` child is the visible label
+(else CSS renders `data-when`); `data-status` optional, same vocabulary as
+`sem-step`; `view-as="timeline|list"`. DOM order = chronological order;
+ordinals positional. **Zero-JS element.**
+
+**sem-code** — verbatim listing with provenance and copy / wrap.
+**Normative: `spec/schema/sem-code.md`.**
+```html
+<div class="sem-code" data-lang="ts" data-filename="src/rotate.ts" data-mark="2,4-5" data-controls="copy,wrap">
+<pre><code>…</code></pre>
+</div>
+```
+Reading bundle adds `.sem-code-chrome` (filename, lang, buttons, status
+region), wraps lines (`span|mark.sem-code-line`, text byte-identical),
+`tabindex="0"` on an overflowing `<pre>`. JS-off: plain `<pre>` with a
+CSS caption. Extraction keeps `source` **verbatim**.
+
+**sem-references / sem-reference** — numbered citable entries.
+**Normative: `spec/schema/sem-references.md`.**
+```html
+<p>…per use<a href="#r-rfc">[1]</a>.</p>
+<div class="sem-references" data-kind="bibliography" role="list">
+  <div class="sem-reference" id="r-rfc" role="listitem" data-href="https://…" data-cite="RFC 6749">…</div>
+</div>
+```
+CSS-counter numbering in every tier; reading bundle adds hover / focus
+previews on citing anchors (`.sem-references-ref`, popover
+`role="tooltip"`, `Esc` closes), backlinks (`aria-label="Back to citation
+N"`) and an external link. Citations mint nothing; print shows `(href)`
+inside the block only.
+
 **sem-progress** — completion meter.
 **Normative: `spec/schema/sem-progress.md`.**
 ```html
@@ -323,9 +373,9 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
 
 ### Tier 2
 
-- `sem-chronology` / `sem-event when` — TRP timeline port.
-- `sem-table`, `sem-query` — data over inline `<script type="application/json">`
-  payloads (portable; no fetch).
+- `sem-chronology` / `sem-event when` — ✅ shipped (R/W1, Tier 0 above).
+- `sem-table` (R/W2) — authored `<table>` is the contract; `sem-query`
+  deferred.
 - `sem-themes controls="picker"` — floating switcher.
 - md→SemText authoring aid (optional, never required).
 

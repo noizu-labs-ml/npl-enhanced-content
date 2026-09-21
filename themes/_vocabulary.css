@@ -23,6 +23,7 @@ body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
 sem-enhanced-document, sem-agent, sem-audiences, sem-note, sem-facts, sem-fact,
 sem-details, sem-detail, sem-procedure, sem-step, sem-properties, sem-property,
 sem-views, sem-view, sem-reveal, sem-progress,
+sem-chronology, sem-event, sem-code, sem-references, sem-reference,
 sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, sem-distractor) { display: block; }
 /* The audience fallback hides with the native attribute; keep it winning
    over the block rule above for element forms. */
@@ -145,6 +146,93 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
   font-variant-caps: all-small-caps; }
 :is(sem-property, .sem-property)[key]:not([data-key])::before { content: attr(key); }
 
+/* properties — glossary view (R/W1): term over definition; anchors get a
+   preview from the reading bundle; :target highlight works with no script */
+:is(sem-properties, .sem-properties):is([data-view-as="glossary"], [view-as="glossary"]) :is(sem-property, .sem-property) {
+  display: block; padding: .6rem .9rem; }
+:is(sem-properties, .sem-properties):is([data-view-as="glossary"], [view-as="glossary"]) :is(sem-property, .sem-property)::before {
+  display: block; font-weight: 600; font-variant-caps: normal; color: var(--sem-fg); margin-bottom: .15rem; }
+:is(sem-property, .sem-property):target { background: color-mix(in srgb, var(--sem-accent) 12%, transparent); }
+:is(sem-enhanced-document, .sem-enhanced-document) dfn { font-style: normal; font-weight: 600; }
+/* in-document links read against either colour scheme (citations, terms) */
+:is(sem-enhanced-document, .sem-enhanced-document) a { color: var(--sem-accent); }
+.sem-properties-ref { text-decoration: underline dotted; text-underline-offset: .15em; }
+
+/* chronology — CSS-only timeline (pattern: procedure). The rail is the
+   container's left border; each event's own left border carries status.
+   Date label: the authored <time> child, else attr(data-when) via ::before. */
+:is(sem-chronology, .sem-chronology) { margin: 1.5rem 0; padding-left: 1.25rem;
+  border-left: 2px solid var(--sem-border); }
+:is(sem-chronology, .sem-chronology):is([data-view-as="list"], [view-as="list"]) { border-left: 0; padding-left: 0; }
+:is(sem-event, .sem-event) { position: relative; margin: 0 0 .75rem; padding: .5rem .9rem;
+  background: var(--sem-surface); border: 1px solid var(--sem-border);
+  border-left: 3px solid var(--sem-border); border-radius: 0 10px 10px 0; }
+:is(sem-event, .sem-event) > time { display: block; font-size: .75rem; color: var(--sem-muted);
+  font-variant-caps: all-small-caps; letter-spacing: .05em; }
+:is(sem-event, .sem-event):not(:has(time))::before { content: attr(data-when); display: block;
+  font-size: .75rem; color: var(--sem-muted); font-variant-caps: all-small-caps; letter-spacing: .05em; }
+:is(sem-event, .sem-event):not(:has(time)):is([data-until], [until])::before { content: attr(data-when) " – " attr(data-until); }
+:is(sem-event, .sem-event):not(:has(time))[when]:not([data-when])::before { content: attr(when); }
+:is(sem-event, .sem-event):not(:has(time))[when][until]:not([data-when])::before { content: attr(when) " – " attr(until); }
+:is(sem-event, .sem-event):is([data-status="done"], [status="done"]) { border-left-color: var(--sem-correct); }
+:is(sem-event, .sem-event):is([data-status="done"], [status="done"])::after { content: " ✓"; color: var(--sem-correct); }
+:is(sem-event, .sem-event):is([data-status="current"], [status="current"]) { border-left-color: var(--sem-accent); }
+:is(sem-event, .sem-event):is([data-status="current"], [status="current"])::after { content: " →"; color: var(--sem-accent); }
+:is(sem-event, .sem-event):is([data-status="blocked"], [status="blocked"]) { border-left-color: var(--sem-wrong); color: var(--sem-muted); }
+:is(sem-event, .sem-event):is([data-status="blocked"], [status="blocked"])::after { content: " ⛔"; color: var(--sem-wrong); }
+
+/* code — verbatim listing; chrome (reading bundle / Lit) is the first
+   child; JS-off the filename is a CSS caption instead */
+:is(sem-code, .sem-code) { margin: 1.25rem 0; border: 1px solid var(--sem-border); border-radius: 12px;
+  background: var(--sem-surface); overflow: hidden; }
+:is(sem-code, .sem-code) pre { margin: 0; padding: .9rem 1rem; overflow-x: auto; font-size: .875rem;
+  line-height: 1.5; tab-size: 2; }
+:is(sem-code, .sem-code):is([data-wrap], [wrap]) pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+:is(sem-code, .sem-code):not(:has(> .sem-code-chrome)):is([data-filename], [filename])::before {
+  content: attr(data-filename); display: block; padding: .4rem 1rem; font-size: .75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--sem-muted);
+  border-bottom: 1px solid var(--sem-border); }
+:is(sem-code, .sem-code):not(:has(> .sem-code-chrome))[filename]:not([data-filename])::before { content: attr(filename); }
+.sem-code-chrome { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: .4rem .75rem;
+  border-bottom: 1px solid var(--sem-border); font-size: .75rem; color: var(--sem-muted); }
+.sem-code-filename { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.sem-code-lang { border: 1px solid var(--sem-border); border-radius: 999px; padding: 0 .5rem;
+  text-transform: uppercase; letter-spacing: .05em; font-size: .7rem; }
+.sem-code-chrome button { border: 1px solid var(--sem-border); background: var(--sem-bg); color: var(--sem-fg);
+  border-radius: 6px; padding: .15rem .6rem; cursor: pointer; font: inherit; }
+.sem-code-chrome button:first-of-type { margin-left: auto; }
+.sem-code-chrome button[aria-pressed="true"] { border-color: var(--sem-accent); color: var(--sem-accent); }
+.sem-code-status { min-width: 3.5rem; font-size: .7rem; }
+mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
+  background: color-mix(in srgb, var(--sem-accent) 14%, transparent);
+  box-shadow: -1rem 0 0 color-mix(in srgb, var(--sem-accent) 14%, transparent); }
+
+/* references — CSS-counter numbering in every tier; previews and
+   backlinks come from the reading bundle */
+:is(sem-references, .sem-references) { margin: 2rem 0 1rem; padding-top: .75rem;
+  border-top: 1px solid var(--sem-border); font-size: .875rem; counter-reset: sem-reference; }
+:is(sem-reference, .sem-reference) { counter-increment: sem-reference; position: relative;
+  padding: .2rem 0 .2rem 2.25rem; margin: .25rem 0; border-radius: 6px; }
+:is(sem-reference, .sem-reference)::before { content: counter(sem-reference) "."; position: absolute;
+  left: .5rem; color: var(--sem-muted); }
+:is(sem-references, .sem-references):is([data-kind="bibliography"], [kind="bibliography"]) :is(sem-reference, .sem-reference) {
+  padding-left: 2.75rem; }
+:is(sem-reference, .sem-reference):target { background: color-mix(in srgb, var(--sem-accent) 12%, transparent); }
+.sem-references-backlinks { margin-left: .4rem; }
+.sem-references-backlinks a, .sem-references-link { text-decoration: none; margin-left: .3rem; color: var(--sem-accent); }
+.sem-references-ref { text-decoration: none; border-bottom: 1px dotted var(--sem-accent); }
+
+/* popover — one preview surface per document (src/shared/popover.ts);
+   native `popover` where supported, fixed div otherwise. Author rules
+   override the UA `inset: 0; margin: auto` of an open popover. */
+.sem-popover { position: fixed; inset: auto; margin: 0; max-width: min(24rem, calc(100vw - 2rem));
+  font-family: system-ui, sans-serif;
+  padding: .6rem .8rem; border: 1px solid var(--sem-border); border-radius: 10px;
+  background: var(--sem-surface); color: var(--sem-fg); box-shadow: 0 8px 24px rgba(0, 0, 0, .15);
+  font-size: .875rem; line-height: 1.45; z-index: 50; }
+.sem-popover[hidden] { display: none; }
+.sem-popover-term { display: block; font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); }
+
 /* views */
 :is(sem-views, .sem-views) { margin: 1.5rem 0; }
 .sem-views-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--sem-border); }
@@ -185,7 +273,12 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
    <details> are opened by fallback/target on `beforeprint`; CSS cannot. */
 @media print {
   .sem-facts-chrome, .sem-quiz-options, .sem-views-tabs, .sem-note-summary,
+  .sem-code-chrome, .sem-popover, .sem-references-backlinks, .sem-references-link,
   sem-reader, .sem-reader { display: none !important; }
+  :is(sem-code, .sem-code) pre { white-space: pre-wrap; overflow: visible; }
+  /* the href shows inside the references block only, never at the citation */
+  :is(sem-reference, .sem-reference)[data-href]::after { content: " (" attr(data-href) ")"; color: var(--sem-muted); }
+  :is(sem-reference, .sem-reference)[href]:not([data-href])::after { content: " (" attr(href) ")"; color: var(--sem-muted); }
   :is(sem-facts, .sem-facts) :is(sem-fact, .sem-fact) { display: block !important; min-height: 0 !important; }
   :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { display: block !important; visibility: visible !important; }
   :is(sem-note, .sem-note)[collapsed] > .sem-note-body { display: block !important; }
@@ -197,6 +290,6 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
   :is(sem-reveal, .sem-reveal) summary { list-style: none; }
   .sem-occluded { color: inherit !important; background: none !important; }
   :is(sem-fact, .sem-fact), :is(sem-step, .sem-step), :is(sem-note, .sem-note), :is(sem-detail, .sem-detail),
-  :is(sem-property, .sem-property) { break-inside: avoid; page-break-inside: avoid; }
+  :is(sem-property, .sem-property), :is(sem-event, .sem-event), :is(sem-reference, .sem-reference) { break-inside: avoid; page-break-inside: avoid; }
   .sem-target { outline: none; }
 }

@@ -27,3 +27,10 @@ export { SemFacts } from './lit/sem-facts.js';
 import './lit/sem-facts.js';
 export { SemDetails } from './lit/sem-details.js';
 import './lit/sem-details.js';
+/* R/W1 prose elements — thin wrappers over src/reading/* */
+export { SemCode } from './lit/sem-code.js';
+import './lit/sem-code.js';
+export { SemReferences } from './lit/sem-references.js';
+import './lit/sem-references.js';
+export { SemProperties } from './lit/sem-properties.js';
+import './lit/sem-properties.js';

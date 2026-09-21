@@ -18,6 +18,7 @@
  */
 
 import { deriveSummary } from '../shared/summary.js';
+import { parseMarks } from '../shared/marks.js';
 
 /** One extracted record. Shape is normative; see spec/extraction.md §2. */
 export interface SemRecord {
@@ -62,7 +63,14 @@ const RECORD_TYPES = [
   'sem-views',
   'sem-view',
   'sem-reveal',
-  'sem-progress'
+  'sem-progress',
+  // R/W1 prose elements (spec/schema/sem-chronology.md, sem-code.md,
+  // sem-references.md)
+  'sem-chronology',
+  'sem-event',
+  'sem-code',
+  'sem-references',
+  'sem-reference'
 ] as const;
 
 /** v0.3 custom-element tag names that are not simply `sem-<type>`. */
@@ -79,7 +87,13 @@ const CHROME_CLASSES = [
   'sem-views-tabs',
   'sem-note-summary',
   'sem-progress-track',
-  'sem-progress-fill'
+  'sem-progress-fill',
+  // reading bundle (R/W1)
+  'sem-code-chrome',
+  'sem-code-status',
+  'sem-references-backlinks',
+  'sem-references-link',
+  'sem-popover'
 ];
 
 /** Highlight / cloze markers, in every authoring and runtime form. */
@@ -432,6 +446,49 @@ function buildReveal(el: Element): Payload {
   };
 }
 
+function buildEvent(el: Element): Payload {
+  const fields: Record<string, unknown> = {
+    when: param(el, 'when') || '',
+    until: param(el, 'until') || '',
+    ordinal: ordinalAmongSiblings(el, 'sem-event')
+  };
+  // An event is a record of something that happened, not a task: no
+  // default status (contrast sem-step's `todo`).
+  const status = param(el, 'status');
+  if (status !== null) fields.status = status;
+  return { fields: fields, text: prose(el) };
+}
+
+function buildCode(el: Element): Payload {
+  // `source` is VERBATIM — the one field whose whitespace is content
+  // (spec/schema/sem-code.md, machine contract). Line-wrapping spans and
+  // <mark> are read through; chrome is skipped.
+  const pre = el.querySelector('pre');
+  const code = pre ? pre.querySelector('code') || pre : null;
+  const source = code ? collectText(code, isChrome) : '';
+  const lines = source === '' ? 0 : source.split('\n').length;
+  return {
+    fields: {
+      lang: param(el, 'lang') || '',
+      filename: param(el, 'filename') || '',
+      marks: parseMarks(param(el, 'mark'), lines),
+      source: source
+    },
+    text: norm(source)
+  };
+}
+
+function buildReference(el: Element): Payload {
+  return {
+    fields: {
+      href: param(el, 'href') || '',
+      cite: param(el, 'cite') || '',
+      ordinal: ordinalAmongSiblings(el, 'sem-reference')
+    },
+    text: prose(el)
+  };
+}
+
 function buildContainer(el: Element): Payload {
   return { fields: {}, text: '' };
 }
@@ -460,11 +517,19 @@ function payloadFor(type: string, el: Element): Payload {
       return buildProgress(el);
     case 'sem-reveal':
       return buildReveal(el);
+    case 'sem-event':
+      return buildEvent(el);
+    case 'sem-code':
+      return buildCode(el);
+    case 'sem-reference':
+      return buildReference(el);
     case 'sem-facts':
     case 'sem-details':
     case 'sem-procedure':
     case 'sem-properties':
     case 'sem-views':
+    case 'sem-chronology':
+    case 'sem-references':
       return buildContainer(el);
     default:
       return buildPlain(el);
@@ -560,7 +625,10 @@ const TEXTUAL_FIELDS: Record<string, string[]> = {
   'sem-progress': ['rawValue'],
   'sem-reveal': ['summary'],
   'sem-view': ['name'],
-  'sem-property': []
+  'sem-property': [],
+  'sem-event': ['when', 'until', 'status'],
+  'sem-code': ['lang', 'filename'],
+  'sem-reference': ['href', 'cite']
 };
 
 /**
@@ -573,7 +641,9 @@ export function renderRecordsAsText(records: SemRecord[]): string {
     const r = records[i];
     const pad = new Array(depthOf(records, r) + 1).join('  ');
     let head = pad + r.type + annotate(r);
-    if (r.text) head += ': ' + r.text;
+    // sem-code renders its verbatim source as a block below instead of
+    // repeating the normalised text on the head line.
+    if (r.text && r.type !== 'sem-code') head += ': ' + r.text;
     lines.push(head);
 
     const extra = TEXTUAL_FIELDS[r.type] || [];
@@ -587,6 +657,14 @@ export function renderRecordsAsText(records: SemRecord[]): string {
         lines.push(pad + '  ' + key + ': ' + arr.join(' | '));
       } else {
         lines.push(pad + '  ' + key + ': ' + String(v));
+      }
+    }
+    if (r.type === 'sem-code') {
+      const src = String(r.fields.source || '');
+      if (src !== '') {
+        lines.push(pad + '  source:');
+        const srcLines = src.split('\n');
+        for (let k = 0; k < srcLines.length; k++) lines.push(pad + '    ' + srcLines[k]);
       }
     }
   }
