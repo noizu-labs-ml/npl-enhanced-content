@@ -30,6 +30,7 @@ vocabulary for the Lit milestone; the class mapping below is mechanical.
 | `<sem-properties view-as="glossary">` | `div.sem-properties[data-view-as="glossary"]` › `div.sem-property[id][data-key]`; term anchors `<a href="#id">`, `<dfn>` optional |
 | `<sem-source label view-as="html\|source">` › any content | `div.sem-source[data-label][data-view-as]` › any content; transparent wrapper, mints nothing |
 | `<sem-reader controls outline-depth>` › optional `<nav aria-label="Contents">` | `div.sem-reader[data-controls][data-outline-depth]` › same optional nav; chrome, mints nothing |
+| `<sem-md label view-as="rendered\|raw" controls>` › Markdown text | `div.sem-md[data-label][data-view-as][data-controls]` › Markdown text; `data-view-as` is runtime-mutable presentation |
 | `<sem-table controls sticky>` › `<table>` | `div.sem-table[data-controls][data-sticky]` › authored `<table>` (`<th scope="col">`, `td[data-value]` sort keys) |
 
 CSS layering (all inline in `<head>`): (1) plain core CSS — theme tokens on
@@ -172,7 +173,10 @@ both present; authors pick one per fact.
    upgraded. Documents without those elements need not carry it. The
    core's first handler snapshots every `sem-source` wrapper's markup
    (an inert `script.sem-source-raw[type="text/plain"]` child) before
-   any other handler runs; the reading bundle renders that copy.
+   any other handler runs; the reading bundle renders that copy. The
+   `sem-md` renderer is a third vanilla script, `dist/semtext-md.js` (≤8 KB
+   raw, marker `<!-- sem:inline md -->`, global `SemTextMd`), under the
+   same rules; a document with no Markdown need not carry it.
 2. `semtext/semtext.js` (Lit 3, IIFE) upgrades elements in place when reachable;
    component implementations supersede fallback behaviors. Handoff contract:
    fallback sets `data-sem-fallback` on elements it enhanced; components
@@ -352,6 +356,24 @@ the literal markup in a `sem-code` (copy, wrap) built from the core's
 pre-enhancement snapshot. Transparent to extraction; JS-off: the rendered
 children, nothing else.
 
+**sem-md** — a Markdown block, rendered in the browser.
+**Normative: `spec/schema/sem-md.md`.**
+```html
+<div class="sem-md" data-label="Token lifetimes">
+  | Token   | Lifetime | Rotates |
+  | :------ | -------: | :-----: |
+  | access  | 15 min   | no      |
+</div>
+```
+The element's text is Markdown (GFM tables, headings, lists, emphasis,
+links, code, quotes, rules; raw HTML renders as text). The Markdown bundle
+adds `.sem-md-chrome` (label, `Markdown` toggle with `aria-pressed`, copy,
+status region), renders into `.sem-md-body` (real `<table>` with
+`th[scope="col"]`, alignment row honoured) and keeps the normalised source
+in a `sem-code` fence (`.sem-md-raw`); `data-view-as="rendered|raw"` is
+rewritten by the toggle. JS-off: the source reads as pre-wrapped text.
+Extraction keeps `source` **normalised** (dedented), never the rendering.
+
 **sem-references / sem-reference** — numbered citable entries.
 **Normative: `spec/schema/sem-references.md`.**
 ```html
@@ -429,7 +451,9 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
 - `sem-table` — ✅ shipped (R/W2, Tier 0 above); `sem-query` deferred.
 - `sem-themes controls="picker"` — subsumed by `sem-reader`'s `theme`
   control (R/W3, after Track T).
-- md→SemText authoring aid (optional, never required).
+- `sem-md` — ✅ shipped (R/W2.2, Tier 0 above): Markdown *inside* a
+  SemText document. A whole-document md→SemText authoring aid remains
+  optional and never required.
 
 ## 6. Theme conventions
 

@@ -91,9 +91,13 @@ their literal characters.
   alignment row is honoured per column (`style.textAlign` on every cell).
   Links carry `rel="noopener"`.
 - `.sem-md-raw` follows: the normalised Markdown inside a `sem-code`
-  (`data-lang="markdown"`, `data-controls="copy,wrap"`), built once and
-  enhanced by the same function the reading bundle uses, so the raw view
-  has its own copy / wrap chrome without loading a second script.
+  (`data-lang="markdown"`, `data-controls="copy,wrap"`), built once. Its
+  copy / wrap chrome is `sem-code`'s own: the Markdown bundle borrows the
+  reading bundle's `enhanceCodeElement` through its global when that
+  script is on the page (the Lit wrapper imports it), so the listing code
+  is never bundled twice. Without the reading bundle the fence is a plain
+  `sem-code` (CSS caption, no buttons); the chrome's copy button still
+  copies the source.
 - The authored text nodes are consumed: after enhancement the element
   holds exactly chrome, body and raw fence. The normalised source lives in
   the fence's `<code>`, byte-identical to what the parser saw.

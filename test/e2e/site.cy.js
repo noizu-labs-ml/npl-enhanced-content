@@ -23,6 +23,9 @@
 //   Scenario: the colour select applies the theme's dark tokens
 //   Scenario: the artifacts table sorts numerically and filters; extraction keeps authored order
 //   Scenario: JS-off the reader is empty and the table is plain
+//   R/W2.2 (the page shows a live sem-md):
+//   Scenario: the Markdown example renders its table, flips to the source and back, extracts the source
+//   Scenario: JS-off the Markdown example is its pre-wrapped source
 
 describe('semtext.dev landing page', () => {
   beforeEach(() => cy.visit('/site/index.html'));
@@ -208,17 +211,17 @@ describe('semtext.dev landing page', () => {
       cy.get('#rd-table th').eq(1).should('have.attr', 'aria-sort', 'ascending');
       cy.get('#rd-table tbody tr').then(($r) => {
         expect(Array.from($r, (r) => r.cells[0].textContent)).to.deep.equal(
-          ['semtext-extract.js', 'semtext-fallback.js', 'semtext-reading.js', 'semtext.js']);
+          ['semtext-md.js', 'semtext-extract.js', 'semtext-fallback.js', 'semtext-reading.js', 'semtext.js']);
       });
       cy.get('#rd-table .sem-table-filter').type('fallback');
-      cy.get('#rd-table tbody tr[hidden]').should('have.length', 3);
-      cy.get('#rd-table .sem-table-status').should('have.text', '1 of 4 rows, sorted by Minified, ascending');
+      cy.get('#rd-table tbody tr[hidden]').should('have.length', 4);
+      cy.get('#rd-table .sem-table-status').should('have.text', '1 of 5 rows, sorted by Minified, ascending');
       cy.window().then((win) => {
         const t = win.SemTextExtract.extractRecords(win.document).find((r) => r.id === 'rd-table');
         expect(t.type).to.equal('sem-table');
         expect(t.fields.columns).to.deep.equal(['Artifact', 'Minified', 'Gzipped', 'Global']);
         expect(t.fields.rows.map((row) => row[0])).to.deep.equal(
-          ['semtext.js', 'semtext-fallback.js', 'semtext-reading.js', 'semtext-extract.js']);
+          ['semtext.js', 'semtext-fallback.js', 'semtext-reading.js', 'semtext-extract.js', 'semtext-md.js']);
       });
     });
 
@@ -226,8 +229,35 @@ describe('semtext.dev landing page', () => {
       cy.visit('/site/index.html', { onBeforeLoad(win) { win.__semJsOff = true; } });
       cy.get('.sem-reader-chrome, .sem-table-chrome, .sem-table-sort').should('not.exist');
       cy.get('#pg-reader').then(($r) => expect($r[0].getBoundingClientRect().height).to.equal(0));
-      cy.get('#rd-table tbody tr').should('have.length', 4);
+      cy.get('#rd-table tbody tr').should('have.length', 5);
       cy.get('#rd-table th').should('not.have.attr', 'aria-sort');
+    });
+
+    it('the Markdown example renders its table, flips to the source and back, and extracts the source', () => {
+      cy.get('#rd-md').should('have.attr', 'data-sem-fallback');
+      cy.get('#rd-md > .sem-md-chrome .sem-md-label').should('have.text', 'Who renders sem-md');
+      cy.get('#rd-md .sem-md-body thead th[scope="col"]').should('have.length', 3);
+      cy.get('#rd-md .sem-md-body tbody tr').should('have.length', 3);
+      cy.get('#rd-md .sem-md-body p strong').should('have.text', 'one');
+      cy.get('#rd-md [data-act="toggle"]').click();
+      cy.get('#rd-md .sem-md-body').should('not.be.visible');
+      cy.get('#rd-md .sem-md-raw code').invoke('text').then((t) => expect(t).to.match(/^\| Tier {5}\| Script/));
+      cy.get('#rd-md .sem-md-raw .sem-code-chrome [data-act="copy"]').should('exist');
+      cy.get('#rd-md [data-act="toggle"]').click();
+      cy.get('#rd-md .sem-md-body').should('be.visible');
+      cy.window().then((win) => {
+        const r = win.SemTextExtract.extractRecords(win.document).find((x) => x.id === 'rd-md');
+        expect(r.type).to.equal('sem-md');
+        expect(r.fields.source).to.match(/^\| Tier {5}\| Script/);
+        expect(r.fields.source).not.to.match(/Copy|Markdown\n/);
+      });
+    });
+
+    it('JS-off: the Markdown example is its pre-wrapped source', () => {
+      cy.visit('/site/index.html', { onBeforeLoad(win) { win.__semJsOff = true; } });
+      cy.get('.sem-md-chrome, .sem-md-body, .sem-md-raw').should('not.exist');
+      cy.get('#rd-md').should('be.visible').invoke('text').then((t) => expect(t).to.contain('| :------- |'));
+      cy.get('#rd-md table').should('not.exist');
     });
 
     it('JS-off: the Reading section hides nothing and grows no chrome', () => {

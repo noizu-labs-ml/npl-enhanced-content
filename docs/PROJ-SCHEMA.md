@@ -38,6 +38,7 @@ custom elements (`<sem-fact>`) are the target vocabulary for the Lit milestone.
 | `<sem-reader controls outline-depth>` › optional `<nav aria-label="Contents">` | `div.sem-reader[data-controls][data-outline-depth]` (chrome; mints nothing) |
 | `<sem-table controls sticky>` › `<table>` | `div.sem-table[data-controls][data-sticky]` › authored `<table>`, `td[data-value]` sort keys |
 | `<sem-source label view-as>` › any content | `div.sem-source[data-label][data-view-as="html\|source"]` (transparent; mints nothing; children extract as if unwrapped) |
+| `<sem-md label view-as controls>` › Markdown text | `div.sem-md[data-label][data-view-as][data-controls]` › Markdown text (`data-view-as` runtime-mutable) |
 
 Full per-element contracts (fields, rendered forms, a11y, machine contract):
 `spec/schema/*.md`; extraction payloads per type: `spec/extraction.md` §4.
@@ -46,7 +47,10 @@ R/W1 additions: `sem-event {when, until, ordinal, status?}`, `sem-code
 ordinal}`. R/W2: `sem-table {caption, columns[], rows[][]}` in authored
 order via `data-sem-source-index` (extraction §5 recorded exception);
 `sem-reader` mints nothing (extraction §3 rule 7); `sem-source` is
-transparent (§3 rule 8) and its `data-view-as` is presentation (§5c). Reader state on
+transparent (§3 rule 8) and its `data-view-as` is presentation (§5c).
+R/W2.2: `sem-md {source}` — the normalised (dedented) Markdown, read from
+the raw fence once enhanced and from the element's text otherwise; the
+rendered body is never extracted. Reader state on
 `<html>`: `data-sem-mode="focus"`, `data-sem-type="s|m|l"`,
 `data-sem-font="serif"`, `data-color-mode="light|dark"` — session facts.
 
@@ -96,7 +100,7 @@ Change order: schema → spec → code.
 | Field | Value |
 |-------|-------|
 | `type` | `module` |
-| `exports` | `./lit` → `dist/semtext.js`, `./fallback` → `dist/semtext-fallback.js`, `./reading` → `dist/semtext-reading.js`, `./extract` → `dist/semtext-extract.js`, `./themes/*` → `themes/*`. No `.` export — each artifact is a classic IIFE script that installs a global and exports nothing (D9). |
+| `exports` | `./lit` → `dist/semtext.js`, `./fallback` → `dist/semtext-fallback.js`, `./reading` → `dist/semtext-reading.js`, `./extract` → `dist/semtext-extract.js`, `./md` → `dist/semtext-md.js`, `./themes/*` → `themes/*`. No `.` export — each artifact is a classic IIFE script that installs a global and exports nothing (D9). |
 | `files` | `dist`, `themes` |
 | `dependencies` | `lit ^3.3.3` |
 | `devDependencies` | `cypress ^15`, `typescript ^5.6`, `vite ^6`, `vitest ^5`, `happy-dom ^20` |
@@ -106,7 +110,7 @@ Change order: schema → spec → code.
 
 | File | Key settings |
 |------|--------------|
-| `vite.config.ts` | Dev/preview only — the three-artifact build lives in `scripts/build.mjs` |
+| `vite.config.ts` | Dev/preview only — the five-artifact build lives in `scripts/build.mjs` |
 | `tsconfig.json` | TypeScript compile options for vite build |
 | `cypress.config.js` | E2E spec path `test/e2e`, baseUrl pointed at the vite preview server |
 
