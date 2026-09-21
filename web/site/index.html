@@ -23,20 +23,20 @@
 
 <!-- GA_MEASUREMENT_ID_SNIPPET -->
 
-<title>SemText — semantic markup that reads three ways</title>
-<meta name="description" content="SemText is an XHTML-first markup vocabulary. One file renders as a styled interactive document in a browser, extracts as structured records for a language model, and prints as annotated text in a terminal. No build step, no React.">
+<title>SemText — an XHTML document format built to replace Markdown</title>
+<meta name="description" content="SemText is an XHTML document format for rich content Markdown cannot carry: typed structure, attributes that qualify data, interaction and defined degradation. Agents read the file as written; semtext-extract.js produces a smaller, LLM-tailored annotated text. With no script running, the file still reads as plain text; the browser adds reader chrome, quizzes and source views for people.">
 <link rel="canonical" href="https://semtext.dev/">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://semtext.dev/">
 <meta property="og:site_name" content="SemText">
-<meta property="og:title" content="SemText — semantic markup that reads three ways">
-<meta property="og:description" content="One HTML file: a styled interactive document for a person, structured records for a model, annotated text for a terminal.">
+<meta property="og:title" content="SemText — an XHTML document format built to replace Markdown">
+<meta property="og:description" content="An XHTML format for rich content: agents read the file as written, semtext-extract.js shrinks it to annotated text for a model, and it still reads as plain text with no script. The browser adds value for people.">
 <meta property="og:image" content="https://semtext.dev/og.png">
-<meta property="og:image:alt" content="SemText — semantic markup that reads three ways">
+<meta property="og:image:alt" content="SemText — an XHTML document format built to replace Markdown">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="SemText — semantic markup that reads three ways">
-<meta name="twitter:description" content="One HTML file: a styled interactive document for a person, structured records for a model, annotated text for a terminal.">
+<meta name="twitter:title" content="SemText — an XHTML document format built to replace Markdown">
+<meta name="twitter:description" content="An XHTML format for rich content: agents read the file as written, semtext-extract.js shrinks it to annotated text for a model, and it still reads as plain text with no script. The browser adds value for people.">
 <meta name="twitter:image" content="https://semtext.dev/og.png">
 
 <!-- Inline SVG favicon. A data URI rather than a file: this page must render
@@ -397,17 +397,28 @@ section { padding-block: var(--pg-space) 0; }
 
   <!-- Hero ------------------------------------------------------------- -->
   <div class="pg-hero pg-col"><div class="pg-narrow">
-    <h1>Semantic markup that reads three ways.</h1>
+    <h1>An XHTML document format built to replace Markdown.</h1>
     <p class="pg-lede">
-      SemText is a markup vocabulary for HTML documents. You write what the
-      content <em>is</em> — a fact, a step, a caveat, a property — and the same
-      file renders as a styled interactive page in a browser, extracts as
-      structured records for a language model, and prints as annotated text in
-      a terminal.
+      Markdown has nowhere to put typed structure, attributes that qualify a
+      piece of data, interaction, or a defined fallback when nothing runs.
+      SemText is an XHTML document format for rich content: you write what
+      a piece of content <em>is</em> — a fact, a step, a caveat, a distractor
+      — as a class and a small set of attributes on plain elements, at close
+      to Markdown's authoring cost, with no build step.
     </p>
     <p class="pg-sub">
-      A document is one standalone <code>.html</code> file. Double-click it.
-      There is no server, no build step and no framework to install.
+      An agent reads the file as written: the markup is the structure, so
+      there is no rendering step and nothing to infer. When a smaller,
+      LLM-tailored text is needed instead, <code>semtext-extract.js</code>
+      walks the document into a list of <code>SemRecord</code> objects and
+      renders them as annotated text, one line per record — a 9.1 KB
+      (3.3 KB gzipped) script, not a server.
+    </p>
+    <p class="pg-sub">
+      With no script running at all, the same file still reads as plain
+      text, in document order. The browser is where value gets added for a
+      person — reader chrome, flashcards, quizzes, source views — and none
+      of it changes what a machine reads.
     </p>
     <p class="pg-actions">
       <a class="pg-btn primary" href="#try">See it work</a>
@@ -427,11 +438,13 @@ section { padding-block: var(--pg-space) 0; }
       <p class="pg-eyebrow">Why this exists</p>
       <h2 id="why-h">One document, three readers who want different things.</h2>
       <p>
-        A rich document usually ends up as three artifacts that drift: a page
-        for people, a JSON export for tooling, and a plain-text dump for
-        anything without a browser. SemText's bet is that one file can serve
-        all three, if the markup says what each piece of content means instead
-        of how it should look.
+        Markdown carries prose well and rich content poorly: it has no place
+        to mark a conclusion as distinct from a decoy, or a step as blocked,
+        so a rich document usually ends up as three artifacts that drift — a
+        page for people, a JSON export for tooling, and a plain-text dump for
+        anything without a browser. SemText's bet is that one XHTML file can
+        serve all three, if the markup says what each piece of content means
+        instead of how it should look.
       </p>
       <p class="pg-sub">
         Pick a reader to see what they get from the same file.
