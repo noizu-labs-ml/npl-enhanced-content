@@ -28,6 +28,15 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist/site/ /usr/share/nginx/html/
 COPY --from=builder /app/dist/demo/ /usr/share/nginx/html/demo/
 
+# Standalone spec page (dist/spec/conventions.html, built by
+# scripts/build-standalone.mjs) expects to be served from the dist ROOT: its
+# relative refs are ../semtext*.js and ../themes/*.css from /spec/, plus a
+# same-dir spec.css. Ship those alongside the site root so the spec page
+# doesn't silently fall through nginx's SPA `try_files` to the landing page.
+COPY --from=builder /app/dist/spec/ /usr/share/nginx/html/spec/
+COPY --from=builder /app/dist/themes/ /usr/share/nginx/html/themes/
+COPY --from=builder /app/dist/semtext*.js /usr/share/nginx/html/
+
 # Runtime GA4 injection. The built landing page carries an inert marker
 # comment; the entrypoint hook rewrites the served copy from this pristine
 # template on every container start (nginx:alpine runs /docker-entrypoint.d/*.sh
