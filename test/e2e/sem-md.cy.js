@@ -11,7 +11,15 @@
 //   Scenario: copy writes the normalised Markdown and announces "Copied"
 //   Scenario: view-as="raw" is honoured as the initial mode
 //   Scenario: default controls = toggle + copy
-//   Scenario: script-injection Markdown renders as text — no script, no unsafe href
+//   Scenario: script-injection Markdown renders as text; scheme bypasses (tab / control / newline /
+//             uppercase / data: / angle-bracket form) lose their href in link AND image position;
+//             a legitimate image, relative link, fragment and autolink render
+//   Scenario: edge cases — setext heading, deep tight list, ol start, `* * *` rule, hard break,
+//             intraword underscore, reference link stays literal, escaped pipe, pipe in code span,
+//             ragged rows, backticks inside a ~~~ fence
+//   Scenario: print — rendered body only, whatever the view
+//   Scenario: alone (md bundle only) — element marked, root not; fence gains chrome on re-entry;
+//             pathological input (10k `*`, 5000 `>`, 40-deep list) renders in bounded time
 //   Scenario: upgraded tier — one chrome, same behaviour, handoff markers
 //   Scenario: JS-off — no chrome, the raw Markdown visible as pre-wrapped text
 
@@ -82,7 +90,7 @@ function assertMd(url, marker) {
     cy.get('#m-table .sem-md-body p a')
       .should('have.text', 'RFC 6749')
       .should('have.attr', 'href', 'https://www.rfc-editor.org/rfc/rfc6749')
-      .should('have.attr', 'rel', 'noopener');
+      .should('have.attr', 'rel', 'noopener noreferrer');
     cy.get('#m-table .sem-md-body p code').should('have.text', 'rotate()');
   });
 
@@ -134,16 +142,57 @@ function assertMd(url, marker) {
     cy.get('#m-inject .sem-md-label').should('not.exist');
   });
 
-  it('script-injection Markdown renders as text', () => {
-    cy.get('#m-inject .sem-md-body script, #m-inject .sem-md-body img').should('not.exist');
-    cy.get('#m-inject .sem-md-body a[href^="javascript"]').should('not.exist');
-    cy.get('#m-inject .sem-md-body p').invoke('text').then((t) => {
+  it('script-injection Markdown renders as text; unsafe schemes lose their href, safe ones keep it', () => {
+    cy.get('#m-inject .sem-md-body script').should('not.exist');
+    cy.get('#m-inject .sem-md-body p').first().invoke('text').then((t) => {
       expect(t).to.contain('<script>alert(1)</script>');
       expect(t).to.contain('<img src=x onerror=alert(1)>');
       expect(t).to.contain('click');
     });
+    cy.get('#m-inject .sem-md-body a').then(($a) => {
+      const hrefs = Array.from($a, (a) => a.getAttribute('href'));
+      expect(hrefs).to.deep.equal(['docs/x.html', '#m-table', 'https://example.com/a?b=1']);
+      $a.each((_, a) => expect(a.getAttribute('rel')).to.equal('noopener noreferrer'));
+    });
+    // the bypass attempts are still readable as their link text
+    cy.get('#m-inject .sem-md-body').invoke('text').then((t) => {
+      ['click', 'tab', 'ctl', 'up', 'data', 'vb', 'tabimg', 'dataimg'].forEach((w) => expect(t).to.contain(w));
+      expect(t).not.to.contain('[rel]');
+    });
+    cy.get('#m-inject .sem-md-body img').should('have.length', 1).and('have.attr', 'src', '/img/ok.png');
+    cy.get('#m-inject .sem-md-body a').last().should('have.text', 'https://example.com/a?b=1');
+  });
+
+  it('edge cases: setext, nesting, start, rule vs list, hard break, underscores, pipes, fences', () => {
+    cy.get('#m-edge .sem-md-body > h2').should('have.text', 'Setext');
+    cy.get('#m-edge .sem-md-body > ul > li').should('have.length', 2);
+    cy.get('#m-edge .sem-md-body > ul > li > ul > li > ul > li').should('have.text', 'four');
+    cy.get('#m-edge .sem-md-body > ol').should('have.attr', 'start', '3').find('> li').should('have.length', 2);
+    cy.get('#m-edge .sem-md-body > ol > li > p').should('not.exist');
+    cy.get('#m-edge .sem-md-body > hr').should('have.length', 1);
+    cy.get('#m-edge .sem-md-body p br').should('have.length', 1);
+    cy.get('#m-edge .sem-md-body p em').should('have.length', 1).and('have.text', 'emph');
+    cy.get('#m-edge .sem-md-body').invoke('text').then((t) => {
+      expect(t).to.contain('snake_case_name');
+      expect(t).to.contain('foo_bar_baz');
+      expect(t).to.contain('[ref][x]');
+    });
+    cy.get('#m-edge .sem-md-body a').should('have.length', 0);
+    cy.get('#m-edge .sem-md-body tbody tr').should('have.length', 3);
+    cy.get('#m-edge .sem-md-body tbody tr').eq(0).find('td').then(($td) => {
+      expect($td[0].textContent).to.equal('a | b');
+      expect($td[1].querySelector('code').textContent).to.equal('x | y');
+    });
+    cy.get('#m-edge .sem-md-body tbody tr').eq(1).find('td').should('have.length', 2).last().should('have.text', '');
+    cy.get('#m-edge .sem-md-body tbody tr').eq(2).find('td').should('have.length', 2);
+    cy.get('#m-edge .sem-md-body pre > code').should('have.class', 'language-md')
+      .and('have.text', '```js\ninner\n```');
   });
 }
+
+const emulate = (params) =>
+  cy.wrap(null, { log: false }).then(() =>
+    Cypress.automation('remote:debugger:protocol', { command: 'Emulation.setEmulatedMedia', params }));
 
 describe('sem-md', () => {
   describe('fallback tier — /demo/reading.html', () => {
@@ -156,6 +205,74 @@ describe('sem-md', () => {
       cy.window().then((win) => expect(win.customElements.get('sem-md')).to.exist);
     });
     assertMd('/demo/reading-lit.html', { present: 'data-sem-upgraded', absent: 'data-sem-fallback' });
+  });
+
+  describe('print', () => {
+    afterEach(() => emulate({ media: '', features: [] }));
+    it('shows the rendered body only, in both views', () => {
+      cy.visit('/demo/reading.html');
+      cy.get('#m-raw').should('have.attr', 'data-view-as', 'raw');
+      emulate({ media: 'print' });
+      ['#m-table', '#m-raw'].forEach((id) => {
+        cy.get(id + ' .sem-md-body').should('be.visible');
+        cy.get(id + ' .sem-md-chrome').should('not.be.visible');
+        cy.get(id + ' .sem-md-raw').should('not.be.visible');
+      });
+    });
+  });
+
+  describe('alone — /demo/md-only.html (no core, no reading bundle)', () => {
+    beforeEach(() => cy.visit('/demo/md-only.html'));
+
+    it('marks the element, not the root; the fence is a plain sem-code until a reading bundle appears', () => {
+      cy.get('#mo-table').should('have.attr', 'data-sem-fallback');
+      cy.get('html').should('not.have.attr', 'data-sem-fallback');
+      cy.get('#decoy').should('be.visible');
+      cy.get('#mo-table .sem-md-body tbody td').first().should('have.text', '1');
+      cy.get('#mo-table .sem-md-raw .sem-code[data-lang="markdown"]').should('exist');
+      cy.get('#mo-table .sem-md-raw .sem-code-chrome').should('not.exist');
+      cy.window().then((win) => {
+        win.SemTextReading = {
+          enhanceCodeElement(fence) {
+            if (fence.querySelector(':scope > .sem-code-chrome')) return;
+            const c = win.document.createElement('div');
+            c.className = 'sem-code-chrome';
+            fence.insertBefore(c, fence.firstChild);
+          }
+        };
+        win.SemTextMd.enhance(win.document);
+      });
+      cy.get('#mo-table .sem-md-raw .sem-code > .sem-code-chrome').should('have.length', 1);
+      cy.get('#mo-table > .sem-md-chrome').should('have.length', 1);
+    });
+
+    it('renders pathological input in bounded time without losing content', () => {
+      cy.window().then((win) => {
+        const make = (id, text) => {
+          const d = win.document.createElement('div');
+          d.className = 'sem-md';
+          d.id = id;
+          d.textContent = text;
+          win.document.querySelector('.sem-enhanced-document').appendChild(d);
+          return d;
+        };
+        make('p-stars', '*'.repeat(10000) + ' end');
+        make('p-quotes', '>'.repeat(5000) + ' deep');
+        make('p-list', Array.from({ length: 40 }, (_, k) => '  '.repeat(k) + '- L' + k).join('\n'));
+        make('p-nl', '[nl](<java\nscript:alert(1)>) ![nlimg](<java\nscript:alert(1)>)');
+        const t0 = win.performance.now();
+        win.SemTextMd.enhance(win.document);
+        expect(win.performance.now() - t0).to.be.lessThan(2000);
+      });
+      cy.get('#p-stars .sem-md-body').invoke('text').then((t) => expect(t).to.contain('*'.repeat(10000) + ' end'));
+      cy.get('#p-quotes .sem-md-body blockquote').should('have.length.greaterThan', 10);
+      cy.get('#p-quotes .sem-md-body').invoke('text').then((t) => expect(t).to.contain('deep'));
+      cy.get('#p-list .sem-md-body').invoke('text').then((t) => { expect(t).to.contain('L0'); expect(t).to.contain('L39'); });
+      cy.get('#p-list .sem-md-body ul').should('have.length.greaterThan', 10);
+      cy.get('#p-nl .sem-md-body a, #p-nl .sem-md-body img').should('not.exist');
+      cy.get('#p-nl .sem-md-body').should('contain.text', 'nl');
+      cy.get('#p-stars, #p-quotes, #p-list').each(($e) => cy.wrap($e).should('have.attr', 'data-sem-fallback'));
+    });
   });
 
   describe('JS-off', () => {

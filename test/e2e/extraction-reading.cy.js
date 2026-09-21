@@ -49,7 +49,7 @@ const EXPECTED_TYPES = [
   'sem-chronology', 'sem-event', 'sem-event',
   'sem-note',
   'sem-code', 'sem-code',
-  'sem-md', 'sem-md', 'sem-md',
+  'sem-md', 'sem-md', 'sem-md', 'sem-md',
   'sem-references', 'sem-reference', 'sem-reference',
   'sem-properties', 'sem-property', 'sem-property',
   'sem-table', 'sem-table', 'sem-table',
@@ -151,7 +151,8 @@ describe('extraction — reading elements', () => {
         expect(raw.fields.source).to.match(/^- first item\n- second item\n  - nested item\n/);
         expect(raw.fields.source).to.match(/```sh\ncurl -sS "\$TOKEN_ENDPOINT"\n```$/);
         const inject = byId(records, 'm-inject');
-        expect(inject.fields.source).to.equal('<script>alert(1)</script> and [click](javascript:alert(1)) and <img src=x onerror=alert(1)>');
+        expect(inject.fields.source).to.match(/^<script>alert\(1\)<\/script> and \[click\]\(javascript:alert\(1\)\) and <img src=x onerror=alert\(1\)>\n\n\[tab\]\(<java\tscript:alert\(1\)>\) \[ctl\]\(<\u0001javascript/);
+        expect(byId(records, 'm-edge').fields.source).to.match(/^Setext\n------\n\n- one\n/);
         // the rendered table, the fence's sem-code and the chrome are all invisible
         expect(records.filter((r) => r.parent === md.sourceOrder)).to.have.length(0);
         expect(records.filter((r) => r.type === 'sem-code')).to.have.length(2);
@@ -335,14 +336,19 @@ describe('extraction — reading elements', () => {
 
     it('sem-md extracts identically in rendered and raw view, JS-off and JS-on', () => {
       let jsOff;
+      let jsOffSource;
       visitJsOff();
       cy.get('.sem-md-chrome').should('not.exist');
-      extract().then((r) => { jsOff = r; });
+      extract().then((r) => { jsOff = r; jsOffSource = byId(r, 'm-edge').fields.source; });
       cy.visit('/demo/reading.html', {
         onBeforeLoad(win) { cy.stub(win.navigator.clipboard, 'writeText').resolves(); }
       });
       cy.get('#m-table > .sem-md-chrome').should('exist');
-      extract().then((rendered) => expect(rendered).to.deep.equal(jsOff));
+      extract().then((rendered) => {
+        expect(rendered).to.deep.equal(jsOff);
+        // the same document, the same string: read from the fence now, from the text before
+        expect(byId(rendered, 'm-edge').fields.source).to.equal(jsOffSource);
+      });
       cy.get('#m-table [data-act="toggle"]').click();
       cy.get('#m-table').should('have.attr', 'data-view-as', 'raw');
       cy.get('#m-table .sem-md-raw .sem-code-line').should('exist');

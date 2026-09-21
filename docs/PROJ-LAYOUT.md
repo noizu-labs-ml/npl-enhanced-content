@@ -86,6 +86,7 @@ semtext/
 │   │   ├── index.html                 # v0.4 class-based baseline, fallback tier
 │   │   ├── reading.html               # R/W1+W2(+W2.2 sem-md) reading elements, class form (fallback + reading + md)
 │   │   ├── reading-lit.html           # same document, element form (+ Lit bundle)
+│   │   ├── md-only.html               # sem-md with ONLY the Markdown bundle (no core, no reading) — root stays unmarked
 │   │   └── standalone-lit.html        # Lit-tier upgrade page
 │   └── site/
 │       └── index.html                 # semtext.dev marketing page (PLACEHOLDER)

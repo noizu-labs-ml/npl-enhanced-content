@@ -25,35 +25,24 @@ declare global {
   }
 }
 
-declare global {
-  interface Window {
-    SemTextReading?: { enhanceCodeElement?: (el: Element) => void };
-  }
-}
-
-/** The raw fence's copy / wrap chrome is sem-code's — borrowed from the
- *  reading bundle's global when that script is on the page. */
-const fenceEnhancer = (): ((el: Element) => void) | undefined =>
-  typeof window !== 'undefined' ? window.SemTextReading?.enhanceCodeElement : undefined;
-
 export function enhanceMd(scope: ParentNode): void {
-  const enhanceFence = fenceEnhancer();
   scope.querySelectorAll(MD).forEach((el) => {
     if (el.hasAttribute('data-sem-upgraded')) return;
-    enhanceMdElement(el, enhanceFence);
+    enhanceMdElement(el);
     if (el.querySelector(':scope > .sem-md-chrome')) el.setAttribute('data-sem-fallback', '');
   });
 }
 
-/** Run the Markdown handler over a scope. */
+/** Run the Markdown handler over a scope. Only the element marker is
+ *  stamped: the root `data-sem-fallback` would switch on the vocabulary's
+ *  root-gated hide rules for elements this script does not manage. */
 export function enhance(scope: ParentNode = document): void {
-  if (scope === document) document.documentElement.setAttribute('data-sem-fallback', '');
   enhanceMd(scope);
 }
 
 export { enhanceMdElement };
 export { normalizeMd } from '../shared/mdsource.js';
-export { parseBlocks, render } from './parse.js';
+export { parseBlocks, safeUrl } from './parse.js';
 
 function init(): void {
   if (typeof window !== 'undefined' && window.__semJsOff) return;

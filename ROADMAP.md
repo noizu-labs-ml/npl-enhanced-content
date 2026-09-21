@@ -171,7 +171,16 @@ the **normalised** Markdown (dedented, blank edges trimmed — the one rule
 in `src/shared/mdsource.ts`), the third recorded exception to normalised
 text; extraction reads it from the raw fence once enhanced and from the
 element's text otherwise, and the rendered body is never extracted.
-`data-view-as` joins the §5c mutable-presentation table.
+`data-view-as` joins the §5c mutable-presentation table. Review of #19
+hardened the parser: destinations are stripped of C0 controls / spaces and
+then **allowlisted** (`http(s)`, `mailto`, `tel`, `ftp`, scheme-less) —
+a blocklist was bypassable with `java&#9;script:` in the angle-bracket
+form; nesting is capped at 16 with a per-element try/catch that restores
+the source; the inline scanner is offset-based (linear); the bundle
+stamps only the element marker, never `<html>` (`web/demo/md-only.html`
+proves a lone Markdown bundle hides nothing); the fence enhancer is
+resolved lazily so load order does not matter; `sem-reader` skips
+headings inside `.sem-md-body`. Measured **7.9 KB** after the fixes.
 
 ### M5 — Tier-2 + distribution + publish prep
 

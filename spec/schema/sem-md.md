@@ -45,7 +45,8 @@ Parameters are read as `data-<name>` first, then bare `<name>`.
   runtime and extraction ignores it (spec/extraction.md §5c).
 - `data-label` (optional): a short caption rendered in the chrome.
 - `data-controls` (optional): comma flags from `toggle`, `copy`; default
-  both. Unknown flags are ignored.
+  both, also when the attribute is present but empty. Unknown flags are
+  ignored.
 - `id`, `kind`, `tags`, `audience` per the global catalog.
 
 ### Markdown dialect
@@ -68,13 +69,38 @@ pass-through):
 | code span | `` `code` `` (any backtick run length) |
 | strong / emphasis | `**` `__` / `*` `_` |
 | strikethrough | `~~` |
-| link | `[text](url "title")`; `javascript:`, `data:` and `vbscript:` URLs render as text |
-| image | `![alt](src)`; same URL rule |
+| link | `[text](url "title")`; destination allowlist below |
+| autolink | `<https://…>`, `<mailto:…>`, `<tel:…>`, `<ftp:…>` (written `&lt;…&gt;` in the HTML) |
+| image | `![alt](src)`; same allowlist |
 | escape | `\` before a punctuation character |
 
-Raw HTML is **text**. Autolinks in angle brackets, footnotes, task lists,
-setext headings and reference-style links are not parsed; they render as
-their literal characters.
+Also parsed: **setext headings** (`===` / `---` under a paragraph line →
+`h1` / `h2`; a `---` with no paragraph above it is a rule). `_` never opens
+or closes emphasis inside a word (`snake_case_name`, `foo_bar_baz` stay
+text; `*` has no such rule).
+
+**Destination allowlist.** A destination is first stripped of every C0
+control character and space — browsers do the same before resolving a
+scheme, so `java&#9;script:` is `javascript:` to them — and then admitted
+only when it has no scheme (relative path, fragment) or the scheme is
+`http`, `https`, `mailto`, `tel` or `ftp`. Anything else (`javascript:`,
+`data:`, `vbscript:`, any casing, angle-bracket form included) renders as
+the link text, or the alt text for an image. Anchors carry
+`rel="noopener noreferrer"`.
+
+**Bounds.** Nesting (quotes, lists, emphasis, link text) is capped at 16
+levels; deeper content renders as text. The inline scanner is linear in the
+line length. If rendering throws regardless, the element's source text is
+put back and the element is left unenhanced.
+
+**Not parsed** (they render as their literal characters): raw HTML,
+reference-style links `[a][b]`, footnotes, task lists, indented code
+blocks, HTML entities beyond what the HTML parser already decoded.
+
+The fenced-code info string becomes `class="language-<info>"` on the
+`<code>` (characters outside `[\w.+-]` dropped) — the one class the
+renderer mints outside the `.sem-md-*` namespace, kept because every
+highlighter keys on it.
 
 ## Rendered form
 
@@ -109,7 +135,11 @@ their literal characters.
   falling back to `execCommand('copy')`); the status region announces
   `Copied`. When neither mechanism exists the copy button is not rendered.
 - The element carries `data-sem-fallback` once wired. The bundle skips any
-  element already carrying `data-sem-upgraded`.
+  element already carrying `data-sem-upgraded`. The bundle stamps **only
+  the element**, never `<html>`: a root tier marker would switch on the
+  vocabulary's root-gated hide rules for elements this script does not
+  manage (`web/demo/md-only.html` proves a lone Markdown bundle hides
+  nothing else).
 
 ### Upgraded (Lit `SemMd`)
 
@@ -139,8 +169,9 @@ None.
 - `.sem-md-status` is `role="status"` (`aria-live="polite"`); it is written
   only on copy, so it never spams.
 - Rendered tables keep native semantics (`<th scope="col">`, `<caption>`
-  never synthesised); rendered headings are real `h1`–`h6`, so a reader
-  outline sees them.
+  never synthesised); rendered headings are real `h1`–`h6` for assistive
+  technology, but the `sem-reader` outline **skips** headings inside
+  `.sem-md-body`: they are this record's content, not document structure.
 - Rendered links are ordinary anchors; no link opens a new window.
 
 ## Machine contract

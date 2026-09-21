@@ -25,17 +25,48 @@ import { copyText, canCopy } from '../shared/clipboard.js';
 
 export const MD = ':is(sem-md, .sem-md)';
 
+declare global {
+  interface Window {
+    SemTextReading?: { enhanceCodeElement?: (el: Element) => void };
+  }
+}
+
+/** sem-code's enhance function: the caller's, else the reading bundle's
+ *  global, resolved at call time so load order does not matter. */
+const fenceEnhancer = (given?: (fence: Element) => void): ((fence: Element) => void) | undefined =>
+  given || (typeof window !== 'undefined' ? window.SemTextReading?.enhanceCodeElement : undefined);
+
 /**
  * `enhanceFence` gives the raw fence its sem-code chrome (copy, wrap). The
  * Lit wrapper passes the imported `enhanceCodeElement`; the Markdown bundle
- * passes the reading bundle's global when that script is on the page and
- * nothing otherwise, so the parser is never bundled twice and a document
- * without the reading bundle still gets a plain (CSS-captioned) fence.
+ * passes nothing and the reading bundle's global is looked up when the
+ * fence is built — and again on re-entry, so a fence built before the
+ * reading bundle ran gets its chrome on the next scan. The listing code is
+ * never bundled twice; without the reading bundle the fence is a plain
+ * (CSS-captioned) sem-code.
+ *
+ * Idempotent on the chrome's presence. A parser failure (it should not
+ * happen — nesting is capped — but the element's text has already been
+ * consumed by then) restores the source text so nothing is lost.
  */
 export function enhanceMdElement(el: Element, enhanceFence?: (fence: Element) => void): void {
-  if (el.querySelector(':scope > .sem-md-chrome')) return;
+  if (el.querySelector(':scope > .sem-md-chrome')) {
+    const fence = el.querySelector(':scope > .sem-md-raw > .sem-code');
+    const f = fenceEnhancer(enhanceFence);
+    if (fence && f && !fence.querySelector(':scope > .sem-code-chrome')) f(fence);
+    return;
+  }
   const source = normalizeMd(el.textContent || '');
-  const controls = (param(el, 'controls') ?? 'toggle,copy').split(/[,\s]+/).filter(Boolean);
+  try {
+    build(el, source, enhanceFence);
+  } catch (err) {
+    el.textContent = source;
+    console.warn('sem-md: render failed', err);
+  }
+}
+
+function build(el: Element, source: string, enhanceFence?: (fence: Element) => void): void {
+  const controls = (param(el, 'controls') || 'toggle,copy').split(/[,\s]+/).filter(Boolean);
   const label = param(el, 'label') || '';
   let raw = param(el, 'view-as') === 'raw';
   el.textContent = '';
@@ -84,14 +115,14 @@ export function enhanceMdElement(el: Element, enhanceFence?: (fence: Element) =>
   code.textContent = source;
   fence.appendChild(document.createElement('pre')).appendChild(code);
   rawBox.appendChild(fence);
-  if (enhanceFence) enhanceFence(fence);
+  const f = fenceEnhancer(enhanceFence);
+  if (f) f(fence);
 
   el.append(chrome, body, rawBox);
 
   const setView = (r: boolean): void => {
     raw = r;
     el.setAttribute('data-view-as', r ? 'raw' : 'rendered');
-    el.removeAttribute('view-as');
     if (toggle) toggle.setAttribute('aria-pressed', String(r));
   };
   setView(raw);

@@ -3,17 +3,27 @@
  *
  * Spec: spec/schema/sem-md.md ("Markdown dialect"). Hand-written rather
  * than vendored so the Markdown bundle stays inside its 8 KB budget; the
- * subset is the GFM a reading document uses — tables first, then headings,
- * paragraphs, lists, block quotes, rules, fenced code, and the inline set.
+ * subset is the GFM a reading document uses — tables first, then headings
+ * (ATX and setext), paragraphs, lists, block quotes, rules, fenced code,
+ * and the inline set.
  *
  * SAFETY. Output is built with createElement / textContent only. There is
  * no innerHTML anywhere in this file, so raw HTML inside the Markdown is
- * rendered as the characters that were typed. Link and image URLs with a
- * `javascript:`, `data:` or `vbscript:` scheme are dropped (the text still
- * renders); every anchor carries rel="noopener".
+ * rendered as the characters that were typed. Link, image and autolink
+ * destinations pass an ALLOWLIST after normalisation: browsers strip every
+ * C0 control and space inside a scheme before resolving it, so the check
+ * strips them first and then admits only http(s), mailto, tel, ftp and
+ * scheme-less (relative / fragment) destinations. Anchors carry
+ * rel="noopener noreferrer".
+ *
+ * BOUNDS. Block and inline nesting is capped at DEPTH; deeper content is
+ * rendered as text rather than recursed into, so a 5000-deep quote or list
+ * cannot overflow the stack. The inline scanner works on offsets (sticky
+ * regexes, indexOf from a position) and never re-slices the input, so a
+ * pathological line is linear, not quadratic.
  */
 
-const UNSAFE = /^\s*(javascript|data|vbscript):/i;
+const DEPTH = 16;
 
 function el(tag: string, parent: Node, text?: string): HTMLElement {
   const e = document.createElement(tag);
@@ -26,26 +36,39 @@ function txt(parent: Node, s: string): void {
   if (s) parent.appendChild(document.createTextNode(s));
 }
 
+/** Allowlisted destination, or null when the URL must render as text. */
+export function safeUrl(raw: string): string | null {
+  const u = raw.replace(/[\u0000- ]/g, '');
+  const m = /^([a-z][a-z0-9+.-]*):/i.exec(u);
+  return !m || /^(https?|mailto|tel|ftp)$/i.test(m[1]) ? u : null;
+}
+
 /* ------------------------------------------------------------------ *
  * Inline
  * ------------------------------------------------------------------ */
 
-const LINK = /^!?\[((?:[^[\]]|\[[^\]]*\])*)\]\(\s*(?:<([^>]*)>|([^\s)]*))(?:\s+"([^"]*)")?\s*\)/;
+const BACKTICKS = /`+/y;
+const LINK = /!?\[((?:[^[\]]|\[[^\]]*\])*)\]\(\s*(?:<([^>]*)>|([^\s)]*))(?:\s+"([^"]*)")?\s*\)/y;
+const AUTOLINK = /<((?:https?|mailto|tel|ftp):[^\s<>]*)>/y;
 const PUNCT = /[!-/:-@[-`{-~]/;
+const WORD = /[A-Za-z0-9]/;
 
-export function inline(s: string, out: Node): void {
+export function inline(s: string, out: Node, depth = 0): void {
+  if (depth > DEPTH) { txt(out, s); return; }
   let i = 0;
   let buf = '';
   const flush = (): void => { txt(out, buf); buf = ''; };
+  const at = (re: RegExp): RegExpExecArray | null => { re.lastIndex = i; return re.exec(s); };
   while (i < s.length) {
     const c = s[i];
+    let m: RegExpExecArray | null;
     if (c === '\n') {
       const br = /(?: {2,}|\\)$/.exec(buf);
       if (br) { buf = buf.slice(0, br.index); flush(); el('br', out); i++; continue; }
     }
     if (c === '\\' && i + 1 < s.length && PUNCT.test(s[i + 1])) { buf += s[i + 1]; i += 2; continue; }
-    if (c === '`') {
-      const run = (/^`+/.exec(s.slice(i)) as RegExpExecArray)[0];
+    if (c === '`' && (m = at(BACKTICKS))) {
+      const run = m[0];
       const end = s.indexOf(run, i + run.length);
       if (end > -1) {
         flush();
@@ -58,46 +81,53 @@ export function inline(s: string, out: Node): void {
     }
     if (c === '*' || c === '_' || c === '~') {
       const dbl = s[i + 1] === c;
-      if (c !== '~' || dbl) {
+      // `_` never opens or closes inside a word (snake_case_names stay text)
+      const intraword = c === '_' && i > 0 && WORD.test(s[i - 1]);
+      if ((c !== '~' || dbl) && !intraword) {
         const d = dbl ? c + c : c;
         const start = i + d.length;
-        const end = s.indexOf(d, start);
+        let end = s.indexOf(d, start);
+        while (end > -1 && c === '_' && end + d.length < s.length && WORD.test(s[end + d.length])) end = s.indexOf(d, end + 1);
         if (end > start && !/\s/.test(s[start]) && !/\s/.test(s[end - 1])) {
           flush();
-          inline(s.slice(start, end), el(dbl ? (c === '~' ? 'del' : 'strong') : 'em', out));
+          inline(s.slice(start, end), el(dbl ? (c === '~' ? 'del' : 'strong') : 'em', out), depth + 1);
           i = end + d.length;
           continue;
         }
       }
     }
-    if (c === '[' || (c === '!' && s[i + 1] === '[')) {
-      const m = LINK.exec(s.slice(i));
-      if (m) {
-        flush();
-        const url = m[2] !== undefined ? m[2] : m[3];
-        const safe = !UNSAFE.test(url);
-        if (c === '!') {
-          if (safe) {
-            const img = el('img', out);
-            img.setAttribute('src', url);
-            img.setAttribute('alt', m[1]);
-            if (m[4]) img.setAttribute('title', m[4]);
-          } else txt(out, m[1]);
-        } else if (safe) {
-          const a = el('a', out);
-          a.setAttribute('href', url);
-          a.setAttribute('rel', 'noopener');
-          if (m[4]) a.setAttribute('title', m[4]);
-          inline(m[1], a);
-        } else inline(m[1], out);
-        i += m[0].length;
-        continue;
-      }
+    if (c === '<' && (m = at(AUTOLINK))) {
+      const url = safeUrl(m[1]);
+      flush();
+      if (url) link(out, url, null).textContent = m[1]; else txt(out, m[0]);
+      i += m[0].length;
+      continue;
+    }
+    if ((c === '[' || (c === '!' && s[i + 1] === '[')) && (m = at(LINK))) {
+      flush();
+      const url = safeUrl(m[2] !== undefined ? m[2] : m[3]);
+      if (c === '!') {
+        if (url) {
+          const img = el('img', out);
+          img.setAttribute('src', url);
+          img.setAttribute('alt', m[1]);
+        } else txt(out, m[1]);
+      } else inline(m[1], url ? link(out, url, m[4]) : out, depth + 1);
+      i += m[0].length;
+      continue;
     }
     buf += c;
     i++;
   }
   flush();
+}
+
+function link(out: Node, url: string, title: string | null | undefined): HTMLElement {
+  const a = el('a', out);
+  a.setAttribute('href', url);
+  a.setAttribute('rel', 'noopener noreferrer');
+  if (title) a.setAttribute('title', title);
+  return a;
 }
 
 /* ------------------------------------------------------------------ *
@@ -107,6 +137,7 @@ export function inline(s: string, out: Node): void {
 const FENCE = /^ {0,3}(`{3,}|~{3,})\s*([^\s`]*)/;
 const HEAD = /^ {0,3}(#{1,6})\s+(.*?)\s*(?:\s#+)?$/;
 const HR = /^ {0,3}([-*_])(?:\s*\1){2,}\s*$/;
+const SETEXT = /^ {0,3}(=+|-+)\s*$/;
 const QUOTE = /^ {0,3}> ?/;
 const LIST = /^( {0,3})([-*+]|\d{1,9}[.)])( +|$)(.*)$/;
 const DELIM = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/;
@@ -114,12 +145,30 @@ const DELIM = /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/;
 const blank = (l: string): boolean => !l.trim();
 const lead = (l: string): number => (/^ */.exec(l) as RegExpExecArray)[0].length;
 
+/** Split a table row on unescaped pipes; a pipe inside a code span is literal. */
 function cells(l: string): string[] {
-  const t = l.replace(/\\\|/g, '\u0000').trim();
-  const parts = t.split('|');
-  if (t[0] === '|') parts.shift();
-  if (parts.length && t[t.length - 1] === '|') parts.pop();
-  return parts.map((p) => p.trim().replace(/\u0000/g, '|'));
+  const t = l.trim();
+  const out: string[] = [];
+  let cur = '';
+  let tick = 0;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (c === '\\' && t[i + 1] === '|') { cur += '|'; i++; continue; }
+    if (c === '`') {
+      BACKTICKS.lastIndex = i;
+      const run = (BACKTICKS.exec(t) as RegExpExecArray)[0];
+      tick = tick === 0 ? run.length : tick === run.length ? 0 : tick;
+      cur += run;
+      i += run.length - 1;
+      continue;
+    }
+    if (c === '|' && !tick) { out.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  out.push(cur);
+  if (t[0] === '|') out.shift();
+  if (out.length && t[t.length - 1] === '|' && t[t.length - 2] !== '\\') out.pop();
+  return out.map((p) => p.trim());
 }
 
 function tableAt(lines: string[], i: number): boolean {
@@ -130,7 +179,8 @@ function startsBlock(l: string): boolean {
   return FENCE.test(l) || HEAD.test(l) || HR.test(l) || QUOTE.test(l) || LIST.test(l);
 }
 
-export function parseBlocks(src: string, out: Node): void {
+export function parseBlocks(src: string, out: Node, depth = 0): void {
+  if (depth > DEPTH) { el('p', out, src); return; }
   const lines = src.split('\n');
   const n = lines.length;
   let i = 0;
@@ -151,37 +201,37 @@ export function parseBlocks(src: string, out: Node): void {
       }
       i++;
       const code = el('code', el('pre', out), body.join('\n'));
-      if (m[2]) code.className = 'language-' + m[2];
+      // `language-` is the one class the renderer mints outside `.sem-md-*`
+      if (m[2]) code.className = 'language-' + m[2].replace(/[^\w.+-]/g, '');
       continue;
     }
 
-    if ((m = HEAD.exec(line))) { inline(m[2], el('h' + m[1].length, out)); i++; continue; }
+    if ((m = HEAD.exec(line))) { inline(m[2], el('h' + m[1].length, out), depth); i++; continue; }
     if (HR.test(line)) { el('hr', out); i++; continue; }
 
     if (QUOTE.test(line)) {
       const body: string[] = [];
       while (i < n && QUOTE.test(lines[i])) { body.push(lines[i].replace(QUOTE, '')); i++; }
-      parseBlocks(body.join('\n'), el('blockquote', out));
+      parseBlocks(body.join('\n'), el('blockquote', out), depth + 1);
       continue;
     }
 
     if ((m = LIST.exec(line))) {
       const ordered = /\d/.test(m[2]);
-      const depth = m[1].length;
+      const indent0 = m[1].length;
       const list = el(ordered ? 'ol' : 'ul', out);
       if (ordered && m[2].slice(0, -1) !== '1') list.setAttribute('start', m[2].slice(0, -1));
       let tight = true;
       const items: string[][] = [];
       while (i < n) {
         const im = LIST.exec(lines[i]);
-        if (!im || /\d/.test(im[2]) !== ordered || im[1].length !== depth) break;
-        const indent = depth + im[2].length + (im[3].length || 1);
+        if (!im || /\d/.test(im[2]) !== ordered || im[1].length !== indent0) break;
+        const indent = indent0 + im[2].length + (im[3].length || 1);
         const body = [im[4]];
         i++;
         while (i < n) {
           const l = lines[i];
           if (blank(l)) {
-            // a blank followed by an indented continuation stays inside the item
             if (i + 1 < n && !blank(lines[i + 1]) && lead(lines[i + 1]) >= indent) { body.push(''); i++; continue; }
             break;
           }
@@ -189,11 +239,11 @@ export function parseBlocks(src: string, out: Node): void {
           break;
         }
         items.push(body);
-        while (i < n && blank(lines[i])) { i++; if (i < n && LIST.test(lines[i])) tight = false; }
+        while (i < n && blank(lines[i])) { i++; if (i < n && LIST.test(lines[i]) && !HR.test(lines[i])) tight = false; }
       }
       for (const body of items) {
         const li = el('li', list);
-        parseBlocks(body.join('\n'), li);
+        parseBlocks(body.join('\n'), li, depth + 1);
         if (tight) {
           Array.from(li.children).forEach((p) => {
             if (p.tagName !== 'P') return;
@@ -216,17 +266,18 @@ export function parseBlocks(src: string, out: Node): void {
           const th = el('th', tr);
           th.setAttribute('scope', 'col');
           if (aligns[k]) th.style.textAlign = aligns[k];
-          inline(h, th);
+          inline(h, th, depth);
         });
         const tbody = el('tbody', table);
         i += 2;
         while (i < n && !blank(lines[i]) && lines[i].indexOf('|') > -1) {
           const row = el('tr', tbody);
           const cs = cells(lines[i]);
+          // ragged rows: missing cells render empty, extra cells are dropped
           head.forEach((_, k) => {
             const td = el('td', row);
             if (aligns[k]) td.style.textAlign = aligns[k];
-            inline(cs[k] || '', td);
+            inline(cs[k] || '', td, depth);
           });
           i++;
         }
@@ -236,14 +287,14 @@ export function parseBlocks(src: string, out: Node): void {
 
     const para = [line];
     i++;
-    while (i < n && !blank(lines[i]) && !startsBlock(lines[i]) && !tableAt(lines, i)) { para.push(lines[i]); i++; }
-    inline(para.join('\n').trim(), el('p', out));
+    let tag = 'p';
+    while (i < n && !blank(lines[i])) {
+      // setext: a paragraph closed by `===` / `---` is a heading, not a rule
+      if ((m = SETEXT.exec(lines[i]))) { tag = m[1][0] === '=' ? 'h1' : 'h2'; i++; break; }
+      if (startsBlock(lines[i]) || tableAt(lines, i)) break;
+      para.push(lines[i]);
+      i++;
+    }
+    inline(para.join('\n').trim(), el(tag, out), depth);
   }
-}
-
-/** Render normalised Markdown into a fresh container. */
-export function render(src: string, tag = 'div'): HTMLElement {
-  const box = document.createElement(tag);
-  parseBlocks(src, box);
-  return box;
 }

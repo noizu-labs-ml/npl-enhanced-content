@@ -123,6 +123,41 @@
   </sem-md>
   <sem-md id="m-inject" controls="copy">
     &lt;script&gt;alert(1)&lt;/script&gt; and [click](javascript:alert(1)) and &lt;img src=x onerror=alert(1)&gt;
+
+    [tab](&lt;java&#9;script:alert(1)&gt;) [ctl](&lt;&#1;javascript:alert(1)&gt;) [up](JaVaScript:alert(1)) [data](data:text/html,x) [vb](vbscript:x)
+
+    ![tabimg](&lt;java&#9;script:alert(1)&gt;) ![dataimg](data:image/png;base64,AAAA) ![ok](/img/ok.png) [rel](docs/x.html) [frag](#m-table) &lt;https://example.com/a?b=1&gt;
+  </sem-md>
+  <sem-md id="m-edge" label="Edge cases">
+    Setext
+    ------
+
+    - one
+    - two
+      - three
+        - four
+
+    3. third
+    4. fourth
+
+    * * *
+
+    line one\
+    line two
+
+    snake_case_name and _emph_ and foo_bar_baz and [ref][x]
+
+    | Pipe | Code |
+    | :-- | :-- |
+    | a \| b | `x | y` |
+    | ragged |
+    | a | b | extra |
+
+    ~~~md
+    ```js
+    inner
+    ```
+    ~~~
   </sem-md>
 
   <h2>References</h2>
