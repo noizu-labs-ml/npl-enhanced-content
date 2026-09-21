@@ -23,6 +23,10 @@
 //   Scenario: annotated text — columns line and one line per row
 //   Scenario: INVARIANT — sort, filter and every reader control leave output unchanged
 //   Scenario: sem-source is transparent — same records in html and source mode; wrapper, chrome, fence, snapshot mint nothing
+//   R/W2.2 additions (spec/schema/sem-md.md):
+//   Scenario: sem-md — normalised Markdown source; normalised text; chrome, body and fence mint nothing
+//   Scenario: annotated text — source as an indented block
+//   Scenario: INVARIANT — rendered and raw views extract identically
 
 import { extractRecords, extractText } from '../../src/extract/records';
 
@@ -45,11 +49,22 @@ const EXPECTED_TYPES = [
   'sem-chronology', 'sem-event', 'sem-event',
   'sem-note',
   'sem-code', 'sem-code',
+  'sem-md', 'sem-md', 'sem-md',
   'sem-references', 'sem-reference', 'sem-reference',
   'sem-properties', 'sem-property', 'sem-property',
   'sem-table', 'sem-table', 'sem-table',
   'sem-reveal', 'sem-views', 'sem-view', 'sem-view'
 ];
+
+const MD_SOURCE =
+  '#### Lifetimes\n' +
+  '\n' +
+  'Every *session* mints a **short-lived** token; see [RFC 6749](https://www.rfc-editor.org/rfc/rfc6749) and `rotate()`.\n' +
+  '\n' +
+  '| Token   | Lifetime | Rotates |\n' +
+  '| :------ | -------: | :-----: |\n' +
+  '| access  | 15 min   | no      |\n' +
+  '| refresh | 30 days  | yes     |';
 
 const ROWS = [
   ['access', '15 min', 'no'],
@@ -123,6 +138,24 @@ describe('extraction — reading elements', () => {
         const long = byId(records, 'c-long');
         expect(long.fields.filename).to.equal('');
         expect(long.fields.marks).to.deep.equal([]);
+      });
+    });
+
+    it('sem-md: normalised source, normalised text; chrome, body and fence mint nothing', () => {
+      extract().then((records) => {
+        const md = byId(records, 'm-table');
+        expect(md.type).to.equal('sem-md');
+        expect(md.fields).to.deep.equal({ source: MD_SOURCE });
+        expect(md.text).to.equal(MD_SOURCE.replace(/\s+/g, ' ').trim());
+        const raw = byId(records, 'm-raw');
+        expect(raw.fields.source).to.match(/^- first item\n- second item\n  - nested item\n/);
+        expect(raw.fields.source).to.match(/```sh\ncurl -sS "\$TOKEN_ENDPOINT"\n```$/);
+        const inject = byId(records, 'm-inject');
+        expect(inject.fields.source).to.equal('<script>alert(1)</script> and [click](javascript:alert(1)) and <img src=x onerror=alert(1)>');
+        // the rendered table, the fence's sem-code and the chrome are all invisible
+        expect(records.filter((r) => r.parent === md.sourceOrder)).to.have.length(0);
+        expect(records.filter((r) => r.type === 'sem-code')).to.have.length(2);
+        expect(records.some((r) => r.type === 'table' || r.type === 'h4')).to.equal(false);
       });
     });
 
@@ -217,6 +250,10 @@ describe('extraction — reading elements', () => {
         expect(text).to.contain('    access | 15 min | no');
         expect(text).to.contain('    session | 12 hours | yes');
         expect(text).not.to.match(/Sorted by|Filter rows|Reading controls/);
+        expect(text).to.contain('sem-md (#m-table)\n  source:\n    #### Lifetimes');
+        expect(text).to.contain('    | :------ | -------: | :-----: |');
+        expect(text).not.to.match(/sem-md \(#m-table\): /);
+        expect(text).not.to.contain('Copy Markdown');
       });
     });
   });
@@ -294,6 +331,25 @@ describe('extraction — reading elements', () => {
       });
       cy.get('#s-code [data-act="html"]').click();
       extract().then((back) => expect(back).to.deep.equal(before));
+    });
+
+    it('sem-md extracts identically in rendered and raw view, JS-off and JS-on', () => {
+      let jsOff;
+      visitJsOff();
+      cy.get('.sem-md-chrome').should('not.exist');
+      extract().then((r) => { jsOff = r; });
+      cy.visit('/demo/reading.html', {
+        onBeforeLoad(win) { cy.stub(win.navigator.clipboard, 'writeText').resolves(); }
+      });
+      cy.get('#m-table > .sem-md-chrome').should('exist');
+      extract().then((rendered) => expect(rendered).to.deep.equal(jsOff));
+      cy.get('#m-table [data-act="toggle"]').click();
+      cy.get('#m-table').should('have.attr', 'data-view-as', 'raw');
+      cy.get('#m-table .sem-md-raw .sem-code-line').should('exist');
+      cy.get('#m-table > .sem-md-chrome [data-act="copy"]').click();
+      cy.get('#m-table .sem-md-status').should('have.text', 'Copied');
+      cy.get('#m-raw [data-act="toggle"]').click();
+      extract().then((raw) => expect(raw).to.deep.equal(jsOff));
     });
 
     it('table sort + filter and every reader control leave output unchanged', () => {

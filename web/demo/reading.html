@@ -22,6 +22,7 @@
      are vanilla IIFEs; sources in src/fallback/** and src/reading/**. -->
 <!-- sem:inline fallback -->
 <!-- sem:inline reading -->
+<!-- sem:inline md -->
 </head>
 
 <body>
@@ -75,6 +76,40 @@
   <div class="sem-code" id="c-long" data-lang="sh">
 <pre><code>curl -sS -X POST "$TOKEN_ENDPOINT" -d grant_type=refresh_token -d refresh_token="$REFRESH" -d client_id="$CLIENT_ID" -d code_verifier="$VERIFIER" -H 'Accept: application/json' | jq -r '.access_token'</code></pre>
   </div>
+  </div>
+
+  <h2>Markdown</h2>
+  <!-- R/W2.2 sem-md: the element's text is Markdown; the Markdown bundle
+       renders it, keeps the normalised source in a sem-code fence and
+       toggles between the two. JS-off the source reads as pre-wrapped text. -->
+  <div class="sem-md" id="m-table" data-label="Token lifetimes">
+    #### Lifetimes
+
+    Every *session* mints a **short-lived** token; see [RFC 6749](https://www.rfc-editor.org/rfc/rfc6749) and `rotate()`.
+
+    | Token   | Lifetime | Rotates |
+    | :------ | -------: | :-----: |
+    | access  | 15 min   | no      |
+    | refresh | 30 days  | yes     |
+  </div>
+  <div class="sem-md" id="m-raw" data-label="Lists and quotes" data-view-as="raw">
+    - first item
+    - second item
+      - nested item
+
+    1. step one
+    2. step two
+
+    > A quoted line.
+
+    ---
+
+    ```sh
+    curl -sS "$TOKEN_ENDPOINT"
+    ```
+  </div>
+  <div class="sem-md" id="m-inject" data-controls="copy">
+    &lt;script&gt;alert(1)&lt;/script&gt; and [click](javascript:alert(1)) and &lt;img src=x onerror=alert(1)&gt;
   </div>
 
   <h2>References</h2>
