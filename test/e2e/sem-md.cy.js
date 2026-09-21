@@ -188,7 +188,7 @@ function assertMd(url, marker) {
       .and('have.text', '```js\ninner\n```');
     // adversarial: unmatched openers stay literal, the real ones still parse
     cy.get('#m-edge .sem-md-body p em').should('have.length', 2).last().should('have.text', 'real');
-    cy.get('#m-edge .sem-md-body a').should('have.length', 3);
+    cy.get('#m-edge .sem-md-body a').should('have.length', 5);
     cy.get('#m-edge .sem-md-body a').first().should('have.text', 'linked').and('have.attr', 'href', '#m-table');
     cy.get('#m-edge .sem-md-body').invoke('text').then((t) => {
       expect(t).to.contain('*unclosed emphasis and real');
@@ -198,8 +198,12 @@ function assertMd(url, marker) {
     cy.get('#m-edge .sem-md-body p code').last().should('have.text', 'a` b');
     // a space inside an angle-bracket destination is kept (percent-encoded), not stripped
     cy.get('#m-edge .sem-md-body a').last().should('have.attr', 'href', 'my%20file.html');
-    // authored escapes survive, once (no double-encoding)
+    // authored escapes survive untouched (no double-encoding, no decoding)
     cy.get('#m-edge .sem-md-body a[href="docs/a%20b%23c.html"]').should('have.length', 1);
+    // an authored escape next to a character encodeURI newly encodes
+    cy.get('#m-edge .sem-md-body a[href="docs/a%20b%7Cc.html"]').should('have.length', 1);
+    // a literal %25 followed by hex digits is NOT collapsed to %41
+    cy.get('#m-edge .sem-md-body a[href="docs/%2541.html"]').should('have.length', 1);
     // a bare --- under a paragraph line is a setext heading even when the line has a pipe;
     // a table needs a delimiter row with pipes
     cy.get('#m-edge .sem-md-body > h2').should('have.length', 2).last().should('have.text', 'a | b');
@@ -277,6 +281,7 @@ describe('sem-md', () => {
         make('p-quotes', '>'.repeat(5000) + ' deep');
         make('p-list', Array.from({ length: 40 }, (_, k) => '  '.repeat(k) + '- L' + k).join('\n'));
         make('p-nl', '[nl](<java\nscript:alert(1)>) ![nlimg](<java\nscript:alert(1)>)');
+        make('p-surrogate', '[lone](docs/\ud800.html) after');
         const t0 = win.performance.now();
         win.SemTextMd.enhance(win.document);
         expect(win.performance.now() - t0).to.be.lessThan(2000);
@@ -288,6 +293,10 @@ describe('sem-md', () => {
       cy.get('#p-list .sem-md-body ul').should('have.length.greaterThan', 10);
       cy.get('#p-nl .sem-md-body a, #p-nl .sem-md-body img').should('not.exist');
       cy.get('#p-nl .sem-md-body').should('contain.text', 'nl');
+      // encodeURI throws on a lone surrogate: that link renders as text, the block still renders
+      cy.get('#p-surrogate .sem-md-body a').should('not.exist');
+      cy.get('#p-surrogate .sem-md-body').should('contain.text', 'lone').and('contain.text', 'after');
+      cy.get('#p-surrogate > .sem-md-chrome').should('exist');
       cy.get('#p-stars, #p-quotes, #p-list').each(($e) => cy.wrap($e).should('have.attr', 'data-sem-fallback'));
     });
   });

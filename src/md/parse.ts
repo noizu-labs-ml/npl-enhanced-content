@@ -46,13 +46,20 @@ function txt(parent: Node, s: string): void {
  * `encodeURI`, so no character that could be reinterpreted survives —
  * this is the sanitising step a static analyser can see (CodeQL
  * js/xss-through-dom flagged the raw attribute write). Escapes the author
- * already wrote (`%20`, `%23`) are restored so they are not double-encoded.
+ * already wrote (`%20`, `%23`, `%2541`) are passed through untouched: the
+ * string is split on `%XX` tokens and only the pieces between them are
+ * encoded, so nothing is double-encoded and nothing is decoded. A lone
+ * surrogate makes encodeURI throw; that destination renders as text.
  */
 export function safeUrl(raw: string): string | null {
   const u = raw.replace(/^[\u0000- ]+|[\u0000- ]+$/g, '').replace(/[\t\n\r]/g, '');
   const m = /^([a-z][a-z0-9+.-]*):/i.exec(u);
   if (m && !/^(https?|mailto|tel|ftp)$/i.test(m[1])) return null;
-  return encodeURI(u).replace(/%25([0-9a-f]{2})/gi, '%$1');
+  try {
+    return u.split(/(%[0-9a-f]{2})/i).map((p, k) => (k % 2 ? p : encodeURI(p))).join('');
+  } catch {
+    return null;
+  }
 }
 
 /* ------------------------------------------------------------------ *
