@@ -97,8 +97,8 @@ extraction restores authored order.
 |---|---|---|---|---|
 | `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **12.5** (measured 12.5 after W2.1 — see W2.1 decisions) | 12.5 |
 | `semtext-reading.js` | — | **8** (measured 6.8) | **19** (measured 16.6 at W2, 18.8 after W2.1 — see W2 and W2.1 decisions) | 19.5 |
-| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9) | 57 |
-| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.6 with sem-md) | 12 |
+| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 47.3 after W2.1 + W2.2) | 57 |
+| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 |
 | `semtext-md.js` | — | — | **8** (W2.2, measured 7.0) | 8 |
 
 **W1 decisions (recorded).** Glossary mode lives in the *reading* bundle,
@@ -165,7 +165,7 @@ against the 8 KB budget after one decision: the raw fence's copy / wrap
 chrome is `sem-code`'s, and importing `reading/code.ts` cost 3.3 KB
 (9.0 KB total), so the Markdown bundle **borrows** `enhanceCodeElement`
 from the reading bundle's global at runtime (the Lit wrapper imports it;
-`semtext.js` grew 38.9 → 44.9 KB). The clipboard helper moved to
+`semtext.js` grew ≈6 KB, 47.3 KB after W2.1 + W2.2 against 56). The clipboard helper moved to
 `src/shared/clipboard.ts` so both elements copy the same way. `source` is
 the **normalised** Markdown (dedented, blank edges trimmed — the one rule
 in `src/shared/mdsource.ts`), the third recorded exception to normalised
