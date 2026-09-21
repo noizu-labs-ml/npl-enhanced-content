@@ -3,7 +3,9 @@
  *
  * Reads every `web/demo/*.html` source and substitutes marker comments with real
  * content, emitting two artifacts per source into `dist/demo/`. Pages under
- * `web/site/` are copied to `dist/site/` by the same marker expansion.
+ * `web/site/` are copied to `dist/site/` by the same marker expansion, and
+ * the HTML specs under `spec/` are copied to `dist/spec/` with their linked
+ * asset paths rewritten (see the last section).
  *
  * Per demo source:
  *
@@ -41,7 +43,7 @@
  * prevent.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, statSync, copyFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, basename } from 'node:path';
@@ -213,6 +215,57 @@ if (existsSync(siteSrcDir)) {
     writeFileSync(page, built);
     const kb = (p) => (statSync(p).size / 1024).toFixed(1).padStart(6) + ' KB';
     console.log(`  ${file.padEnd(30)}${String(count).padStart(5)}  ${kb(page)}`);
+  }
+  console.log('');
+}
+
+/* ---------------------------------------------------------------------------
+ * Spec pages — spec/*.html → dist/spec/
+ *
+ * The HTML specs are SemText documents that LINK their assets rather than
+ * inlining them (spec/conventions.html carries no <style> or inline
+ * <script> at all). Served from the repo root they reach ../themes/ and
+ * ../dist/; shipped from dist/ the same page sits one level down, so the
+ * copy rewrites `../dist/` to `../` and the theme files are copied to
+ * dist/themes/ so `../themes/` keeps resolving. spec/spec.css (the document
+ * layout layer) travels next to the page. A `<name>.nojs.html` variant is
+ * emitted like the demos, for the JS-off assertions in
+ * test/e2e/spec-pages.cy.js.
+ * ------------------------------------------------------------------------ */
+
+const specSrcDir = resolve(root, 'spec');
+const specPages = readdirSync(specSrcDir).filter((f) => f.endsWith('.html')).sort();
+if (specPages.length) {
+  const specOutDir = resolve(root, 'dist', 'spec');
+  const themesOutDir = resolve(root, 'dist', 'themes');
+  mkdirSync(specOutDir, { recursive: true });
+  mkdirSync(themesOutDir, { recursive: true });
+  for (const css of readdirSync(resolve(root, 'themes')).filter((f) => f.endsWith('.css'))) {
+    copyFileSync(resolve(root, 'themes', css), resolve(themesOutDir, css));
+  }
+  for (const css of readdirSync(specSrcDir).filter((f) => f.endsWith('.css'))) {
+    copyFileSync(resolve(specSrcDir, css), resolve(specOutDir, css));
+  }
+
+  console.log('  spec page                     size     nojs');
+  console.log('  ---------------------------------------------------------');
+  for (const file of specPages) {
+    const src = readFileSync(resolve(specSrcDir, file), 'utf8');
+    // Every linked asset must exist, for the same reason a missing marker
+    // source is a hard error above: a spec page that loads no behaviour
+    // would silently stop proving anything.
+    for (const m of src.matchAll(/(?:href|src)=["'](\.\.\/(?:dist|themes)\/[^"']+|[^"':/]+\.css)["']/g)) {
+      const rel = m[1].startsWith('../') ? m[1].slice(3) : `spec/${m[1]}`;
+      if (!existsSync(resolve(root, rel))) throw new Error(`spec/${file} links ${m[1]}, which does not exist`);
+    }
+    const built = src.replace(/(href|src)=(["'])\.\.\/dist\//g, '$1=$2../');
+    const name = basename(file, '.html');
+    const page = resolve(specOutDir, `${name}.html`);
+    const nojs = resolve(specOutDir, `${name}.nojs.html`);
+    writeFileSync(page, built);
+    writeFileSync(nojs, stripScripts(built));
+    const kb = (p) => (statSync(p).size / 1024).toFixed(1).padStart(6) + ' KB';
+    console.log(`  ${file.padEnd(30)}${kb(page)}${kb(nojs)}`);
   }
   console.log('');
 }
