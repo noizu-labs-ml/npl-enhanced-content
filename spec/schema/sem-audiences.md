@@ -1,0 +1,123 @@
+# Schema — `sem-audiences` / `sem-profile` and the `audience` qualifier
+
+Contract per conventions.md v0.4 §2 (global attribute catalog). BDD source
+of truth for `test/e2e/sem-audiences.cy.js`. Changes here precede spec
+changes precede code. Closes the forward declaration in
+`spec/extraction.md` §7.
+
+Two halves, one contract: a **declaration block** names the profiles a
+document knows about, and an **`audience` qualifier** on any content element
+says which of those profiles the element is for. The reader picks a profile;
+the fallback hides what is not for them. Nothing is ever removed from the
+document, and extraction never looks at the result.
+
+## Authoring form
+
+Declaration block — document metadata, one per document, anywhere inside the
+root wrapper (conventionally next to `sem-agent`):
+
+```html
+<div class="sem-audiences">
+  <div class="sem-profile" id="reader" data-label="Reader"></div>
+  <div class="sem-profile" id="operator" data-label="Operator" data-implies="reader"></div>
+</div>
+```
+
+Element form: `<sem-audiences><sem-profile id label implies>`. Both forms
+are accepted; parameters are read as `data-<name>` first, then bare
+`<name>`.
+
+- `id` (required, document-unique): the profile token that `audience`
+  specs and the hash parameter refer to. It is an ordinary element id, so it
+  shares the document's id space.
+- `data-label` (optional): human label; the id renders when absent.
+- `data-implies` (optional, comma list): profiles this one satisfies as
+  well. `operator implies reader` means an operator sees reader content.
+  Closure is transitive; a cycle is an authoring error, warned once and
+  broken.
+
+Qualifier — on any `sem-*` element or plain semantic HTML:
+
+```html
+<div class="sem-note" data-audience="operator">Operators only.</div>
+<div class="sem-note" data-audience="!operator">Everyone except operators.</div>
+<p data-audience="reader, operator">Either profile.</p>
+```
+
+Spec grammar (`src/shared/audience.ts` is the reference):
+
+| Spec | Visible when |
+| :-- | :-- |
+| absent / empty | always |
+| `a` | active profile is `a`, or implies `a` |
+| `a, b` | either term matches |
+| `!a` | active profile is not `a` and does not imply `a` |
+| `a, !b` | authoring error; warned; positive terms only |
+| unknown token | authoring error; warned; **shown** (fail-open) |
+
+With **no active profile**, a positive spec does not match and a negated
+spec does. Content that is "for operators" is therefore hidden until a
+reader says they are one; content that is "not for operators" is shown.
+Authors who want a default audience declare it (below).
+
+## Active profile
+
+Resolved in this order; first hit wins:
+
+1. hash parameter `sem-audience` (`#…&sem-audience=operator`, composed via
+   `src/shared/state.ts` so the sem-views bare segment survives beside it);
+2. `data-audience` on the root wrapper (`.sem-enhanced-document`) — the
+   author's default;
+3. `data-audience` on `<html>` — the same default, spelled on the document.
+
+The fallback reflects the resolved profile onto `<html data-audience>` and
+re-resolves on every `hashchange`. `data-audience` on the wrapper or on
+`<html>` is a **default marker, never a restriction** — neither element is
+hidden by it.
+
+## Rendered form
+
+- Fallback (`src/fallback/audience.ts`): every element carrying
+  `data-audience` / `audience` gets the `hidden` attribute when its spec does
+  not match, and loses it when it does. Native `hidden` — no class, no
+  inline style — so a theme needs no rule and AT sees ordinary hidden
+  content. The profile block itself renders as a muted metadata strip, one
+  chip per profile.
+- Upgraded (Lit): `SemElement.audienceMatches()` reads the same attributes
+  and the same `<html data-audience>` and returns the same answer. An
+  element that renders audience-dependent chrome asks it; the vanilla hide
+  is not undone.
+- JS-off: **everything is visible.** The qualifier is invisible to CSS by
+  design — a document is a readable artifact first. A printed page shows
+  what the screen showed.
+
+## Events
+
+None. State lives in the hash so a link carries it.
+
+## A11y contract
+
+- Hidden content uses the native `hidden` attribute, so it is removed from
+  the accessibility tree while hidden and returns intact.
+- The profile block carries no role; it is metadata, like `sem-agent`.
+- No live region announces a switch — the switch is the reader's own
+  navigation.
+
+## Machine contract (extraction.md §7 closed)
+
+- Every record carries `audience`: the element's own `data-audience` /
+  `audience` string **verbatim**, `null` when absent. Spec syntax is not
+  parsed into the record; the consumer that filters parses it.
+- **Never suppressed.** Extraction reads the `hidden` element exactly as it
+  reads a visible one. Filtering is a consumer operation over the array.
+- **No inheritance.** A record's `audience` is its own attribute only. A
+  fact inside an operator-only `sem-facts` reports `audience: null`;
+  containment is available through `parent` for a consumer who wants to
+  apply the container's audience downward. Recording the inherited value
+  would make one attribute change rewrite every descendant record, which is
+  the kind of instability §7 was declared to prevent.
+- `sem-audiences` and `sem-profile` mint **no records**. They are
+  declarations, not content; a consumer that needs the profile list reads
+  the block directly.
+- The central invariant holds across profile switches: `E(D)` is identical
+  with any profile active, with none, and JS-off.
