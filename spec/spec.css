@@ -11,12 +11,12 @@
       the sticky reader bar is centred in a reading measure. */
 :root { --spec-measure: 46rem; --spec-gutter: clamp(1rem, 4vw, 2rem); }
 *, *::before, *::after { box-sizing: border-box; }
-.sem-enhanced-document > :not(.sem-reader) {
+:is(sem-enhanced-document, .sem-enhanced-document) > :not(sem-reader, .sem-reader) {
   max-width: var(--spec-measure);
   margin-inline: auto;
   padding-inline: var(--spec-gutter);
 }
-.sem-enhanced-document > :last-child { padding-bottom: 4rem; }
+:is(sem-enhanced-document, .sem-enhanced-document) > :last-child { padding-bottom: 4rem; }
 
 /* 2. Section rhythm. Heading spacing is document structure, not element
       chrome; the vocabulary has no opinion on h1–h4 in prose. */
@@ -29,7 +29,7 @@ h2:target, h3:target, h4:target { outline: 2px solid var(--sem-accent); outline-
 /* 3. Reader bar alignment. The bar spans the viewport; its controls line
       up with the document column below. The vocabulary cannot know the
       page's measure. */
-.sem-reader .sem-reader-chrome, .sem-reader > nav {
+:is(sem-reader, .sem-reader) .sem-reader-chrome, :is(sem-reader, .sem-reader) > nav {
   padding-inline: max(var(--spec-gutter), calc((100% - var(--spec-measure)) / 2 + var(--spec-gutter)));
 }
 
