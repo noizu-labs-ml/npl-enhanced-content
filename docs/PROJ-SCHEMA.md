@@ -35,12 +35,18 @@ custom elements (`<sem-fact>`) are the target vocabulary for the Lit milestone.
 | `<sem-code lang filename mark controls>` › `<pre><code>` | `div.sem-code[data-lang][data-filename][data-mark][data-controls]` |
 | `<sem-references kind>` › `<sem-reference id href cite>` | `div.sem-references[data-kind]` › `div.sem-reference[id][data-href][data-cite]` |
 | `<sem-properties view-as="glossary">` | `div.sem-properties[data-view-as="glossary"]` › `div.sem-property[id][data-key]` |
+| `<sem-reader controls outline-depth>` › optional `<nav aria-label="Contents">` | `div.sem-reader[data-controls][data-outline-depth]` (chrome; mints nothing) |
+| `<sem-table controls sticky>` › `<table>` | `div.sem-table[data-controls][data-sticky]` › authored `<table>`, `td[data-value]` sort keys |
 
 Full per-element contracts (fields, rendered forms, a11y, machine contract):
 `spec/schema/*.md`; extraction payloads per type: `spec/extraction.md` §4.
 R/W1 additions: `sem-event {when, until, ordinal, status?}`, `sem-code
 {lang, filename, marks[], source (verbatim)}`, `sem-reference {href, cite,
-ordinal}`.
+ordinal}`. R/W2: `sem-table {caption, columns[], rows[][]}` in authored
+order via `data-sem-source-index` (extraction §5 recorded exception);
+`sem-reader` mints nothing (extraction §3 rule 7). Reader state on
+`<html>`: `data-sem-mode="focus"`, `data-sem-type="s|m|l"`,
+`data-sem-font="serif"`, `data-color-mode="light|dark"` — session facts.
 
 ### Global attribute catalog (any sem-* element)
 

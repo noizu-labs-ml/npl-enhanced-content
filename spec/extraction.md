@@ -70,13 +70,14 @@ interface SemRecord {
 
 ## 3. Emission rules
 
-1. **One record per vocabulary element**, in document order. Nineteen
+1. **One record per vocabulary element**, in document order. Twenty
    element types mint records: `sem-agent`, `sem-note`, `sem-facts`,
    `sem-fact`, `sem-details`, `sem-detail`, `sem-procedure`, `sem-step`,
    `sem-properties`, `sem-property`, `sem-views`, `sem-view`, `sem-reveal`,
-   `sem-progress`, and (R/W1) `sem-chronology`, `sem-event`, `sem-code`,
-   `sem-references`, `sem-reference`. Inline citations and glossary term
-   anchors are plain `<a>` and mint nothing.
+   `sem-progress`, (R/W1) `sem-chronology`, `sem-event`, `sem-code`,
+   `sem-references`, `sem-reference`, and (R/W2) `sem-table`. Inline
+   citations and glossary term anchors are plain `<a>` and mint nothing;
+   `sem-reader` is chrome and mints nothing (rule 7).
 2. **Parts are not records.** `.sem-statement`, `.sem-conclusion`,
    `.sem-distractor`, `.sem-highlight`, `.sem-note-body`, and the
    `.sem-agent-*` children are fields of their owning record, never entries
@@ -92,7 +93,9 @@ interface SemRecord {
    `.sem-note-summary`, `.sem-progress-track`, `.sem-progress-fill`,
    `.sem-code-chrome`, `.sem-code-status`, `.sem-references-backlinks`,
    `.sem-references-link`, `.sem-popover` (the reading bundle's preview
-   surface, appended to `<body>`), and the
+   surface, appended to `<body>`), `.sem-reader-chrome`,
+   `.sem-reader-outline`, `.sem-reader-progress`, `.sem-table-chrome`,
+   `.sem-table-status`, `.sem-table-filter`, and the
    `<summary>` the reveal fallback synthesizes inside its `<details>`. An
    authored `<details>`/`<summary>` elsewhere in the document is ordinary
    content and is not skipped.
@@ -103,6 +106,13 @@ interface SemRecord {
    `data-<name>` first (v0.4 class form), then as a bare `<name>` attribute
    (v0.3 custom-element form). The repo is mid-migration; a consumer should
    not have to know which wave a document came from.
+7. **`sem-reader` is chrome.** The element is skipped **entirely** — no
+   record, no text, no descent — including an authored
+   `<nav aria-label="Contents">` child, which is navigation, not content,
+   and the runtime outline, progress bar and controls. The root wrapper
+   (rule 3) and the reader are the two authored elements in the skip set.
+   The reader assigns runtime ids (`sem-h-<n>`) only to headings that mint
+   no record, so the outline cannot change a record's `id`.
 
 ## 4. Per-element field mapping
 
@@ -289,6 +299,28 @@ Unchanged: a glossary property is a `sem-property` record and the block a
 `sem-properties` container. `.sem-properties-ref` on term anchors is a
 runtime class.
 
+### `sem-table`
+
+`fields: { caption, columns: string[], rows: string[][] }`; `text` = the
+caption (`""` when absent).
+
+- `caption` from the authored `<caption>`; `columns` from the `<thead>`
+  cells, read *through* the reading bundle's `button.sem-table-sort`
+  wrapper (a wrapper, not chrome).
+- `rows` are the `<tbody>` rows in **authored order**: sorted by the
+  `data-sem-source-index` the reading bundle stamps once at enhancement,
+  DOM order when the stamp is absent (JS-off). A row carrying `hidden`
+  (filtered out) is still a row.
+- The inner `<table>` mints no plain record even when it carries `kind`
+  (`comparison` is a CSS hook there); a `<table kind>` outside a
+  `sem-table` mints as before. Nested vocabulary inside a cell still mints
+  its own record and is excluded from the cell text, as everywhere.
+- `aria-sort`, `data-sem-source-index` and `hidden` are session state.
+
+### `sem-reader`
+
+Mints nothing; see §3 rule 7.
+
 ### Minted plain-HTML records
 
 Plain semantic HTML carrying an sem global qualifier is extracted as a record
@@ -338,11 +370,25 @@ enumerated and excluded by class.
 `.sem-flipped`, `.sem-answered`, `.sem-wrong-pick`, `.sem-revealed`,
 `.sem-target` (the transient deep-link marker), `.sem-references-ref`,
 `.sem-properties-ref`, `data-sem-fallback`, `data-sem-upgraded`,
-`data-answered`, `data-wrap`, `aria-describedby` set by the preview, the
+`data-answered`, `data-wrap`, `aria-sort`, `data-sem-source-index`,
+`aria-current` on outline links, `data-sem-mode` / `data-sem-type` /
+`data-sem-font` / `data-color-mode` and the inline `--sem-reader-offset`
+style on `<html>`, the runtime heading ids the reader assigns, `aria-describedby` set by the preview, the
 `id` the reading bundle assigns to an id-less citing anchor, and the
 `hidden` attribute the audience fallback sets are session facts, not
 document facts. Extraction matches on vocabulary classes only and never
 consults visibility.
+
+**Recorded exception — DOM reordering (`sem-table`, R/W2).** Every rule
+above is about what extraction refuses to *look at*; this one is about
+authored nodes that *move*. Sorting a `sem-table` re-appends `<tbody>`
+rows, so `I(R(D))` has a different DOM order from `D`. The invariant
+still holds because the reading bundle stamps every row
+`data-sem-source-index` before its first sort and `buildTable` orders
+rows by that stamp, never by position. This is the only element whose
+runtime reorders authored content; a second one would need its own
+recorded stamp and its own line here. `test/e2e/sem-table.cy.js` and
+`extraction-reading.cy.js` assert sort + filter → deep-equal baseline.
 
 **(c) Mutable presentation attributes are excluded from the record.** Three
 attributes describe initial *display* state and are rewritten at runtime:
@@ -379,8 +425,9 @@ would lose otherwise are emitted (a fact's distractors, a detail's
 highlights, a step's status, a progress element's raw value, a reveal's
 summary, a note's variant, an agent's bio and instructions, a view's name,
 an event's `when` / `until` / `status`, a code listing's `lang` and
-`filename`, a reference's `href` and `cite`); `text` already carries the
-rest. `sem-code` is the one type whose head line carries no `: text`:
+`filename`, a reference's `href` and `cite`, a table's `columns`);
+`text` already carries the rest. A `sem-table` additionally emits one
+indented line per row, cells joined with ` | `. `sem-code` is the one type whose head line carries no `: text`:
 its verbatim `source` follows as a `source:` line and an indented block
 (four spaces deeper than the head), so the listing survives the rendering
 intact.

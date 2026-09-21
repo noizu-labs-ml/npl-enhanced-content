@@ -23,7 +23,7 @@ body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
 sem-enhanced-document, sem-agent, sem-audiences, sem-note, sem-facts, sem-fact,
 sem-details, sem-detail, sem-procedure, sem-step, sem-properties, sem-property,
 sem-views, sem-view, sem-reveal, sem-progress,
-sem-chronology, sem-event, sem-code, sem-references, sem-reference,
+sem-chronology, sem-event, sem-code, sem-references, sem-reference, sem-reader, sem-table,
 sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, sem-distractor) { display: block; }
 /* The audience fallback hides with the native attribute; keep it winning
    over the block rule above for element forms. */
@@ -269,12 +269,95 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 :is(sem-progress, .sem-progress) .sem-progress-fill { display: block; height: 100%;
   background: var(--sem-accent); border-radius: 999px; }
 
+/* reader — one chrome per document (R/W2, spec/schema/sem-reader.md).
+   Sticky bar; the outline drops below it as a panel. JS-off the element
+   holds only an authored nav (or nothing) and the rules below are inert. */
+:is(sem-reader, .sem-reader) { position: sticky; top: 0; z-index: 40; }
+.sem-reader-chrome { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem;
+  padding: .45rem .75rem .55rem; background: var(--sem-surface); border-bottom: 1px solid var(--sem-border);
+  font-family: system-ui, sans-serif; font-size: .8rem; color: var(--sem-muted); }
+.sem-reader-chrome button, .sem-reader-chrome select { font: inherit; color: var(--sem-fg);
+  background: var(--sem-bg); border: 1px solid var(--sem-border); border-radius: 6px;
+  padding: .2rem .55rem; cursor: pointer; }
+.sem-reader-chrome button[aria-pressed="true"], .sem-reader-chrome button[aria-expanded="true"] {
+  border-color: var(--sem-accent); color: var(--sem-accent); }
+.sem-reader-chrome button:disabled { opacity: .45; cursor: default; }
+.sem-reader-chrome > select { margin-left: auto; }
+.sem-reader-chrome > select ~ select { margin-left: 0; }
+.sem-reader-progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 3px;
+  background: color-mix(in srgb, var(--sem-border) 60%, transparent); }
+.sem-reader-progress-fill { display: block; height: 100%; width: 0; background: var(--sem-accent);
+  transition: width .12s linear; }
+:is(sem-reader, .sem-reader) > nav[aria-label="Contents"] { font-family: system-ui, sans-serif; font-size: .875rem; }
+:is(sem-reader, .sem-reader)[data-sem-fallback] > nav[aria-label="Contents"],
+:is(sem-reader, .sem-reader)[data-sem-upgraded] > nav[aria-label="Contents"] {
+  position: absolute; left: 0; right: 0; top: 100%; max-height: min(60vh, 24rem); overflow: auto;
+  padding: .6rem 1rem; background: var(--sem-surface); border-bottom: 1px solid var(--sem-border);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, .12); }
+:is(sem-reader, .sem-reader) > nav[aria-label="Contents"][hidden] { display: none; }
+:is(sem-reader, .sem-reader) > nav :is(ol, ul) { margin: 0; padding-left: 1.1rem; }
+:is(sem-reader, .sem-reader) > nav li { margin: .15rem 0; }
+:is(sem-reader, .sem-reader) > nav a { color: var(--sem-fg); text-decoration: none; }
+:is(sem-reader, .sem-reader) > nav a:hover { text-decoration: underline; }
+:is(sem-reader, .sem-reader) > nav a[aria-current="location"] { color: var(--sem-accent); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .sem-reader-progress-fill { transition: none; } }
+/* Once a script pins the bar, in-document targets (outline links, deep
+   links, citations, glossary terms) stop short of it instead of landing
+   underneath; --sem-reader-offset = the bar's height plus a little air. */
+:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) ~ * :is(h1, h2, h3, h4, h5, h6, [id]),
+:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) ~ [id] {
+  scroll-margin-top: var(--sem-reader-offset, 4.5rem); }
+
+/* reader-driven document state on <html> (session facts, never extracted) */
+:root[data-sem-type="s"] :is(sem-enhanced-document, .sem-enhanced-document) { font-size: .9rem; }
+:root[data-sem-type="l"] :is(sem-enhanced-document, .sem-enhanced-document) { font-size: 1.15rem; }
+:root[data-sem-font="serif"] :is(sem-enhanced-document, .sem-enhanced-document) {
+  font-family: Charter, Georgia, "Times New Roman", serif; }
+/* color-scheme for [data-color-mode] lives in the theme file, beside its tokens */
+/* focus mode: page chrome outside the root wrapper goes away, the measure
+   narrows, margin notes fall back inline */
+:root[data-sem-mode="focus"] body > :not(:is(sem-enhanced-document, .sem-enhanced-document), script, style, .sem-popover):not(:has(:is(sem-enhanced-document, .sem-enhanced-document))) { display: none; }
+:root[data-sem-mode="focus"] :is(sem-enhanced-document, .sem-enhanced-document) {
+  max-width: var(--sem-focus-measure, 42rem); margin-inline: auto; line-height: 1.75; }
+:root[data-sem-mode="focus"] :is(sem-note, .sem-note)[data-view-as="margin"] { float: none; width: auto; margin: 1rem 0; }
+
+/* table — authored <table> is the contract (R/W2, spec/schema/sem-table.md);
+   sticky header and comparison first column are CSS in every tier */
+:is(sem-table, .sem-table) { margin: 1.25rem 0; overflow-x: auto; border: 1px solid var(--sem-border);
+  border-radius: 12px; background: var(--sem-surface); }
+:is(sem-table, .sem-table) table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: .9rem; }
+:is(sem-table, .sem-table) caption { text-align: left; padding: .6rem .9rem 0; font-weight: 600; caption-side: top; }
+:is(sem-table, .sem-table) th, :is(sem-table, .sem-table) td { padding: .45rem .9rem; text-align: left;
+  border-bottom: 1px solid var(--sem-border); vertical-align: top; }
+:is(sem-table, .sem-table) th { font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted);
+  background: var(--sem-surface); }
+:is(sem-table, .sem-table) tbody tr:last-child :is(th, td) { border-bottom: 0; }
+:is(sem-table, .sem-table):is([data-sticky], [sticky]) thead th { position: sticky; top: var(--sem-reader-offset, 0); z-index: 1; }
+:is(sem-table, .sem-table) table:is([data-kind="comparison"], [kind="comparison"]) :is(th, td):first-child,
+:is(sem-table, .sem-table):is([data-kind="comparison"], [kind="comparison"]) :is(th, td):first-child,
+:is(sem-enhanced-document, .sem-enhanced-document) > table:is([data-kind="comparison"], [kind="comparison"]) :is(th, td):first-child {
+  position: sticky; left: 0; background: var(--sem-surface); z-index: 1; }
+:is(sem-table, .sem-table):is([data-sticky], [sticky]) table:is([data-kind="comparison"], [kind="comparison"]) thead th:first-child { z-index: 2; }
+.sem-table-chrome { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: .5rem .9rem;
+  border-bottom: 1px solid var(--sem-border); font-size: .8rem; color: var(--sem-muted); }
+.sem-table-chrome:not(:has(input)):not(:has(.sem-table-status:not(:empty))) { display: none; }
+.sem-table-filter { font: inherit; color: var(--sem-fg); background: var(--sem-bg); border: 1px solid var(--sem-border);
+  border-radius: 6px; padding: .25rem .5rem; min-width: 12rem; }
+.sem-table-status { min-height: 1em; }
+.sem-table-sort { all: unset; cursor: pointer; display: inline-block; padding-right: 1.1em; position: relative; }
+.sem-table-sort::after { content: "↕"; position: absolute; right: 0; opacity: .5; }
+th[aria-sort="ascending"] .sem-table-sort::after { content: "↑"; opacity: 1; color: var(--sem-accent); }
+th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; color: var(--sem-accent); }
+.sem-table-sort:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; border-radius: 4px; }
+
 /* print — everything a reader could open, none of the chrome. Reveal
    <details> are opened by fallback/target on `beforeprint`; CSS cannot. */
 @media print {
   .sem-facts-chrome, .sem-quiz-options, .sem-views-tabs, .sem-note-summary,
   .sem-code-chrome, .sem-popover, .sem-references-backlinks, .sem-references-link,
-  sem-reader, .sem-reader { display: none !important; }
+  sem-reader, .sem-reader, .sem-table-chrome { display: none !important; }
+  :is(sem-table, .sem-table) { overflow: visible; }
+  :is(sem-table, .sem-table) tbody tr[hidden] { display: table-row !important; }
   :is(sem-code, .sem-code) pre { white-space: pre-wrap; overflow: visible; }
   /* the href shows inside the references block only, never at the citation */
   :is(sem-reference, .sem-reference)[data-href]::after { content: " (" attr(data-href) ")"; color: var(--sem-muted); }
