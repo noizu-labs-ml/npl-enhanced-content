@@ -22,6 +22,33 @@ precede code.
 - `data-kind` free token (`config`, `spec`, `env` …); `id`, `tags` global.
 - ❓ Q2 resolved for v1: pure definition list, **no copy/search chrome**;
   revisit only if a consumer demands it.
+- `data-view-as="glossary"` (R/W1): the block is a glossary. Each property
+  should carry an `id`; prose elsewhere links a term with a plain anchor
+  (`<a href="#g-jwt">JWT</a>`), optionally wrapping it in `<dfn>` at its
+  defining use. Element form: `view-as="glossary"`.
+
+## View contracts
+
+### default
+
+The definition list described below. No JS behaviour.
+
+### `glossary`
+
+- CSS: properties stack term-over-definition; a `<dfn>` inside the
+  document renders as a term (upright, emphasised).
+- Reading bundle (`dist/semtext-reading.js`): every anchor whose `href`
+  targets a property `id` inside a glossary block gets the runtime class
+  `.sem-properties-ref` and a hover / focus **preview popover**
+  (`src/shared/popover.ts`) showing the key and the value; `Esc` closes
+  it; the anchor still navigates. The container carries
+  `data-sem-fallback` once wired.
+- Lit `SemProperties` is a thin wrapper: claims `data-sem-upgraded`, then
+  calls the same enhance function (idempotent per anchor).
+- JS-off: definition list, `:target` highlight on the linked property, no
+  popover. Nothing hidden.
+- Extraction unchanged: a glossary property is a `sem-property` record;
+  `view-as` never changes extraction.
 
 ## Rendered form (v0.4)
 
@@ -41,6 +68,8 @@ None.
 - Each property authored as `role="definition"` with `aria-label` =
   `data-key` — AT announces the pair without JS.
 - `data-key` doubles as the machine-facing term.
+- Glossary preview is `role="tooltip"`; the anchor carries
+  `aria-describedby` while it is shown; opens on focus, closes on `Esc`.
 
 ## Machine contract
 

@@ -70,11 +70,13 @@ interface SemRecord {
 
 ## 3. Emission rules
 
-1. **One record per vocabulary element**, in document order. Fourteen element
-   types mint records: `sem-agent`, `sem-note`, `sem-facts`, `sem-fact`,
-   `sem-details`, `sem-detail`, `sem-procedure`, `sem-step`,
+1. **One record per vocabulary element**, in document order. Nineteen
+   element types mint records: `sem-agent`, `sem-note`, `sem-facts`,
+   `sem-fact`, `sem-details`, `sem-detail`, `sem-procedure`, `sem-step`,
    `sem-properties`, `sem-property`, `sem-views`, `sem-view`, `sem-reveal`,
-   `sem-progress`.
+   `sem-progress`, and (R/W1) `sem-chronology`, `sem-event`, `sem-code`,
+   `sem-references`, `sem-reference`. Inline citations and glossary term
+   anchors are plain `<a>` and mint nothing.
 2. **Parts are not records.** `.sem-statement`, `.sem-conclusion`,
    `.sem-distractor`, `.sem-highlight`, `.sem-note-body`, and the
    `.sem-agent-*` children are fields of their owning record, never entries
@@ -87,7 +89,10 @@ interface SemRecord {
 4. **Generated nodes are invisible.** The following are skipped entirely,
    contributing neither records nor text: `.sem-facts-chrome`,
    `.sem-facts-meter`, `.sem-quiz-options`, `.sem-views-tabs`,
-   `.sem-note-summary`, `.sem-progress-track`, `.sem-progress-fill`, and the
+   `.sem-note-summary`, `.sem-progress-track`, `.sem-progress-fill`,
+   `.sem-code-chrome`, `.sem-code-status`, `.sem-references-backlinks`,
+   `.sem-references-link`, `.sem-popover` (the reading bundle's preview
+   surface, appended to `<body>`), and the
    `<summary>` the reveal fallback synthesizes inside its `<details>`. An
    authored `<details>`/`<summary>` elsewhere in the document is ordinary
    content and is not skipped.
@@ -241,6 +246,49 @@ present; `text` = `label :: N%` with `N` the rounded clamped percentage.
   is the one record whose text is not a reading of the element's children,
   and the reason is recorded here so no one "fixes" it later.
 
+### `sem-chronology` / `sem-event`
+
+`sem-chronology` is a container: `fields: {}`, `text: ""`.
+
+`sem-event` yields `fields: { when, until, ordinal }` plus `status` only
+when authored. `when` / `until` are the attribute strings (`""` when
+absent); `ordinal` is positional and 1-based among sibling events, as for
+`sem-step`. There is deliberately no default status: an event records
+something that happened, not a task. `text` = the event prose including
+its `<time>` label. `view-as` (`timeline` | `list`) is not extracted.
+
+### `sem-code`
+
+`fields: { lang, filename, marks: number[], source }`; `text` = the
+normalised single-line form of `source`.
+
+- `source` is **verbatim** — the `<code>` (else `<pre>`) text with
+  whitespace intact. This is the second recorded exception to the
+  normalised-text rule (after `sem-progress`): a listing whose indentation
+  was collapsed would be a different program. The reading bundle's line
+  spans and `<mark>` are read through; `\n` text nodes between them keep
+  the text byte-identical, which is what the §5 invariant relies on.
+- `marks` is the parsed `data-mark` grammar (`2,4-5` → `[2,4,5]`),
+  out-of-range lines dropped; the parser is shared with the renderer.
+- `data-wrap` is presentation and is not extracted.
+
+### `sem-references` / `sem-reference`
+
+`sem-references` is a container: `fields: {}`, `text: ""`, carrying
+`kind` (`footnotes` | `bibliography`).
+
+`sem-reference` yields `fields: { href, cite, ordinal }` — attribute
+strings (`""` when absent) and the positional 1-based ordinal — with
+`text` = the reference prose. Backlinks, the external link and the
+preview are chrome; `.sem-references-ref` on a citing anchor is a runtime
+class and is ignored.
+
+### `sem-properties view-as="glossary"`
+
+Unchanged: a glossary property is a `sem-property` record and the block a
+`sem-properties` container. `.sem-properties-ref` on term anchors is a
+runtime class.
+
 ### Minted plain-HTML records
 
 Plain semantic HTML carrying an sem global qualifier is extracted as a record
@@ -288,10 +336,13 @@ enumerated and excluded by class.
 
 **(b) Runtime state classes and attributes are ignored.** `.sem-current`,
 `.sem-flipped`, `.sem-answered`, `.sem-wrong-pick`, `.sem-revealed`,
-`.sem-target` (the transient deep-link marker), `data-sem-fallback`,
-`data-sem-upgraded`, `data-answered`, and the `hidden` attribute the
-audience fallback sets are session facts, not document facts. Extraction
-matches on vocabulary classes only and never consults visibility.
+`.sem-target` (the transient deep-link marker), `.sem-references-ref`,
+`.sem-properties-ref`, `data-sem-fallback`, `data-sem-upgraded`,
+`data-answered`, `data-wrap`, `aria-describedby` set by the preview, the
+`id` the reading bundle assigns to an id-less citing anchor, and the
+`hidden` attribute the audience fallback sets are session facts, not
+document facts. Extraction matches on vocabulary classes only and never
+consults visibility.
 
 **(c) Mutable presentation attributes are excluded from the record.** Three
 attributes describe initial *display* state and are rewritten at runtime:
@@ -326,8 +377,13 @@ Line form, indented by containment depth:
 Array-valued fields join with ` | `. Only fields that carry meaning a reader
 would lose otherwise are emitted (a fact's distractors, a detail's
 highlights, a step's status, a progress element's raw value, a reveal's
-summary, a note's variant, an agent's bio and instructions, a view's name);
-`text` already carries the rest.
+summary, a note's variant, an agent's bio and instructions, a view's name,
+an event's `when` / `until` / `status`, a code listing's `lang` and
+`filename`, a reference's `href` and `cite`); `text` already carries the
+rest. `sem-code` is the one type whose head line carries no `: text`:
+its verbatim `source` follows as a `source:` line and an indented block
+(four spaces deeper than the head), so the listing survives the rendering
+intact.
 
 ## 7. The audience qualifier
 

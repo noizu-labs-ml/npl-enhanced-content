@@ -5,7 +5,9 @@
   This page is itself a SemText document. The feature list is a `.sem-facts`
   deck, the caveats are `<sem-note>` custom elements, the quick start is a
   `.sem-procedure`, the shipped artifacts are a `.sem-properties` block and
-  the three-readers argument is a `.sem-views` group. Nothing here is a mock
+  the three-readers argument is a `.sem-views` group. The Reading section
+  runs the R/W0 + R/W1 elements live: margin note, audience profiles, deep
+  links, glossary, chronology, code and references. Nothing here is a mock
   of the vocabulary: the real theme CSS and the real built bundles are inlined
   at build time by scripts/build-standalone.mjs, so the page proves its own
   claims or visibly fails to.
@@ -265,6 +267,17 @@ section { padding-block: var(--pg-space) 0; }
    cursor:pointer on .sem-fact there, so nothing is needed for list view. */
 #try-deck .sem-fact { scroll-margin-top: 2rem; }
 
+/* --- reading section ------------------------------------------------------ */
+/* The prose column has a right gutter only on wide viewports; push the margin
+   note into it there, exactly as web/demo/index.html does. */
+@media (min-width: 64rem) {
+  #reading .pg-narrow { --sem-margin-offset: calc(-1 * (var(--sem-margin-width, 14rem) + 1.5rem)); }
+}
+.pg-picker { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0.75rem 0 0;
+  font-size: var(--pg-t--1); }
+.sem-code-chrome button { font: inherit; font-size: var(--pg-t--1); }
+:not(pre) > code.pg-plain { background: none; padding: 0; }
+
 /* --- Lit tier ------------------------------------------------------------- */
 /* themes/_vocabulary.css styles both authoring forms from one rule
    (`:is(sem-note, .sem-note)`, D10), so the `<sem-note>` elements below need
@@ -331,14 +344,16 @@ section { padding-block: var(--pg-space) 0; }
      the shipped page is self-contained and works from file:// with no
      network — which is the same guarantee every SemText document makes.
 
-     CDN SWAP POINT: once cdn.semtext.dev exists, replace the three markers
+     CDN SWAP POINT: once cdn.semtext.dev exists, replace the four markers
      below with
          <script src="https://cdn.semtext.dev/<version>/semtext-fallback.js"></script>
+         <script src="https://cdn.semtext.dev/<version>/semtext-reading.js"></script>
          <script src="https://cdn.semtext.dev/<version>/semtext.js"></script>
          <script src="https://cdn.semtext.dev/<version>/semtext-extract.js"></script>
      and nothing else on this page changes. The CDN does not exist yet, so
      the page ships self-contained today. -->
 <!-- sem:inline fallback -->
+<!-- sem:inline reading -->
 <!-- sem:inline bundle -->
 <!-- sem:inline extract -->
 </head>
@@ -353,6 +368,7 @@ section { padding-block: var(--pg-space) 0; }
       <ul>
         <li><a href="#why">Why</a></li>
         <li><a href="#try">Try it</a></li>
+        <li><a href="#reading">Reading</a></li>
         <li><a href="#start">Quick start</a></li>
         <li><a href="#scope">Scope</a></li>
         <li><a href="../demo/index.html">Demo</a></li>
@@ -556,6 +572,140 @@ section { padding-block: var(--pg-space) 0; }
     </div></div>
   </section>
 
+
+  <!-- Reading ---------------------------------------------------------- -->
+  <section id="reading" aria-labelledby="reading-h">
+    <div class="pg-col"><div class="pg-narrow">
+      <p class="pg-eyebrow">Reading</p>
+      <h2 id="reading-h">Long-form documents, with the reading affordances left in.</h2>
+      <p>
+        The recall elements above are one use. Most documents are read, not
+        drilled, so the vocabulary also carries what a long document needs:
+        a glossary whose terms preview on hover, references with backlinks, a
+        dated chronology, listings with provenance, notes that sit in the
+        margin, content addressed to a named audience, and links that reach
+        into closed disclosures. Every example in this section is live.
+      </p>
+
+      <div class="sem-note" id="rd-margin" data-view-as="margin" data-variant="tip">
+        <div class="sem-note-body">
+          This note is <code>data-view-as="margin"</code>. On a wide viewport
+          CSS floats it into the right gutter; on a phone it reads inline.
+          Extraction reports the same <code>sem-note</code> record either way.
+        </div>
+      </div>
+
+      <h3 id="rd-glossary-h">Glossary</h3>
+      <p>
+        A <code>sem-properties</code> block with <code>data-view-as="glossary"</code>.
+        Each property carries an <code>id</code>; a term in prose is a plain
+        anchor to it. The reading bundle gives the anchor a preview on hover or
+        focus (<code>role="tooltip"</code>, <kbd>Esc</kbd> closes) and the
+        anchor still navigates. With scripts off the link simply jumps to the
+        definition.
+      </p>
+      <div class="sem-properties" id="rd-glossary" data-kind="glossary" data-view-as="glossary" role="group" aria-labelledby="rd-glossary-h">
+        <div class="sem-property" id="rd-g-record" data-key="record" role="definition" aria-label="record">One entry in the array extraction returns: a type, an id, qualifiers, a payload of fields and a one-line text.</div>
+        <div class="sem-property" id="rd-g-tier" data-key="tier" role="definition" aria-label="tier">Which script, if any, is driving the document: none (CSS only), the fallback bundle, or the Lit components.</div>
+        <div class="sem-property" id="rd-g-marker" data-key="tier marker" role="definition" aria-label="tier marker">The <code>data-sem-fallback</code> or <code>data-sem-upgraded</code> attribute a script sets on what it wired; every hide rule is gated on one of them.</div>
+      </div>
+      <p>
+        Because every hide rule is gated on a
+        <a href="#rd-g-marker" id="rd-term-marker">tier marker</a>, a document
+        with no script hides nothing, and the
+        <a href="#rd-g-record">records</a> a machine reads are the same at
+        every <dfn><a href="#rd-g-tier">tier</a></dfn><a href="#rd-r-extraction" id="rd-cite-1">[1]</a>.
+      </p>
+
+      <h3 id="rd-chron-h">Chronology</h3>
+      <p>
+        <code>sem-chronology</code> is CSS only: a <code>role="list"</code> of
+        <code>sem-event</code> items in chronological order, each with
+        <code>data-when</code> (and optionally <code>data-until</code> and a
+        <code>data-status</code> from the same vocabulary as
+        <code>sem-step</code>). The visible date is an authored
+        <code>&lt;time&gt;</code>; without one, CSS renders the attribute.
+        Extraction gives each event a positional ordinal.
+      </p>
+      <div class="sem-chronology" id="rd-history" data-kind="release-history" data-view-as="timeline" role="list" aria-labelledby="rd-chron-h">
+        <div class="sem-event" id="rd-e-spec" role="listitem" data-when="2026-01" data-status="done"><time datetime="2026-01">Jan 2026</time> Format spec v0 and the Tier-0 schemas.</div>
+        <div class="sem-event" id="rd-e-fallback" role="listitem" data-when="2026-03" data-status="done"><time datetime="2026-03">Mar 2026</time> Fallback tier, extraction contract, scripts-stripped artifact.</div>
+        <div class="sem-event" id="rd-e-reading" role="listitem" data-when="2026-09" data-status="current"><time datetime="2026-09">Sep 2026</time> Reading experience: foundations, then the prose elements on this page.</div>
+        <div class="sem-event" id="rd-e-themes" role="listitem" data-when="2026-Q4">Theme pipeline and the reader chrome.</div>
+      </div>
+
+      <h3 id="rd-code-h">Code</h3>
+      <p>
+        <code>sem-code</code> wraps one <code>&lt;pre&gt;&lt;code&gt;</code> and
+        carries what the listing cannot: a filename, a language and a set of
+        marked lines. The chrome (copy, wrap, a <code>role="status"</code>
+        region) is added by the reading bundle; the listing text stays
+        byte-identical, and extraction reports it verbatim rather than
+        whitespace-collapsed.
+      </p>
+      <div class="sem-code" id="rd-code" data-lang="html" data-filename="doc.html" data-mark="3-4" data-controls="copy,wrap" aria-labelledby="rd-code-h">
+<pre><code>&lt;p&gt;Rotate per use&lt;a href="#r-rfc"&gt;[1]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="sem-references" data-kind="bibliography" role="list"&gt;
+  &lt;div class="sem-reference" id="r-rfc" role="listitem"
+       data-href="https://www.rfc-editor.org/rfc/rfc6749" data-cite="RFC 6749"&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+      </div>
+
+      <h3 id="rd-audience-h">Audience</h3>
+      <p>
+        A <code>sem-audiences</code> block declares the profiles a document
+        knows; any element may carry <code>data-audience</code>. The active
+        profile comes from the <code>sem-audience</code> hash parameter, so a
+        link is a picker. The fallback sets native <code>hidden</code> on what
+        is not for the reader; nothing is removed, and extraction never looks
+        at <code>hidden</code>, so a filtered document still extracts whole.
+      </p>
+      <div class="sem-audiences" id="rd-audiences">
+        <div class="sem-profile" id="reader" data-label="Reader"></div>
+        <div class="sem-profile" id="operator" data-label="Operator" data-implies="reader"></div>
+      </div>
+      <p class="pg-picker" role="group" aria-label="Choose an audience">
+        <a href="#sem-audience=reader">Read as a reader</a>
+        <a href="#sem-audience=operator">Read as an operator</a>
+        <a href="#reading">Clear</a>
+      </p>
+      <div class="sem-note" id="rd-n-operator" data-audience="operator" data-variant="warning">
+        <div class="sem-note-body">Operators only: an operator implies reader, so this profile sees every reader note as well.</div>
+      </div>
+      <div class="sem-note" id="rd-n-reader" data-audience="reader" data-variant="info">
+        <div class="sem-note-body">Readers and operators: content for a profile is hidden until a reader claims it, never deleted.</div>
+      </div>
+      <div class="sem-note" id="rd-n-public" data-audience="!operator">
+        <div class="sem-note-body">Everyone except operators: a negated spec shows by default and hides once the excluded profile is active.</div>
+      </div>
+
+      <h3 id="rd-links-h">Deep links, print, motion</h3>
+      <p>
+        A <code>#id</code> hash resolves through disclosure state: the
+        fallback opens the enclosing reveal, note, view or flashcard and marks
+        the target for a moment. <a href="#q-markdown" id="rd-deep-link">This
+        link</a> opens a collapsed question further down the page. On
+        <code>beforeprint</code> every reveal is opened and the chrome is
+        hidden by the print stylesheet, so the paper copy is complete;
+        <code>prefers-reduced-motion</code> drops the transitions and smooth
+        scrolling. None of this needs page-specific code.
+      </p>
+
+      <h3 id="rd-refs-h">References</h3>
+      <p>
+        <code>sem-references</code> numbers its entries with a CSS counter in
+        every tier. Citations in prose are plain anchors; the reading bundle
+        adds a preview on each, a backlink per citation on each entry, and an
+        external link where an entry has an <code>href</code>. In print the
+        href is written out inside the block, never at the citation<a href="#rd-r-print" id="rd-cite-2">[2]</a>.
+      </p>
+      <div class="sem-references" id="rd-refs" data-kind="bibliography" role="list" aria-labelledby="rd-refs-h">
+        <div class="sem-reference" id="rd-r-extraction" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/extraction.md" data-cite="extraction.md §5">The central invariant: extraction output is identical whether or not JS ran, under any view, and after any interaction.</div>
+        <div class="sem-reference" id="rd-r-print" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-references.md" data-cite="sem-references.md">Print appends <code>(href)</code> inside the references block only.</div>
+      </div>
+    </div></div>
+  </section>
+
   <!-- Quick start ------------------------------------------------------ -->
   <section id="start" aria-labelledby="start-h">
     <div class="pg-col">
@@ -630,33 +780,38 @@ section { padding-block: var(--pg-space) 0; }
       <p class="pg-eyebrow">Surface</p>
       <h2 id="surface-h">Everything that ships.</h2>
       <p class="pg-narrow">
-        Three independent classic scripts, each installing one global, plus two
+        Four independent classic scripts, each installing one global, plus two
         stylesheets. They are separate on purpose: the fallback tier has to run
-        in a document that never loads Lit.
+        in a document that never loads Lit, and a document with no listings or
+        references need not carry the reading bundle.
       </p>
 
       <div class="sem-properties" data-kind="artifacts" role="group"
            aria-label="Shipped artifacts">
-        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · 24.4 KB minified, 8.9 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · 30.6 KB minified, 10.8 KB gzipped</span></div>
         <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · 11.9 KB minified, 4.3 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · 6.6 KB minified, 2.5 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews · global <code>SemTextReading</code> · 6.8 KB minified, 2.6 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · 7.9 KB minified, 2.9 KB gzipped</span></div>
         <div class="sem-property" data-key="_vocabulary.css" role="definition" aria-label="_vocabulary.css"><span>Structure for the <code>sem-*</code> classes. Reads <code>--sem-*</code> tokens, declares none.</span></div>
         <div class="sem-property" data-key="theme css" role="definition" aria-label="theme css"><span>Token values only, plus a <code>prefers-color-scheme</code> block. A new theme is a copy with new values.</span></div>
       </div>
 
       <h3>The vocabulary</h3>
       <p class="pg-narrow">
-        Fourteen element types mint records:
+        Nineteen element types mint records:
         <code>sem-agent</code>, <code>sem-note</code>, <code>sem-facts</code>
         and <code>sem-fact</code>, <code>sem-details</code> and
         <code>sem-detail</code>, <code>sem-procedure</code> and
         <code>sem-step</code>, <code>sem-properties</code> and
         <code>sem-property</code>, <code>sem-views</code> and
-        <code>sem-view</code>, <code>sem-reveal</code>, and
-        <code>sem-progress</code>. This page mints records for eleven of
-        them; the three it leaves out are <code>sem-details</code>,
-        <code>sem-detail</code> and <code>sem-progress</code>, because nothing
-        here is an occlusion exercise and there is no honest number to meter.
+        <code>sem-view</code>, <code>sem-reveal</code>,
+        <code>sem-progress</code>, <code>sem-chronology</code> and
+        <code>sem-event</code>, <code>sem-code</code>, and
+        <code>sem-references</code> and <code>sem-reference</code>. This page
+        mints records for sixteen of them; the three it leaves out are
+        <code>sem-details</code>, <code>sem-detail</code> and
+        <code>sem-progress</code>, because nothing here is an occlusion
+        exercise and there is no honest number to meter.
       </p>
 
       <div class="sem-agent">
@@ -738,6 +893,7 @@ section { padding-block: var(--pg-space) 0; }
       <li><a href="https://github.com/noizu-labs-ml/npl-enhanced-content">Repository</a></li>
       <li><a href="../demo/index.html">Vocabulary demo</a></li>
       <li><a href="../demo/standalone-lit.html">Lit demo</a></li>
+      <li><a href="../demo/reading.html">Reading demo</a></li>
       <li><a href="../demo/index.nojs.html">The same demo, scripts stripped</a></li>
     </ul>
     <p>
