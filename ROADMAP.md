@@ -88,7 +88,7 @@ extraction restores authored order.
 | W1 Prose | `sem-chronology`/`sem-event` (CSS-only), `sem-code`, `sem-references`/`sem-reference`, glossary mode, `src/shared/popover.ts`, reading bundle + `<!-- sem:inline reading -->` | ✅ merged (#12) |
 | W2 Chrome + data | `sem-reader` (outline, progress, focus, type, color, print, audience controls; theme deferred), `sem-table` (sort/filter, source-index ordering), site dogfoods `sem-reader` + shows a live `sem-table`; explicit `[data-color-mode="dark"]` token block | ✅ merged (#14) |
 | **W2.1 Source** | `sem-source` rendered/source section wrapper (core snapshot + reading-bundle fence over `sem-code`); every `web/demo/index.html` section wrapped; site example | ✅ merged (#17) |
-| **W2.2 Markdown** | `sem-md`: Markdown block rendered in the browser (GFM tables first), rendered / raw toggle, copy; own bundle `dist/semtext-md.js`; `src/shared/mdsource.ts` + `clipboard.ts`; extraction `{source}`; site Reading example | 🔶 in PR (`feature/sem-md`) |
+| **W2.2 Markdown** | `sem-md`: Markdown block rendered in the browser (GFM tables first), rendered / raw toggle, copy; own bundle `dist/semtext-md.js`; `src/shared/mdsource.ts` + `clipboard.ts`; extraction `{source}`; site Reading example | ✅ merged (#19) |
 | W3 Themes | reader `theme` control, dark tokens, retire planned `sem-themes` | ⬜ after Track T |
 
 **Size budgets (raw minified, enforced by `npm run build:strict`)**
@@ -99,7 +99,7 @@ extraction restores authored order.
 | `semtext-reading.js` | — | **8** (measured 6.8) | **19.5** (measured 16.6 at W2, 18.8 after W2.1, 19.1 after the W2.1 watcher fixes — see W2 and W2.1 decisions) | 20 |
 | `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 48.3 after W2.1 + W2.2 review fixes) | 57 |
 | `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 |
-| `semtext-md.js` | — | — | **8.5** (W2.2, measured 8.0 — 8170 bytes after review; raised from 8 for the CodeQL fix: `encodeURI` on every destination + un-double-encoding, ≈0.1 KB) | 8.5 |
+| `semtext-md.js` | — | — | **8.5** (W2.2, measured 8.0 — 8170 bytes after review; raised from 8 for the CodeQL fix: `encodeURI` between authored `%XX` tokens, try/catch — 8269 bytes) | 8.5 |
 
 **W1 decisions (recorded).** Glossary mode lives in the *reading* bundle,
 not the fallback core: the core sits at 11.9 / 12 KB after W0 and the
