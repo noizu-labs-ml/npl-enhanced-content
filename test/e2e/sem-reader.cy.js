@@ -297,5 +297,15 @@ describe('sem-reader', () => {
       cy.get('#toc a').first().click();
       cy.location('hash').should('equal', '#glossary-h');
     });
+
+    it('/demo/reading-lit.nojs.html — the reader is not sticky (no chrome to stay pinned above)', () => {
+      cy.visit('/demo/reading-lit.nojs.html');
+      cy.get('#rd').should(($r) => expect(cs($r[0]).position).to.equal('static'));
+    });
+
+    it('/demo/reading-lit.html — the upgraded reader is sticky', () => {
+      cy.visit('/demo/reading-lit.html');
+      cy.get('#rd').should(($r) => expect(cs($r[0]).position).to.equal('sticky'));
+    });
   });
 });
