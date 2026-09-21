@@ -63,7 +63,10 @@ Element form: `<sem-reader controls outline-depth>`. Parameters are read as
     an inactive `sem-view` **are included**: an outline link is a plain
     `#id` anchor, and the fallback core's deep-link resolver
     (`src/fallback/target.ts`) answers the `hashchange` by opening what
-    encloses the heading. The panel starts closed (`hidden`). While the
+    encloses the heading. This depends on the **core fallback bundle**
+    (`dist/semtext-fallback.js`) being present: a document that loads only
+    the reading bundle has dead links to headings inside closed
+    disclosures, so ship both or author the nav without them. The panel starts closed (`hidden`). While the
     document scrolls, the anchor whose heading is the topmost one in view
     carries `aria-current="location"` (IntersectionObserver over the
     targets in **document order**, whatever order an authored nav lists

@@ -31,7 +31,8 @@ function compare(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 }
 
-const stamp = (r: Element): number => +r.getAttribute(STAMP)!;
+// A row inserted after enhancement has no stamp; treat it as 0 so NaN never reaches the comparator.
+const stamp = (r: Element): number => +(r.getAttribute(STAMP) || 0);
 
 export function enhanceTableElement(el: Element): void {
   if (el.querySelector(':scope > .sem-table-chrome')) return;
@@ -85,7 +86,8 @@ export function enhanceTableElement(el: Element): void {
   el.insertBefore(chrome, table);
 
   if (controls.indexOf('sort') < 0) return;
-  const heads = Array.from(table.querySelectorAll<HTMLTableCellElement>(':scope > thead > tr:first-of-type > th'));
+  // Same header cells extraction reads: th or td in the first thead row.
+  const heads = Array.from(table.querySelectorAll<HTMLTableCellElement>(':scope > thead > tr:first-of-type > :is(th, td)'));
   heads.forEach((th, col) => {
     const b = document.createElement('button');
     b.type = 'button';

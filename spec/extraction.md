@@ -372,8 +372,8 @@ enumerated and excluded by class.
 `.sem-properties-ref`, `data-sem-fallback`, `data-sem-upgraded`,
 `data-answered`, `data-wrap`, `aria-sort`, `data-sem-source-index`,
 `aria-current` on outline links, `data-sem-mode` / `data-sem-type` /
-`data-sem-font` / `data-color-mode` on `<html>`, the runtime heading ids
-the reader assigns, `aria-describedby` set by the preview, the
+`data-sem-font` / `data-color-mode` and the inline `--sem-reader-offset`
+style on `<html>`, the runtime heading ids the reader assigns, `aria-describedby` set by the preview, the
 `id` the reading bundle assigns to an id-less citing anchor, and the
 `hidden` attribute the audience fallback sets are session facts, not
 document facts. Extraction matches on vocabulary classes only and never
