@@ -36,13 +36,30 @@ function txt(parent: Node, s: string): void {
   if (s) parent.appendChild(document.createTextNode(s));
 }
 
-/** Allowlisted destination, or null when the URL must render as text. */
+/**
+ * Allowlisted destination, or null when the URL must render as text.
+ *
+ * Two layers, both required. (1) Scheme allowlist after WHATWG-style
+ * normalisation: leading/trailing C0 + space trimmed, tab/LF/CR removed
+ * anywhere (a scheme containing an interior space is not a scheme).
+ * (2) The value that reaches `href` / `src` is percent-encoded with
+ * `encodeURI`, so no character that could be reinterpreted survives —
+ * this is the sanitising step a static analyser can see (CodeQL
+ * js/xss-through-dom flagged the raw attribute write). Escapes the author
+ * already wrote (`%20`, `%23`, `%2541`) are passed through untouched: the
+ * string is split on `%XX` tokens and only the pieces between them are
+ * encoded, so nothing is double-encoded and nothing is decoded. A lone
+ * surrogate makes encodeURI throw; that destination renders as text.
+ */
 export function safeUrl(raw: string): string | null {
-  // WHATWG URL: leading/trailing C0 + space are trimmed, tab/LF/CR removed
-  // anywhere; interior spaces stay (a scheme with one is not a scheme)
   const u = raw.replace(/^[\u0000- ]+|[\u0000- ]+$/g, '').replace(/[\t\n\r]/g, '');
   const m = /^([a-z][a-z0-9+.-]*):/i.exec(u);
-  return !m || /^(https?|mailto|tel|ftp)$/i.test(m[1]) ? u : null;
+  if (m && !/^(https?|mailto|tel|ftp)$/i.test(m[1])) return null;
+  try {
+    return u.split(/(%[0-9a-f]{2})/i).map((p, k) => (k % 2 ? p : encodeURI(p))).join('');
+  } catch {
+    return null;
+  }
 }
 
 /* ------------------------------------------------------------------ *
