@@ -47,6 +47,7 @@ export function safeUrl(raw: string): string | null {
  * Inline
  * ------------------------------------------------------------------ */
 
+// Shared (via lastIndex) by inline() and cells(): non-reentrant by design.
 const BACKTICKS = /`+/y;
 const LINK = /!?\[((?:[^[\]]|\[[^\]]*\])*)\]\(\s*(?:<([^>]*)>|([^\s)]*))(?:\s+"([^"]*)")?\s*\)/y;
 const AUTOLINK = /<((?:https?|mailto|tel|ftp):[^\s<>]*)>/y;
@@ -81,7 +82,8 @@ export function inline(s: string, out: Node, depth = 0): void {
     }
     if (c === '*' || c === '_' || c === '~') {
       const dbl = s[i + 1] === c;
-      // `_` never opens or closes inside a word (snake_case_names stay text)
+      // `_` never opens or closes inside a word (snake_case_names stay text).
+      // The rescan below is bounded but worst-case quadratic on `_a`×10k.
       const intraword = c === '_' && i > 0 && WORD.test(s[i - 1]);
       if ((c !== '~' || dbl) && !intraword) {
         const d = dbl ? c + c : c;

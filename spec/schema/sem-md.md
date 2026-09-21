@@ -82,16 +82,23 @@ text; `*` has no such rule).
 **Destination allowlist.** A destination is first stripped of every C0
 control character and space — browsers do the same before resolving a
 scheme, so `java&#9;script:` is `javascript:` to them — and then admitted
-only when it has no scheme (relative path, fragment) or the scheme is
-`http`, `https`, `mailto`, `tel` or `ftp`. Anything else (`javascript:`,
+only when it has no scheme (relative path, fragment, or a
+protocol-relative `//host/path`, which reaches exactly what `https:` can)
+or the scheme is `http`, `https`, `mailto`, `tel` or `ftp`. Anything else (`javascript:`,
 `data:`, `vbscript:`, any casing, angle-bracket form included) renders as
 the link text, or the alt text for an image. Anchors carry
 `rel="noopener noreferrer"`.
 
 **Bounds.** Nesting (quotes, lists, emphasis, link text) is capped at 16
 levels; deeper content renders as text. The inline scanner is linear in the
-line length. If rendering throws regardless, the element's source text is
-put back and the element is left unenhanced.
+line length for every construct but one: the intraword-`_` rescan (skipping
+a closing `_` that is followed by a word character) is bounded but
+worst-case quadratic on pathological input such as `_a` repeated ten
+thousand times. If rendering throws regardless, the element's source text
+is put back and the element is left unenhanced. Implementation note: the
+module-level sticky `BACKTICKS` regex is shared by the inline scanner and
+the table cell splitter through `lastIndex`, so neither may call the other
+while a match is in flight (non-reentrant by design).
 
 **Not parsed** (they render as their literal characters): raw HTML,
 reference-style links `[a][b]`, footnotes, task lists, indented code
