@@ -23,20 +23,20 @@
 
 <!-- GA_MEASUREMENT_ID_SNIPPET -->
 
-<title>SemText — an XHTML document format built to replace Markdown</title>
-<meta name="description" content="SemText: an XHTML format for content Markdown can't carry. Agents read it as-is; semtext-extract.js shrinks it to LLM-ready text. No script: plain text.">
+<title>SemText — one XHTML file, in place of Markdown</title>
+<meta name="description" content="SemText: one XHTML file that models read and write instead of Markdown. Readable as text as-is; opened in a browser, the same markup becomes working web components.">
 <link rel="canonical" href="https://semtext.dev/">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://semtext.dev/">
 <meta property="og:site_name" content="SemText">
 <meta property="og:title" content="SemText — an XHTML document format built to replace Markdown">
-<meta property="og:description" content="SemText: an XHTML format for content Markdown can't carry. Agents read it as-is; semtext-extract.js shrinks it to LLM-ready text. No script: plain text.">
+<meta property="og:description" content="SemText: one XHTML file that models read and write instead of Markdown. Readable as text as-is; opened in a browser, the same markup becomes working web components.">
 <meta property="og:image" content="https://semtext.dev/og.png">
 <meta property="og:image:alt" content="SemText — an XHTML document format built to replace Markdown">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="SemText — an XHTML document format built to replace Markdown">
-<meta name="twitter:description" content="SemText: an XHTML format for content Markdown can't carry. Agents read it as-is; semtext-extract.js shrinks it to LLM-ready text. No script: plain text.">
+<meta name="twitter:description" content="SemText: one XHTML file that models read and write instead of Markdown. Readable as text as-is; opened in a browser, the same markup becomes working web components.">
 <meta name="twitter:image" content="https://semtext.dev/og.png">
 
 <!-- Inline SVG favicon. A data URI rather than a file: this page must render
@@ -399,28 +399,27 @@ section { padding-block: var(--pg-space) 0; }
 
   <!-- Hero ------------------------------------------------------------- -->
   <div class="pg-hero pg-col"><div class="pg-narrow">
-    <h1>An XHTML document format built to replace Markdown.</h1>
+    <h1>One XHTML file, in place of Markdown.</h1>
     <p class="pg-lede">
-      Markdown has nowhere to put typed structure, attributes that qualify a
-      piece of data, interaction, or a defined fallback when nothing runs.
-      SemText is an XHTML document format for rich content: you write what
-      a piece of content <em>is</em> — a fact, a step, a caveat, a distractor
-      — as a class and a small set of attributes on plain elements, at close
-      to Markdown's authoring cost, with no build step.
+      SemText is a semantic text format: a single XHTML file that a language
+      model reads and writes the way it reads and writes Markdown today. The
+      difference is what the text can say. A fact, a step, a caveat, a
+      distractor, a term and its definition are each written as what they
+      <em>are</em> — a class and a few attributes on a plain element — so the
+      structure is in the text itself, not inferred from it.
     </p>
     <p class="pg-sub">
-      An agent reads the file as written: the markup is the structure, so
-      there is no rendering step and nothing to infer. When a smaller,
-      LLM-tailored text is needed instead, <code>semtext-extract.js</code>
-      walks the document into a list of <code>SemRecord</code> objects and
-      renders them as annotated text, one line per record — a
-      <!-- sem:inline size extract --> script, not a server.
+      Read it as-is. A model, a diff, a terminal, or a person with the file
+      open in an editor sees readable text in document order, with every
+      qualifier spelled out next to the thing it qualifies. Nothing has to
+      run first.
     </p>
     <p class="pg-sub">
-      With no script running at all, the same file still reads as plain
-      text, in document order. The browser is where value gets added for a
-      person — reader chrome, flashcards, quizzes, source views — and none
-      of it changes what a machine reads.
+      Open it in a browser and the same markup becomes working web
+      components: flashcards flip, quizzes score, tabs switch, code copies,
+      terms preview, and a reader bar tracks the outline. That works in any
+      current browser from a double-clicked file, and none of it changes the
+      text the model wrote.
     </p>
     <p class="pg-actions">
       <a class="pg-btn primary" href="#try">See it work</a>
@@ -438,18 +437,19 @@ section { padding-block: var(--pg-space) 0; }
   <section id="why" aria-labelledby="why-h">
     <div class="pg-col"><div class="pg-narrow">
       <p class="pg-eyebrow">Why this exists</p>
-      <h2 id="why-h">One document, three readers who want different things.</h2>
+      <h2 id="why-h">One file, read the same way by a model and a browser.</h2>
       <p>
         Markdown carries prose well and rich content poorly: it has no place
-        to mark a conclusion as distinct from a decoy, or a step as blocked,
-        so a rich document usually ends up as three artifacts that drift — a
-        page for people, a JSON export for tooling, and a plain-text dump for
-        anything without a browser. SemText's bet is that one XHTML file can
-        serve all three, if the markup says what each piece of content means
-        instead of how it should look.
+        to mark a conclusion as distinct from a decoy, a step as blocked, or a
+        term as defined, so rich content ends up as a page for people plus a
+        separate structured copy for tooling, and the two drift. SemText keeps
+        one file. It stays XHTML, so a browser already knows how to display
+        it and web components can enhance it in place, and it stays text, so
+        a model can read and write it directly with no conversion step in
+        either direction.
       </p>
       <p class="pg-sub">
-        Pick a reader to see what they get from the same file.
+        Pick a reader to see what each one gets from the same file.
       </p>
 
       <div class="sem-views" id="readers" role="region"
@@ -472,13 +472,14 @@ section { padding-block: var(--pg-space) 0; }
             the structure, because the structure is written down.
           </p>
         </div>
-        <div class="sem-view" data-name="Terminal" role="tabpanel" aria-label="Terminal">
+        <div class="sem-view" data-name="Text" role="tabpanel" aria-label="Text">
           <p>
-            <code>extractText(document)</code> walks the authored markup and
-            returns annotated lines — one per record, indented by containment,
-            tagged with ids and kinds. Generated chrome is skipped, so the
-            output does not depend on whether scripts ran or which view is on
-            screen.
+            The file opened in an editor, a diff, or a terminal is readable
+            as it is: prose in document order, each qualifier written beside
+            the thing it qualifies, no generated markup to skip past. A model
+            writes the same text back. When a condensed record view is
+            useful, an optional script derives one from the markup, but
+            nothing depends on it.
           </p>
         </div>
       </div>
