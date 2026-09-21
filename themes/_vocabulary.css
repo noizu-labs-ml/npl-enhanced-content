@@ -23,7 +23,7 @@ body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
 sem-enhanced-document, sem-agent, sem-audiences, sem-note, sem-facts, sem-fact,
 sem-details, sem-detail, sem-procedure, sem-step, sem-properties, sem-property,
 sem-views, sem-view, sem-reveal, sem-progress,
-sem-chronology, sem-event, sem-code, sem-references, sem-reference, sem-reader, sem-table, sem-source,
+sem-chronology, sem-event, sem-code, sem-references, sem-reference, sem-reader, sem-table, sem-source, sem-md,
 sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, sem-distractor) { display: block; }
 /* The audience fallback hides with the native attribute; keep it winning
    over the block rule above for element forms. */
@@ -207,6 +207,44 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
   background: color-mix(in srgb, var(--sem-accent) 14%, transparent);
   box-shadow: -1rem 0 0 color-mix(in srgb, var(--sem-accent) 14%, transparent); }
 
+/* markdown — the element's text is Markdown; the Markdown bundle (or the
+   Lit wrapper) renders it into .sem-md-body and keeps the normalised
+   source in a sem-code fence (.sem-md-raw). With no tier marker nothing
+   was generated, so the source itself reads as pre-wrapped text. */
+:is(sem-md, .sem-md) { margin: 1.25rem 0; border: 1px solid var(--sem-border); border-radius: 12px;
+  background: var(--sem-surface); overflow: hidden; }
+:is(sem-md, .sem-md):not([data-sem-fallback], [data-sem-upgraded]) { white-space: pre-wrap; overflow-wrap: anywhere;
+  padding: .9rem 1rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875rem; line-height: 1.5; }
+:is(sem-md, .sem-md):not([data-sem-fallback], [data-sem-upgraded]):is([data-label], [label])::before {
+  content: attr(data-label); display: block; margin: -.9rem -1rem .6rem; padding: .4rem 1rem; font-size: .75rem;
+  font-family: system-ui, sans-serif; color: var(--sem-muted); border-bottom: 1px solid var(--sem-border); white-space: normal; }
+:is(sem-md, .sem-md):not([data-sem-fallback], [data-sem-upgraded])[label]:not([data-label])::before { content: attr(label); }
+.sem-md-chrome { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: .4rem .75rem;
+  border-bottom: 1px solid var(--sem-border); font-size: .75rem; color: var(--sem-muted); }
+.sem-md-label { font-weight: 600; color: var(--sem-fg); }
+.sem-md-chrome button { border: 1px solid var(--sem-border); background: var(--sem-bg); color: var(--sem-fg);
+  border-radius: 6px; padding: .15rem .6rem; cursor: pointer; font: inherit; }
+.sem-md-chrome button:first-of-type { margin-left: auto; }
+.sem-md-chrome button[aria-pressed="true"] { border-color: var(--sem-accent); color: var(--sem-accent); }
+.sem-md-status { min-width: 3.5rem; font-size: .7rem; }
+.sem-md-body { padding: .75rem 1rem; }
+.sem-md-body > :first-child { margin-top: 0; }
+.sem-md-body > :last-child { margin-bottom: 0; }
+.sem-md-body table { border-collapse: collapse; width: 100%; margin: .75rem 0; font-size: .9rem; }
+.sem-md-body th, .sem-md-body td { border: 1px solid var(--sem-border); padding: .4rem .7rem; text-align: left; vertical-align: top; }
+.sem-md-body th { font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); }
+.sem-md-body blockquote { margin: .75rem 0; padding: .25rem 1rem; border-left: 4px solid var(--sem-border); color: var(--sem-muted); }
+.sem-md-body pre { margin: .75rem 0; padding: .75rem 1rem; border: 1px solid var(--sem-border); border-radius: 8px;
+  background: var(--sem-bg); overflow-x: auto; font-size: .875rem; line-height: 1.5; }
+.sem-md-body :not(pre) > code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em;
+  background: var(--sem-bg); border: 1px solid var(--sem-border); border-radius: 4px; padding: 0 .3em; }
+.sem-md-body hr { border: 0; border-top: 1px solid var(--sem-border); margin: 1rem 0; }
+.sem-md-body img { max-width: 100%; height: auto; }
+.sem-md-raw > :is(sem-code, .sem-code) { margin: 0; border: 0; border-radius: 0; }
+/* the two views (hide rules gated on the tier marker; JS-off neither exists) */
+:is(sem-md, .sem-md):is([data-sem-fallback], [data-sem-upgraded]):not([data-view-as="raw"]) > .sem-md-raw { display: none; }
+:is(sem-md, .sem-md):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="raw"] > .sem-md-body { display: none; }
+
 /* references — CSS-counter numbering in every tier; previews and
    backlinks come from the reading bundle */
 :is(sem-references, .sem-references) { margin: 2rem 0 1rem; padding-top: .75rem;
@@ -375,7 +413,9 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
 @media print {
   .sem-facts-chrome, .sem-quiz-options, .sem-views-tabs, .sem-note-summary,
   .sem-code-chrome, .sem-popover, .sem-references-backlinks, .sem-references-link,
-  sem-reader, .sem-reader, .sem-table-chrome, .sem-source-chrome, .sem-source-fence { display: none !important; }
+  sem-reader, .sem-reader, .sem-table-chrome, .sem-source-chrome, .sem-source-fence,
+  .sem-md-chrome, .sem-md-raw { display: none !important; }
+  .sem-md-body { display: block !important; }
   :is(sem-table, .sem-table) { overflow: visible; }
   :is(sem-table, .sem-table) tbody tr[hidden] { display: table-row !important; }
   :is(sem-code, .sem-code) pre { white-space: pre-wrap; overflow: visible; }

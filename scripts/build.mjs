@@ -1,13 +1,14 @@
 /**
- * scripts/build.mjs — three artifacts, one command.
+ * scripts/build.mjs — five artifacts, one command.
  *
  * `vite build` with `build.lib.formats: ['iife']` supports exactly one entry,
- * and this package ships four independent classic scripts:
+ * and this package ships five independent classic scripts:
  *
  *   dist/semtext.js           Lit custom elements          (global SemText)
  *   dist/semtext-fallback.js  vanilla fallback tier        (global SemTextFallback)
  *   dist/semtext-reading.js   prose-reading behaviours     (global SemTextReading)
  *   dist/semtext-extract.js   record extraction            (global SemTextExtract)
+ *   dist/semtext-md.js        sem-md Markdown renderer     (global SemTextMd)
  *
  * They are separate on purpose. The fallback tier must run in a document that
  * never loads Lit, so it cannot share a bundle with it.
@@ -33,6 +34,7 @@ const targets = [
   { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 12.5, required: true },
   { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 19, required: true },
   { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 12, required: false },
+  { name: 'semtext-md.js',       entry: 'src/md/index.ts',       global: 'SemTextMd',       budgetKb: 8,  required: true },
 ];
 
 rmSync(resolve(root, 'dist'), { recursive: true, force: true });
