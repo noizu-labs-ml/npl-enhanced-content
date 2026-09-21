@@ -47,6 +47,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, statSy
 import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, basename } from 'node:path';
+import { stripScripts, specAssetRefs, rewriteSpecPage } from './standalone-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = resolve(root, 'dist', 'demo');
@@ -128,30 +129,6 @@ function sizeParts(arg, marker) {
     text: `${rawKb} KB (${gzipKb} KB gzipped)`,
     textMinGzip: `${rawKb} KB minified, ${gzipKb} KB gzipped`
   };
-}
-
-/** Remove whole <script> elements. A JS string cannot contain a literal
- *  `</script>` without breaking the surrounding HTML, so this is safe.
- *  The end tag allows ignored junk before `>` (`</script foo>`, and newlines
- *  count as whitespace), so match `\b[^>]*` rather than `\s*` — otherwise a
- *  script survives into the nojs artifact. */
-function stripScripts(html) {
-  let out = html;
-  // Removing one pair can reveal another, so run to a fixed point rather
-  // than single-pass.
-  let prev;
-  do {
-    prev = out;
-    out = out.replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, '');
-  } while (out !== prev);
-  // An unclosed opener has no matching end tag and would otherwise survive.
-  out = out.replace(/<script\b[\s\S]*$/i, '');
-  // This artifact exists to prove the document reads with scripts off, so a
-  // survivor is a build failure, not a warning.
-  if (/<script/i.test(out)) {
-    throw new Error('nojs artifact still contains <script after stripping');
-  }
-  return out.replace(/\n{3,}/g, '\n\n');
 }
 
 mkdirSync(outDir, { recursive: true });
@@ -251,20 +228,14 @@ if (specPages.length) {
   console.log('  ---------------------------------------------------------');
   for (const file of specPages) {
     const src = readFileSync(resolve(specSrcDir, file), 'utf8');
-    // Every RELATIVE linked asset must exist, for the same reason a missing
-    // marker source is a hard error above: a spec page that loads no
-    // behaviour would silently stop proving anything. Only real tags are
-    // scanned (an escaped listing starts with &lt;, so it never matches);
-    // a fragment or query is dropped before resolving; ../ resolves against
-    // the repo root, / against the repo root, anything else against spec/.
-    // Absolute URLs and data: URIs are not files this build can check.
-    for (const m of src.matchAll(/<(?:link|script|img|a|source)\b[^>]*?\b(?:href|src)=["']([^"'#?][^"']*)["']/gi)) {
-      const ref = m[1].replace(/[#?].*$/, '');
-      if (/^(?:[a-z][a-z0-9+.-]*:|\/\/)/i.test(ref)) continue;
-      const rel = ref.startsWith('../') ? ref.slice(3) : ref.startsWith('/') ? ref.slice(1) : `spec/${ref}`;
+    // Every relative linked asset must exist (scripts/standalone-lib.mjs
+    // decides what counts), for the same reason a missing marker source is
+    // a hard error above: a spec page that loads no behaviour would
+    // silently stop proving anything.
+    for (const { ref, rel } of specAssetRefs(src)) {
       if (!existsSync(resolve(root, rel))) throw new Error(`spec/${file} links ${ref}, which does not exist`);
     }
-    const built = src.replace(/(href|src)=(["'])\.\.\/dist\//g, '$1=$2../');
+    const built = rewriteSpecPage(src);
     const name = basename(file, '.html');
     const page = resolve(specOutDir, `${name}.html`);
     const nojs = resolve(specOutDir, `${name}.nojs.html`);
