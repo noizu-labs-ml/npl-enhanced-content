@@ -23,7 +23,7 @@ body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
 sem-enhanced-document, sem-agent, sem-audiences, sem-note, sem-facts, sem-fact,
 sem-details, sem-detail, sem-procedure, sem-step, sem-properties, sem-property,
 sem-views, sem-view, sem-reveal, sem-progress,
-sem-chronology, sem-event, sem-code, sem-references, sem-reference, sem-reader, sem-table,
+sem-chronology, sem-event, sem-code, sem-references, sem-reference, sem-reader, sem-table, sem-source,
 sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, sem-distractor) { display: block; }
 /* The audience fallback hides with the native attribute; keep it winning
    over the block rule above for element forms. */
@@ -321,6 +321,26 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
   max-width: var(--sem-focus-measure, 42rem); margin-inline: auto; line-height: 1.75; }
 :root[data-sem-mode="focus"] :is(sem-note, .sem-note)[data-view-as="margin"] { float: none; width: auto; margin: 1rem 0; }
 
+/* source — rendered/source section wrapper (spec/schema/sem-source.md).
+   The fence is display:none until the reader asks for it; the hide rule
+   for the rendered children is gated on a tier marker and screen-only,
+   so JS-off and print always show the rendered content. */
+.sem-source-chrome { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin: 1.5rem 0 .5rem;
+  font-family: system-ui, sans-serif; font-size: .75rem; color: var(--sem-muted); }
+.sem-source-label { margin-right: auto; text-transform: uppercase; letter-spacing: .05em; }
+.sem-source-chrome button { font: inherit; color: var(--sem-fg); background: var(--sem-bg);
+  border: 1px solid var(--sem-border); padding: .2rem .6rem; cursor: pointer; }
+.sem-source-chrome button:first-of-type { border-radius: 6px 0 0 6px; }
+.sem-source-chrome button:last-of-type { border-radius: 0 6px 6px 0; margin-left: -1px; }
+.sem-source-chrome button[aria-pressed="true"] { border-color: var(--sem-accent); color: var(--sem-accent);
+  position: relative; z-index: 1; }
+.sem-source-fence { display: none; }
+.sem-source-fence > :is(sem-code, .sem-code) { margin-top: 0; }
+@media screen {
+  :is(sem-source, .sem-source):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="source"] > .sem-source-fence { display: block; }
+  :is(sem-source, .sem-source):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="source"] > :not(.sem-source-chrome, .sem-source-fence) { display: none; }
+}
+
 /* table — authored <table> is the contract (R/W2, spec/schema/sem-table.md);
    sticky header and comparison first column are CSS in every tier */
 :is(sem-table, .sem-table) { margin: 1.25rem 0; overflow-x: auto; border: 1px solid var(--sem-border);
@@ -355,7 +375,7 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
 @media print {
   .sem-facts-chrome, .sem-quiz-options, .sem-views-tabs, .sem-note-summary,
   .sem-code-chrome, .sem-popover, .sem-references-backlinks, .sem-references-link,
-  sem-reader, .sem-reader, .sem-table-chrome { display: none !important; }
+  sem-reader, .sem-reader, .sem-table-chrome, .sem-source-chrome, .sem-source-fence { display: none !important; }
   :is(sem-table, .sem-table) { overflow: visible; }
   :is(sem-table, .sem-table) tbody tr[hidden] { display: table-row !important; }
   :is(sem-code, .sem-code) pre { white-space: pre-wrap; overflow: visible; }
