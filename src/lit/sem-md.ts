@@ -17,17 +17,13 @@ export class SemMd extends SemElement {
   updated(): void {
     if (this.#wired) return;
     this.#wired = true;
-    const go = (): void => {
-      if (!this.isConnected) return;
+    // afterParse: the content is text, so there is no child element to
+    // wait for, but writes must not land mid-parse (sem-source snapshots).
+    this.afterParse(() => {
       enhanceMdElement(this, enhanceCodeElement);
       this.setAttribute('data-sem-upgraded', '');
       this.removeAttribute('data-sem-fallback');
-    };
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', go, { once: true });
-    } else {
-      go();
-    }
+    });
   }
 }
 
