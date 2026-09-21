@@ -115,6 +115,10 @@ function sizeParts(arg, marker) {
   }
   const buf = readFileSync(path);
   const rawKb = (buf.length / 1024).toFixed(1);
+  // gzipSync defaults to zlib level 6. That's an assumption pinned here on
+  // purpose: it approximates typical gzip-negotiated transfer, not whatever
+  // level (or brotli) the production server actually negotiates, so the
+  // advertised "gzipped" figure is a representative estimate, not a promise.
   const gzipKb = (gzipSync(buf).length / 1024).toFixed(1);
   return {
     rawKb,

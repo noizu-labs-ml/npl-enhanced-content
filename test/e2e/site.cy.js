@@ -39,15 +39,20 @@ describe('semtext.dev landing page', () => {
 
   it('states the real semtext-extract.js size in the lede, not a stale hardcoded number', () => {
     // web/site/index.html injects this via `<!-- sem:inline size extract -->`
-    // at build time (scripts/build-standalone.mjs); assert the stated
-    // numbers still match the actual dist file within ±0.1 KB so a script
-    // size change can't silently drift out of sync with the copy.
-    cy.task('sizeOfDistFile', 'dist/semtext-extract.js').then(({ kb, gzipKb }) => {
-      cy.contains('.pg-sub', 'semtext-extract.js').invoke('text').then((text) => {
-        const m = text.match(/([\d.]+)\s*KB\s*\(([\d.]+)\s*KB gzipped\)/);
-        expect(m, 'lede states a "N.N KB (N.N KB gzipped)" size').to.not.equal(null);
-        expect(parseFloat(m[1]), 'raw size').to.be.closeTo(kb, 0.1);
-        expect(parseFloat(m[2]), 'gzipped size').to.be.closeTo(gzipKb, 0.1);
+    // at build time (scripts/build-standalone.mjs). Fetch the script over
+    // HTTP from vite preview (the same server + dist/ root the page itself
+    // loads scripts from) rather than reading the dist file off disk —
+    // that way the assertion measures the artifact actually served, and
+    // can't pass against a stale or separately-deployed disk copy that
+    // happens to sit next to a mismatched preview build.
+    cy.request({ url: '/semtext-extract.js', encoding: 'binary' }).then((res) => {
+      cy.task('gzipSize', res.body).then(({ kb, gzipKb }) => {
+        cy.contains('.pg-sub', 'semtext-extract.js').invoke('text').then((text) => {
+          const m = text.match(/([\d.]+)\s*KB\s*\(([\d.]+)\s*KB gzipped\)/);
+          expect(m, 'lede states a "N.N KB (N.N KB gzipped)" size').to.not.equal(null);
+          expect(parseFloat(m[1]), 'raw size').to.be.closeTo(kb, 0.1);
+          expect(parseFloat(m[2]), 'gzipped size').to.be.closeTo(gzipKb, 0.1);
+        });
       });
     });
   });

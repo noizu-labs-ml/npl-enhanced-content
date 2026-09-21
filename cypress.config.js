@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 
 export default {
@@ -10,11 +9,14 @@ export default {
     videosFolder: 'test/videos',
     setupNodeEvents(on) {
       on('task', {
-        // Measures a built dist file the same way scripts/build-standalone.mjs
-        // does, so a spec can assert stated page copy matches the real
-        // artifact instead of a number that could silently drift.
-        sizeOfDistFile(relPath) {
-          const buf = readFileSync(relPath);
+        // Gzips content a spec already fetched over HTTP from the running
+        // preview server (see test/e2e/site.cy.js), so the measurement is of
+        // the artifact vite preview actually served — not a disk file that
+        // could legitimately diverge from it (stale build, separate deploy).
+        // Takes the response body as a 'binary'-encoded string (see cy.request
+        // encoding below) so byte length survives the round trip intact.
+        gzipSize(binaryBody) {
+          const buf = Buffer.from(binaryBody, 'binary');
           return {
             kb: buf.length / 1024,
             gzipKb: gzipSync(buf).length / 1024
