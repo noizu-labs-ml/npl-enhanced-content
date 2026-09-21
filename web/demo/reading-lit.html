@@ -30,10 +30,29 @@
 <body>
 <sem-enhanced-document>
 
+  <!-- R/W2 reading chrome with an AUTHORED contents nav: used verbatim, and
+       the JS-off table of contents. -->
+  <sem-reader id="rd" controls="outline,progress,focus,type,color,print,audience">
+    <nav aria-label="Contents" id="toc">
+      <ul>
+        <li><a href="#glossary-h">Glossary</a></li>
+        <li><a href="#code-h">Code</a></li>
+        <li><a href="#tables-h">Tables</a></li>
+        <li><a href="#rv-h">Signing keys</a></li>
+        <li><a href="#vw-h">Native clients</a></li>
+      </ul>
+    </nav>
+  </sem-reader>
+
   <h1>Token Rotation — a reading document</h1>
   <p>Exercises the R/W1 prose elements in the v0.3 <strong>element form</strong>: a glossary, a chronology, code listings and references. Open this file directly in any browser; <code>reading.html</code> is the same document in class form.</p>
+  <sem-audiences id="audiences">
+    <sem-profile id="dev" label="Developer"></sem-profile>
+    <sem-profile id="ops" label="Operator" implies="dev"></sem-profile>
+  </sem-audiences>
+  <p id="ops-only" audience="ops">Operators: rotate the signing key on the same cadence as the refresh token.</p>
 
-  <h2>Glossary</h2>
+  <h2 id="glossary-h">Glossary</h2>
   <sem-properties id="glossary" kind="glossary" view-as="glossary">
     <sem-property id="g-jwt" key="JWT" role="definition" aria-label="JWT">JSON Web Token — a signed, self-describing bearer token.</sem-property>
     <sem-property id="g-pkce" key="PKCE" role="definition" aria-label="PKCE">Proof Key for Code Exchange — binds an authorization code to the client that requested it.</sem-property>
@@ -56,7 +75,7 @@
     <sem-event id="m-lit" role="listitem" when="2026-04" status="done"><time datetime="2026-04">Apr 2026</time> Lit upgrade path proven on <code>sem-note</code>.</sem-event>
   </sem-chronology>
 
-  <h2>Code</h2>
+  <h2 id="code-h">Code</h2>
   <sem-code id="c-rotate" lang="ts" filename="src/rotate.ts" mark="2,4-5" controls="copy,wrap">
 <pre><code>export function rotate(pair: Pair): Pair {
   const next = mint();
@@ -79,6 +98,57 @@
     <sem-property id="p-ttl" key="token ttl" role="definition" aria-label="token ttl">15m</sem-property>
     <sem-property id="p-store" key="storage" role="definition" aria-label="storage">httpOnly cookie</sem-property>
   </sem-properties>
+
+  <h2 id="tables-h">Tables</h2>
+  <sem-table id="t-tokens" kind="lifetimes" controls="sort,filter">
+    <table>
+      <caption>Token lifetimes</caption>
+      <thead><tr><th scope="col">Token</th><th scope="col">Lifetime</th><th scope="col">Rotates</th></tr></thead>
+      <tbody>
+        <tr><td>access</td><td data-value="900">15 min</td><td>no</td></tr>
+        <tr><td>refresh</td><td data-value="2592000">30 days</td><td>yes</td></tr>
+        <tr><td>id</td><td data-value="3600">1 hour</td><td>no</td></tr>
+        <tr><td>session</td><td data-value="43200">12 hours</td><td>yes</td></tr>
+      </tbody>
+    </table>
+  </sem-table>
+  <sem-table id="t-compare" kind="comparison" sticky>
+    <table kind="comparison">
+      <thead><tr><th scope="col">Concern</th><th scope="col">Rotation</th><th scope="col">Static refresh token</th></tr></thead>
+      <tbody>
+        <tr><td>theft window</td><td>one exchange</td><td>token lifetime</td></tr>
+        <tr><td>replay detection</td><td>reuse of a retired token</td><td>none</td></tr>
+        <tr><td>client complexity</td><td>store the newest pair</td><td>store once</td></tr>
+      </tbody>
+    </table>
+  </sem-table>
+  <sem-table id="t-groups" kind="grants">
+    <table>
+      <caption>Grants by client type</caption>
+      <thead><tr><th scope="col">Grant</th><th scope="col">Lifetime</th></tr></thead>
+      <tbody>
+        <tr><td>code</td><td data-value="600">10 min</td></tr>
+        <tr><td>device</td><td data-value="300">5 min</td></tr>
+      </tbody>
+      <tbody>
+        <tr><td>refresh</td><td data-value="2592000">30 days</td></tr>
+        <tr><td>client credentials</td><td data-value="3600">1 hour</td></tr>
+      </tbody>
+    </table>
+  </sem-table>
+
+  <h2>Disclosures</h2>
+  <!-- Class form on both pages: the reveal and views fallbacks (core) drive
+       `.sem-reveal` / `.sem-views` only. Headings inside them are reached
+       from the outline through the deep-link resolver. -->
+  <div class="sem-reveal" id="rv-keys" data-summary="Key rotation detail" collapsed>
+    <h3 id="rv-h">Signing keys</h3>
+    <p>Rotate the signing key on the refresh cadence; publish both keys during the overlap.</p>
+  </div>
+  <div class="sem-views" id="clients">
+    <div class="sem-view" data-name="Web" data-active><p>Browser clients keep the pair in an httpOnly cookie.</p></div>
+    <div class="sem-view" data-name="Native"><h3 id="vw-h">Native clients</h3><p>Native clients keep the pair in the platform keychain.</p></div>
+  </div>
 
 </sem-enhanced-document>
 </body>

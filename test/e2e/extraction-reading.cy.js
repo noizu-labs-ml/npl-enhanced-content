@@ -17,6 +17,11 @@
 //   Scenario: INVARIANT — identical under every view-as mode
 //   Scenario: INVARIANT — copy, wrap, preview and backlink do not change output
 //   Scenario: INVARIANT — element form equals class form
+//   R/W2 additions (spec/schema/sem-reader.md, sem-table.md):
+//   Scenario: sem-reader mints nothing — not the element, not its authored nav, not its chrome
+//   Scenario: sem-table — caption, columns, rows in AUTHORED order; the inner <table kind> mints nothing
+//   Scenario: annotated text — columns line and one line per row
+//   Scenario: INVARIANT — sort, filter and every reader control leave output unchanged
 
 import { extractRecords, extractText } from '../../src/extract/records';
 
@@ -39,7 +44,16 @@ const EXPECTED_TYPES = [
   'sem-chronology', 'sem-event', 'sem-event',
   'sem-code', 'sem-code',
   'sem-references', 'sem-reference', 'sem-reference',
-  'sem-properties', 'sem-property', 'sem-property'
+  'sem-properties', 'sem-property', 'sem-property',
+  'sem-table', 'sem-table', 'sem-table',
+  'sem-reveal', 'sem-views', 'sem-view', 'sem-view'
+];
+
+const ROWS = [
+  ['access', '15 min', 'no'],
+  ['refresh', '30 days', 'yes'],
+  ['id', '1 hour', 'no'],
+  ['session', '12 hours', 'yes']
 ];
 
 const visitJsOff = (url = '/demo/reading.html') =>
@@ -136,6 +150,35 @@ describe('extraction — reading elements', () => {
       });
     });
 
+    it('sem-reader mints nothing: no record for the element, its nav, or its chrome', () => {
+      extract().then((records) => {
+        expect(records.some((r) => r.type === 'sem-reader' || r.type === 'nav' || r.type === 'button')).to.equal(false);
+        expect(JSON.stringify(records)).not.to.match(/Reading controls|Contents|Everyone/);
+      });
+    });
+
+    it('sem-table: caption, columns, rows in authored order; kind from the wrapper only', () => {
+      extract().then((records) => {
+        const t = byId(records, 't-tokens');
+        expect(t.type).to.equal('sem-table');
+        expect(t.kind).to.equal('lifetimes');
+        expect(t.fields).to.deep.equal({ caption: 'Token lifetimes', columns: ['Token', 'Lifetime', 'Rotates'], rows: ROWS });
+        expect(t.text).to.equal('Token lifetimes');
+        const c = byId(records, 't-compare');
+        expect(c.fields.caption).to.equal('');
+        expect(c.fields.columns).to.deep.equal(['Concern', 'Rotation', 'Static refresh token']);
+        expect(c.fields.rows).to.have.length(3);
+        expect(c.text).to.equal('');
+        // multi-<tbody>: rows in authored order across bodies; only the first header row names columns
+        const g = byId(records, 't-groups');
+        expect(g.fields.columns).to.deep.equal(['Grant', 'Lifetime']);
+        expect(g.fields.rows.map((row) => row[0])).to.deep.equal(['code', 'device', 'refresh', 'client credentials']);
+        // the inner <table data-kind="comparison"> is the wrapper's contract, not a second record
+        expect(records.some((r) => r.type === 'table')).to.equal(false);
+        expect(records.filter((r) => r.parent === t.sourceOrder)).to.have.length(0);
+      });
+    });
+
     it('chrome never leaks into a record', () => {
       // Trigger every piece of chrome first.
       cy.get('#cite-rfc-1').focus();
@@ -167,6 +210,11 @@ describe('extraction — reading elements', () => {
         expect(text).to.contain('    when: 2026-03-02');
         expect(text).to.contain('    status: current');
         expect(text).not.to.contain('Copied');
+        expect(text).to.contain('sem-table (#t-tokens kind=lifetimes): Token lifetimes');
+        expect(text).to.contain('  columns: Token | Lifetime | Rotates');
+        expect(text).to.contain('    access | 15 min | no');
+        expect(text).to.contain('    session | 12 hours | yes');
+        expect(text).not.to.match(/Sorted by|Filter rows|Reading controls/);
       });
     });
   });
@@ -227,6 +275,30 @@ describe('extraction — reading elements', () => {
       cy.get('#cite-rfc-1').click();
       cy.get('#r-rfc .sem-references-backlinks a').first().click();
       extract().then((after) => expect(after).to.deep.equal(before));
+    });
+
+    it('table sort + filter and every reader control leave output unchanged', () => {
+      let before;
+      cy.visit('/demo/reading.html', { onBeforeLoad(win) { cy.stub(win, 'print'); } });
+      extract().then((records) => { before = records; });
+      cy.get('#t-tokens th').eq(1).find('button').click();
+      cy.get('#t-tokens th').eq(0).find('button').click();
+      cy.get('#t-tokens th').eq(0).find('button').click();
+      cy.get('#t-tokens th').eq(0).should('have.attr', 'aria-sort', 'descending');
+      cy.get('#t-tokens .sem-table-filter').type('yes');
+      cy.get('#t-tokens tbody tr[hidden]').should('have.length', 2);
+      cy.get('#rd .sem-reader-toggle').click();
+      cy.get('#rd [data-act="focus"]').click();
+      cy.get('#rd [data-act="type-up"]').click();
+      cy.get('#rd [data-act="font"]').click();
+      cy.get('#rd .sem-reader-color').select('dark');
+      cy.get('#rd .sem-reader-audience').select('ops');
+      cy.get('#ops-only').should('be.visible');
+      cy.get('#rd [data-act="print"]').click();
+      cy.get('html').should('have.attr', 'data-sem-mode', 'focus');
+      extract().then((after) => expect(after).to.deep.equal(before));
+      // the DOM really was reordered (Token descending) — extraction restored the authored order
+      cy.get('#t-tokens tbody tr').first().then(($r) => expect($r[0].cells[0].textContent).to.equal('session'));
     });
 
     it('element form extracts identically to class form', () => {

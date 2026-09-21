@@ -16,6 +16,12 @@
 //   Scenario: audience picker links filter with native hidden
 //   Scenario: a deep link opens the collapsed question it targets
 //   Scenario: JS-off the Reading section hides nothing and grows no chrome
+//   R/W2 (the page dogfoods sem-reader and shows a live sem-table):
+//   Scenario: the reading bar is the wrapper's first child with an outline of the h2s
+//   Scenario: focus mode hides the page chrome outside the document and restores it
+//   Scenario: the colour select applies the theme's dark tokens
+//   Scenario: the artifacts table sorts numerically and filters; extraction keeps authored order
+//   Scenario: JS-off the reader is empty and the table is plain
 
 describe('semtext.dev landing page', () => {
   beforeEach(() => cy.visit('/site/index.html'));
@@ -133,6 +139,78 @@ describe('semtext.dev landing page', () => {
       cy.get('#rd-deep-link').click();
       cy.get('#q-markdown details').should('have.attr', 'open');
       cy.get('#q-markdown').should('have.class', 'sem-target');
+    });
+
+    it('the reading bar is the first child of the document, outlining every h2', () => {
+      cy.get('main.sem-enhanced-document > :first-child').should('have.id', 'pg-reader');
+      cy.get('#pg-reader').should('have.attr', 'data-sem-fallback');
+      cy.get('#pg-reader > .sem-reader-chrome').should('have.attr', 'role', 'region');
+      cy.get('#pg-reader .sem-reader-toggle').click();
+      // every h2 outside a view panel — the site's panels only carry h3s, so the
+      // depth-2 outline is exactly the section headings
+      cy.get('main h2').then(($h) => {
+        const outside = Array.from($h).filter((h) => !h.closest('.sem-view'));
+        cy.get('#pg-reader nav.sem-reader-outline a').should('have.length', outside.length);
+      });
+      cy.get('#pg-reader nav.sem-reader-outline a').first().should('have.attr', 'href', '#why-h');
+      cy.get('#pg-reader nav.sem-reader-outline a').contains('What it is not.').click();
+      cy.location('hash').should('equal', '#scope-h');
+      cy.get('#pg-reader nav.sem-reader-outline').should('not.be.visible');
+      cy.get('#pg-reader nav.sem-reader-outline a[aria-current="location"]').should('have.attr', 'href', '#scope-h');
+      // the audience select lists the profiles declared further down the page
+      cy.get('#pg-reader .sem-reader-audience option').then(($o) => {
+        expect(Array.from($o, (o) => o.value)).to.deep.equal(['', 'reader', 'operator']);
+      });
+      cy.get('#pg-reader .sem-reader-audience').select('operator');
+      cy.get('#rd-n-operator').should('be.visible');
+    });
+
+    it('focus mode hides the page chrome outside the document and restores it', () => {
+      cy.get('header.pg-masthead').should('be.visible');
+      cy.get('#pg-reader [data-act="focus"]').click();
+      cy.get('html').should('have.attr', 'data-sem-mode', 'focus');
+      cy.get('header.pg-masthead').should('not.be.visible');
+      cy.get('footer').should('not.be.visible');
+      cy.get('#try-deck .sem-fact').should('have.length', 4);
+      cy.get('#pg-reader [data-act="focus"]').click();
+      cy.get('header.pg-masthead').should('be.visible');
+    });
+
+    it('the colour select applies the theme dark tokens', () => {
+      cy.get('#pg-reader .sem-reader-color').select('dark');
+      cy.get('body').should(($b) => {
+        expect(getComputedStyle($b[0]).backgroundColor).to.equal('rgb(15, 23, 42)');
+      });
+      cy.get('#pg-reader .sem-reader-color').select('auto');
+      cy.get('html').should('not.have.attr', 'data-color-mode');
+    });
+
+    it('the artifacts table sorts numerically, filters, and still extracts in authored order', () => {
+      cy.get('#rd-table').should('have.attr', 'data-sem-fallback');
+      cy.get('#rd-table th').eq(1).find('button').click();
+      cy.get('#rd-table th').eq(1).should('have.attr', 'aria-sort', 'ascending');
+      cy.get('#rd-table tbody tr').then(($r) => {
+        expect(Array.from($r, (r) => r.cells[0].textContent)).to.deep.equal(
+          ['semtext-extract.js', 'semtext-fallback.js', 'semtext-reading.js', 'semtext.js']);
+      });
+      cy.get('#rd-table .sem-table-filter').type('fallback');
+      cy.get('#rd-table tbody tr[hidden]').should('have.length', 3);
+      cy.get('#rd-table .sem-table-status').should('have.text', '1 of 4 rows, sorted by Minified, ascending');
+      cy.window().then((win) => {
+        const t = win.SemTextExtract.extractRecords(win.document).find((r) => r.id === 'rd-table');
+        expect(t.type).to.equal('sem-table');
+        expect(t.fields.columns).to.deep.equal(['Artifact', 'Minified', 'Gzipped', 'Global']);
+        expect(t.fields.rows.map((row) => row[0])).to.deep.equal(
+          ['semtext.js', 'semtext-fallback.js', 'semtext-reading.js', 'semtext-extract.js']);
+      });
+    });
+
+    it('JS-off: the reader is empty and the table is plain', () => {
+      cy.visit('/site/index.html', { onBeforeLoad(win) { win.__semJsOff = true; } });
+      cy.get('.sem-reader-chrome, .sem-table-chrome, .sem-table-sort').should('not.exist');
+      cy.get('#pg-reader').then(($r) => expect($r[0].getBoundingClientRect().height).to.equal(0));
+      cy.get('#rd-table tbody tr').should('have.length', 4);
+      cy.get('#rd-table th').should('not.have.attr', 'aria-sort');
     });
 
     it('JS-off: the Reading section hides nothing and grows no chrome', () => {

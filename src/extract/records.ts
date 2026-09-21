@@ -70,8 +70,18 @@ const RECORD_TYPES = [
   'sem-event',
   'sem-code',
   'sem-references',
-  'sem-reference'
+  'sem-reference',
+  // R/W2 (spec/schema/sem-table.md); sem-reader is chrome and is NOT here
+  'sem-table'
 ] as const;
+
+/**
+ * Chrome ELEMENTS — skipped whole, like the generated chrome classes, but
+ * addressed by vocabulary name because they are authored: `sem-reader`
+ * (spec/schema/sem-reader.md) mints nothing, and neither does its authored
+ * `<nav aria-label="Contents">` child (spec/extraction.md §3 rule 7).
+ */
+const CHROME_TYPES = ['sem-reader'];
 
 /** v0.3 custom-element tag names that are not simply `sem-<type>`. */
 const TAG_ALIASES: Record<string, string> = { agent: 'sem-agent' };
@@ -93,7 +103,14 @@ const CHROME_CLASSES = [
   'sem-code-status',
   'sem-references-backlinks',
   'sem-references-link',
-  'sem-popover'
+  'sem-popover',
+  // R/W2
+  'sem-reader-chrome',
+  'sem-reader-outline',
+  'sem-reader-progress',
+  'sem-table-chrome',
+  'sem-table-status',
+  'sem-table-filter'
 ];
 
 /** Highlight / cloze markers, in every authoring and runtime form. */
@@ -135,6 +152,9 @@ function norm(s: string): string {
 function isChrome(el: Element): boolean {
   for (let i = 0; i < CHROME_CLASSES.length; i++) {
     if (hasClass(el, CHROME_CLASSES[i])) return true;
+  }
+  for (let i = 0; i < CHROME_TYPES.length; i++) {
+    if (tagOf(el) === CHROME_TYPES[i] || hasClass(el, CHROME_TYPES[i])) return true;
   }
   // The <summary> the reveal fallback synthesizes inside its <details>.
   // Narrowly scoped: an authored <details>/<summary> elsewhere is content.
@@ -178,6 +198,12 @@ function recordType(el: Element): string | null {
 function mintsPlainRecord(el: Element): boolean {
   if (hasClass(el, 'sem-enhanced-document')) return false;
   if (tagOf(el).indexOf('sem-') === 0) return false;
+  // The <table> inside a sem-table is the wrapper's contract, not a second
+  // record — its `kind` (comparison) is a CSS hook (spec/schema/sem-table.md).
+  if (tagOf(el) === 'table') {
+    const p = el.parentElement;
+    if (p && (tagOf(p) === 'sem-table' || hasClass(p, 'sem-table'))) return false;
+  }
   return hasParam(el, 'kind') || hasParam(el, 'tags');
 }
 
@@ -489,6 +515,41 @@ function buildReference(el: Element): Payload {
   };
 }
 
+function buildTable(el: Element): Payload {
+  // Rows come back in AUTHORED order: the reading bundle stamps
+  // `data-sem-source-index` before its sort ever moves a row, so the
+  // stamp — not DOM order — is the order (spec/extraction.md §5, recorded
+  // exception). `hidden` (filter) is never consulted.
+  // Scoped selectors throughout: a table nested inside a cell is that
+  // cell's content, and only the first header row names the columns.
+  const table = el.querySelector(':scope > table');
+  const cellText = function (c: Element): string { return norm(collectText(c, proseSkip)); };
+  const columns: string[] = [];
+  const rows: string[][] = [];
+  let caption = '';
+  if (table) {
+    const cap = table.querySelector(':scope > caption');
+    if (cap) caption = norm(collectText(cap, isChrome));
+    const heads = table.querySelectorAll(':scope > thead > tr:first-of-type > :is(th, td)');
+    for (let i = 0; i < heads.length; i++) columns.push(cellText(heads[i]));
+    const trs: { tr: Element; idx: number }[] = [];
+    const list = table.querySelectorAll(':scope > tbody > tr');
+    for (let i = 0; i < list.length; i++) {
+      const raw = list[i].getAttribute('data-sem-source-index');
+      const idx = raw === null ? NaN : parseInt(raw, 10);
+      trs.push({ tr: list[i], idx: isNaN(idx) ? i : idx });
+    }
+    trs.sort(function (a, b) { return a.idx - b.idx; });
+    for (let i = 0; i < trs.length; i++) {
+      const cells = trs[i].tr.children;
+      const row: string[] = [];
+      for (let k = 0; k < cells.length; k++) row.push(cellText(cells[k]));
+      rows.push(row);
+    }
+  }
+  return { fields: { caption: caption, columns: columns, rows: rows }, text: caption };
+}
+
 function buildContainer(el: Element): Payload {
   return { fields: {}, text: '' };
 }
@@ -523,6 +584,8 @@ function payloadFor(type: string, el: Element): Payload {
       return buildCode(el);
     case 'sem-reference':
       return buildReference(el);
+    case 'sem-table':
+      return buildTable(el);
     case 'sem-facts':
     case 'sem-details':
     case 'sem-procedure':
@@ -628,7 +691,8 @@ const TEXTUAL_FIELDS: Record<string, string[]> = {
   'sem-property': [],
   'sem-event': ['when', 'until', 'status'],
   'sem-code': ['lang', 'filename'],
-  'sem-reference': ['href', 'cite']
+  'sem-reference': ['href', 'cite'],
+  'sem-table': ['columns']
 };
 
 /**
@@ -658,6 +722,10 @@ export function renderRecordsAsText(records: SemRecord[]): string {
       } else {
         lines.push(pad + '  ' + key + ': ' + String(v));
       }
+    }
+    if (r.type === 'sem-table') {
+      const rows = r.fields.rows as string[][];
+      for (let k = 0; k < rows.length; k++) lines.push(pad + '    ' + rows[k].join(' | '));
     }
     if (r.type === 'sem-code') {
       const src = String(r.fields.source || '');

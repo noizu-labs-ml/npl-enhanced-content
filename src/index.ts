@@ -34,3 +34,8 @@ export { SemReferences } from './lit/sem-references.js';
 import './lit/sem-references.js';
 export { SemProperties } from './lit/sem-properties.js';
 import './lit/sem-properties.js';
+/* R/W2 chrome + data — thin wrappers over src/reading/* */
+export { SemReader } from './lit/sem-reader.js';
+import './lit/sem-reader.js';
+export { SemTable } from './lit/sem-table.js';
+import './lit/sem-table.js';
