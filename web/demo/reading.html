@@ -27,8 +27,17 @@
 <body>
 <div class="sem-enhanced-document">
 
+  <!-- R/W2 reading chrome: one per document, first child of the wrapper.
+       No authored nav here, so the outline is generated from the headings. -->
+  <div class="sem-reader" id="rd" data-controls="outline,progress,focus,type,color,print,audience"></div>
+
   <h1>Token Rotation — a reading document</h1>
   <p>Exercises the R/W1 prose elements in the v0.4 <strong>class form</strong>: a glossary, a chronology, code listings and references. Open this file directly in any browser; <code>reading-lit.html</code> is the same document in element form.</p>
+  <div class="sem-audiences" id="audiences">
+    <div class="sem-profile" id="dev" data-label="Developer"></div>
+    <div class="sem-profile" id="ops" data-label="Operator" data-implies="dev"></div>
+  </div>
+  <p id="ops-only" data-audience="ops">Operators: rotate the signing key on the same cadence as the refresh token.</p>
 
   <h2>Glossary</h2>
   <div class="sem-properties" id="glossary" data-kind="glossary" data-view-as="glossary">
@@ -75,6 +84,30 @@
   <div class="sem-properties" id="config" data-kind="config">
     <div class="sem-property" id="p-ttl" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
     <div class="sem-property" id="p-store" data-key="storage" role="definition" aria-label="storage">httpOnly cookie</div>
+  </div>
+
+  <h2>Tables</h2>
+  <div class="sem-table" id="t-tokens" data-kind="lifetimes" data-controls="sort,filter">
+    <table>
+      <caption>Token lifetimes</caption>
+      <thead><tr><th scope="col">Token</th><th scope="col">Lifetime</th><th scope="col">Rotates</th></tr></thead>
+      <tbody>
+        <tr><td>access</td><td data-value="900">15 min</td><td>no</td></tr>
+        <tr><td>refresh</td><td data-value="2592000">30 days</td><td>yes</td></tr>
+        <tr><td>id</td><td data-value="3600">1 hour</td><td>no</td></tr>
+        <tr><td>session</td><td data-value="43200">12 hours</td><td>yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="sem-table" id="t-compare" data-kind="comparison" data-sticky>
+    <table data-kind="comparison">
+      <thead><tr><th scope="col">Concern</th><th scope="col">Rotation</th><th scope="col">Static refresh token</th></tr></thead>
+      <tbody>
+        <tr><td>theft window</td><td>one exchange</td><td>token lifetime</td></tr>
+        <tr><td>replay detection</td><td>reuse of a retired token</td><td>none</td></tr>
+        <tr><td>client complexity</td><td>store the newest pair</td><td>store once</td></tr>
+      </tbody>
+    </table>
   </div>
 
 </div>
