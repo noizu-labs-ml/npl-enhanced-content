@@ -38,3 +38,23 @@ npm run serve           # vite preview on :4173
 ## Docs
 
 `docs/PROJ-ARCH.md`, `docs/PROJ-LAYOUT.md`, `docs/PROJ-SCHEMA.md` (digests alongside); normative specs in `spec/`.
+
+## Analytics (GA4)
+
+Analytics are off by default. The measurement id is a **deploy-time** value, not
+a build-time one: `index.html` ships an inert `<!-- GA_MEASUREMENT_ID_SNIPPET -->`
+marker, and `docker/20-ga-measurement-id.sh` (run by nginx's stock
+`/docker-entrypoint.d/` hook on every container start) regenerates the served
+page from a pristine template in the image.
+
+- `GA_MEASUREMENT_ID` set to a `[A-Za-z0-9_-]+` id → the gtag snippet is injected.
+- unset, empty, or malformed → the marker line is dropped entirely: no script
+  tag, no partial tag, no comment, no JS.
+
+Enable it via the chart value:
+
+```yaml
+gaMeasurementId: "G-XXXXXXXXXX"   # helm/<chart>/values.yaml, default ""
+```
+
+Flipping it is a redeploy of the same image — no rebuild.

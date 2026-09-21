@@ -22,6 +22,9 @@ spec:
       - name: frontend
         image: {{ .Values.frontend.image }}
         imagePullPolicy: Always
+        env:
+        - name: GA_MEASUREMENT_ID
+          value: {{ .Values.gaMeasurementId | default "" | quote }}
         ports:
         - containerPort: {{ .Values.frontend.port }}
           protocol: TCP
