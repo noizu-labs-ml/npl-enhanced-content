@@ -55,7 +55,9 @@ const ALLOWED = new Set(['http:', 'https:', 'mailto:', 'tel:', 'ftp:']);
 export function safeUrl(raw: string): URL | null {
   try {
     const url = new URL(raw, document.baseURI);
-    return ALLOWED.has(url.protocol) || url.protocol === location.protocol ? url : null;
+    // `file:` only, never `location.protocol`: a page served under blob:
+    // or another scheme must not widen the allowlist.
+    return ALLOWED.has(url.protocol) || url.protocol === 'file:' ? url : null;
   } catch {
     return null;
   }

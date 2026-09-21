@@ -88,9 +88,10 @@ parser (`new URL(dest, document.baseURI)`) — which trims leading and
 trailing C0 controls and spaces and removes tab / LF / CR anywhere, so
 `java&#9;script:` and `javascript:` yield the same protocol — and the
 **parsed object's protocol** is checked: admitted when it is `http:`,
-`https:`, `mailto:`, `tel:`, `ftp:` or the document's own (`file:` for a
-double-clicked document; a relative path, fragment or `//host` resolves
-to it). What is written to `href` / `src` is that object's `href`, never
+`https:`, `mailto:`, `tel:`, `ftp:` or `file:` (a double-clicked document;
+a relative path, fragment or `//host` resolves to the document's own
+scheme, which is admitted only when it is one of these — a page served
+under `blob:` or another scheme does not widen the list). What is written to `href` / `src` is that object's `href`, never
 the authored string, so relative destinations render as absolute URLs
 resolved against the document (`#id` becomes `<document>#id`). Anything
 else (`javascript:`, `data:`, `vbscript:`, any casing, angle-bracket form
