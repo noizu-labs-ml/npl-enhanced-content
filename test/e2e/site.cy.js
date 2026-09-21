@@ -31,10 +31,25 @@ describe('semtext.dev landing page', () => {
   beforeEach(() => cy.visit('/site/index.html'));
 
   it('renders its hero and sections', () => {
-    cy.get('h1').should('contain', 'replace Markdown');
+    cy.get('h1').should('have.text', 'An XHTML document format built to replace Markdown.');
     cy.get('main.sem-enhanced-document').should('exist');
     cy.get('#why, #try, #tiers, #reading, #start, #surface, #scope').should('have.length', 7);
     cy.get('#try-deck .sem-fact').should('have.length', 4);
+  });
+
+  it('states the real semtext-extract.js size in the lede, not a stale hardcoded number', () => {
+    // web/site/index.html injects this via `<!-- sem:inline size extract -->`
+    // at build time (scripts/build-standalone.mjs); assert the stated
+    // numbers still match the actual dist file within ±0.1 KB so a script
+    // size change can't silently drift out of sync with the copy.
+    cy.task('sizeOfDistFile', 'dist/semtext-extract.js').then(({ kb, gzipKb }) => {
+      cy.contains('.pg-sub', 'semtext-extract.js').invoke('text').then((text) => {
+        const m = text.match(/([\d.]+)\s*KB\s*\(([\d.]+)\s*KB gzipped\)/);
+        expect(m, 'lede states a "N.N KB (N.N KB gzipped)" size').to.not.equal(null);
+        expect(parseFloat(m[1]), 'raw size').to.be.closeTo(kb, 0.1);
+        expect(parseFloat(m[2]), 'gzipped size').to.be.closeTo(gzipKb, 0.1);
+      });
+    });
   });
 
   it('view-as toggle switches the deck without changing its content', () => {

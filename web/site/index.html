@@ -24,19 +24,19 @@
 <!-- GA_MEASUREMENT_ID_SNIPPET -->
 
 <title>SemText — an XHTML document format built to replace Markdown</title>
-<meta name="description" content="SemText is an XHTML document format for rich content Markdown cannot carry: typed structure, attributes that qualify data, interaction and defined degradation. Agents read the file as written; semtext-extract.js produces a smaller, LLM-tailored annotated text. With no script running, the file still reads as plain text; the browser adds reader chrome, quizzes and source views for people.">
+<meta name="description" content="SemText: an XHTML format for content Markdown can't carry. Agents read it as-is; semtext-extract.js shrinks it to LLM-ready text. No script: plain text.">
 <link rel="canonical" href="https://semtext.dev/">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://semtext.dev/">
 <meta property="og:site_name" content="SemText">
 <meta property="og:title" content="SemText — an XHTML document format built to replace Markdown">
-<meta property="og:description" content="An XHTML format for rich content: agents read the file as written, semtext-extract.js shrinks it to annotated text for a model, and it still reads as plain text with no script. The browser adds value for people.">
+<meta property="og:description" content="SemText: an XHTML format for content Markdown can't carry. Agents read it as-is; semtext-extract.js shrinks it to LLM-ready text. No script: plain text.">
 <meta property="og:image" content="https://semtext.dev/og.png">
 <meta property="og:image:alt" content="SemText — an XHTML document format built to replace Markdown">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="SemText — an XHTML document format built to replace Markdown">
-<meta name="twitter:description" content="An XHTML format for rich content: agents read the file as written, semtext-extract.js shrinks it to annotated text for a model, and it still reads as plain text with no script. The browser adds value for people.">
+<meta name="twitter:description" content="SemText: an XHTML format for content Markdown can't carry. Agents read it as-is; semtext-extract.js shrinks it to LLM-ready text. No script: plain text.">
 <meta name="twitter:image" content="https://semtext.dev/og.png">
 
 <!-- Inline SVG favicon. A data URI rather than a file: this page must render
@@ -413,8 +413,8 @@ section { padding-block: var(--pg-space) 0; }
       there is no rendering step and nothing to infer. When a smaller,
       LLM-tailored text is needed instead, <code>semtext-extract.js</code>
       walks the document into a list of <code>SemRecord</code> objects and
-      renders them as annotated text, one line per record — a 9.7 KB
-      (3.3 KB gzipped) script, not a server.
+      renders them as annotated text, one line per record — a
+      <!-- sem:inline size extract --> script, not a server.
     </p>
     <p class="pg-sub">
       With no script running at all, the same file still reads as plain
@@ -756,11 +756,11 @@ section { padding-block: var(--pg-space) 0; }
           <caption>Shipped scripts, measured by the build</caption>
           <thead><tr><th scope="col">Artifact</th><th scope="col">Minified</th><th scope="col">Gzipped</th><th scope="col">Global</th></tr></thead>
           <tbody>
-            <tr><td>semtext.js</td><td data-value="48.3">48.3 KB</td><td data-value="16.7">16.7 KB</td><td>SemText</td></tr>
-            <tr><td>semtext-fallback.js</td><td data-value="12.5">12.5 KB</td><td data-value="4.4">4.4 KB</td><td>SemTextFallback</td></tr>
-            <tr><td>semtext-reading.js</td><td data-value="18.8">18.8 KB</td><td data-value="6.6">6.6 KB</td><td>SemTextReading</td></tr>
-            <tr><td>semtext-extract.js</td><td data-value="9.7">9.7 KB</td><td data-value="3.5">3.5 KB</td><td>SemTextExtract</td></tr>
-            <tr><td>semtext-md.js</td><td data-value="7.9">7.9 KB</td><td data-value="3.5">3.5 KB</td><td>SemTextMd</td></tr>
+            <tr><td>semtext.js</td><td data-value="<!-- sem:inline size-kb bundle -->"><!-- sem:inline size-kb bundle --> KB</td><td data-value="<!-- sem:inline size-gzkb bundle -->"><!-- sem:inline size-gzkb bundle --> KB</td><td>SemText</td></tr>
+            <tr><td>semtext-fallback.js</td><td data-value="<!-- sem:inline size-kb fallback -->"><!-- sem:inline size-kb fallback --> KB</td><td data-value="<!-- sem:inline size-gzkb fallback -->"><!-- sem:inline size-gzkb fallback --> KB</td><td>SemTextFallback</td></tr>
+            <tr><td>semtext-reading.js</td><td data-value="<!-- sem:inline size-kb reading -->"><!-- sem:inline size-kb reading --> KB</td><td data-value="<!-- sem:inline size-gzkb reading -->"><!-- sem:inline size-gzkb reading --> KB</td><td>SemTextReading</td></tr>
+            <tr><td>semtext-extract.js</td><td data-value="<!-- sem:inline size-kb extract -->"><!-- sem:inline size-kb extract --> KB</td><td data-value="<!-- sem:inline size-gzkb extract -->"><!-- sem:inline size-gzkb extract --> KB</td><td>SemTextExtract</td></tr>
+            <tr><td>semtext-md.js</td><td data-value="<!-- sem:inline size-kb md -->"><!-- sem:inline size-kb md --> KB</td><td data-value="<!-- sem:inline size-gzkb md -->"><!-- sem:inline size-gzkb md --> KB</td><td>SemTextMd</td></tr>
           </tbody>
         </table>
       </div>
@@ -908,11 +908,11 @@ section { padding-block: var(--pg-space) 0; }
 
       <div class="sem-properties" data-kind="artifacts" role="group"
            aria-label="Shipped artifacts">
-        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · 48.3 KB minified, 16.7 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · 12.5 KB minified, 4.4 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews, the reader bar, table sort and filter · global <code>SemTextReading</code> · 18.8 KB minified, 6.6 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · 9.7 KB minified, 3.5 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-md.js" role="definition" aria-label="semtext-md.js"><span>The <code>sem-md</code> Markdown renderer · global <code>SemTextMd</code> · 7.9 KB minified, 3.5 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · <!-- sem:inline size-mg bundle --></span></div>
+        <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · <!-- sem:inline size-mg fallback --></span></div>
+        <div class="sem-property" data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews, the reader bar, table sort and filter · global <code>SemTextReading</code> · <!-- sem:inline size-mg reading --></span></div>
+        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · <!-- sem:inline size-mg extract --></span></div>
+        <div class="sem-property" data-key="semtext-md.js" role="definition" aria-label="semtext-md.js"><span>The <code>sem-md</code> Markdown renderer · global <code>SemTextMd</code> · <!-- sem:inline size-mg md --></span></div>
         <div class="sem-property" data-key="_vocabulary.css" role="definition" aria-label="_vocabulary.css"><span>Structure for the <code>sem-*</code> classes. Reads <code>--sem-*</code> tokens, declares none.</span></div>
         <div class="sem-property" data-key="theme css" role="definition" aria-label="theme css"><span>Token values only, plus a <code>prefers-color-scheme</code> block. A new theme is a copy with new values.</span></div>
       </div>

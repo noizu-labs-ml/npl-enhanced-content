@@ -308,8 +308,12 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
   background: var(--sem-accent); border-radius: 999px; }
 
 /* reader — one chrome per document (R/W2, spec/schema/sem-reader.md).
-   Sticky bar; the outline drops below it as a panel. JS-off the element
-   holds only an authored nav (or nothing) and the rules below are inert. */
+   Sticky bar; the outline drops below it as a panel. The sticky rule is
+   gated on the tier marker (:is([data-sem-fallback], [data-sem-upgraded]))
+   a script sets when it wires the element, same as every other hide rule
+   (D12). With no script running neither marker is present, so the element
+   never matches this selector: it holds only an authored nav (or nothing)
+   and stays static — there is no chrome to pin. */
 :is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) { position: sticky; top: 0; z-index: 40; }
 .sem-reader-chrome { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem;
   padding: .45rem .75rem .55rem; background: var(--sem-surface); border-bottom: 1px solid var(--sem-border);

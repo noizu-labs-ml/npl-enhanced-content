@@ -304,6 +304,28 @@ describe('sem-reader', () => {
       cy.get('#rd').should(($r) => expect(cs($r[0]).position).to.equal('static'));
     });
 
+    it('/demo/reading-lit.nojs.html — no overlap regression: the authored nav never covers the first heading after scrolling', () => {
+      // Guards the static-position assertion above: position:static alone
+      // doesn't prove the nav stays out of the reading flow's way. Scroll
+      // past it and check the authored nav's box and the first content
+      // heading's box don't intersect — a future regression to overlapping
+      // content without sticky would fail here even if `position` still
+      // read `static` for some other reason.
+      cy.visit('/demo/reading-lit.nojs.html');
+      cy.scrollTo(0, 400);
+      cy.get('#toc').then(($nav) => {
+        const navBox = $nav[0].getBoundingClientRect();
+        cy.get('h1').first().then(($h1) => {
+          const headingBox = $h1[0].getBoundingClientRect();
+          const intersects = navBox.left < headingBox.right
+            && navBox.right > headingBox.left
+            && navBox.top < headingBox.bottom
+            && navBox.bottom > headingBox.top;
+          expect(intersects, 'authored nav bounding box does not intersect the first heading').to.be.false;
+        });
+      });
+    });
+
     it('/demo/reading-lit.html — the upgraded reader is sticky', () => {
       cy.visit('/demo/reading-lit.html');
       cy.get('#rd').should(($r) => expect(cs($r[0]).position).to.equal('sticky'));
