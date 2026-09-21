@@ -3,7 +3,9 @@
  *
  * Reads every `web/demo/*.html` source and substitutes marker comments with real
  * content, emitting two artifacts per source into `dist/demo/`. Pages under
- * `web/site/` are copied to `dist/site/` by the same marker expansion.
+ * `web/site/` are copied to `dist/site/` by the same marker expansion, and
+ * the HTML specs under `spec/` are copied to `dist/spec/` with their linked
+ * asset paths rewritten (see the last section).
  *
  * Per demo source:
  *
@@ -41,10 +43,11 @@
  * prevent.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, statSync, copyFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, basename } from 'node:path';
+import { stripScripts, specAssetRefs, rewriteSpecPage } from './standalone-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = resolve(root, 'dist', 'demo');
@@ -128,30 +131,6 @@ function sizeParts(arg, marker) {
   };
 }
 
-/** Remove whole <script> elements. A JS string cannot contain a literal
- *  `</script>` without breaking the surrounding HTML, so this is safe.
- *  The end tag allows ignored junk before `>` (`</script foo>`, and newlines
- *  count as whitespace), so match `\b[^>]*` rather than `\s*` — otherwise a
- *  script survives into the nojs artifact. */
-function stripScripts(html) {
-  let out = html;
-  // Removing one pair can reveal another, so run to a fixed point rather
-  // than single-pass.
-  let prev;
-  do {
-    prev = out;
-    out = out.replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, '');
-  } while (out !== prev);
-  // An unclosed opener has no matching end tag and would otherwise survive.
-  out = out.replace(/<script\b[\s\S]*$/i, '');
-  // This artifact exists to prove the document reads with scripts off, so a
-  // survivor is a build failure, not a warning.
-  if (/<script/i.test(out)) {
-    throw new Error('nojs artifact still contains <script after stripping');
-  }
-  return out.replace(/\n{3,}/g, '\n\n');
-}
-
 mkdirSync(outDir, { recursive: true });
 
 const sources = readdirSync(resolve(root, 'web', 'demo'))
@@ -213,6 +192,57 @@ if (existsSync(siteSrcDir)) {
     writeFileSync(page, built);
     const kb = (p) => (statSync(p).size / 1024).toFixed(1).padStart(6) + ' KB';
     console.log(`  ${file.padEnd(30)}${String(count).padStart(5)}  ${kb(page)}`);
+  }
+  console.log('');
+}
+
+/* ---------------------------------------------------------------------------
+ * Spec pages — spec/*.html → dist/spec/
+ *
+ * The HTML specs are SemText documents that LINK their assets rather than
+ * inlining them (spec/conventions.html carries no <style> or inline
+ * <script> at all). Served from the repo root they reach ../themes/ and
+ * ../dist/; shipped from dist/ the same page sits one level down, so the
+ * copy rewrites `../dist/` to `../` and the theme files are copied to
+ * dist/themes/ so `../themes/` keeps resolving. spec/spec.css (the document
+ * layout layer) travels next to the page. A `<name>.nojs.html` variant is
+ * emitted like the demos, for the JS-off assertions in
+ * test/e2e/spec-pages.cy.js.
+ * ------------------------------------------------------------------------ */
+
+const specSrcDir = resolve(root, 'spec');
+const specPages = readdirSync(specSrcDir).filter((f) => f.endsWith('.html')).sort();
+if (specPages.length) {
+  const specOutDir = resolve(root, 'dist', 'spec');
+  const themesOutDir = resolve(root, 'dist', 'themes');
+  mkdirSync(specOutDir, { recursive: true });
+  mkdirSync(themesOutDir, { recursive: true });
+  for (const css of readdirSync(resolve(root, 'themes')).filter((f) => f.endsWith('.css'))) {
+    copyFileSync(resolve(root, 'themes', css), resolve(themesOutDir, css));
+  }
+  for (const css of readdirSync(specSrcDir).filter((f) => f.endsWith('.css'))) {
+    copyFileSync(resolve(specSrcDir, css), resolve(specOutDir, css));
+  }
+
+  console.log('  spec page                     size     nojs');
+  console.log('  ---------------------------------------------------------');
+  for (const file of specPages) {
+    const src = readFileSync(resolve(specSrcDir, file), 'utf8');
+    // Every relative linked asset must exist (scripts/standalone-lib.mjs
+    // decides what counts), for the same reason a missing marker source is
+    // a hard error above: a spec page that loads no behaviour would
+    // silently stop proving anything.
+    for (const { ref, rel } of specAssetRefs(src)) {
+      if (!existsSync(resolve(root, rel))) throw new Error(`spec/${file} links ${ref}, which does not exist`);
+    }
+    const built = rewriteSpecPage(src);
+    const name = basename(file, '.html');
+    const page = resolve(specOutDir, `${name}.html`);
+    const nojs = resolve(specOutDir, `${name}.nojs.html`);
+    writeFileSync(page, built);
+    writeFileSync(nojs, stripScripts(built));
+    const kb = (p) => (statSync(p).size / 1024).toFixed(1).padStart(6) + ' KB';
+    console.log(`  ${file.padEnd(30)}${kb(page)}${kb(nojs)}`);
   }
   console.log('');
 }

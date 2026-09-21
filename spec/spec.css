@@ -1,0 +1,40 @@
+/* spec/spec.css — layout layer for the HTML spec pages under spec/.
+
+   The vocabulary (themes/_vocabulary.css) and the theme file carry every
+   element rule and every token; this file holds only the document-level
+   layout the vocabulary deliberately leaves to the page. No colours, no
+   type scale, no page script. Each rule states why the vocabulary cannot
+   express it. */
+
+/* 1. Measure and gutter. The vocabulary styles elements, not the page
+      column; the root wrapper has no width, so every direct child except
+      the sticky reader bar is centred in a reading measure. */
+:root { --spec-measure: 46rem; --spec-gutter: clamp(1rem, 4vw, 2rem); }
+*, *::before, *::after { box-sizing: border-box; }
+.sem-enhanced-document > :not(.sem-reader) {
+  max-width: var(--spec-measure);
+  margin-inline: auto;
+  padding-inline: var(--spec-gutter);
+}
+.sem-enhanced-document > :last-child { padding-bottom: 4rem; }
+
+/* 2. Section rhythm. Heading spacing is document structure, not element
+      chrome; the vocabulary has no opinion on h1–h4 in prose. */
+h1 { margin: 1.5rem auto 0.25rem; }
+h2 { margin: 3rem auto 0.6rem; }
+h3 { margin: 2rem auto 0.4rem; }
+h4 { margin: 1.5rem auto 0.3rem; }
+h2:target, h3:target, h4:target { outline: 2px solid var(--sem-accent); outline-offset: 4px; }
+
+/* 3. Reader bar alignment. The bar spans the viewport; its controls line
+      up with the document column below. The vocabulary cannot know the
+      page's measure. */
+.sem-reader .sem-reader-chrome, .sem-reader > nav {
+  padding-inline: max(var(--spec-gutter), calc((100% - var(--spec-measure)) / 2 + var(--spec-gutter)));
+}
+
+/* 4. Focus rings. The vocabulary declares no focus styling (documented in
+      web/site/index.html); the page supplies it once for everything
+      focusable, including generated chrome. */
+:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+.sem-views-tabs button:focus-visible { outline-offset: -2px; }

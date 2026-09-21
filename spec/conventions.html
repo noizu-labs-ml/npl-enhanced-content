@@ -1,582 +1,692 @@
 <!doctype html>
+<!--
+  spec/conventions.html — the format spec, written in the format it specifies.
+
+  Normative source: spec/conventions.md. This page carries the same rules,
+  section for section, authored as a SemText document: the attribute
+  catalogs are sem-properties / sem-table, the ordered rules are
+  sem-procedure, the open questions are sem-note, each element entry pairs
+  its v0.3 and v0.4 forms in a sem-views group and runs a live example
+  inside a sem-source so the reader can flip between what renders and what
+  was written. Where the two files diverge, the .md wins.
+
+  No inline CSS, no inline JS: the theme and vocabulary stylesheets are
+  linked, spec.css carries the document layout, and the shipped bundles
+  are loaded from dist/ by src attribute. Served from the repo root the
+  ../ paths reach themes/ and dist/; scripts/build-standalone.mjs copies
+  this page to dist/spec/ with the paths rewritten, plus a .nojs.html
+  variant with every script element removed.
+-->
 <html lang="en" data-sem-theme="minimal-tech-light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SemText · Format Spec v0.4</title>
+<title>SemText — Format Spec &amp; Conventions v0.4</title>
+<meta name="description" content="SemText format specification and conventions, draft v0.4: the document model, skeleton, attribute catalog, notation, fallback and degradation rules, element entries, themes, distribution forms and the machine-readability contract.">
 
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="../themes/minimal-tech-light.css">
+<link rel="stylesheet" href="../themes/_vocabulary.css">
+<link rel="stylesheet" href="spec.css">
 
-<style>
-  [data-sem-theme="minimal-tech-light"] {
-    --sem-bg: #fafafa; --sem-surface: #ffffff; --sem-fg: #1e293b;
-    --sem-muted: #64748b; --sem-border: #e2e8f0; --sem-accent: #2563eb;
-    --sem-note-info: #2563eb; --sem-note-tip: #059669;
-    --sem-note-warning: #d97706; --sem-note-danger: #dc2626;
-    --sem-correct: #059669; --sem-wrong: #dc2626; --sem-occluded: #94a3b8;
-  }
-  @media (prefers-color-scheme: dark) {
-    [data-sem-theme="minimal-tech-light"] {
-      --sem-bg: #0f172a; --sem-surface: #1e293b; --sem-fg: #e2e8f0;
-      --sem-muted: #94a3b8; --sem-border: #334155; --sem-accent: #60a5fa;
-      --sem-note-info: #60a5fa; --sem-note-tip: #34d399;
-      --sem-note-warning: #fbbf24; --sem-note-danger: #f87171;
-      --sem-correct: #34d399; --sem-wrong: #f87171; --sem-occluded: #475569;
-    }
-  }
-  body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
-  .sem-enhanced-document { font-family: system-ui, sans-serif; line-height: 1.6; }
-
-  /* spec-document furniture */
-  h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 .25rem; }
-  h2 { font-size: 1.125rem; font-weight: 600; margin: 2rem 0 .5rem;
-       border-bottom: 1px solid var(--sem-border); padding-bottom: .3rem; }
-  h2:target { outline: 2px solid var(--sem-accent); outline-offset: 4px; border-radius: 4px; }
-  h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 .4rem; }
-  p { margin: .5rem 0; }
-  ul { margin: .5rem 0; padding-left: 1.25rem; }
-  pre { background: var(--sem-surface); border: 1px solid var(--sem-border);
-        border-radius: 8px; padding: .75rem 1rem; overflow-x: auto;
-        font-size: .8rem; line-height: 1.5; margin: .75rem 0; }
-  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-  :not(pre) > code { background: color-mix(in srgb, var(--sem-accent) 10%, transparent);
-        padding: .1em .3em; border-radius: 4px; font-size: .9em; }
-  table { border-collapse: collapse; width: 100%; margin: .75rem 0; font-size: .85rem; }
-  th, td { border: 1px solid var(--sem-border); padding: .4rem .6rem;
-           text-align: left; vertical-align: top; }
-  th { background: var(--sem-surface); font-weight: 600; }
-  .sem-toc { border: 1px solid var(--sem-border); border-radius: 12px;
-             background: var(--sem-surface); padding: 1rem 1.5rem; margin: 1rem 0; }
-  .sem-toc a { color: var(--sem-accent); text-decoration: none; }
-  .sem-toc a:hover { text-decoration: underline; }
-  .sem-toc ol { margin: .25rem 0; }
-  .sem-doc-meta { color: var(--sem-muted); font-size: .85rem; margin-bottom: 1.5rem; }
-  .sem-open { color: var(--sem-note-warning); font-weight: 600; }
-
-  /* component base (shared with web/demo/index.html) */
-  .sem-note { border-left: 4px solid var(--sem-note-info); border-radius: 8px;
-    padding: .75rem 1rem; margin: 1rem 0; background: var(--sem-surface); }
-  .sem-note[data-variant="warning"] { border-color: var(--sem-note-warning); }
-  .sem-note[data-variant="tip"]     { border-color: var(--sem-note-tip); }
-  .sem-note[data-variant="danger"]  { border-color: var(--sem-note-danger); }
-  .sem-note[data-variant]::before { content: attr(data-variant) " · ";
-    font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
-    color: var(--sem-muted); display: block; }
-  .sem-facts { margin: 1rem 0; }
-  .sem-facts-chrome { display: flex; gap: .5rem; align-items: center; margin: .5rem 0; }
-  .sem-facts-chrome button { border: 1px solid var(--sem-border); background: var(--sem-surface);
-    color: var(--sem-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
-  .sem-facts-meter { color: var(--sem-muted); font-size: .875rem; }
-  .sem-fact { border: 1px solid var(--sem-border); border-radius: 12px;
-    padding: 1rem; margin: .75rem 0; background: var(--sem-surface); }
-  .sem-fact .sem-statement { font-weight: 600; }
-  .sem-fact .sem-conclusion { margin: .5rem 0 0; color: var(--sem-muted); }
-  .sem-fact .sem-distractor { display: none; }
-  .sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact { display: none; cursor: pointer;
-    min-height: 6rem; }
-  .sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact.sem-current { display: block; }
-  .sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact .sem-conclusion { visibility: hidden; }
-  .sem-facts[data-sem-fallback][data-view-as="flashcards"] .sem-fact.sem-flipped .sem-conclusion { visibility: visible; }
-  .sem-facts[data-sem-fallback][data-view-as="quiz"] .sem-fact .sem-conclusion { display: none; }
-  .sem-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
-  .sem-quiz-options button { text-align: left; border: 1px solid var(--sem-border);
-    background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
-    padding: .5rem .75rem; cursor: pointer; }
-  .sem-quiz-options button[data-correct="true"].sem-answered { border-color: var(--sem-correct); }
-  .sem-quiz-options button.sem-wrong-pick { border-color: var(--sem-wrong); }
-  .sem-highlight { font-style: normal; background: color-mix(in srgb, var(--sem-accent) 18%, transparent);
-    border-radius: 4px; padding: 0 .2em; }
-  .sem-occluded { color: transparent; background: var(--sem-occluded); border-radius: 4px;
-    cursor: pointer; user-select: none; transition: color .15s; min-width: 3ch; display: inline-block; }
-  .sem-revealed { color: inherit; background: color-mix(in srgb, var(--sem-accent) 18%, transparent); }
-  /* Tier-0 expansion (matches web/demo/index.html) */
-  .sem-step { counter-increment: sem-step; border-left: 3px solid var(--sem-border);
-    padding: .5rem .75rem .5rem 2.25rem; margin: .25rem 0; position: relative;
-    background: var(--sem-surface); border-radius: 0 8px 8px 0; }
-  .sem-step::before { content: counter(sem-step); position: absolute; left: .6rem;
-    top: .5rem; font-size: .75rem; color: var(--sem-muted); }
-  .sem-step[data-status="done"]::after { content: " ✓"; color: var(--sem-correct); }
-  .sem-step[data-status="current"] { border-left-color: var(--sem-accent); }
-  .sem-step[data-status="current"]::after { content: " →"; color: var(--sem-accent); }
-  .sem-step[data-status="blocked"] { border-left-color: var(--sem-wrong); color: var(--sem-muted); }
-  .sem-step[data-status="blocked"]::after { content: " ⛔"; color: var(--sem-wrong); }
-  .sem-properties { margin: 1rem 0; border: 1px solid var(--sem-border);
-    border-radius: 12px; overflow: hidden; background: var(--sem-surface); }
-  .sem-property { display: grid; grid-template-columns: minmax(8rem, 1fr) 2fr;
-    gap: .75rem; padding: .5rem .9rem; }
-  .sem-property:nth-child(even) { background: color-mix(in srgb, var(--sem-border) 40%, transparent); }
-  .sem-property::before { content: attr(data-key); color: var(--sem-muted);
-    font-variant-caps: all-small-caps; }
-  .sem-views { margin: 1.5rem 0; }
-  .sem-views-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--sem-border); }
-  .sem-views-tabs button { border: 1px solid transparent; border-bottom: none;
-    background: none; color: var(--sem-muted); border-radius: 8px 8px 0 0;
-    padding: .4rem .9rem; cursor: pointer; }
-  .sem-views-tabs button[aria-selected="true"] { color: var(--sem-accent);
-    border-color: var(--sem-border); background: var(--sem-surface); }
-  .sem-view { display: none; border: 1px solid var(--sem-border); border-top: none;
-    border-radius: 0 0 12px 12px; padding: 1rem; background: var(--sem-surface); }
-  .sem-view[data-active] { display: block; }
-  .sem-reveal { margin: 1rem 0; border: 1px solid var(--sem-border);
-    border-radius: 12px; background: var(--sem-surface); }
-  .sem-reveal[data-summary]::before { content: attr(data-summary);
-    display: block; font-variant-caps: all-small-caps; color: var(--sem-muted);
-    padding: .6rem .9rem 0; }
-  .sem-reveal .sem-reveal-body { padding: .5rem .9rem .75rem; }
-  .sem-reveal details:not([open]) .sem-reveal-body { display: none; }
-  .sem-progress .sem-progress-track { display: block; height: .5rem;
-    background: color-mix(in srgb, var(--sem-border) 60%, transparent);
-    border-radius: 999px; overflow: hidden; margin-top: .25rem; }
-  .sem-progress .sem-progress-fill { display: block; height: 100%;
-    background: var(--sem-accent); border-radius: 999px; }
-</style>
-
-<style type="text/tailwindcss">
-  .sem-enhanced-document { @apply mx-auto max-w-3xl px-4 py-10; }
-  .sem-toc { @apply shadow-sm; }
-  .sem-fact { @apply shadow-sm; }
-  .sem-facts-chrome button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
-  .sem-quiz-options button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
-</style>
-
-<!-- sem-fallback (same handler as web/demo/index.html) -->
-<script id="sem-fallback">
-(function () {
-  'use strict';
-  function init() {
-  document.querySelectorAll('.sem-facts').forEach(function (root) {
-    var view = root.getAttribute('data-view-as') || 'list';
-    var items = [].slice.call(root.querySelectorAll('.sem-fact'));
-    if (view === 'list' || items.length === 0) return;
-    root.setAttribute('data-sem-fallback', '');
-    var chrome = document.createElement('div');
-    chrome.className = 'sem-facts-chrome';
-    chrome.innerHTML =
-      '<button type="button" data-act="prev" aria-label="previous">←</button>' +
-      '<span class="sem-facts-meter"></span>' +
-      '<button type="button" data-act="next" aria-label="next">→</button>';
-    root.insertBefore(chrome, root.firstChild);
-    var i = 0;
-    var progress = chrome.querySelector('.sem-facts-meter');
-    function optionsFor(item) {
-      var correct = item.querySelector('.sem-conclusion');
-      var distractors = [].slice.call(item.querySelectorAll('.sem-distractor'));
-      var others = items.filter(function (f) { return f !== item; })
-        .map(function (f) { return f.querySelector('.sem-conclusion'); })
-        .filter(Boolean);
-      var pool = distractors.concat(others).slice(0, 3);
-      return pool.concat([correct]).sort(function () { return Math.random() - .5; })
-        .map(function (el) {
-          return { text: el.textContent.trim(), correct: el === correct };
-        });
-    }
-    function renderQuiz(item) {
-      var box = item.querySelector('.sem-quiz-options');
-      if (!box) {
-        box = document.createElement('div');
-        box.className = 'sem-quiz-options';
-        item.appendChild(box);
-      }
-      box.innerHTML = '';
-      optionsFor(item).forEach(function (o) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = o.text;
-        b.setAttribute('data-correct', String(o.correct));
-        b.addEventListener('click', function () {
-          if (box.hasAttribute('data-answered')) return;
-          box.setAttribute('data-answered', '');
-          b.classList.add(o.correct ? 'sem-answered' : 'sem-wrong-pick');
-          progress.textContent = (i + 1) + '/' + items.length;
-        });
-        box.appendChild(b);
-      });
-    }
-    function render() {
-      items.forEach(function (f, k) { f.classList.toggle('sem-current', k === i); });
-      progress.textContent = (i + 1) + '/' + items.length;
-      if (view === 'quiz') renderQuiz(items[i]);
-    }
-    chrome.addEventListener('click', function (e) {
-      var act = e.target.getAttribute && e.target.getAttribute('data-act');
-      if (act === 'prev') { i = (i - 1 + items.length) % items.length; render(); }
-      if (act === 'next') { i = (i + 1) % items.length; render(); }
-    });
-    items.forEach(function (f) {
-      f.addEventListener('click', function () { f.classList.toggle('sem-flipped'); });
-    });
-    render();
-  });
-  document.querySelectorAll('.sem-details[data-view-as="quiz"]').forEach(function (root) {
-    root.querySelectorAll('.sem-highlight').forEach(function (h) {
-      var span = document.createElement('span');
-      span.className = 'sem-occluded';
-      span.textContent = h.textContent;
-      span.setAttribute('role', 'button');
-      span.setAttribute('tabindex', '0');
-      function reveal() {
-        span.className = 'sem-highlight sem-revealed';
-        span.removeAttribute('role');
-        span.removeAttribute('tabindex');
-      }
-      span.addEventListener('click', reveal);
-      span.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); reveal(); }
-      });
-      h.replaceWith(span);
-    });
-  });
-
-  /* ---- sem-views (same handler as web/demo/index.html) ---- */
-  document.querySelectorAll('.sem-views[id]').forEach(function (root) {
-    var views = [].slice.call(root.querySelectorAll('.sem-view'));
-    if (!views.length) return;
-    if (!root.querySelector('.sem-view[data-active]')) views[0].setAttribute('data-active', '');
-    var active = Math.max(0, views.findIndex(function (v) { return v.hasAttribute('data-active'); }));
-    var bar = document.createElement('div');
-    bar.className = 'sem-views-tabs';
-    bar.setAttribute('role', 'tablist');
-    views.forEach(function (v, k) {
-      v.setAttribute('role', 'tabpanel');
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.setAttribute('role', 'tab');
-      b.textContent = v.getAttribute('data-name');
-      b.setAttribute('aria-selected', String(k === active));
-      b.addEventListener('click', function () { activate(k); });
-      b.addEventListener('keydown', function (e) {
-        if (e.key === 'ArrowRight') { e.preventDefault(); activate((active + 1) % views.length, true); }
-        if (e.key === 'ArrowLeft') { e.preventDefault(); activate((active - 1 + views.length) % views.length, true); }
-      });
-      bar.appendChild(b);
-    });
-    root.insertBefore(bar, root.firstChild);
-    function activate(k, focus) {
-      active = k;
-      views.forEach(function (v, j) {
-        if (j === k) v.setAttribute('data-active', ''); else v.removeAttribute('data-active');
-      });
-      [].forEach.call(bar.querySelectorAll('[role="tab"]'), function (b, j) {
-        b.setAttribute('aria-selected', String(j === k));
-      });
-      var v = views[k];
-      location.hash = root.id + '/' + (v.id || (v.getAttribute('data-name') || '').toLowerCase());
-      v.dispatchEvent(new CustomEvent('sem-navigate', {
-        bubbles: true, detail: { id: root.id, name: v.getAttribute('data-name'), index: k }
-      }));
-      if (focus) bar.querySelectorAll('[role="tab"]')[k].focus();
-    }
-    function fromHash() {
-      var m = location.hash.match(new RegExp('^#' + root.id + '/(.+)$'));
-      if (!m) return;
-      var k = views.findIndex(function (v) {
-        return v.id === m[1] || (v.getAttribute('data-name') || '').toLowerCase() === m[1];
-      });
-      if (k >= 0 && k !== active) activate(k);
-    }
-    window.addEventListener('hashchange', fromHash);
-    fromHash();
-  });
-
-  /* ---- sem-reveal ---- */
-  document.querySelectorAll('.sem-reveal').forEach(function (r) {
-    var d = document.createElement('details');
-    if (!r.hasAttribute('collapsed')) d.setAttribute('open', '');
-    var s = document.createElement('summary');
-    s.textContent = r.getAttribute('data-summary') ||
-      (r.textContent || '').trim().split(/\s+/).slice(0, 8).join(' ') + ' …';
-    d.appendChild(s);
-    var body = document.createElement('div');
-    body.className = 'sem-reveal-body';
-    while (r.firstChild) body.appendChild(r.firstChild);
-    d.appendChild(body);
-    r.appendChild(d);
-  });
-
-  /* ---- sem-progress ---- */
-  document.querySelectorAll('.sem-progress[data-value]').forEach(function (p) {
-    var raw = parseFloat(p.getAttribute('data-value'));
-    var v = Math.min(1, Math.max(0, isNaN(raw) ? 0 : raw));
-    var label = p.getAttribute('data-label') || 'progress';
-    var pct = Math.round(v * 100);
-    p.textContent = label + ' :: ' + pct + '%';
-    var track = document.createElement('span');
-    track.className = 'sem-progress-track';
-    var fill = document.createElement('span');
-    fill.className = 'sem-progress-fill';
-    fill.style.width = pct + '%';
-    track.appendChild(fill);
-    p.appendChild(track);
-  });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
-</script>
+<script src="../dist/semtext-fallback.js"></script>
+<script src="../dist/semtext-reading.js"></script>
+<script src="../dist/semtext-md.js"></script>
+<script src="../dist/semtext.js"></script>
+<script src="../dist/semtext-extract.js"></script>
 </head>
 
 <body>
-<div class="sem-enhanced-document">
+<main class="sem-enhanced-document" id="doc">
+
+  <div class="sem-reader" id="rd" data-controls="outline,progress,focus,type,color,print,audience" data-outline-depth="4"></div>
 
   <h1>SemText — Format Spec &amp; Conventions</h1>
-  <p class="sem-doc-meta">DRAFT v0.4 · class-based baseline · this page is written in the format it specifies — one HTML file, inline CSS, Tailwind refinement, vanilla fallback. Normative source: <code>spec/conventions.md</code>.</p>
+  <p>DRAFT v0.4 · class-based baseline · this page is written in the format it specifies. Normative source: <a href="#r-conventions-md">spec/conventions.md</a><a href="#r-conventions-md" id="cite-md">[1]</a>; where the two diverge, the Markdown wins.</p>
 
-  <nav class="sem-toc">
-    <strong>Contents</strong>
-    <ol>
-      <li><a href="#model">Model</a></li>
-      <li><a href="#skeleton">Document skeleton</a></li>
-      <li><a href="#attributes">Attribute catalog</a></li>
-      <li><a href="#notation">NPL notation inside tags</a></li>
-      <li><a href="#fallback">Fallback handler &amp; degradation</a></li>
-      <li><a href="#elements">Element entries</a></li>
-      <li><a href="#themes">Theme conventions</a></li>
-      <li><a href="#distribution">Distribution forms</a></li>
-      <li><a href="#machine">Machine-readability contract</a></li>
-      <li><a href="#alignment">NPL XML-variant alignment</a></li>
-      <li><a href="#questions">Open questions</a></li>
-    </ol>
-  </nav>
+  <p>v0.4 renders the vocabulary as <strong>classes on plain elements</strong> (<code>&lt;div class="sem-agent"&gt;</code>), not custom elements: inline core CSS + Tailwind CDN refinement (<code>@apply</code> on <code>sem-*</code> classes) + the vanilla fallback handler. Reference implementation: <code>web/demo/index.html</code>. Semantic custom elements (<code>&lt;sem-fact&gt;</code>) remain the target vocabulary for the Lit milestone; the class mapping below is mechanical.</p>
 
-  <h2 id="model">0 · Model</h2>
-  <p>One file, three consumers:</p>
-  <ul>
-    <li><strong>Human / browser</strong> — double-click the <code>.html</code>/<code>.mhtml</code>; current Chrome/Edge/Brave/Firefox/Safari render styled, interactive documents. No server, no build, no install.</li>
-    <li><strong>LLM / non-visual</strong> — the same file read structurally; attributes qualify every datum; same XML vocabulary NPL's MCP server already speaks.</li>
-    <li><strong>Terminal</strong> — browser render or DOM-text extraction; content complete without JS.</li>
-  </ul>
-  <p>Element names are <strong>semantic</strong> (<code>sem-fact</code>, <code>sem-detail</code>) — what content <em>is</em>; presentation is parameterized (<code>view-as="quiz|flashcards|list"</code>) — how it <em>renders</em>. NPL conventions live inside the tags, never as a pre-HTML grammar.</p>
+  <div class="sem-note" id="n-dogfood" data-variant="tip">
+    <div class="sem-note-body">Every vocabulary element on this page is live. Each entry in <a href="#5-element-entries-rough">§5</a> sits inside a <code>sem-source</code> wrapper: press <em>Source</em> to see the markup exactly as it was written here.</div>
+  </div>
 
-  <div class="sem-note" data-variant="tip">This page is the reference: every component class below is live. Try the embedded facts widget in §5.</div>
+  <h2 id="mapping">v0.4 mapping</h2>
+  <p>Identity = class, parameters = <code>data-*</code> attrs:</p>
 
-  <h2 id="skeleton">1 · Document skeleton</h2>
-<pre>&lt;!doctype html&gt;
-&lt;html lang="en" data-sem-theme="minimal-tech-light"&gt;
-&lt;head&gt;
-  &lt;meta charset="utf-8"&gt;
-  &lt;title&gt;…&lt;/title&gt;
-  &lt;link rel="stylesheet" href="semtext/themes/minimal-tech-light.css"&gt;   &lt;!-- folder form --&gt;
-  &lt;style&gt;/* inline core CSS — theme tokens + component base */&lt;/style&gt;
-  &lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;
-  &lt;style type="text/tailwindcss"&gt;/* @apply refinements on sem-* */&lt;/style&gt;
-  &lt;script id="sem-fallback"&gt;/* always-embedded vanilla handler */&lt;/script&gt;
-  &lt;script defer src="semtext/semtext.js"&gt;&lt;/script&gt;   &lt;!-- Lit upgrade, optional (later milestone) --&gt;
-&lt;/head&gt;
-&lt;body&gt;
-&lt;div class="sem-enhanced-document"&gt;
-  &lt;div class="sem-agent"&gt;
-    &lt;div class="sem-agent-name"&gt;…&lt;/div&gt;
-    &lt;div class="sem-agent-bio"&gt;…&lt;/div&gt;
-    &lt;div class="sem-agent-instructions"&gt;…&lt;/div&gt;
-  &lt;/div&gt;
-  &lt;!-- content --&gt;
-&lt;/div&gt;
-&lt;/body&gt;
-&lt;/html&gt;</pre>
-  <ul>
-    <li><code>.sem-enhanced-document</code> is the required root wrapper in v0.4.</li>
-    <li>Metadata children (<code>.sem-agent</code>, future <code>.sem-org</code>, <code>.sem-context</code>) are bare semantic blocks — machine-facing, lightly styled. <span class="sem-open">❓Q1</span> keep bare vs <code>sem-</code>-prefix everything inside?</li>
-    <li>Ordinary semantic HTML is always valid content; <code>sem-*</code> enhances where interactivity pays.</li>
-  </ul>
+  <div class="sem-md" id="md-mapping" data-kind="mapping" data-label="v0.3 element form → v0.4 class markup" data-controls="toggle,copy">
+    | v0.3 element | v0.4 class markup |
+    | :-- | :-- |
+    | `&lt;sem-enhanced-document&gt;` | `div.sem-enhanced-document` |
+    | `&lt;agent&gt;` + name/bio/instructions | `div.sem-agent` › `.sem-agent-name/-bio/-instructions` |
+    | `&lt;sem-note variant="warning"&gt;` | `div.sem-note[data-variant="warning"]`, body `.sem-note-body`, `collapsed` attr |
+    | `&lt;sem-facts view-as="quiz"&gt;` | `div.sem-facts[data-view-as="quiz"]` |
+    | `&lt;sem-fact&gt;` / statement / conclusion | `div.sem-fact` › `.sem-statement`, `.sem-conclusion` |
+    | `&lt;sem-distractor&gt;` | `div.sem-distractor` |
+    | `&lt;sem-details&gt;` / `&lt;sem-detail&gt;` | `div.sem-details` › `div.sem-detail` |
+    | `&lt;highlight&gt;` | `span.sem-highlight` (occluded form: `.sem-occluded`) |
+    | `&lt;sem-procedure&gt;` / `&lt;sem-step status&gt;` | `div.sem-procedure` › `div.sem-step[data-status]` |
+    | `&lt;sem-properties&gt;` / `&lt;sem-property key&gt;` | `div.sem-properties` › `div.sem-property[data-key]` |
+    | `&lt;sem-views&gt;` / `&lt;sem-view name&gt;` | `div.sem-views[id]` › `div.sem-view[data-name]`, `data-active` marker |
+    | `&lt;sem-reveal summary&gt;` | `div.sem-reveal[data-summary]`, `collapsed` attr |
+    | `&lt;sem-progress value label&gt;` | `div.sem-progress[data-value][data-label]` |
+    | `&lt;sem-chronology view-as&gt;` / `&lt;sem-event when until status&gt;` | `div.sem-chronology[data-view-as]` › `div.sem-event[data-when][data-until][data-status]` (+ `&lt;time datetime&gt;`) |
+    | `&lt;sem-code lang filename mark wrap controls&gt;` › `&lt;pre&gt;&lt;code&gt;` | `div.sem-code[data-lang][data-filename][data-mark][data-controls]` › `&lt;pre&gt;&lt;code&gt;` |
+    | `&lt;sem-references kind&gt;` / `&lt;sem-reference id href cite&gt;` | `div.sem-references[data-kind]` › `div.sem-reference[id][data-href][data-cite]`; citations are plain `&lt;a href="#id"&gt;` |
+    | `&lt;sem-properties view-as="glossary"&gt;` | `div.sem-properties[data-view-as="glossary"]` › `div.sem-property[id][data-key]`; term anchors `&lt;a href="#id"&gt;`, `&lt;dfn&gt;` optional |
+    | `&lt;sem-source label view-as="html\|source"&gt;` › any content | `div.sem-source[data-label][data-view-as]` › any content; transparent wrapper, mints nothing |
+    | `&lt;sem-md label view-as="rendered\|raw" controls&gt;` › Markdown text | `div.sem-md[data-label][data-view-as][data-controls]` › Markdown text; `data-view-as` is runtime-mutable presentation |
+    | `&lt;sem-reader controls outline-depth&gt;` › optional `&lt;nav aria-label="Contents"&gt;` | `div.sem-reader[data-controls][data-outline-depth]` › same optional nav; chrome, mints nothing |
+    | `&lt;sem-table controls sticky&gt;` › `&lt;table&gt;` | `div.sem-table[data-controls][data-sticky]` › authored `&lt;table&gt;` (`&lt;th scope="col"&gt;`, `td[data-value]` sort keys) |
+  </div>
 
-  <h2 id="attributes">2 · Attribute catalog</h2>
-  <p>v0.4: identity = class, parameters = <code>data-*</code> attributes. Global set (any <code>.sem-*</code> element):</p>
-  <table>
-    <tr><th>Attribute</th><th>Values</th><th>Machine meaning</th></tr>
-    <tr><td><code>data-kind</code></td><td>free token (<code>concept</code>, <code>anti-pattern</code>, …)</td><td>what the data IS</td></tr>
-    <tr><td><code>data-tags</code></td><td>comma list</td><td>classification</td></tr>
-    <tr><td><code>data-view-as</code></td><td>element-defined modes</td><td>presentation parameter (identity unchanged)</td></tr>
-    <tr><td><code>data-status</code></td><td><code>done</code> <code>current</code> <code>todo</code> <code>blocked</code> <code>pass</code> <code>fail</code></td><td>lifecycle/verdict</td></tr>
-    <tr><td><code>data-controls</code></td><td><code>shuffle</code> <code>filter</code> <code>retry</code> <code>picker</code></td><td>which controls render</td></tr>
-    <tr><td><code>data-variant</code></td><td>element-defined</td><td>presentation + semantics variant</td></tr>
-    <tr><td><code>id</code></td><td>doc-unique</td><td>stable anchor, cite target</td></tr>
-    <tr><td><code>data-*</code></td><td>free</td><td>extension point</td></tr>
-  </table>
-  <p><code>data-view-as</code> is the core inversion: a fact is a fact in every view; the attribute only selects rendering. Unknown value ⇒ falls back to <code>list</code>/plain.</p>
+  <p>CSS and script layering, in both distribution forms (<a href="#7-distribution-forms">§7</a>): (1) the theme file — <code>--sem-*</code> tokens on <code>[data-sem-theme]</code> — and <code>themes/_vocabulary.css</code> — the component base, offline-safe; (2) the <code>sem-fallback</code> vanilla handler and, where the document needs them, the reading and Markdown bundles — interactivity; (3) <code>semtext.js</code> — the optional Lit upgrade. The <strong>single-file</strong> form inlines all of it in <code>&lt;head&gt;</code> (the build's <code>sem:inline</code> markers); the <strong>folder</strong> form links the same files by relative path. Neither form carries page-local CSS or JS beyond a small layout layer. The Tailwind-refinement layer of the v0.3 demos is retired. Supersedes v0.3 custom-element examples until the Lit milestone. <strong>❓</strong> = open questions (<a href="#10-open-questions">§10</a>).</p>
 
-  <h2 id="notation">3 · NPL notation inside tags</h2>
-  <p>Compact notation is legal inside element text where the schema allows; <strong>attributes are canonical, notation is sugar</strong>:</p>
-  <table>
-    <tr><th>Notation</th><th>Meaning</th><th>Where</th></tr>
-    <tr><td><code>span.sem-highlight</code></td><td>recall target — occludes in quiz/flashcard views, <code>&lt;em&gt;</code>-equivalent in plain view</td><td>any prose element</td></tr>
-    <tr><td><code>[[cloze]]</code></td><td>inline occlusion sugar (≡ highlight)</td><td><code>sem-detail</code>, <code>sem-fact</code></td></tr>
-    <tr><td><code>term :: value</code></td><td>pair</td><td><code>sem-property</code> text, fact compact form</td></tr>
-    <tr><td><code>✅ …</code> / <code>✗ …</code></td><td>correct / distractor</td><td>quiz options sugar</td></tr>
-    <tr><td><code>→ …</code></td><td>current</td><td><code>sem-step</code> status sugar</td></tr>
-    <tr><td><code>[hint | reveal]</code></td><td>agent-facing instruction, human-rendered hint</td><td>instruction-bearing elements <span class="sem-open">❓Q2</span></td></tr>
-  </table>
-  <p>Structured children (<code>.sem-statement</code>/<code>.sem-conclusion</code>) always win over the <code>::</code> compact form when both present.</p>
+  <div class="sem-note" id="n-folder-form" data-variant="info">
+    <div class="sem-note-body">This page ships the <strong>folder</strong> form: two theme stylesheets, one layout stylesheet and the bundles linked from <code>&lt;head&gt;</code>, no inline CSS or JS. Its scripts-stripped twin, <code>conventions.nojs.html</code>, is the JS-off proof.</div>
+  </div>
 
-  <h2 id="fallback">4 · Fallback handler &amp; degradation rules</h2>
-  <ul>
-    <li><code>&lt;script id="sem-fallback"&gt;</code> is embedded inline in every portable doc (~2–4KB vanilla JS): <code>data-view-as</code> switching, reveal toggles, highlight occlusion, basic quiz checking, theme picker. <strong>Zero external resources required for full baseline interactivity.</strong></li>
-    <li><code>semtext/semtext.js</code> (Lit 3, IIFE) upgrades elements in place when reachable; component implementations supersede fallback behaviors. Handoff contract: fallback sets <code>data-sem-fallback</code>; components remove it on upgrade. BDD asserts both tiers + the handoff.</li>
-    <li>Core CSS (inline, plain) keeps the page presentable with JS <em>and</em> CDN absent; Tailwind refinement is a progressive enhancement layer.</li>
-    <li>Content lives in light DOM (searchable, copyable); interactive chrome may use shadow DOM once Lit lands.</li>
-  </ul>
+  <h2 id="0-model">0. Model</h2>
+  <p>One file, three consumers. Element names are <strong>semantic</strong> (<code>sem-fact</code>, <code>sem-detail</code>) — what content <em>is</em>; presentation is parameterized (<code>view-as="quiz|flashcards|list"</code>) — how it <em>renders</em>. NPL conventions live inside the tags, never as a pre-HTML grammar.</p>
 
-  <h2 id="elements">5 · Element entries</h2>
-
-  <h3>sem-note — callout</h3>
-<pre>&lt;div class="sem-note" data-variant="warning"&gt;
-  JWTs must rotate &lt;strong&gt;per session&lt;/strong&gt;.
-&lt;/div&gt;</pre>
-  <p>Variants <code>info</code> (default) <code>warning</code> <code>tip</code> <code>danger</code>; <code>collapsed</code> attr hides <code>.sem-note-body</code> behind a generated summary. Light DOM, content searchable.</p>
-
-  <h3>sem-fact — atomic assertable pair</h3>
-<pre>&lt;div class="sem-fact" id="f-jwt" data-kind="concept"&gt;
-  &lt;div class="sem-statement"&gt;JWTs rotate per session&lt;/div&gt;
-  &lt;div class="sem-conclusion"&gt;Short-lived access; refresh grants a new pair.&lt;/div&gt;
-&lt;/div&gt;</pre>
-  <p>Compact form: <code>term :: conclusion</code> as direct text. Machine view: statement+conclusion = structured assertion.</p>
-
-  <h3>sem-facts — collection; the flagship surface</h3>
-  <p><strong>Normative: <code>spec/schema/sem-facts.md</code>.</strong></p>
-<pre>&lt;div class="sem-facts" data-view-as="quiz" data-controls="shuffle"&gt;
-  &lt;div class="sem-fact"&gt;…&lt;/div&gt;
-  &lt;div class="sem-fact"&gt;
-    &lt;div class="sem-conclusion"&gt;true answer&lt;/div&gt;
-    &lt;div class="sem-distractor"&gt;decoy&lt;/div&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</pre>
-  <ul>
-    <li><code>list</code> (default): all facts visible; filter/tags later.</li>
-    <li><code>flashcards</code>: front = statement, back = conclusion; flip click/Space; ←/→; progress.</li>
-    <li><code>quiz</code>: statement shown; options = explicit <code>.sem-distractor</code> children else sibling conclusions; scoring.</li>
-  </ul>
-  <div class="sem-note" data-variant="tip">Live example — this widget is the spec executing itself:</div>
-  <div class="sem-facts" data-view-as="flashcards">
-    <div class="sem-fact" id="spec-f1">
-      <div class="sem-statement">Semantic identity, parameterized presentation</div>
-      <div class="sem-conclusion"><code>sem-fact</code> is a fact in list, flashcard, and quiz views — <code>data-view-as</code> only changes rendering.</div>
+  <div class="sem-views" id="consumers" role="region" aria-label="The three consumers of a SemText document">
+    <div class="sem-view" data-name="Human / browser" data-active role="tabpanel">
+      <p>Double-click, styled, interactive. The theme CSS renders the vocabulary directly; the fallback handler adds the behaviour.</p>
     </div>
-    <div class="sem-fact" id="spec-f2">
-      <div class="sem-statement">What guarantees interactivity with zero external resources?</div>
-      <div class="sem-conclusion">The inline <code>sem-fallback</code> handler.</div>
-      <div class="sem-distractor">The Tailwind CDN script.</div>
+    <div class="sem-view" data-name="LLM / non-visual" role="tabpanel">
+      <p>The same XHTML read structurally; attributes qualify every datum; the same XML vocabulary NPL's MCP server already speaks.</p>
+    </div>
+    <div class="sem-view" data-name="Terminal" role="tabpanel">
+      <p>Browser render or DOM-text extraction; the content is complete without JS.</p>
     </div>
   </div>
 
-  <h3>sem-detail / sem-details — prose with occludable content</h3>
-  <p><strong>Normative: <code>spec/schema/sem-details.md</code>.</strong></p>
-<pre>&lt;div class="sem-details" data-view-as="quiz"&gt;
+  <h2 id="1-document-skeleton">1. Document skeleton</h2>
+
+  <div class="sem-code" id="c-skeleton" data-lang="html" data-filename="doc.html" data-controls="copy,wrap">
+<pre><code>&lt;!doctype html&gt;
+&lt;html lang="en" data-sem-theme="minimal-tech-light"&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8"&gt;
+  &lt;title&gt;Authoring Guide&lt;/title&gt;
+  &lt;link rel="stylesheet" href="semtext/themes/minimal-tech-light.css"&gt;
+  &lt;script id="sem-fallback"&gt;/* always-embedded vanilla handler (§4) */&lt;/script&gt;
+  &lt;script defer src="semtext/semtext.js"&gt;&lt;/script&gt;  &lt;!-- Lit upgrade, optional --&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;sem-enhanced-document&gt;
+
+  &lt;!-- document-level metadata: bare semantic children --&gt;
+  &lt;agent&gt;
+    &lt;name&gt;Infra Guide&lt;/name&gt;
+    &lt;bio&gt;Deployment runbook assistant&lt;/bio&gt;
+    &lt;instructions&gt;Answer from sem-fact ids only.&lt;/instructions&gt;
+  &lt;/agent&gt;
+
+  &lt;h1 data-kind="title"&gt;Authoring Guide&lt;/h1&gt;
+
+  &lt;!-- content: sem-* vocabulary + ordinary semantic HTML --&gt;
+
+&lt;/sem-enhanced-document&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+  </div>
+
+  <ul>
+    <li><code>&lt;sem-enhanced-document&gt;</code> is the required root wrapper (fallback handler scopes to it; Lit components register against it).</li>
+    <li>Metadata children (<code>agent</code>, and future <code>org</code>, <code>context</code>, <code>audience</code>) are <strong>bare semantic tags</strong> — machine-facing, unstyled.</li>
+    <li>Ordinary semantic HTML is always valid content; <code>sem-*</code> enhances where interactivity pays.</li>
+  </ul>
+
+  <div class="sem-note" id="q1" data-variant="warning">
+    <div class="sem-note-body"><strong>❓ Q1</strong> — metadata children: keep bare vs <code>sem-</code>-prefix them? Lean and status in <a href="#10-open-questions">§10</a>.</div>
+  </div>
+
+  <h2 id="2-attribute-catalog">2. Attribute catalog</h2>
+  <p>Global attributes (any <code>sem-*</code> element):</p>
+
+  <div class="sem-table" id="t-attributes" data-kind="attribute-catalog" data-controls="sort,filter" data-sticky>
+    <table>
+      <caption>Global attributes</caption>
+      <thead><tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Machine meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>kind</code></td><td>free token (<code>concept</code>, <code>anti-pattern</code>, <code>caveat</code>, …)</td><td>what the data IS</td></tr>
+        <tr><td><code>tags</code></td><td>comma list</td><td>classification</td></tr>
+        <tr><td><code>view-as</code></td><td>element-defined modes</td><td>presentation parameter (identity unchanged)</td></tr>
+        <tr><td><code>status</code></td><td><code>done</code>, <code>current</code>, <code>todo</code>, <code>blocked</code>, <code>pass</code>, <code>fail</code></td><td>lifecycle/verdict</td></tr>
+        <tr><td><code>controls</code></td><td>comma flags: <code>shuffle</code>, <code>filter</code>, <code>retry</code>, <code>picker</code></td><td>which controls render</td></tr>
+        <tr><td><code>collapsed</code></td><td>boolean</td><td>pre-collapse state</td></tr>
+        <tr><td><code>audience</code></td><td>profile spec: <code>a</code>, <code>a, b</code>, <code>!a</code> (profiles from <code>sem-audiences</code>)</td><td>who the datum is for — <a href="#r-sem-audiences">spec/schema/sem-audiences.md</a>; carried verbatim by extraction, never suppresses a record</td></tr>
+        <tr><td><code>id</code></td><td>doc-unique</td><td>stable anchor, cite target — a <code>#id</code> or <code>#container/child</code> hash reaches it through any closed reveal, collapsed note, inactive view or non-current card (fallback <code>target</code>)</td></tr>
+        <tr><td><code>data-*</code></td><td>free</td><td>extension point</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><code>view-as</code> is the core inversion: <code>&lt;sem-fact&gt;</code> is a fact in every view; <code>view-as</code> only selects rendering. Unknown <code>view-as</code> ⇒ falls back to <code>list</code>/plain + fallback-handler warning. CSS-only modes exist too: <code>sem-note view-as="margin"</code> (right-gutter aside on wide viewports), <code>sem-chronology view-as="timeline|list"</code>. <code>sem-properties view-as="glossary"</code> adds term previews from the reading bundle.</p>
+
+  <div class="sem-properties" id="p-catalog-rules" data-kind="rules">
+    <div class="sem-property" id="p-hash-state" data-key="Hash state" role="definition" aria-label="Hash state">The hash is <code>&amp;</code>-joined segments (<code>src/shared/state.ts</code>): bare <code>id</code> / <code>container/child</code> deep links, and <code>name=value</code> parameters (<code>sem-audience=&lt;profile&gt;</code>). Every writer edits its own segment only, so <code>#deploy/argocd&amp;sem-audience=operator</code> survives a tab switch.</div>
+    <div class="sem-property" id="p-class-namespace" data-key="Class namespace" role="definition" aria-label="Class namespace">Each element owns exactly the class namespace <code>.sem-&lt;element&gt;</code> and <code>.sem-&lt;element&gt;-*</code>; no other element may reuse that bare class name for its own chrome. <code>.sem-progress</code> names only the progress element — a facts-chrome label needing similar styling is <code>.sem-facts-meter</code>, never <code>.sem-progress</code> borrowed from another element.</div>
+  </div>
+
+  <h2 id="3-npl-notation-inside-tags">3. NPL notation inside tags</h2>
+  <p>Compact notation is legal inside element text where the schema allows; <strong>attributes are canonical, notation is sugar</strong>:</p>
+
+  <div class="sem-md" id="md-notation" data-kind="notation" data-label="Compact notation" data-controls="toggle,copy">
+    | Notation | Meaning | Where |
+    | :-- | :-- | :-- |
+    | `&lt;highlight&gt;` | recall target — occludes in quiz/flashcard views, `&lt;em&gt;` in plain view | any prose element |
+    | `[[cloze]]` | inline occlusion sugar (equivalent to `&lt;highlight&gt;`) | `sem-detail`, `sem-fact` |
+    | `term :: value` | pair | `sem-property` text, `sem-fact` compact form |
+    | `✅ …` / `✗ …` | correct / distractor | `sem-option` sugar |
+    | `→ …` | current | `sem-step` status sugar |
+    | `[hint \| reveal]` | agent-facing instruction, human-rendered hint | instruction-bearing elements (define in `sem-note` schema first) |
+  </div>
+
+  <p><code>&lt;statement&gt;</code>/<code>&lt;conclusion&gt;</code> children always win over <code>::</code> compact form when both present; authors pick one per fact.</p>
+
+  <h2 id="4-fallback-handler--degradation-rules">4. Fallback handler &amp; degradation rules</h2>
+
+  <div class="sem-procedure" id="degradation-rules" data-kind="rules" role="list" aria-label="Fallback handler and degradation rules">
+    <div class="sem-step" id="rule-4-1" role="listitem"><code>&lt;script id="sem-fallback"&gt;</code> is embedded inline in every portable doc (<code>dist/semtext-fallback.js</code>, ≤12 KB raw): <code>view-as</code> switching, reveal toggles, <code>&lt;highlight&gt;</code> occlusion, basic quiz checking, audience gating, deep-link resolution, print disclosure. <strong>Zero external resources required for full baseline interactivity.</strong> Prose-reading behaviours (sem-code chrome, reference / glossary previews, backlinks, and from R/W2 the <code>sem-reader</code> chrome and <code>sem-table</code> sort / filter) ship in a second vanilla script, <code>dist/semtext-reading.js</code> (≤17 KB raw, marker <code>&lt;!-- sem:inline reading --&gt;</code>), under the same rules; it marks what it wired with <code>data-sem-fallback</code> and skips elements a Lit wrapper already upgraded. Documents without those elements need not carry it. The core's first handler snapshots every <code>sem-source</code> wrapper's markup (an inert <code>script.sem-source-raw[type="text/plain"]</code> child) before any other handler runs; the reading bundle renders that copy. The <code>sem-md</code> renderer is a third vanilla script, <code>dist/semtext-md.js</code> (≤8 KB raw, marker <code>&lt;!-- sem:inline md --&gt;</code>, global <code>SemTextMd</code>), under the same rules; a document with no Markdown need not carry it.</div>
+    <div class="sem-step" id="rule-4-2" role="listitem"><code>semtext/semtext.js</code> (Lit 3, IIFE) upgrades elements in place when reachable; component implementations supersede fallback behaviors. Handoff contract: fallback sets <code>data-sem-fallback</code> on elements it enhanced; components remove it on upgrade and set <code>data-sem-upgraded</code>. Both tiers also stamp their marker on <code>&lt;html&gt;</code> once they have run, for hide rules whose host element is deliberately unmarked (a list-view deck's distractors). BDD asserts both tiers + the handoff.</div>
+    <div class="sem-step" id="rule-4-3" role="listitem">Theme CSS styles <strong>both authoring forms from one rule</strong> — <code>:is(sem-x, .sem-x)</code> throughout <code>themes/_vocabulary.css</code> (D10) — so an element-form document is presentable before and without the upgrade, with no layout shift on upgrade where feasible.</div>
+    <div class="sem-step" id="rule-4-4" role="listitem"><strong>Every hide rule is gated</strong> on <code>:is([data-sem-fallback], [data-sem-upgraded])</code> (D12). With no script in the page nothing is hidden: distractors render labelled, views stack under their names, collapsed bodies and every conclusion show, audience-qualified content is all visible. <code>dist/demo/*.nojs.html</code> is the artifact that proves it.</div>
+    <div class="sem-step" id="rule-4-5" role="listitem">Content lives in light DOM (searchable, copyable); shadow DOM carries interactive chrome only.</div>
+    <div class="sem-step" id="rule-4-6" role="listitem">Cross-cutting, also in the vocabulary CSS: <code>@media print</code> shows everything a reader could open and no chrome (<code>beforeprint</code> opens reveal disclosures; CSS cannot); <code>prefers-reduced-motion</code> drops transitions and smooth scrolling.</div>
+  </div>
+
+  <h2 id="5-element-entries-rough">5. Element entries (rough)</h2>
+  <p>Each entry shows the authoring forms side by side — the v0.3 custom element the Lit milestone targets and the v0.4 class markup this baseline ships — followed by a live example wrapped in <code>sem-source</code>. The example is the spec executing itself; its <em>Source</em> view is the markup of this page, not a second copy.</p>
+
+  <h3 id="tier-0">Tier 0</h3>
+
+  <!-- sem-note ----------------------------------------------------------- -->
+  <h4 id="e-note">sem-note — callout</h4>
+  <div class="sem-views" id="v-note">
+    <div class="sem-view" data-name="v0.3 element" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-note variant="warning"&gt;Rotation is &lt;strong&gt;per session&lt;/strong&gt;.&lt;/sem-note&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.4 class" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-note" data-variant="warning"&gt;
+  &lt;div class="sem-note-body"&gt;Rotation is &lt;strong&gt;per session&lt;/strong&gt;.&lt;/div&gt;
+&lt;/div&gt;</code></pre></div>
+    </div>
+  </div>
+  <p><code>variant="info|warning|tip|danger"</code>; <code>collapsed</code> ⇒ native <code>&lt;details&gt;</code>; <code>view-as="margin"</code> ⇒ CSS-only right-gutter aside on wide viewports, inline otherwise. Light DOM, <code>role="note"</code>. <em>(schema + spec exist:</em> <a href="#r-sem-note">sem-note.md</a><em>.)</em></p>
+  <div class="sem-source" id="s-note" data-label="Live: sem-note">
+    <div class="sem-note" id="x-note" data-variant="warning">
+      <div class="sem-note-body">Rotation is <strong>per session</strong>.</div>
+    </div>
+  </div>
+
+  <!-- sem-audiences ------------------------------------------------------ -->
+  <h4 id="e-audiences">sem-audiences / sem-profile — reader profiles</h4>
+  <p>Metadata, mints nothing. <strong>Normative: <a href="#r-sem-audiences">spec/schema/sem-audiences.md</a>.</strong> Active profile = hash <code>sem-audience</code> param, else <code>data-audience</code> on the root wrapper / <code>&lt;html&gt;</code>. Fallback sets native <code>hidden</code> on non-matching elements; JS-off everything shows; fail-open on unknown tokens.</p>
+  <div class="sem-source" id="s-audiences" data-label="Live: sem-audiences">
+    <div class="sem-audiences" id="x-audiences">
+      <div class="sem-profile" id="reader" data-label="Reader"></div>
+      <div class="sem-profile" id="operator" data-label="Operator" data-implies="reader"></div>
+    </div>
+    <div class="sem-note" id="x-audience-note" data-audience="operator" data-variant="info">
+      <div class="sem-note-body">Operators only: an operator implies reader. Pick a profile from the reading bar's <em>Audience</em> select, or open <a href="#sem-audience=operator">#sem-audience=operator</a>.</div>
+    </div>
+  </div>
+
+  <!-- sem-fact ----------------------------------------------------------- -->
+  <h4 id="e-fact">sem-fact — the atomic unit; assertable Q/A pair</h4>
+  <div class="sem-views" id="v-fact">
+    <div class="sem-view" data-name="v0.3 element" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-fact id="f-jwt" kind="concept"&gt;
+  &lt;statement&gt;JWTs rotate per session&lt;/statement&gt;
+  &lt;conclusion&gt;Short-lived access; refresh grants a new pair.&lt;/conclusion&gt;
+&lt;/sem-fact&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.4 class" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-fact" id="f-jwt" data-kind="concept"&gt;
+  &lt;div class="sem-statement"&gt;JWTs rotate per session&lt;/div&gt;
+  &lt;div class="sem-conclusion"&gt;Short-lived access; refresh grants a new pair.&lt;/div&gt;
+&lt;/div&gt;</code></pre></div>
+    </div>
+  </div>
+  <p>Compact form: <code>&lt;sem-fact&gt;JWT rotation :: short-lived access&lt;/sem-fact&gt;</code>. Machine view: statement+conclusion = structured assertion.</p>
+
+  <!-- sem-facts ---------------------------------------------------------- -->
+  <h4 id="e-facts">sem-facts — collection; the flagship surface</h4>
+  <p><strong>Normative: <a href="#r-sem-facts">spec/schema/sem-facts.md</a>.</strong></p>
+  <div class="sem-views" id="v-facts">
+    <div class="sem-view" data-name="v0.3 element" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-facts view-as="quiz" controls="shuffle,filter"&gt;
+  &lt;sem-fact&gt;…&lt;/sem-fact&gt;
+  &lt;sem-fact&gt;…&lt;sem-distractor&gt;decoy conclusion&lt;/sem-distractor&gt;&lt;/sem-fact&gt;
+&lt;/sem-facts&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.4 class" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-facts" data-view-as="quiz" data-controls="shuffle,filter"&gt;
+  &lt;div class="sem-fact"&gt;…&lt;/div&gt;
+  &lt;div class="sem-fact"&gt;…&lt;div class="sem-distractor"&gt;decoy conclusion&lt;/div&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre></div>
+    </div>
+  </div>
+  <ul>
+    <li><code>view-as="list"</code> (default): filter box, tag chips.</li>
+    <li><code>view-as="flashcards"</code>: front = statement (+<code>&lt;highlight&gt;</code> prompt), back = conclusion; flip click/Space; ←/→/swipe; progress <code>3/12</code>; <code>shuffle</code>.</li>
+    <li><code>view-as="quiz"</code>: statement shown; candidates = sibling conclusions, <code>&lt;sem-distractor&gt;</code> children win when present; accuracy on <code>sem-complete</code>.</li>
+    <li>Events: <code>sem-navigate {index}</code>, <code>sem-flip {face}</code>, <code>sem-complete {correct,total,ms}</code>.</li>
+  </ul>
+  <div class="sem-source" id="s-facts" data-label="Live: sem-facts, flashcards">
+    <div class="sem-facts" id="x-facts" data-view-as="flashcards" data-kind="spec">
+      <div class="sem-fact" id="x-f1" data-kind="rule">
+        <div class="sem-statement">Semantic identity, parameterized presentation</div>
+        <div class="sem-conclusion"><code>sem-fact</code> is a fact in list, flashcard and quiz views — <code>view-as</code> only changes rendering.</div>
+      </div>
+      <div class="sem-fact" id="x-f2" data-kind="rule">
+        <div class="sem-statement">What guarantees interactivity with zero external resources?</div>
+        <div class="sem-conclusion">The inline <code>sem-fallback</code> handler.</div>
+        <div class="sem-distractor">The Tailwind CDN script.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- sem-details -------------------------------------------------------- -->
+  <h4 id="e-details">sem-detail / sem-details — prose with occludable content</h4>
+  <p><strong>Normative: <a href="#r-sem-details">spec/schema/sem-details.md</a>.</strong></p>
+  <div class="sem-views" id="v-details">
+    <div class="sem-view" data-name="v0.3 element" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-details view-as="quiz"&gt;
+  &lt;sem-detail&gt;
+    The OIDC token travels in the &lt;highlight&gt;Authorization&lt;/highlight&gt; header.
+  &lt;/sem-detail&gt;
+&lt;/sem-details&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.4 class" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-details" data-view-as="quiz"&gt;
   &lt;div class="sem-detail"&gt;
     The OIDC token travels in the &lt;span class="sem-highlight"&gt;Authorization&lt;/span&gt; header.
   &lt;/div&gt;
-&lt;/div&gt;</pre>
-  <p>Plain view: highlight renders emphasized. Quiz view: occluded, reveal per span. Live: <span class="sem-highlight">refresh tokens never reach the browser</span> (this page is in plain mode — swap <code>data-view-as</code> to see occlusion).</p>
+&lt;/div&gt;</code></pre></div>
+    </div>
+  </div>
+  <p>Plain view: <code>&lt;highlight&gt;</code> renders <code>&lt;em&gt;</code>. Quiz view: occluded (<code>▮▮▮</code>), reveal per item, self-check or auto-check.</p>
+  <div class="sem-source" id="s-details" data-label="Live: sem-details, quiz">
+    <div class="sem-details" id="x-details" data-view-as="quiz">
+      <div class="sem-detail" id="x-d1">The OIDC token travels in the <span class="sem-highlight">Authorization</span> header; refresh tokens <span class="sem-highlight">never reach the browser</span>.</div>
+    </div>
+  </div>
 
-  <h3>sem-procedure / sem-step — ordered, status-annotated procedure</h3>
-<pre>&lt;div class="sem-procedure" data-kind="runbook" role="list"&gt;
+  <!-- sem-procedure ------------------------------------------------------ -->
+  <h4 id="e-procedure">sem-procedure / sem-step — ordered, status-annotated procedure</h4>
+  <p><strong>Normative: <a href="#r-sem-procedure">spec/schema/sem-procedure.md</a>.</strong></p>
+  <div class="sem-views" id="v-procedure">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-procedure" data-kind="runbook" role="list"&gt;
   &lt;div class="sem-step" role="listitem" data-status="done"&gt;provision Infisical path&lt;/div&gt;
   &lt;div class="sem-step" role="listitem" data-status="current"&gt;port-forward MinIO&lt;/div&gt;
   &lt;div class="sem-step" role="listitem"&gt;run migrations&lt;/div&gt;
   &lt;div class="sem-step" role="listitem" data-status="blocked"&gt;cut release&lt;/div&gt;
-&lt;/div&gt;</pre>
-  <p><code>data-status</code>: <code>done</code> <code>current</code> <code>todo</code> (default) <code>blocked</code>. DOM order = execution order (ordinals positional); <code>✅/→/❌</code> sugar is display-only — the attribute is canonical. <strong>Zero-JS element.</strong> Normative: <code>spec/schema/sem-procedure.md</code>.</p>
-  <div class="sem-procedure" data-kind="runbook" role="list">
-    <div class="sem-step" role="listitem" data-status="done">define Tier-0 schemas</div>
-    <div class="sem-step" role="listitem" data-status="current">expand spec entries (this section)</div>
-    <div class="sem-step" role="listitem">author BDD suites</div>
-    <div class="sem-step" role="listitem" data-status="blocked">Lit upgrade — waits for M3</div>
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-procedure kind="runbook" role="list"&gt;
+  &lt;sem-step role="listitem" status="done"&gt;provision Infisical path&lt;/sem-step&gt;
+  &lt;sem-step role="listitem" status="current"&gt;port-forward MinIO&lt;/sem-step&gt;
+  &lt;sem-step role="listitem"&gt;run migrations&lt;/sem-step&gt;
+  &lt;sem-step role="listitem" status="blocked"&gt;cut release&lt;/sem-step&gt;
+&lt;/sem-procedure&gt;</code></pre></div>
+    </div>
+  </div>
+  <p><code>data-status</code>: <code>done|current|todo</code> (default) <code>|blocked</code>; DOM order = execution order (ordinals positional, CSS counters); status sugar (<code>✅/→/❌</code>) is display-only — <code>data-status</code> canonical. <strong>Zero-JS element.</strong></p>
+  <div class="sem-source" id="s-procedure" data-label="Live: sem-procedure">
+    <div class="sem-procedure" id="x-procedure" data-kind="runbook" role="list">
+      <div class="sem-step" role="listitem" data-status="done">provision Infisical path</div>
+      <div class="sem-step" role="listitem" data-status="current">port-forward MinIO</div>
+      <div class="sem-step" role="listitem">run migrations</div>
+      <div class="sem-step" role="listitem" data-status="blocked">cut release</div>
+    </div>
   </div>
 
-  <h3>sem-properties / sem-property — definition block</h3>
-<pre>&lt;div class="sem-properties" data-kind="config"&gt;
+  <!-- sem-properties ----------------------------------------------------- -->
+  <h4 id="e-properties">sem-properties / sem-property — definition/properties block</h4>
+  <p><strong>Normative: <a href="#r-sem-properties">spec/schema/sem-properties.md</a>.</strong></p>
+  <div class="sem-views" id="v-properties">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-properties" data-kind="config"&gt;
   &lt;div class="sem-property" data-key="token ttl"
        role="definition" aria-label="token ttl"&gt;15m&lt;/div&gt;
-&lt;/div&gt;</pre>
-  <p><code>data-key</code> = term, text = value; key column renders via CSS <code>attr()</code>; <code>role="definition"</code> + <code>aria-label</code> carry the pair to AT. <code>term :: value</code> sugar is display-only. Q2 resolved: pure <code>&lt;dl&gt;</code> v1, no chrome. Normative: <code>spec/schema/sem-properties.md</code>.</p>
-  <div class="sem-properties" data-kind="spec">
-    <div class="sem-property" data-key="canonical attr" role="definition" aria-label="canonical attr">data-key</div>
-    <div class="sem-property" data-key="js required" role="definition" aria-label="js required">none</div>
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-properties kind="config"&gt;
+  &lt;sem-property key="token ttl" role="definition" aria-label="token ttl"&gt;15m&lt;/sem-property&gt;
+&lt;/sem-properties&gt;</code></pre></div>
+    </div>
+  </div>
+  <p><code>data-key</code> = the term, property text = the value. Zero-JS: key column renders via CSS <code>attr(data-key)</code>; AT gets the pair via <code>role="definition"</code> + <code>aria-label</code> = key. Compact <code>term :: value</code> sugar (<a href="#3-npl-notation-inside-tags">§3</a>) is display-only — <code>data-key</code> canonical. Renders <code>&lt;dl&gt;</code>-equivalent grid; <strong>Q2 resolved v1: pure definition list, no copy/search chrome.</strong></p>
+  <div class="sem-source" id="s-properties" data-label="Live: sem-properties">
+    <div class="sem-properties" id="x-properties" data-kind="config">
+      <div class="sem-property" id="x-p-ttl" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
+      <div class="sem-property" id="x-p-store" data-key="storage" role="definition" aria-label="storage">httpOnly cookie</div>
+    </div>
   </div>
 
-  <h3>sem-views / sem-view — switchable perspectives</h3>
-<pre>&lt;div class="sem-views" id="deploy"&gt;
-  &lt;div class="sem-view" data-name="Helm" data-active role="tabpanel"&gt;…&lt;/div&gt;
-  &lt;div class="sem-view" data-name="ArgoCD" role="tabpanel"&gt;…&lt;/div&gt;
-&lt;/div&gt;</pre>
-  <p><code>data-name</code> unique per container; <code>data-active</code> marks the initial view (first wins if absent). Fallback builds the tab bar, manages arrow keys and deep-links (<code>#id/name</code>), fires <code>sem-navigate {id,name,index}</code>. JS-off: all views stacked. Q3 resolved: <code>sem-views</code>. Normative: <code>spec/schema/sem-views.md</code>.</p>
-  <div class="sem-views" id="spec-views">
-    <div class="sem-view" data-name="Spec" data-active role="tabpanel">
-      Each view is the same subject under a named perspective — deep-link form <code>#spec-views/quiz</code> style.</div>
-    <div class="sem-view" data-name="Live" role="tabpanel">
-      This tab bar, keyboard roving focus, and hash sync are the v0.4 fallback handler executing the spec.</div>
+  <!-- sem-views ---------------------------------------------------------- -->
+  <h4 id="e-views">sem-views / sem-view — same content, switchable perspectives</h4>
+  <p><strong>Normative: <a href="#r-sem-views">spec/schema/sem-views.md</a>.</strong></p>
+  <div class="sem-views" id="v-views">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-views" id="deploy"&gt;
+  &lt;div class="sem-view" data-name="Helm" data-active role="tabpanel"&gt;content…&lt;/div&gt;
+  &lt;div class="sem-view" data-name="ArgoCD" role="tabpanel"&gt;content…&lt;/div&gt;
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-views id="deploy"&gt;
+  &lt;sem-view name="Helm" active role="tabpanel"&gt;content…&lt;/sem-view&gt;
+  &lt;sem-view name="ArgoCD" role="tabpanel"&gt;content…&lt;/sem-view&gt;
+&lt;/sem-views&gt;</code></pre></div>
+    </div>
+  </div>
+  <p><code>data-name</code> unique per container; <code>data-active</code> marks initial view (first wins if absent); fallback builds the tab bar (<code>.sem-views-tabs</code>, <code>role="tab"</code> buttons), arrow-key roving focus; deep-link <code>#deploy/argocd</code>; fires <code>sem-navigate {id, name, index}</code>. JS-off: all views stacked, <code>data-name</code>-headed. <strong>Q3 resolved v1: <code>sem-views</code>.</strong></p>
+  <div class="sem-source" id="s-views" data-label="Live: sem-views">
+    <div class="sem-views" id="x-deploy">
+      <div class="sem-view" id="x-helm" data-name="Helm" data-active role="tabpanel">Helm renders the chart; the image tag is bumped by CI.</div>
+      <div class="sem-view" id="x-argocd" data-name="ArgoCD" role="tabpanel">ArgoCD auto-syncs from the chart repo's <code>main</code>. Deep link: <a href="#x-deploy/argocd">#x-deploy/argocd</a>.</div>
+    </div>
   </div>
 
-  <h3>sem-reveal — Q→A disclosure</h3>
-<pre>&lt;div class="sem-reveal" data-summary="Why not localStorage?" collapsed&gt;
+  <!-- sem-reveal --------------------------------------------------------- -->
+  <h4 id="e-reveal">sem-reveal — Q→A disclosure, <code>&lt;details&gt;</code>-backed</h4>
+  <p><strong>Normative: <a href="#r-sem-reveal">spec/schema/sem-reveal.md</a>.</strong></p>
+  <div class="sem-views" id="v-reveal">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-reveal" data-summary="Why not localStorage?" collapsed&gt;
   Tokens in localStorage are readable by any script on the page…
-&lt;/div&gt;</pre>
-  <p><code>data-summary</code> optional — first body line (≤60 chars) derives it; <code>collapsed</code> starts hidden, otherwise open. Fallback wraps in native <code>&lt;details&gt;</code>; JS-off: fully visible. Non-assertive counterpart to the <code>sem-fact</code> Q/A shape. Normative: <code>spec/schema/sem-reveal.md</code>.</p>
-  <div class="sem-reveal" id="spec-reveal" data-summary="Why a separate element from sem-note[collapsed]?" collapsed>
-    Intent: a note is an annotation (variant tone); a reveal is exposition (Q→A). Same mechanism, different semantics — machines distinguish them.</div>
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-reveal summary="Why not localStorage?" collapsed&gt;
+  Tokens in localStorage are readable by any script on the page…
+&lt;/sem-reveal&gt;</code></pre></div>
+    </div>
+  </div>
+  <p><code>data-summary</code> optional — first body line (≤60 chars) derives it, by the one rule in <code>src/shared/summary.ts</code> that render and extraction share; <code>collapsed</code> starts hidden, otherwise open. Fallback wraps in native <code>&lt;details&gt;/&lt;summary&gt;</code>; JS-off: fully visible (summary as small-caps heading). Non-assertive counterpart to <code>sem-fact</code> Q/A shape.</p>
+  <div class="sem-source" id="s-reveal" data-label="Live: sem-reveal">
+    <div class="sem-reveal" id="x-reveal" data-summary="Why a separate element from sem-note[collapsed]?" collapsed>
+      A note is an annotation (variant tone); a reveal is exposition (Q→A). Same mechanism, different semantics — machines distinguish them.
+    </div>
+  </div>
 
-  <h3>sem-progress — completion meter</h3>
-<pre>&lt;div class="sem-progress" data-value="0.62" data-label="coverage"
-     role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"&gt;&lt;/div&gt;</pre>
-  <p><code>data-value</code> canonical 0..1 (render clamps, attr untouched); <code>data-label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code>. <code>data-status="done"</code> ⇔ 1 by convention. Normative: <code>spec/schema/sem-progress.md</code>.</p>
-  <div class="sem-progress" id="spec-progress" data-value="0.7" data-label="Tier-0 spec coverage"
-       role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7"></div>
+  <!-- sem-chronology ----------------------------------------------------- -->
+  <h4 id="e-chronology">sem-chronology / sem-event — dated, ordered events; CSS-only timeline</h4>
+  <p><strong>Normative: <a href="#r-sem-chronology">spec/schema/sem-chronology.md</a>.</strong></p>
+  <div class="sem-views" id="v-chronology">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-chronology" data-kind="release-history" role="list"&gt;
+  &lt;div class="sem-event" role="listitem" data-when="2026-03-02" data-status="done"&gt;
+    &lt;time datetime="2026-03-02"&gt;2 Mar 2026&lt;/time&gt; v0.1 tagged.&lt;/div&gt;
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-chronology kind="release-history" role="list"&gt;
+  &lt;sem-event role="listitem" when="2026-03-02" status="done"&gt;
+    &lt;time datetime="2026-03-02"&gt;2 Mar 2026&lt;/time&gt; v0.1 tagged.&lt;/sem-event&gt;
+&lt;/sem-chronology&gt;</code></pre></div>
+    </div>
+  </div>
+  <p><code>data-when</code>/<code>data-until</code> canonical; <code>&lt;time&gt;</code> child is the visible label (else CSS renders <code>data-when</code>); <code>data-status</code> optional, same vocabulary as <code>sem-step</code>; <code>view-as="timeline|list"</code>. DOM order = chronological order; ordinals positional. <strong>Zero-JS element.</strong></p>
+  <div class="sem-source" id="s-chronology" data-label="Live: sem-chronology">
+    <div class="sem-chronology" id="x-chronology" data-kind="release-history" data-view-as="timeline" role="list">
+      <div class="sem-event" id="x-e1" role="listitem" data-when="2026-03-02" data-status="done"><time datetime="2026-03-02">2 Mar 2026</time> v0.1 tagged — fallback tier ships.</div>
+      <div class="sem-event" id="x-e2" role="listitem" data-when="2026-09" data-status="current"><time datetime="2026-09">Sep 2026</time> Reading-experience waves land one PR at a time.</div>
+    </div>
+  </div>
 
-  <h3>sem-source — rendered ↔ authored markup</h3>
-<pre>&lt;div class="sem-source" data-label="Facts — flashcards" data-view-as="html"&gt;
+  <!-- sem-code ----------------------------------------------------------- -->
+  <h4 id="e-code">sem-code — verbatim listing with provenance and copy / wrap</h4>
+  <p><strong>Normative: <a href="#r-sem-code">spec/schema/sem-code.md</a>.</strong></p>
+  <div class="sem-views" id="v-code">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-code" data-lang="ts" data-filename="src/rotate.ts" data-mark="2,4-5" data-controls="copy,wrap"&gt;
+&lt;pre&gt;&lt;code&gt;…&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-code lang="ts" filename="src/rotate.ts" mark="2,4-5" controls="copy,wrap"&gt;
+&lt;pre&gt;&lt;code&gt;…&lt;/code&gt;&lt;/pre&gt;
+&lt;/sem-code&gt;</code></pre></div>
+    </div>
+  </div>
+  <p>Reading bundle adds <code>.sem-code-chrome</code> (filename, lang, buttons, status region), wraps lines (<code>span|mark.sem-code-line</code>, text byte-identical), <code>tabindex="0"</code> on an overflowing <code>&lt;pre&gt;</code>. JS-off: plain <code>&lt;pre&gt;</code> with a CSS caption. Extraction keeps <code>source</code> <strong>verbatim</strong>.</p>
+  <div class="sem-source" id="s-code" data-label="Live: sem-code">
+    <div class="sem-code" id="x-code" data-lang="ts" data-filename="src/rotate.ts" data-mark="2,4-5" data-controls="copy,wrap">
+<pre><code>export function rotate(pair: Pair): Pair {
+  const next = mint();
+  retire(pair.refresh);
+  return next;
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- sem-source --------------------------------------------------------- -->
+  <h4 id="e-source">sem-source — a section that flips between rendered and authored markup</h4>
+  <p><strong>Normative: <a href="#r-sem-source">spec/schema/sem-source.md</a>.</strong></p>
+  <div class="sem-views" id="v-source">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-source" data-label="Facts — flashcards"&gt;
   &lt;h2&gt;Facts — flashcards&lt;/h2&gt;
   &lt;div class="sem-facts" data-view-as="flashcards"&gt;…&lt;/div&gt;
-&lt;/div&gt;</pre>
-  <p>A transparent wrapper for documents that teach the vocabulary: chrome <code>Rendered | Source</code> (<code>aria-pressed</code>) flips between the rendered children and their literal markup in a <code>sem-code</code> fence (copy, wrap). The core fallback snapshots each wrapper's <code>innerHTML</code> before any other handler runs, so the fence shows the document as written. <code>data-view-as="html|source"</code> is runtime-mutable presentation. Mints nothing; its children extract exactly as they would without it; JS-off shows the rendered children only. Normative: <code>spec/schema/sem-source.md</code>.</p>
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-source label="Facts — flashcards"&gt;
+  &lt;h2&gt;Facts — flashcards&lt;/h2&gt;
+  &lt;sem-facts view-as="flashcards"&gt;…&lt;/sem-facts&gt;
+&lt;/sem-source&gt;</code></pre></div>
+    </div>
+  </div>
+  <p>Chrome <code>Rendered | Source</code> (<code>aria-pressed</code>); <code>data-view-as="source"</code> shows the literal markup in a <code>sem-code</code> (copy, wrap) built from the core's pre-enhancement snapshot. Transparent to extraction; JS-off: the rendered children, nothing else. Every live example on this page is one; a <code>sem-source</code> never nests inside another, so this entry has no example of its own.</p>
 
-  <h3>sem-md — a Markdown block</h3>
-<pre>&lt;div class="sem-md" data-label="Token lifetimes" data-controls="toggle,copy"&gt;
+  <!-- sem-md ------------------------------------------------------------- -->
+  <h4 id="e-md">sem-md — a Markdown block, rendered in the browser</h4>
+  <p><strong>Normative: <a href="#r-sem-md">spec/schema/sem-md.md</a>.</strong></p>
+  <div class="sem-views" id="v-md">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-md" id="m-lifetimes" data-label="Token lifetimes" data-controls="toggle,copy"&gt;
   | Token   | Lifetime | Rotates |
   | :------ | -------: | :-----: |
   | access  | 15 min   | no      |
   | refresh | 30 days  | yes     |
-&lt;/div&gt;</pre>
-  <p>The element's text is Markdown — GFM tables, headings, paragraphs, lists, block quotes, rules, fenced code, and inline code / emphasis / links; raw HTML renders as text and <code>javascript:</code> URLs lose their href. Common indentation is stripped (authors indent freely; <code>&lt;</code> and <code>&amp;</code> are written as entities). The Markdown bundle adds <code>.sem-md-chrome</code> (label, <code>Markdown</code> toggle with <code>aria-pressed</code>, <code>Copy</code>, a <code>role="status"</code> region), renders into <code>.sem-md-body</code> (real <code>&lt;table&gt;</code>, <code>th[scope="col"]</code>, alignment row honoured) and keeps the normalised source in a <code>sem-code</code> fence (<code>.sem-md-raw</code>). <code>data-view-as="rendered|raw"</code> is runtime-mutable presentation. JS-off: the source reads as pre-wrapped text; print shows the rendered body. Extraction: <code>{source}</code>, the normalised Markdown, emitted as an indented block in annotated text. Normative: <code>spec/schema/sem-md.md</code>.</p>
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-md id="m-lifetimes" label="Token lifetimes" controls="toggle,copy"&gt;
+  | Token   | Lifetime | Rotates |
+  | :------ | -------: | :-----: |
+  | access  | 15 min   | no      |
+  | refresh | 30 days  | yes     |
+&lt;/sem-md&gt;</code></pre></div>
+    </div>
+  </div>
+  <p>The element's text is Markdown (GFM tables, headings, lists, emphasis, links, code, quotes, rules; raw HTML renders as text). The Markdown bundle adds <code>.sem-md-chrome</code> (label, <code>Markdown</code> toggle with <code>aria-pressed</code>, copy, status region), renders into <code>.sem-md-body</code> (real <code>&lt;table&gt;</code> with <code>th[scope="col"]</code>, alignment row honoured) and keeps the normalised source in a <code>sem-code</code> fence (<code>.sem-md-raw</code>); <code>data-view-as="rendered|raw"</code> is rewritten by the toggle. JS-off: the source reads as pre-wrapped text. Extraction keeps <code>source</code> <strong>normalised</strong> (dedented), never the rendering. The mapping table above and the tables in <a href="#3-npl-notation-inside-tags">§3</a> and <a href="#10-open-questions">§10</a> are this element.</p>
+  <div class="sem-source" id="s-md" data-label="Live: sem-md">
+    <div class="sem-md" id="x-md" data-kind="lifetimes" data-label="Token lifetimes" data-controls="toggle,copy">
+      | Token   | Lifetime | Rotates |
+      | :------ | -------: | :-----: |
+      | access  | 15 min   | no      |
+      | refresh | 30 days  | yes     |
+    </div>
+  </div>
 
-  <h3>Tier 1 &amp; 2 — planned</h3>
-  <p>Tier 1: <code>sem-question</code> with 7 TRP types. Tier 2: <code>sem-chronology</code>, <code>sem-table</code>, <code>sem-query</code>, <code>sem-themes</code>.</p>
+  <!-- sem-references ----------------------------------------------------- -->
+  <h4 id="e-references">sem-references / sem-reference — numbered citable entries</h4>
+  <p><strong>Normative: <a href="#r-sem-references">spec/schema/sem-references.md</a>.</strong></p>
+  <div class="sem-views" id="v-references">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;p&gt;…per use&lt;a href="#r-rfc"&gt;[1]&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="sem-references" data-kind="bibliography" role="list"&gt;
+  &lt;div class="sem-reference" id="r-rfc" role="listitem" data-href="https://…" data-cite="RFC 6749"&gt;…&lt;/div&gt;
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;p&gt;…per use&lt;a href="#r-rfc"&gt;[1]&lt;/a&gt;.&lt;/p&gt;
+&lt;sem-references kind="bibliography" role="list"&gt;
+  &lt;sem-reference id="r-rfc" role="listitem" href="https://…" cite="RFC 6749"&gt;…&lt;/sem-reference&gt;
+&lt;/sem-references&gt;</code></pre></div>
+    </div>
+  </div>
+  <p>CSS-counter numbering in every tier; reading bundle adds hover / focus previews on citing anchors (<code>.sem-references-ref</code>, popover <code>role="tooltip"</code>, <code>Esc</code> closes), backlinks (<code>aria-label="Back to citation N"</code>) and an external link. Citations mint nothing; print shows <code>(href)</code> inside the block only. The live example is this page's own reference list in <a href="#references">References</a>.</p>
 
-  <h2 id="themes">6 · Theme conventions</h2>
+  <!-- sem-reader --------------------------------------------------------- -->
+  <h4 id="e-reader">sem-reader — reading chrome: outline, progress, focus, type, colour, print, audience</h4>
+  <p><strong>Normative: <a href="#r-sem-reader">spec/schema/sem-reader.md</a>.</strong></p>
+  <div class="sem-views" id="v-reader">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-reader" data-controls="outline,progress,focus,type,color,print,audience" data-outline-depth="3"&gt;
+  &lt;nav aria-label="Contents"&gt;…optional, used verbatim…&lt;/nav&gt;
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-reader controls="outline,progress,focus,type,color,print,audience" outline-depth="3"&gt;
+  &lt;nav aria-label="Contents"&gt;…optional, used verbatim…&lt;/nav&gt;
+&lt;/sem-reader&gt;</code></pre></div>
+    </div>
+  </div>
+  <p>One per document, first child of the wrapper. Reading bundle inserts <code>.sem-reader-chrome</code> (<code>role="region"</code>), generates the outline from <code>h2…h&lt;depth&gt;</code> when no nav is authored (<code>aria-current="location"</code> tracks the heading in view), and writes <code>data-sem-mode|type|font</code> and <code>data-color-mode</code> on <code>&lt;html&gt;</code> — persisted via <code>localStorage</code>, fail-open. Audience writes the <code>sem-audience</code> hash parameter. No global key shortcuts. <strong>Mints nothing</strong>; extraction skips it whole (extraction §3 rule 7). The <code>theme</code> control is R/W3. The live example is the bar at the top of this page.</p>
+
+  <!-- sem-table ---------------------------------------------------------- -->
+  <h4 id="e-table">sem-table — sortable, filterable authored table</h4>
+  <p><strong>Normative: <a href="#r-sem-table">spec/schema/sem-table.md</a>.</strong></p>
+  <div class="sem-views" id="v-table">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-table" data-controls="sort,filter" data-sticky&gt;
+  &lt;table&gt;&lt;caption&gt;…&lt;/caption&gt;&lt;thead&gt;&lt;tr&gt;&lt;th scope="col"&gt;…&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+  &lt;tbody&gt;&lt;tr&gt;&lt;td data-value="900"&gt;15 min&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-table controls="sort,filter" sticky&gt;
+  &lt;table&gt;&lt;caption&gt;…&lt;/caption&gt;&lt;thead&gt;&lt;tr&gt;&lt;th scope="col"&gt;…&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+  &lt;tbody&gt;&lt;tr&gt;&lt;td data-value="900"&gt;15 min&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
+&lt;/sem-table&gt;</code></pre></div>
+    </div>
+  </div>
+  <p>The <code>&lt;table&gt;</code> is the contract (no JSON payload). Reading bundle stamps every body row <code>data-sem-source-index</code> once, wraps headers in <code>button.sem-table-sort</code> (<code>aria-sort</code> cycle), filters with native <code>hidden</code>, announces via <code>.sem-table-status</code>. Extraction returns <code>{caption, columns[], rows[][]}</code> in <strong>authored</strong> order from the stamp — the recorded §5 exception. <code>data-sticky</code> header and <code>kind="comparison"</code> first column are CSS in every tier.</p>
+  <div class="sem-source" id="s-table" data-label="Live: sem-table">
+    <div class="sem-table" id="x-table" data-kind="lifetimes" data-controls="sort,filter" data-sticky>
+      <table>
+        <caption>Token lifetimes</caption>
+        <thead><tr><th scope="col">Token</th><th scope="col">Lifetime</th><th scope="col">Rotates</th></tr></thead>
+        <tbody>
+          <tr><td>access</td><td data-value="900">15 min</td><td>no</td></tr>
+          <tr><td>refresh</td><td data-value="2592000">30 days</td><td>yes</td></tr>
+          <tr><td>id</td><td data-value="3600">1 hour</td><td>no</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- sem-progress ------------------------------------------------------- -->
+  <h4 id="e-progress">sem-progress — completion meter</h4>
+  <p><strong>Normative: <a href="#r-sem-progress">spec/schema/sem-progress.md</a>.</strong></p>
+  <div class="sem-views" id="v-progress">
+    <div class="sem-view" data-name="v0.4 class" data-active role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;div class="sem-progress" data-value="0.62" data-label="coverage"
+     role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"&gt;&lt;/div&gt;</code></pre></div>
+    </div>
+    <div class="sem-view" data-name="v0.3 element" role="tabpanel">
+      <div class="sem-code" data-lang="html"><pre><code>&lt;sem-progress value="0.62" label="coverage"
+     role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"&gt;&lt;/sem-progress&gt;</code></pre></div>
+    </div>
+  </div>
+  <p><code>data-value</code> canonical 0..1 (render clamps, attr untouched); <code>data-label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code> — no fake bar. <code>data-status="done"</code> ⇔ 1 by convention.</p>
+  <div class="sem-source" id="s-progress" data-label="Live: sem-progress">
+    <div class="sem-progress" id="x-progress" data-value="0.7" data-label="Tier-0 spec coverage" role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7"></div>
+  </div>
+
+  <h3 id="tier-1--flagship-buildout">Tier 1 — flagship buildout</h3>
   <ul>
-    <li><code>data-sem-theme="&lt;slug&gt;"</code> on <code>&lt;html&gt;</code>; one theme per doc; tokens on <code>[data-sem-theme]</code> (this page uses them live).</li>
-    <li>Compiled themes from TRP-format YAML → <code>semtext/themes/&lt;slug&gt;.css</code>; <code>--sem-*</code> tokens; <code>:not(:defined)</code> vocabulary base when custom elements land.</li>
+    <li><code>sem-facts</code> full build (filter, shuffle, swipe, quiz scoring).</li>
+    <li><code>sem-question</code> — 7 TRP renderers inside quiz views:</li>
+  </ul>
+  <div class="sem-code" id="c-question" data-lang="html">
+<pre><code>&lt;sem-question type="mc"&gt;
+  &lt;p data-kind="prompt"&gt;Which header carries the OIDC token?&lt;/p&gt;
+  &lt;sem-option correct&gt;Authorization&lt;/sem-option&gt;
+  &lt;sem-option&gt;Cookie&lt;/sem-option&gt;
+&lt;/sem-question&gt;</code></pre>
+  </div>
+  <p>Types <code>mc|multi|blank|match|order|tf|short</code>; <code>correct</code> attr canonical, <code>✅</code> sugar; <code>retry</code> control; results block; machine view = assertable Q/A.</p>
+
+  <h3 id="tier-2">Tier 2</h3>
+  <div class="sem-procedure" id="tier-2-status" data-kind="roadmap" role="list" aria-label="Tier 2 items and their status">
+    <div class="sem-step" role="listitem" data-status="done"><code>sem-chronology</code> / <code>sem-event when</code> — shipped (R/W1, Tier 0 above).</div>
+    <div class="sem-step" role="listitem" data-status="done"><code>sem-table</code> — shipped (R/W2, Tier 0 above); <code>sem-query</code> deferred.</div>
+    <div class="sem-step" role="listitem"><code>sem-themes controls="picker"</code> — subsumed by <code>sem-reader</code>'s <code>theme</code> control (R/W3, after Track T).</div>
+    <div class="sem-step" role="listitem" data-status="done"><code>sem-md</code> — shipped (R/W2.2, Tier 0 above): Markdown <em>inside</em> a SemText document. A whole-document md→SemText authoring aid remains optional and never required.</div>
+  </div>
+
+  <h2 id="6-theme-conventions">6. Theme conventions</h2>
+  <ul>
+    <li><code>data-sem-theme="&lt;slug&gt;"</code> on <code>&lt;html&gt;</code>; one theme per doc; themes compiled from TRP-format YAML → <code>semtext/themes/&lt;slug&gt;.css</code>; <code>--sem-*</code> tokens; <code>:not(:defined)</code> vocabulary base included.</li>
+    <li>Shadow components read tokens via fallback indirection — zero-JS theme flips.</li>
     <li>Ship 4 TRP ports: <code>minimal-tech-light</code> (default), <code>nocturne-console</code>, <code>organic-warm</code>, <code>editorial-settings</code>; auto light/dark via <code>prefers-color-scheme</code>, <code>data-color-mode</code> forces.</li>
   </ul>
 
-  <h2 id="distribution">7 · Distribution forms</h2>
-  <ol>
-    <li><strong>Folder</strong> — <code>doc.html</code> + relative <code>semtext/</code> (IIFE <code>semtext.js</code> + <code>themes/</code>).</li>
-    <li><strong>Single-file</strong> — fallback + CSS + (later) Lit bundle + data all inlined; one file shares anywhere.</li>
-    <li><strong>MHTML</strong> — multi-page bundle.</li>
-  </ol>
-  <p>Hard rules: no ES-module scripts; no runtime fetch in portable docs; the fallback handler is always embedded regardless of form.</p>
+  <h2 id="7-distribution-forms">7. Distribution forms</h2>
+  <div class="sem-properties" id="p-distribution" data-kind="distribution-forms">
+    <div class="sem-property" id="p-folder" data-key="1. Folder" role="definition" aria-label="Folder"><code>doc.html</code> + relative <code>semtext/</code> (IIFE <code>semtext.js</code> + <code>themes/</code>).</div>
+    <div class="sem-property" id="p-single-file" data-key="2. Single-file" role="definition" aria-label="Single-file">fallback + CSS + Lit bundle + data all inlined; one file shares anywhere.</div>
+    <div class="sem-property" id="p-mhtml" data-key="3. MHTML" role="definition" aria-label="MHTML">multi-page bundle.</div>
+  </div>
+  <div class="sem-note" id="n-hard-rules" data-variant="danger">
+    <div class="sem-note-body">Hard rules: no ES-module scripts; no runtime fetch in portable docs; the fallback handler is always embedded regardless of form.</div>
+  </div>
 
-  <h2 id="machine">8 · Machine-readability contract</h2>
+  <h2 id="8-machine-readability-contract">8. Machine-readability contract</h2>
   <ul>
-    <li>Semantic children (<code>.sem-statement</code>, <code>.sem-conclusion</code>, <code>.sem-highlight</code>) + <code>data-*</code> attributes qualify every datum.</li>
-    <li>Well-formed, correctly nested HTML — parseable by XML/HTML tooling; same vocabulary is the XML variant of NPL (§9).</li>
-    <li>Behaviors + attributes documented per schema = agent integration surface.</li>
-    <li>A "text extraction" reference recipe (DOM → annotated plain text) ships with the lib.</li>
+    <li>Semantic children (<code>&lt;statement&gt;</code>, <code>&lt;conclusion&gt;</code>, <code>&lt;highlight&gt;</code>) + attrs (<code>kind</code>, <code>status</code>, <code>tags</code>, <code>view-as</code>) qualify every datum.</li>
+    <li>Well-formed, correctly nested HTML — parseable by XML/HTML tooling; the same vocabulary is the XML variant of NPL (<a href="#9-npl-xml-variant-alignment">§9</a>).</li>
+    <li>Events + attrs documented per schema = agent integration surface.</li>
+    <li>"Text extraction" reference recipe (DOM → annotated plain text) ships with the lib for terminal/LLM pipelines<a href="#r-extraction" id="cite-extraction">[2]</a>.</li>
   </ul>
 
-  <h2 id="alignment">9 · NPL XML-variant alignment</h2>
-  <p>This vocabulary is the <strong>XML variant of NPL</strong>: NPL yaml already models agents (name/bio/instructions), instructions, and structured prompt sections via the MCP server; this format is its document-shaped rendering target. Alignment tasks (tracked, not blocking): map <code>.sem-agent</code> children to NPL agent schema; map facts to NPL knowledge records; define <code>sem-enhanced-document</code> as a valid MCP render target. <span class="sem-open">❓Q4</span> mapping ownership.</p>
+  <h2 id="9-npl-xml-variant-alignment">9. NPL XML-variant alignment</h2>
+  <p>This vocabulary is the <strong>XML variant of NPL</strong>: NPL yaml already models agents (name/bio/instructions), instructions, and structured prompt sections via the MCP server; this format is its document-shaped rendering target. Alignment tasks (tracked, not blocking M1): map <code>&lt;agent&gt;</code> children to NPL agent schema; map <code>sem-fact</code> to NPL fact/knowledge records; define <code>sem-enhanced-document</code> as a valid MCP <code>NPLLoad</code>/render target.</p>
+  <div class="sem-note" id="q4" data-variant="warning">
+    <div class="sem-note-body"><strong>❓ Q4</strong> — who owns the mapping: this repo exports it, or NPL MCP consumes a schema file we publish?</div>
+  </div>
 
-  <h2 id="questions">10 · Open questions</h2>
-  <table>
-    <tr><th>#</th><th>Question</th><th>Lean</th></tr>
-    <tr><td><span class="sem-open">Q1</span></td><td>Metadata children bare vs <code>sem-</code>-prefixed</td><td>bare (matches NPL yaml shape)</td></tr>
-    <tr><td><span class="sem-open">Q2</span></td><td><code>sem-properties</code> pure <code>&lt;dl&gt;</code> v1</td><td><strong>resolved (feat/tier0-spec-expansion)</strong> — pure <code>&lt;dl&gt;</code>, no chrome</td></tr>
-    <tr><td><span class="sem-open">Q3</span></td><td>tabs-family name: <code>sem-views</code> vs <code>sem-perspectives</code></td><td><strong>resolved (feat/tier0-spec-expansion)</strong> — <code>sem-views</code></td></tr>
-    <tr><td><span class="sem-open">Q4</span></td><td>NPL MCP alignment ownership</td><td>we publish the schema; MCP consumes</td></tr>
-    <tr><td><span class="sem-open">Q5</span></td><td>fallback scope: toggles only vs full quiz logic</td><td>full logic v1</td></tr>
-  </table>
+  <h2 id="10-open-questions">10. Open questions</h2>
+  <div class="sem-md" id="md-questions" data-kind="open-questions" data-label="Open questions and leans" data-controls="toggle,copy">
+    | # | Question | My lean |
+    | :-- | :-- | :-- |
+    | Q1 | bare `&lt;agent&gt;` metadata children vs `sem-`-prefixed | bare (per your example; matches NPL yaml shape) |
+    | Q2 | `sem-properties` pure `&lt;dl&gt;` v1 | **resolved (this branch)** — pure `&lt;dl&gt;`, chrome only if a consumer demands it |
+    | Q3 | tabs-family name: `sem-views` vs `sem-perspectives` | **resolved (this branch)** — `sem-views` |
+    | Q4 | NPL MCP alignment ownership | we publish the schema file; MCP consumes |
+    | Q5 | fallback handler scope: baseline interactivity only vs full quiz logic | full logic v1 — it's small and makes single-file form Lit-free |
+  </div>
+
+  <h2 id="references">References</h2>
+  <div class="sem-references" id="refs" data-kind="bibliography" role="list">
+    <div class="sem-reference" id="r-conventions-md" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/conventions.md" data-cite="spec/conventions.md">The normative Markdown source of this page.</div>
+    <div class="sem-reference" id="r-extraction" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/extraction.md" data-cite="spec/extraction.md">Extraction contract: record shape, emission rules, the central invariant, annotated plain text.</div>
+    <div class="sem-reference" id="r-sem-note" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-note.md" data-cite="spec/schema/sem-note.md">Schema — sem-note.</div>
+    <div class="sem-reference" id="r-sem-audiences" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-audiences.md" data-cite="spec/schema/sem-audiences.md">Schema — sem-audiences / sem-profile.</div>
+    <div class="sem-reference" id="r-sem-facts" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-facts.md" data-cite="spec/schema/sem-facts.md">Schema — sem-facts / sem-fact.</div>
+    <div class="sem-reference" id="r-sem-details" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-details.md" data-cite="spec/schema/sem-details.md">Schema — sem-details / sem-detail.</div>
+    <div class="sem-reference" id="r-sem-procedure" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-procedure.md" data-cite="spec/schema/sem-procedure.md">Schema — sem-procedure / sem-step.</div>
+    <div class="sem-reference" id="r-sem-properties" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-properties.md" data-cite="spec/schema/sem-properties.md">Schema — sem-properties / sem-property.</div>
+    <div class="sem-reference" id="r-sem-views" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-views.md" data-cite="spec/schema/sem-views.md">Schema — sem-views / sem-view.</div>
+    <div class="sem-reference" id="r-sem-reveal" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-reveal.md" data-cite="spec/schema/sem-reveal.md">Schema — sem-reveal.</div>
+    <div class="sem-reference" id="r-sem-chronology" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-chronology.md" data-cite="spec/schema/sem-chronology.md">Schema — sem-chronology / sem-event.</div>
+    <div class="sem-reference" id="r-sem-code" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-code.md" data-cite="spec/schema/sem-code.md">Schema — sem-code.</div>
+    <div class="sem-reference" id="r-sem-source" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-source.md" data-cite="spec/schema/sem-source.md">Schema — sem-source.</div>
+    <div class="sem-reference" id="r-sem-md" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-md.md" data-cite="spec/schema/sem-md.md">Schema — sem-md.</div>
+    <div class="sem-reference" id="r-sem-references" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-references.md" data-cite="spec/schema/sem-references.md">Schema — sem-references / sem-reference.</div>
+    <div class="sem-reference" id="r-sem-reader" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-reader.md" data-cite="spec/schema/sem-reader.md">Schema — sem-reader.</div>
+    <div class="sem-reference" id="r-sem-table" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-table.md" data-cite="spec/schema/sem-table.md">Schema — sem-table.</div>
+    <div class="sem-reference" id="r-sem-progress" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-progress.md" data-cite="spec/schema/sem-progress.md">Schema — sem-progress.</div>
+  </div>
 
 </div>
 </body>
