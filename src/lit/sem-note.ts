@@ -26,7 +26,7 @@ export class SemNote extends SemElement {
   connectedCallback(): void {
     super.connectedCallback();
     // deferred: a parse-time write would leak into a sem-source snapshot
-    this.afterParse(() => this.setAttribute('role', 'note'));
+    this.afterParse('role', () => this.setAttribute('role', 'note'));
     this.addEventListener('click', this.#onSummaryClick);
   }
 
@@ -37,7 +37,7 @@ export class SemNote extends SemElement {
 
   updated(): void {
     // v0.4 CSS contract keys styling/tests off data-variant, not `variant`
-    this.afterParse(() => this.setAttribute('data-variant', this.variant));
+    this.afterParse('variant', () => this.setAttribute('data-variant', this.variant));
     if (!this.collapsed) {
       this.#summary()?.remove();
       return;

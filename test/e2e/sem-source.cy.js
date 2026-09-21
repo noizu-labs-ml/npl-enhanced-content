@@ -190,6 +190,49 @@ describe('sem-source', () => {
       cy.get('#s-nosnap .sem-source-fence code').should('have.text', '<p>late</p>');
     });
 
+    describe('fidelity (watcher notes on #17)', () => {
+      const fence = () => {
+        cy.visit('/demo/index.html');
+        cy.get('#s-fidelity > .sem-source-chrome [data-act="source"]').click();
+        return cy.get('#s-fidelity .sem-source-fence code').invoke('text');
+      };
+
+      it('prose that looks like a tier marker is left alone', () => {
+        fence().then((t) => {
+          expect(t).to.contain('text data-sem-fallback="" is prose');
+          expect(t).to.contain('<p id="s-fid-text">');
+        });
+      });
+
+      it('dedent never touches lines inside a preformatted block', () => {
+        fence().then((t) => {
+          expect(t).to.contain('<pre id="s-fid-pre"><code>top\n      keep six\n  keep two</code></pre>');
+          // negative case: every non-preformatted line lost the section indent
+          expect(t).to.match(/^<p id="s-fid-text">/);
+          expect(t).to.contain('\n<pre id="s-fid-pre">');
+          expect(t).to.contain('\n<script type="text/plain" id="s-fid-raw">');
+          expect(t).not.to.match(/\n[ \t]+</);
+        });
+      });
+
+      it('an authored `<\\/script` sequence and a real end tag both round-trip', () => {
+        fence().then((t) => {
+          expect(t).to.contain('before <\\/script after</script>');
+        });
+      });
+
+      it('a deep link to a DESCENDANT of a source-mode wrapper resolves with the core alone (no chrome)', () => {
+        // #s-initial-p is a <p> inside #s-initial: the resolver's ancestor
+        // chain, not the target itself, is what matches the wrapper.
+        cy.visit('/demo/index.html');
+        cy.get('#s-initial').should('have.attr', 'data-view-as', 'source');
+        cy.get('#s-initial > .sem-source-chrome').then(($c) => $c.remove());
+        cy.window().then((win) => { win.location.hash = '#s-initial-p'; });
+        cy.get('#s-initial').should('have.attr', 'data-view-as', 'html');
+        cy.get('#s-initial-p').should('be.visible');
+      });
+    });
+
     it('a rendered child keeps its own behaviour before and after a round trip', () => {
       cy.visit('/demo/index.html');
       cy.get('#s-flash .sem-fact.sem-current').should('be.visible');

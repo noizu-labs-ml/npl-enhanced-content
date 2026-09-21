@@ -18,19 +18,48 @@ import { enhanceCodeElement } from './code.js';
 
 export const SOURCE = ':is(sem-source, .sem-source)';
 
-/** Snapshot text → fence text: unescape, drop parse-time tier markers, dedent, trim. */
+/**
+ * Snapshot text → fence text.
+ *
+ * 1. Unescape the core's `</script` guard: one backslash is removed from
+ *    every `<\…\/script`, the exact inverse of what the core added, so an
+ *    authored `<\/script` comes back as written.
+ * 2. Drop the parse-time tier markers by parsing into an inert template
+ *    and removing the ATTRIBUTES — never a string replace, so prose or a
+ *    listing that happens to contain the marker text is untouched.
+ *    Re-serialising a serialisation is stable, so nothing else changes.
+ * 3. Remove the common leading indentation of the section, computed and
+ *    applied only OUTSIDE preformatted elements (`<pre>`, `<textarea>`),
+ *    whose line content is verbatim. The elements are located in the
+ *    parsed clone (so a `<pre` inside an attribute or a comment is not a
+ *    range, and an unclosed one is whatever the parser closed) and swapped
+ *    for a one-line sentinel before the dedent. The sentinel is a control
+ *    character chosen to be absent from the serialised text, so authored
+ *    content can never collide with it.
+ */
 function clean(raw: string): string {
-  const lines = raw
-    .replace(/<\\\/script/gi, '</script')
-    .replace(/ data-sem-(?:upgraded|fallback)=""/g, '')
-    .split('\n');
+  const tpl = document.createElement('template');
+  tpl.innerHTML = raw.replace(/<(\\+)\/script/gi, (_m, bs: string) => '<' + bs.slice(1) + '/script');
+  tpl.content.querySelectorAll('[data-sem-upgraded], [data-sem-fallback]').forEach((e) => {
+    e.removeAttribute('data-sem-upgraded');
+    e.removeAttribute('data-sem-fallback');
+  });
+  const keep: string[] = [];
+  let mark = '\u0001';
+  while (tpl.innerHTML.indexOf(mark) >= 0) mark = String.fromCharCode(mark.charCodeAt(0) + 1);
+  tpl.content.querySelectorAll('pre, textarea').forEach((e) => {
+    if (e.parentElement?.closest('pre, textarea')) return; // inner: kept whole with its outer
+    e.replaceWith(document.createTextNode(mark + (keep.push(e.outerHTML) - 1) + mark));
+  });
+  const lines = tpl.innerHTML.split('\n');
   while (lines.length && !lines[0].trim()) lines.shift();
   while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
   let indent = Infinity;
   lines.forEach((l) => {
     if (l.trim()) indent = Math.min(indent, l.match(/^[ \t]*/)![0].length);
   });
-  return lines.map((l) => l.slice(indent < Infinity ? indent : 0)).join('\n');
+  return lines.map((l) => l.slice(indent < Infinity ? indent : 0)).join('\n')
+    .split(mark).map((s, i) => (i % 2 ? keep[+s] : s)).join('');
 }
 
 export function enhanceSourceElement(el: Element): void {

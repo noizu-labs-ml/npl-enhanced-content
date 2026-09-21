@@ -41,7 +41,7 @@
 <div class="sem-enhanced-document">
 
   <h1>Auth Patterns — Sample SemText Document</h1>
-  <p>Demonstrates the v0.4 class-based vocabulary: inline CSS + Tailwind refinement + vanilla fallback handler. Open this file directly in any browser. Every section below sits in a <code>sem-source</code> wrapper: <em>Source</em> shows the markup exactly as this file was written.</p>
+  <p>Demonstrates the v0.4 class-based vocabulary: inline CSS + Tailwind refinement + vanilla fallback handler. Open this file directly in any browser. Every section below sits in a <code>sem-source</code> wrapper: <em>Source</em> shows the section's markup as parsed, before any enhancement.</p>
 
   <div class="sem-agent">
     <div class="sem-agent-name">Auth Guide</div>
@@ -200,6 +200,18 @@
        positional record list is unchanged. -->
   <div class="sem-source" id="s-initial" data-label="Authored source mode" data-view-as="source">
     <p id="s-initial-p">Plain prose inside a wrapper that opens on its own markup.</p>
+  </div>
+
+  <!-- sem-source fidelity fixtures (watcher notes on #17): prose that looks
+       like a tier marker, a preformatted block whose own indentation must
+       survive the section dedent, and a raw-text child holding the escape
+       sequence. Plain HTML only: mints nothing. -->
+  <div class="sem-source" id="s-fidelity" data-label="Fidelity fixtures">
+    <p id="s-fid-text">The marker text data-sem-fallback="" is prose here, not an attribute.</p>
+    <pre id="s-fid-pre"><code>top
+      keep six
+  keep two</code></pre>
+    <script type="text/plain" id="s-fid-raw">before <\/script after</script>
   </div>
 
 </div>

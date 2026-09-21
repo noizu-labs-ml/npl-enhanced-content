@@ -771,7 +771,7 @@ section { padding-block: var(--pg-space) 0; }
         between the rendered result and the markup that produced it. The
         core fallback copies each wrapper's <code>innerHTML</code> into an
         inert <code>text/plain</code> script before any other handler runs,
-        so the fence shows the document as written, not the DOM after the
+        so the fence shows the section as parsed, before any chrome went in, not the DOM after the
         chrome went in; the reading bundle renders that copy through a
         <code>sem-code</code> (copy, wrap) on the first switch. The wrapper
         mints nothing and its children extract as if it were absent.

@@ -23,6 +23,7 @@ import { closureFor, matches, warn as semWarn, type AudienceClosure } from '../s
  */
 export class SemElement extends LitElement {
   #observers = new Set<MutationObserver>();
+  #deferred: Map<string, () => void> | null = null;
 
   /** Light DOM — theme CSS styles the `.sem-*` classes directly. */
   createRenderRoot(): HTMLElement | DocumentFragment {
@@ -92,14 +93,29 @@ export class SemElement extends LitElement {
 
   /**
    * Run `fn` once the document has finished parsing (immediately when it
-   * already has). Attribute writes an element makes at parse time land
+   * already has). `key` names the write: while the parse is still running,
+   * a repeated key replaces the pending function, so one element flushes
+   * each write once at DOMContentLoaded. After the parse the key is not a
+   * memo — each call runs, because each call is a fresh write from a
+   * later update. Pending writes of an element that has disconnected by
+   * the time the flush runs are dropped (it has nothing to write to). Attribute writes an element makes at parse time land
    * BEFORE the fallback core's DOMContentLoaded pass — including the
    * `sem-source` snapshot, which must see the authored markup — so
    * anything that is not needed for anti-flash gating goes through here.
    */
-  afterParse(fn: () => void): void {
+  afterParse(key: string, fn: () => void): void {
     if (typeof document !== 'undefined' && document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => { if (this.isConnected) fn(); }, { once: true });
+      // One listener per element; repeated calls with the same key (a
+      // reactive update during parse) replace the pending write.
+      if (!this.#deferred) {
+        this.#deferred = new Map();
+        document.addEventListener('DOMContentLoaded', () => {
+          const pending = this.#deferred!;
+          this.#deferred = null;
+          if (this.isConnected) pending.forEach((f) => f());
+        }, { once: true });
+      }
+      this.#deferred.set(key, fn);
       return;
     }
     fn();
