@@ -75,6 +75,7 @@
     <sem-event id="m-lit" role="listitem" when="2026-04" status="done"><time datetime="2026-04">Apr 2026</time> Lit upgrade path proven on <code>sem-note</code>.</sem-event>
   </sem-chronology>
 
+  <sem-source id="s-lit" label="Code">
   <h2 id="code-h">Code</h2>
   <sem-code id="c-rotate" lang="ts" filename="src/rotate.ts" mark="2,4-5" controls="copy,wrap">
 <pre><code>export function rotate(pair: Pair): Pair {
@@ -86,6 +87,7 @@
   <sem-code id="c-long" lang="sh">
 <pre><code>curl -sS -X POST "$TOKEN_ENDPOINT" -d grant_type=refresh_token -d refresh_token="$REFRESH" -d client_id="$CLIENT_ID" -d code_verifier="$VERIFIER" -H 'Accept: application/json' | jq -r '.access_token'</code></pre>
   </sem-code>
+  </sem-source>
 
   <h2>References</h2>
   <sem-references id="refs" kind="bibliography" role="list">

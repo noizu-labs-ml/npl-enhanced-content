@@ -22,6 +22,7 @@
 //   Scenario: sem-table — caption, columns, rows in AUTHORED order; the inner <table kind> mints nothing
 //   Scenario: annotated text — columns line and one line per row
 //   Scenario: INVARIANT — sort, filter and every reader control leave output unchanged
+//   Scenario: sem-source is transparent — same records in html and source mode; wrapper, chrome, fence, snapshot mint nothing
 
 import { extractRecords, extractText } from '../../src/extract/records';
 
@@ -275,6 +276,23 @@ describe('extraction — reading elements', () => {
       cy.get('#cite-rfc-1').click();
       cy.get('#r-rfc .sem-references-backlinks a').first().click();
       extract().then((after) => expect(after).to.deep.equal(before));
+    });
+
+    it('sem-source is transparent: identical records in html and source mode, nothing minted', () => {
+      let before;
+      cy.visit('/demo/reading.html');
+      extract().then((r) => { before = r; });
+      cy.get('#s-code > script.sem-source-raw').should('exist');
+      cy.get('#s-code [data-act="source"]').click();
+      cy.get('#s-code .sem-source-fence .sem-code').should('exist');
+      extract().then((after) => {
+        expect(after).to.deep.equal(before);
+        expect(after.some((r) => r.type === 'sem-source' || r.type === 'div' || r.type === 'script')).to.equal(false);
+        // exactly the two authored listings — the fence's sem-code is not a third
+        expect(after.filter((r) => r.type === 'sem-code')).to.have.length(2);
+      });
+      cy.get('#s-code [data-act="html"]').click();
+      extract().then((back) => expect(back).to.deep.equal(before));
     });
 
     it('table sort + filter and every reader control leave output unchanged', () => {
