@@ -10,6 +10,9 @@ semtext/
 │   ├── conventions.html             # The same spec rendered in the format it specifies
 │   ├── extraction.md                # DOM → records → annotated text contract
 │   └── schema/                      # Per-element semantic contracts (BDD source of truth)
+│       ├── sem-audiences.md
+│       ├── sem-chronology.md
+│       ├── sem-code.md
 │       ├── sem-details.md
 │       ├── sem-facts.md
 │       ├── sem-note.md
