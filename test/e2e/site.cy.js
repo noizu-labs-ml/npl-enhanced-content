@@ -15,6 +15,7 @@
 //   Scenario: glossary previews, code chrome, reference backlinks behave
 //   Scenario: audience picker links filter with native hidden
 //   Scenario: a deep link opens the collapsed question it targets
+//   Scenario: the sem-source example flips to its authored markup and back
 //   Scenario: JS-off the Reading section hides nothing and grows no chrome
 //   R/W2 (the page dogfoods sem-reader and shows a live sem-table):
 //   Scenario: the reading bar is the wrapper's first child with an outline of the h2s
@@ -134,6 +135,22 @@ describe('semtext.dev landing page', () => {
       cy.get('#rd-n-operator').should('exist');
     });
 
+    it('the sem-source example flips to its authored markup and back', () => {
+      cy.get('#rd-source').should('have.attr', 'data-sem-fallback');
+      cy.get('#rd-source > .sem-source-chrome .sem-source-label').should('have.text', 'A note and a runbook');
+      cy.get('#rd-src-steps').should('be.visible');
+      cy.get('#rd-source [data-act="source"]').click();
+      cy.get('#rd-src-steps').should('not.be.visible');
+      cy.get('#rd-source .sem-source-fence code').invoke('text').then((t) => {
+        expect(t).to.contain('<div class="sem-procedure" id="rd-src-steps" data-kind="runbook" role="list">');
+        expect(t).not.to.match(/sem-note-summary|data-sem-fallback/);
+      });
+      cy.get('#rd-source .sem-source-fence [data-act="copy"]').should('exist');
+      cy.get('#rd-source [data-act="html"]').click();
+      cy.get('#rd-src-steps').should('be.visible');
+      cy.get('#rd-source .sem-source-fence').should('not.be.visible');
+    });
+
     it('a deep link opens the collapsed question it targets', () => {
       cy.get('#q-markdown details').should('not.have.attr', 'open');
       cy.get('#rd-deep-link').click();
@@ -215,8 +232,9 @@ describe('semtext.dev landing page', () => {
 
     it('JS-off: the Reading section hides nothing and grows no chrome', () => {
       cy.visit('/site/index.html', { onBeforeLoad(win) { win.__semJsOff = true; } });
-      cy.get('.sem-code-chrome, .sem-references-backlinks, .sem-popover, .sem-properties-ref')
+      cy.get('.sem-code-chrome, .sem-references-backlinks, .sem-popover, .sem-properties-ref, .sem-source-chrome, .sem-source-fence, .sem-source-raw')
         .should('not.exist');
+      cy.get('#rd-src-steps').should('be.visible');
       cy.get('#rd-n-operator, #rd-n-reader, #rd-n-public').each(($n) => cy.wrap($n).should('be.visible'));
       cy.get('#rd-code pre').should('be.visible');
       cy.get('#rd-history .sem-event').each(($e) => cy.wrap($e).should('be.visible'));

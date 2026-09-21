@@ -24,6 +24,7 @@
  * deliberately, never silently.
  */
 
+import { enhanceSource } from './source.js';
 import { enhanceFacts } from './facts.js';
 import { enhanceDetails } from './details.js';
 import { enhanceNote } from './note.js';
@@ -53,6 +54,7 @@ export type FallbackHandler = (scope: ParentNode) => void;
  * the hash.
  */
 export const handlers: FallbackHandler[] = [
+  enhanceSource, // FIRST: snapshots sem-source markup before anything touches it
   enhanceFacts,
   enhanceDetails,
   enhanceNote,
@@ -71,6 +73,7 @@ export function enhance(scope: ParentNode = document): void {
 }
 
 export {
+  enhanceSource,
   enhanceFacts,
   enhanceDetails,
   enhanceNote,

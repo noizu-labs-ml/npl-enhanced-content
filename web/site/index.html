@@ -741,12 +741,34 @@ section { padding-block: var(--pg-space) 0; }
           <caption>Shipped scripts, measured by the build</caption>
           <thead><tr><th scope="col">Artifact</th><th scope="col">Minified</th><th scope="col">Gzipped</th><th scope="col">Global</th></tr></thead>
           <tbody>
-            <tr><td>semtext.js</td><td data-value="38.9">38.9 KB</td><td data-value="13.5">13.5 KB</td><td>SemText</td></tr>
-            <tr><td>semtext-fallback.js</td><td data-value="11.9">11.9 KB</td><td data-value="4.3">4.3 KB</td><td>SemTextFallback</td></tr>
-            <tr><td>semtext-reading.js</td><td data-value="16.6">16.6 KB</td><td data-value="6.0">6.0 KB</td><td>SemTextReading</td></tr>
-            <tr><td>semtext-extract.js</td><td data-value="9.1">9.1 KB</td><td data-value="3.3">3.3 KB</td><td>SemTextExtract</td></tr>
+            <tr><td>semtext.js</td><td data-value="41.4">41.4 KB</td><td data-value="14.1">14.1 KB</td><td>SemText</td></tr>
+            <tr><td>semtext-fallback.js</td><td data-value="12.5">12.5 KB</td><td data-value="4.4">4.4 KB</td><td>SemTextFallback</td></tr>
+            <tr><td>semtext-reading.js</td><td data-value="18.8">18.8 KB</td><td data-value="6.6">6.6 KB</td><td>SemTextReading</td></tr>
+            <tr><td>semtext-extract.js</td><td data-value="9.2">9.2 KB</td><td data-value="3.3">3.3 KB</td><td>SemTextExtract</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <h3 id="rd-source-h">Source</h3>
+      <p>
+        <code>sem-source</code> wraps a section and lets the reader flip it
+        between the rendered result and the markup that produced it. The
+        core fallback copies each wrapper's <code>innerHTML</code> into an
+        inert <code>text/plain</code> script before any other handler runs,
+        so the fence shows the document as written, not the DOM after the
+        chrome went in; the reading bundle renders that copy through a
+        <code>sem-code</code> (copy, wrap) on the first switch. The wrapper
+        mints nothing and its children extract as if it were absent.
+      </p>
+      <div class="sem-source" id="rd-source" data-label="A note and a runbook">
+        <div class="sem-note" id="rd-src-note" data-variant="tip">
+          <div class="sem-note-body">Rotate the refresh token on every exchange; the presented token is retired.</div>
+        </div>
+        <div class="sem-procedure" id="rd-src-steps" data-kind="runbook" role="list">
+          <div class="sem-step" role="listitem" data-status="done">issue the pair</div>
+          <div class="sem-step" role="listitem" data-status="current">exchange the refresh token</div>
+          <div class="sem-step" role="listitem">retire the presented token</div>
+        </div>
       </div>
 
       <h3 id="rd-refs-h">References</h3>
