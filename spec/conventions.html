@@ -128,23 +128,19 @@
   <h2 id="2-attribute-catalog">2. Attribute catalog</h2>
   <p>Global attributes (any <code>sem-*</code> element), spelled <strong>bare</strong>:</p>
 
-  <sem-table id="t-attributes" kind="attribute-catalog" controls="sort,filter" sticky>
-    <table>
-      <caption>Global attributes</caption>
-      <thead><tr><th scope="col">Attribute</th><th scope="col">Values</th><th scope="col">Machine meaning</th></tr></thead>
-      <tbody>
-        <tr><td><code>kind</code></td><td>free token (<code>concept</code>, <code>anti-pattern</code>, <code>caveat</code>, …)</td><td>what the data IS</td></tr>
-        <tr><td><code>tags</code></td><td>comma list</td><td>classification</td></tr>
-        <tr><td><code>view-as</code></td><td>element-defined modes</td><td>presentation parameter (identity unchanged)</td></tr>
-        <tr><td><code>status</code></td><td><code>done</code>, <code>current</code>, <code>todo</code>, <code>blocked</code>, <code>pass</code>, <code>fail</code></td><td>lifecycle/verdict</td></tr>
-        <tr><td><code>controls</code></td><td>comma flags: <code>shuffle</code>, <code>filter</code>, <code>retry</code>, <code>picker</code></td><td>which controls render</td></tr>
-        <tr><td><code>collapsed</code></td><td>boolean</td><td>pre-collapse state</td></tr>
-        <tr><td><code>audience</code></td><td>profile spec: <code>a</code>, <code>a, b</code>, <code>!a</code> (profiles from <code>sem-audiences</code>)</td><td>who the datum is for — <a href="#r-sem-audiences">spec/schema/sem-audiences.md</a>; carried verbatim by extraction, never suppresses a record</td></tr>
-        <tr><td><code>id</code></td><td>doc-unique</td><td>stable anchor, cite target — a <code>#id</code> or <code>#container/child</code> hash reaches it through any closed reveal, collapsed note, inactive view or non-current card (fallback <code>target</code>)</td></tr>
-        <tr><td><code>data-*</code></td><td>free</td><td>extension point; also the <strong>alias spelling</strong> of every parameter above (<a href="#appendix-a--class-form-alias-v04-compatibility">Appendix A</a>)</td></tr>
-      </tbody>
-    </table>
-  </sem-table>
+  <sem-md id="md-attributes" kind="attribute-catalog" label="Global attributes" controls="toggle,copy">
+    | Attribute | Values | Machine meaning |
+    | :-- | :-- | :-- |
+    | `kind` | free token (`concept`, `anti-pattern`, `caveat`, …) | what the data IS |
+    | `tags` | comma list | classification |
+    | `view-as` | element-defined modes | presentation parameter (identity unchanged) |
+    | `status` | `done`, `current`, `todo`, `blocked`, `pass`, `fail` | lifecycle/verdict |
+    | `controls` | comma flags: `shuffle`, `filter`, `retry`, `picker` | which controls render |
+    | `collapsed` | boolean | pre-collapse state |
+    | `audience` | profile spec: `a`, `a, b`, `!a` (profiles from `sem-audiences`) | who the datum is for — **`spec/schema/sem-audiences.md`**; carried verbatim by extraction, never suppresses a record |
+    | `id` | doc-unique | stable anchor, cite target — a `#id` or `#container/child` hash reaches it through any closed reveal, collapsed note, inactive view or non-current card (fallback `target`) |
+    | `data-*` | free | extension point; also the **alias spelling** of every parameter above (Appendix A) |
+  </sem-md>
 
   <p>Element-specific parameters (<code>variant</code>, <code>key</code>, <code>name</code>, <code>summary</code>, <code>value</code>, <code>label</code>, <code>when</code>, <code>until</code>, <code>lang</code>, <code>filename</code>, <code>mark</code>, <code>wrap</code>, <code>href</code>, <code>cite</code>, <code>implies</code>, <code>sticky</code>, <code>outline-depth</code>) follow the same rule: bare on the element, documented per schema.</p>
 
@@ -378,7 +374,7 @@
   | access  | 15 min   | no      |
   | refresh | 30 days  | yes     |
 &lt;/sem-md&gt;</code></pre></sem-code>
-  <p>The element's text is Markdown (GFM tables, headings, lists, emphasis, links, code, quotes, rules; raw HTML renders as text). The Markdown bundle adds <code>.sem-md-chrome</code> (label, <code>Markdown</code> toggle with <code>aria-pressed</code>, copy, status region), renders into <code>.sem-md-body</code> (real <code>&lt;table&gt;</code> with <code>th[scope="col"]</code>, alignment row honoured) and keeps the normalised source in a <code>sem-code</code> fence (<code>.sem-md-raw</code>); <code>view-as="rendered|raw"</code> picks the initial mode and the toggle rewrites <code>data-view-as</code>. JS-off: the source reads as pre-wrapped text. Extraction keeps <code>source</code> <strong>normalised</strong> (dedented), never the rendering. The tables in <a href="#3-npl-notation-inside-tags">§3</a>, <a href="#10-open-questions">§10</a> and <a href="#appendix-a--class-form-alias-v04-compatibility">Appendix A</a> are this element.</p>
+  <p>The element's text is Markdown (GFM tables, headings, lists, emphasis, links, code, quotes, rules; raw HTML renders as text). The Markdown bundle adds <code>.sem-md-chrome</code> (label, <code>Markdown</code> toggle with <code>aria-pressed</code>, copy, status region), renders into <code>.sem-md-body</code> (real <code>&lt;table&gt;</code> with <code>th[scope="col"]</code>, alignment row honoured) and keeps the normalised source in a <code>sem-code</code> fence (<code>.sem-md-raw</code>); <code>view-as="rendered|raw"</code> picks the initial mode and the toggle rewrites <code>data-view-as</code>. JS-off: the source reads as pre-wrapped text. Extraction keeps <code>source</code> <strong>normalised</strong> (dedented), never the rendering. Every table on this page — <a href="#2-attribute-catalog">§2</a>, <a href="#3-npl-notation-inside-tags">§3</a>, <a href="#10-open-questions">§10</a>, <a href="#appendix-a--class-form-alias-v04-compatibility">Appendix A</a> — is this element, with rows identical to the Markdown source.</p>
   <sem-source id="s-md" label="Live: sem-md">
     <sem-md id="x-md" kind="lifetimes" label="Token lifetimes" controls="toggle,copy">
       | Token   | Lifetime | Rotates |

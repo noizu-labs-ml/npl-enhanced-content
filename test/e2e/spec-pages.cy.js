@@ -59,6 +59,7 @@ const PAGES = [
       ['sem-table[controls]', 'sem-table th .sem-table-sort'],
       ['sem-references', 'sem-references .sem-references-backlinks'],
       ['sem-md', 'sem-md[data-sem-fallback], sem-md[data-sem-upgraded]'],
+      ['sem-md#md-attributes', 'sem-md#md-attributes > .sem-md-body > table th[scope="col"]'],
       ['sem-note[collapsed]', 'sem-note[collapsed] > .sem-note-summary'],
     ],
     // zero-JS elements: present and visible in every tier
@@ -101,6 +102,24 @@ PAGES.forEach((page) => {
         expect(prose, 'data-<parameter> on a vocabulary element').not.to.match(/<sem-[a-z-]+[^>]*\sdata-(?!sem-)/);
         expect(body).to.match(/<sem-enhanced-document\b/);
         expect(body).to.match(/<sem-facts id="x-facts" view-as="flashcards"/);
+      });
+    });
+
+    it('authors every table as sem-md with rows identical to the normative Markdown', () => {
+      cy.readFile('spec/conventions.md').then((md) => {
+        cy.request(page.url).its('body').then((html) => {
+          const body = stripComments(html).replace(/^[\s\S]*<body[^>]*>/i, '');
+          // no hand-written <table> outside the one live sem-table example
+          const tables = (body.match(/<table\b/gi) || []).length;
+          expect(tables, 'authored <table> elements').to.equal(1);
+          const unescape = (t) => t.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+          // the live §5 example inside a sem-source is a demo, not a spec table
+          const spec = body.replace(/<sem-source\b[\s\S]*?<\/sem-source>/gi, '');
+          const rows = [...spec.matchAll(/<sem-md\b[^>]*>([\s\S]*?)<\/sem-md>/gi)]
+            .flatMap((m) => unescape(m[1]).split('\n').map((l) => l.trim()).filter((l) => /^\|/.test(l)));
+          expect(rows.length, 'sem-md table rows').to.be.greaterThan(40);
+          rows.forEach((row) => expect(md, row).to.contain(row));
+        });
       });
     });
 
