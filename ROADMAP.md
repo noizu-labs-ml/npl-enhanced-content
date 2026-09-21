@@ -4,7 +4,7 @@ Living planning doc. **Supersedes PRD.md §10 for forward planning**; PRD.md rem
 format/spec authority (§1–§9 unchanged and binding). Update this file at every milestone
 exit — status drift here is a bug.
 
-Status snapshot: **2026-09-21 · develop = bd3c398 + R/W0 PR open**
+Status snapshot: **2026-09-21 · develop = f6cf10f (W0 + W1 merged) + R/W2 PR open**
 
 ## Non-negotiable invariants (guardrails — every milestone inherits these)
 
@@ -30,7 +30,7 @@ Status snapshot: **2026-09-21 · develop = bd3c398 + R/W0 PR open**
 | T  | Theme pipeline (parallel track) | ⬜ not started |
 | M4 | sem-question 7 types + highlight occlusion | ⬜ not started |
 | M5 | Tier-2 elements + MHTML + distribution + npm publish prep | ⬜ not started |
-| R  | Reading experience (W0 foundations → W1 prose → W2 chrome+data → W3 themes) | 🔶 W0 + W1 in PR (W1 stacks on W0) |
+| R  | Reading experience (W0 foundations → W1 prose → W2 chrome+data → W3 themes) | 🔶 W0 + W1 merged; W2 in PR |
 
 ### M1 — Format spec v0 + Tier-0 schemas ✅ (re-baselined)
 
@@ -84,9 +84,9 @@ extraction restores authored order.
 
 | Wave | Contents | Status |
 |---|---|---|
-| **W0 Foundations** | D10 + D12 repaid; print stylesheet; `prefers-reduced-motion`; `src/fallback/target.ts` deep-link resolver (opens reveal/note/view/card, `.sem-target`, `beforeprint` disclosure); **audience close-out** (`spec/schema/sem-audiences.md`, `src/fallback/audience.ts`, `data-audience` canonical in `lit/base.ts`, extraction populates `audience`, extraction.md §7 closed); `sem-note view-as="margin"`; `src/shared/summary.ts` shared by render + extraction; budgets below | 🔶 in PR (`feature/reading-experience-w0`) |
-| W1 Prose | `sem-chronology`/`sem-event` (CSS-only), `sem-code`, `sem-references`/`sem-reference`, glossary mode, `src/shared/popover.ts`, reading bundle + `<!-- sem:inline reading -->` | ⬜ |
-| W2 Chrome + data | `sem-reader` (outline, progress, focus, type, color, print, audience controls; theme deferred), `sem-table` (sort/filter, source-index ordering), site dogfoods `sem-reader` | ⬜ |
+| **W0 Foundations** | D10 + D12 repaid; print stylesheet; `prefers-reduced-motion`; `src/fallback/target.ts` deep-link resolver (opens reveal/note/view/card, `.sem-target`, `beforeprint` disclosure); **audience close-out** (`spec/schema/sem-audiences.md`, `src/fallback/audience.ts`, `data-audience` canonical in `lit/base.ts`, extraction populates `audience`, extraction.md §7 closed); `sem-note view-as="margin"`; `src/shared/summary.ts` shared by render + extraction; budgets below | ✅ merged (#10) |
+| W1 Prose | `sem-chronology`/`sem-event` (CSS-only), `sem-code`, `sem-references`/`sem-reference`, glossary mode, `src/shared/popover.ts`, reading bundle + `<!-- sem:inline reading -->` | ✅ merged (#12) |
+| W2 Chrome + data | `sem-reader` (outline, progress, focus, type, color, print, audience controls; theme deferred), `sem-table` (sort/filter, source-index ordering), site dogfoods `sem-reader` + shows a live `sem-table`; explicit `[data-color-mode="dark"]` token block | 🔶 in PR (`feature/reading-experience-w2`) |
 | W3 Themes | reader `theme` control, dark tokens, retire planned `sem-themes` | ⬜ after Track T |
 
 **Size budgets (raw minified, enforced by `npm run build:strict`)**
@@ -94,9 +94,9 @@ extraction restores authored order.
 | Artifact | W0 | W1 | W2 | W3 |
 |---|---|---|---|---|
 | `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | 12 | 12 |
-| `semtext-reading.js` | — | **8** (measured 6.8) | 14 | 14.5 |
-| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | 56 | 57 |
-| `semtext-extract.js` | 10 | **12** (measured 7.9) | 12 | 12 |
+| `semtext-reading.js` | — | **8** (measured 6.8) | **16** (measured 15.5; planned 14 — see W2 decisions) | 16.5 |
+| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 37.8) | 57 |
+| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.0) | 12 |
 
 **W1 decisions (recorded).** Glossary mode lives in the *reading* bundle,
 not the fallback core: the core sits at 11.9 / 12 KB after W0 and the
@@ -107,9 +107,28 @@ on DOM state so either script may run first. `sem-chronology` mints no
 custom element (CSS-only, pattern `sem-procedure`). `sem-code.source` is
 extracted verbatim (second recorded exception to normalised text).
 
+**W2 decisions (recorded).** The reading bundle measured **15.5 KB**
+against the planned 14 KB, so the budget is set at 16 KB rather than the
+plan's figure. The reader alone bundles to 6.4 KB: 4.2 KB of its own
+plus the shared `state` (hash + storage) and `audience` (profile parsing)
+modules it needs to write the hash and list profiles — both already in
+the fallback core, but the reading bundle cannot import from a sibling
+IIFE. A compaction pass took the reader from 7.1 to 6.4 KB; going further
+would drop a control (each is a spec deliverable) or fork the shared
+modules, which is the drift W1 was built to avoid. `sem-reader` is the
+second authored element in the extraction skip set (§3 rule 7).
+`sem-table` is the vocabulary's only DOM-reordering runtime; extraction
+restores authored order from `data-sem-source-index` (§5 recorded
+exception) and the inner `<table kind>` mints no record of its own. The
+planned JSON payload for `sem-table` is dropped: the authored markup is
+the data. The site's W1 audience picker links stay beside the reader's
+audience select — both write the same hash parameter — because the copy
+documents "a link is a picker". The theme control (`sem-themes` retirement)
+remains W3, after Track T.
+
 ### M5 — Tier-2 + distribution + publish prep
 
-- Tier-2 elements: chronology, table, query, theme-picker, md-aid.
+- Tier-2 elements: ~~chronology~~ (R/W1), ~~table~~ (R/W2), query, ~~theme-picker~~ (→ `sem-reader theme`, R/W3), md-aid.
 - Forms: single-file inlined (proven by PR#2's standalone page) and **MHTML round-trip**.
 - **Distribution:** apply + seed `cdn.derobot.is` (infra committed on monorepo develop
   e8e2d35b, not yet applied — see monorepo runbook). Assets get `Cache-Control=immutable`

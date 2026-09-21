@@ -19,8 +19,10 @@ semtext/
 │       ├── sem-procedure.md
 │       ├── sem-progress.md
 │       ├── sem-properties.md
+│       ├── sem-reader.md
 │       ├── sem-references.md
 │       ├── sem-reveal.md
+│       ├── sem-table.md
 │       └── sem-views.md
 ├── src/
 │   ├── index.ts                     # Lit-tier entry → dist/semtext.js
@@ -31,7 +33,9 @@ semtext/
 │   │   ├── sem-facts.ts
 │   │   ├── sem-note.ts
 │   │   ├── sem-properties.ts
-│   │   └── sem-references.ts
+│   │   ├── sem-reader.ts              # thin wrappers over src/reading/* (R/W2)
+│   │   ├── sem-references.ts
+│   │   └── sem-table.ts
 │   ├── fallback/                    # Vanilla tier — NO Lit dependency → dist/semtext-fallback.js
 │   │   ├── index.ts
 │   │   ├── audience.ts                # profile-gated visibility (native `hidden`)
@@ -43,11 +47,13 @@ semtext/
 │   │   ├── reveal.ts
 │   │   ├── target.ts                  # deep-link resolver + print disclosure (registered last)
 │   │   └── views.ts
-│   ├── reading/                     # Prose-reading tier — NO Lit → dist/semtext-reading.js (R/W1)
-│   │   ├── index.ts                   # document scan; skips [data-sem-upgraded]
+│   ├── reading/                     # Prose-reading tier — NO Lit → dist/semtext-reading.js (R/W1+W2)
+│   │   ├── index.ts                   # document scan; skips [data-sem-upgraded]; reader runs last
 │   │   ├── code.ts                    # sem-code chrome, marks, copy, wrap
 │   │   ├── glossary.ts                # sem-properties view-as=glossary previews
-│   │   └── references.ts              # citation previews, backlinks
+│   │   ├── reader.ts                  # sem-reader outline/progress/focus/type/colour/print/audience (R/W2)
+│   │   ├── references.ts              # citation previews, backlinks
+│   │   └── table.ts                   # sem-table sort/filter, source-index stamp (R/W2)
 │   ├── extract/                     # Record extraction → dist/semtext-extract.js
 │   │   ├── index.ts
 │   │   └── records.ts
@@ -66,12 +72,12 @@ semtext/
 ├── web/
 │   ├── demo/                        # Showcase + reference documents (marker sources)
 │   │   ├── index.html                 # v0.4 class-based baseline, fallback tier
-│   │   ├── reading.html               # R/W1 prose elements, class form (fallback + reading)
+│   │   ├── reading.html               # R/W1+W2 reading elements, class form (fallback + reading)
 │   │   ├── reading-lit.html           # same document, element form (+ Lit bundle)
 │   │   └── standalone-lit.html        # Lit-tier upgrade page
 │   └── site/
 │       └── index.html                 # semtext.dev marketing page (PLACEHOLDER)
-├── test/                            # Cypress e2e — 20 specs
+├── test/                            # Cypress e2e — 22 specs
 │   ├── e2e/
 │   │   ├── deep-links.cy.js
 │   │   ├── extraction-reading.cy.js
@@ -88,8 +94,10 @@ semtext/
 │   │   ├── sem-procedure.cy.js
 │   │   ├── sem-progress.cy.js
 │   │   ├── sem-properties.cy.js
+│   │   ├── sem-reader.cy.js
 │   │   ├── sem-references.cy.js
 │   │   ├── sem-reveal.cy.js
+│   │   ├── sem-table.cy.js
 │   │   ├── sem-views.cy.js
 │   │   └── standalone-lit.cy.js
 │   └── support/e2e.js
@@ -117,7 +125,7 @@ semtext/
 | `spec/` | Tier-0 normative documents. This repo is spec-first: schema change precedes conventions change precedes code precedes e2e. |
 | `src/lit/` | Lit 3 elements, light DOM so content stays searchable and extractable. Bundled with Lit into `dist/semtext.js`. |
 | `src/fallback/` | The vanilla tier. It must run in a document that never loads Lit, so it may not import from `src/lit/` — the separation is load-bearing, not stylistic. |
-| `src/reading/` | Second vanilla tier (R/W1): prose-reading behaviours that would not fit the fallback core's 12 KB budget. Same rules as `fallback/`; the Lit wrappers in `src/lit/` import its per-element enhance functions so there is one behaviour implementation. |
+| `src/reading/` | Second vanilla tier (R/W1+W2): prose-reading behaviours and reading chrome (reader, table) that would not fit the fallback core's 12 KB budget. Same rules as `fallback/`; the Lit wrappers in `src/lit/` import its per-element enhance functions so there is one behaviour implementation. |
 | `src/extract/` | DOM → records → annotated text, per `spec/extraction.md`. |
 | `src/shared/` | Helpers imported by both tiers; must stay Lit-free for the same reason as `fallback/`. |
 | `themes/` | Deliberately top-level rather than under `web/`: theme CSS is a package subpath export (`semtext/themes/*`) and a CDN asset on cdn.semtext.dev, consumed independently of the marketing site. |

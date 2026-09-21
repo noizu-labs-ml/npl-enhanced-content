@@ -28,6 +28,8 @@ vocabulary for the Lit milestone; the class mapping below is mechanical.
 | `<sem-code lang filename mark wrap controls>` › `<pre><code>` | `div.sem-code[data-lang][data-filename][data-mark][data-controls]` › `<pre><code>` |
 | `<sem-references kind>` / `<sem-reference id href cite>` | `div.sem-references[data-kind]` › `div.sem-reference[id][data-href][data-cite]`; citations are plain `<a href="#id">` |
 | `<sem-properties view-as="glossary">` | `div.sem-properties[data-view-as="glossary"]` › `div.sem-property[id][data-key]`; term anchors `<a href="#id">`, `<dfn>` optional |
+| `<sem-reader controls outline-depth>` › optional `<nav aria-label="Contents">` | `div.sem-reader[data-controls][data-outline-depth]` › same optional nav; chrome, mints nothing |
+| `<sem-table controls sticky>` › `<table>` | `div.sem-table[data-controls][data-sticky]` › authored `<table>` (`<th scope="col">`, `td[data-value]` sort keys) |
 
 CSS layering (all inline in `<head>`): (1) plain core CSS — theme tokens on
 `[data-sem-theme]` + component base, offline-safe; (2) `<style
@@ -161,8 +163,9 @@ both present; authors pick one per fact.
    toggles, `<highlight>` occlusion, basic quiz checking, audience gating,
    deep-link resolution, print disclosure. **Zero external resources
    required for full baseline interactivity.** Prose-reading behaviours
-   (sem-code chrome, reference / glossary previews, backlinks) ship in a
-   second vanilla script, `dist/semtext-reading.js` (≤8 KB raw, marker
+   (sem-code chrome, reference / glossary previews, backlinks, and from
+   R/W2 the `sem-reader` chrome and `sem-table` sort / filter) ship in a
+   second vanilla script, `dist/semtext-reading.js` (≤16 KB raw, marker
    `<!-- sem:inline reading -->`), under the same rules; it marks what it
    wired with `data-sem-fallback` and skips elements a Lit wrapper already
    upgraded. Documents without those elements need not carry it.
@@ -346,6 +349,38 @@ previews on citing anchors (`.sem-references-ref`, popover
 N"`) and an external link. Citations mint nothing; print shows `(href)`
 inside the block only.
 
+**sem-reader** — reading chrome: outline, progress, focus, type, colour,
+print, audience. **Normative: `spec/schema/sem-reader.md`.**
+```html
+<div class="sem-reader" data-controls="outline,progress,focus,type,color,print,audience" data-outline-depth="3">
+  <nav aria-label="Contents">…optional, used verbatim…</nav>
+</div>
+```
+One per document, first child of the wrapper. Reading bundle inserts
+`.sem-reader-chrome` (`role="region"`), generates the outline from
+`h2…h<depth>` when no nav is authored (`aria-current="location"` tracks
+the heading in view), and writes `data-sem-mode|type|font` and
+`data-color-mode` on `<html>` — persisted via `localStorage`, fail-open.
+Audience writes the `sem-audience` hash parameter. No global key
+shortcuts. **Mints nothing**; extraction skips it whole (extraction §3
+rule 7). The `theme` control is R/W3.
+
+**sem-table** — sortable, filterable authored table.
+**Normative: `spec/schema/sem-table.md`.**
+```html
+<div class="sem-table" data-controls="sort,filter" data-sticky>
+  <table><caption>…</caption><thead><tr><th scope="col">…</th></tr></thead>
+  <tbody><tr><td data-value="900">15 min</td></tr></tbody></table>
+</div>
+```
+The `<table>` is the contract (no JSON payload). Reading bundle stamps
+every body row `data-sem-source-index` once, wraps headers in
+`button.sem-table-sort` (`aria-sort` cycle), filters with native `hidden`,
+announces via `.sem-table-status`. Extraction returns
+`{caption, columns[], rows[][]}` in **authored** order from the stamp —
+the recorded §5 exception. `data-sticky` header and `kind="comparison"`
+first column are CSS in every tier.
+
 **sem-progress** — completion meter.
 **Normative: `spec/schema/sem-progress.md`.**
 ```html
@@ -374,9 +409,9 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
 ### Tier 2
 
 - `sem-chronology` / `sem-event when` — ✅ shipped (R/W1, Tier 0 above).
-- `sem-table` (R/W2) — authored `<table>` is the contract; `sem-query`
-  deferred.
-- `sem-themes controls="picker"` — floating switcher.
+- `sem-table` — ✅ shipped (R/W2, Tier 0 above); `sem-query` deferred.
+- `sem-themes controls="picker"` — subsumed by `sem-reader`'s `theme`
+  control (R/W3, after Track T).
 - md→SemText authoring aid (optional, never required).
 
 ## 6. Theme conventions
