@@ -272,7 +272,7 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 /* reader — one chrome per document (R/W2, spec/schema/sem-reader.md).
    Sticky bar; the outline drops below it as a panel. JS-off the element
    holds only an authored nav (or nothing) and the rules below are inert. */
-:is(sem-reader, .sem-reader) { position: sticky; top: 0; z-index: 40; }
+:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) { position: sticky; top: 0; z-index: 40; }
 .sem-reader-chrome { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem;
   padding: .45rem .75rem .55rem; background: var(--sem-surface); border-bottom: 1px solid var(--sem-border);
   font-family: system-ui, sans-serif; font-size: .8rem; color: var(--sem-muted); }
