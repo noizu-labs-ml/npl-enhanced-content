@@ -219,7 +219,8 @@ describe('sem-reader', () => {
 
     it('generates one link per h2/h3 in the wrapper, assigning runtime ids', () => {
       cy.get('#rd nav.sem-reader-outline[aria-label="Contents"]').should('have.length', 1);
-      cy.get('.sem-enhanced-document h2, .sem-enhanced-document h3').then(($h) => {
+      // headings rendered inside a sem-md body are that record's content, not outline entries
+      cy.get('.sem-enhanced-document :is(h2, h3):not(.sem-md-body *)').then(($h) => {
         cy.get('#rd nav.sem-reader-outline a').should('have.length', $h.length);
         // authored ids (rv-h, vw-h) are kept; the rest get runtime ids
         $h.each((_, h) => expect(h.id).to.match(/^(sem-h-\d+|rv-h|vw-h)$/));
@@ -229,7 +230,7 @@ describe('sem-reader', () => {
       });
       cy.get('#rd nav.sem-reader-outline a').first().should('have.text', 'Glossary');
       // sibling h2s stay flat; the two h3s under "Disclosures" nest in one sub-list
-      cy.get('.sem-enhanced-document h2').then(($h2) => {
+      cy.get('.sem-enhanced-document h2:not(.sem-md-body *)').then(($h2) => {
         cy.get('#rd nav.sem-reader-outline > ol > li > a').should('have.length', $h2.length);
       });
       cy.get('#rd nav.sem-reader-outline ol ol').should('have.length', 1);

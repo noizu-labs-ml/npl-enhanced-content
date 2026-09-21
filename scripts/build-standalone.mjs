@@ -21,6 +21,9 @@
  *   <!-- sem:inline fallback -->                   dist/semtext-fallback.js
  *   <!-- sem:inline reading -->                    dist/semtext-reading.js
  *   <!-- sem:inline extract -->                    dist/semtext-extract.js
+ *   <!-- sem:inline md -->                         dist/semtext-md.js
+ *       (order-independent w.r.t. `reading`: either script enhances the
+ *        raw fence, and the md bundle re-checks on every scan)
  *   <!-- sem:inline theme <name> -->               themes/<name>.css
  *   <!-- sem:inline vocabulary -->                 themes/_vocabulary.css
  *
@@ -55,6 +58,8 @@ function expand(kind, arg) {
       return `<script id="sem-reading">\n${readOrDie(resolve(root, 'dist/semtext-reading.js'), 'reading')}\n</script>`;
     case 'extract':
       return `<script id="sem-extract">\n${readOrDie(resolve(root, 'dist/semtext-extract.js'), 'extract')}\n</script>`;
+    case 'md':
+      return `<script id="sem-md">\n${readOrDie(resolve(root, 'dist/semtext-md.js'), 'md')}\n</script>`;
     case 'theme': {
       if (!arg) throw new Error('marker "theme" requires a theme name');
       return `<style data-sem-theme-source="${arg}">\n${readOrDie(resolve(root, 'themes', `${arg}.css`), 'theme')}\n</style>`;

@@ -18,6 +18,7 @@
  */
 
 import { deriveSummary } from '../shared/summary.js';
+import { normalizeMd } from '../shared/mdsource.js';
 import { parseMarks } from '../shared/marks.js';
 
 /** One extracted record. Shape is normative; see spec/extraction.md §2. */
@@ -72,7 +73,9 @@ const RECORD_TYPES = [
   'sem-references',
   'sem-reference',
   // R/W2 (spec/schema/sem-table.md); sem-reader is chrome and is NOT here
-  'sem-table'
+  'sem-table',
+  // R/W2.2 (spec/schema/sem-md.md)
+  'sem-md'
 ] as const;
 
 /**
@@ -115,7 +118,12 @@ const CHROME_CLASSES = [
   // it) and the core's text/plain snapshot are never content
   'sem-source-chrome',
   'sem-source-fence',
-  'sem-source-raw'
+  'sem-source-raw',
+  // sem-md: the toggle/copy chrome, the rendered body and the raw fence
+  // (the sem-code inside it included) are never content
+  'sem-md-chrome',
+  'sem-md-body',
+  'sem-md-raw'
 ];
 
 /** Highlight / cloze markers, in every authoring and runtime form. */
@@ -511,6 +519,20 @@ function buildCode(el: Element): Payload {
   };
 }
 
+function buildMd(el: Element): Payload {
+  // `source` is the NORMALISED Markdown (spec/schema/sem-md.md, machine
+  // contract): once enhanced, the element's text lives in the raw fence's
+  // <code> (byte-identical to what the renderer saw); JS-off it is the
+  // element's own text, which the same normalisation reduces to the same
+  // string. Chrome, body and fence are skipped by the walker; the fence is
+  // read here on purpose.
+  const fence = el.querySelector(':scope > .sem-md-raw code');
+  // normalised on BOTH paths (idempotent on an already-normalised fence),
+  // so the invariant does not rest on the fence staying byte-identical
+  const source = normalizeMd(collectText(fence || el, isChrome));
+  return { fields: { source: source }, text: norm(source) };
+}
+
 function buildReference(el: Element): Payload {
   return {
     fields: {
@@ -591,6 +613,8 @@ function payloadFor(type: string, el: Element): Payload {
       return buildCode(el);
     case 'sem-reference':
       return buildReference(el);
+    case 'sem-md':
+      return buildMd(el);
     case 'sem-table':
       return buildTable(el);
     case 'sem-facts':
@@ -699,7 +723,8 @@ const TEXTUAL_FIELDS: Record<string, string[]> = {
   'sem-event': ['when', 'until', 'status'],
   'sem-code': ['lang', 'filename'],
   'sem-reference': ['href', 'cite'],
-  'sem-table': ['columns']
+  'sem-table': ['columns'],
+  'sem-md': []
 };
 
 /**
@@ -712,9 +737,10 @@ export function renderRecordsAsText(records: SemRecord[]): string {
     const r = records[i];
     const pad = new Array(depthOf(records, r) + 1).join('  ');
     let head = pad + r.type + annotate(r);
-    // sem-code renders its verbatim source as a block below instead of
-    // repeating the normalised text on the head line.
-    if (r.text && r.type !== 'sem-code') head += ': ' + r.text;
+    // sem-code and sem-md render their verbatim source as a block below
+    // instead of repeating the normalised text on the head line.
+    const block = r.type === 'sem-code' || r.type === 'sem-md';
+    if (r.text && !block) head += ': ' + r.text;
     lines.push(head);
 
     const extra = TEXTUAL_FIELDS[r.type] || [];
@@ -734,7 +760,7 @@ export function renderRecordsAsText(records: SemRecord[]): string {
       const rows = r.fields.rows as string[][];
       for (let k = 0; k < rows.length; k++) lines.push(pad + '    ' + rows[k].join(' | '));
     }
-    if (r.type === 'sem-code') {
+    if (block) {
       const src = String(r.fields.source || '');
       if (src !== '') {
         lines.push(pad + '  source:');

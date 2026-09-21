@@ -523,6 +523,22 @@
   <div class="sem-progress" id="spec-progress" data-value="0.7" data-label="Tier-0 spec coverage"
        role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7"></div>
 
+  <h3>sem-source — rendered ↔ authored markup</h3>
+<pre>&lt;div class="sem-source" data-label="Facts — flashcards" data-view-as="html"&gt;
+  &lt;h2&gt;Facts — flashcards&lt;/h2&gt;
+  &lt;div class="sem-facts" data-view-as="flashcards"&gt;…&lt;/div&gt;
+&lt;/div&gt;</pre>
+  <p>A transparent wrapper for documents that teach the vocabulary: chrome <code>Rendered | Source</code> (<code>aria-pressed</code>) flips between the rendered children and their literal markup in a <code>sem-code</code> fence (copy, wrap). The core fallback snapshots each wrapper's <code>innerHTML</code> before any other handler runs, so the fence shows the document as written. <code>data-view-as="html|source"</code> is runtime-mutable presentation. Mints nothing; its children extract exactly as they would without it; JS-off shows the rendered children only. Normative: <code>spec/schema/sem-source.md</code>.</p>
+
+  <h3>sem-md — a Markdown block</h3>
+<pre>&lt;div class="sem-md" data-label="Token lifetimes" data-controls="toggle,copy"&gt;
+  | Token   | Lifetime | Rotates |
+  | :------ | -------: | :-----: |
+  | access  | 15 min   | no      |
+  | refresh | 30 days  | yes     |
+&lt;/div&gt;</pre>
+  <p>The element's text is Markdown — GFM tables, headings, paragraphs, lists, block quotes, rules, fenced code, and inline code / emphasis / links; raw HTML renders as text and <code>javascript:</code> URLs lose their href. Common indentation is stripped (authors indent freely; <code>&lt;</code> and <code>&amp;</code> are written as entities). The Markdown bundle adds <code>.sem-md-chrome</code> (label, <code>Markdown</code> toggle with <code>aria-pressed</code>, <code>Copy</code>, a <code>role="status"</code> region), renders into <code>.sem-md-body</code> (real <code>&lt;table&gt;</code>, <code>th[scope="col"]</code>, alignment row honoured) and keeps the normalised source in a <code>sem-code</code> fence (<code>.sem-md-raw</code>). <code>data-view-as="rendered|raw"</code> is runtime-mutable presentation. JS-off: the source reads as pre-wrapped text; print shows the rendered body. Extraction: <code>{source}</code>, the normalised Markdown, emitted as an indented block in annotated text. Normative: <code>spec/schema/sem-md.md</code>.</p>
+
   <h3>Tier 1 &amp; 2 — planned</h3>
   <p>Tier 1: <code>sem-question</code> with 7 TRP types. Tier 2: <code>sem-chronology</code>, <code>sem-table</code>, <code>sem-query</code>, <code>sem-themes</code>.</p>
 

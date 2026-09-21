@@ -87,7 +87,8 @@ extraction restores authored order.
 | **W0 Foundations** | D10 + D12 repaid; print stylesheet; `prefers-reduced-motion`; `src/fallback/target.ts` deep-link resolver (opens reveal/note/view/card, `.sem-target`, `beforeprint` disclosure); **audience close-out** (`spec/schema/sem-audiences.md`, `src/fallback/audience.ts`, `data-audience` canonical in `lit/base.ts`, extraction populates `audience`, extraction.md §7 closed); `sem-note view-as="margin"`; `src/shared/summary.ts` shared by render + extraction; budgets below | ✅ merged (#10) |
 | W1 Prose | `sem-chronology`/`sem-event` (CSS-only), `sem-code`, `sem-references`/`sem-reference`, glossary mode, `src/shared/popover.ts`, reading bundle + `<!-- sem:inline reading -->` | ✅ merged (#12) |
 | W2 Chrome + data | `sem-reader` (outline, progress, focus, type, color, print, audience controls; theme deferred), `sem-table` (sort/filter, source-index ordering), site dogfoods `sem-reader` + shows a live `sem-table`; explicit `[data-color-mode="dark"]` token block | ✅ merged (#14) |
-| **W2.1 Source** | `sem-source` rendered/source section wrapper (core snapshot + reading-bundle fence over `sem-code`); every `web/demo/index.html` section wrapped; site example | 🔶 in PR (`feature/demo-source-toggle`) |
+| **W2.1 Source** | `sem-source` rendered/source section wrapper (core snapshot + reading-bundle fence over `sem-code`); every `web/demo/index.html` section wrapped; site example | ✅ merged (#17) |
+| **W2.2 Markdown** | `sem-md`: Markdown block rendered in the browser (GFM tables first), rendered / raw toggle, copy; own bundle `dist/semtext-md.js`; `src/shared/mdsource.ts` + `clipboard.ts`; extraction `{source}`; site Reading example | 🔶 in PR (`feature/sem-md`) |
 | W3 Themes | reader `theme` control, dark tokens, retire planned `sem-themes` | ⬜ after Track T |
 
 **Size budgets (raw minified, enforced by `npm run build:strict`)**
@@ -96,8 +97,9 @@ extraction restores authored order.
 |---|---|---|---|---|
 | `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **12.5** (measured 12.5 after W2.1 — see W2.1 decisions) | 12.5 |
 | `semtext-reading.js` | — | **8** (measured 6.8) | **19** (measured 16.6 at W2, 18.8 after W2.1 — see W2 and W2.1 decisions) | 19.5 |
-| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9) | 57 |
-| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1) | 12 |
+| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 48.3 after W2.1 + W2.2 review fixes) | 57 |
+| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 |
+| `semtext-md.js` | — | — | **8** (W2.2, measured 8.0 — 8170 bytes after review) | 8 |
 
 **W1 decisions (recorded).** Glossary mode lives in the *reading* bundle,
 not the fallback core: the core sits at 11.9 / 12 KB after W0 and the
@@ -148,6 +150,42 @@ the data. The site's W1 audience picker links stay beside the reader's
 audience select — both write the same hash parameter — because the copy
 documents "a link is a picker". The theme control (`sem-themes` retirement)
 remains W3, after Track T.
+
+**W2.2 decisions (recorded).** `sem-md` ships as its **own bundle**
+(`dist/semtext-md.js`, global `SemTextMd`, marker `<!-- sem:inline md -->`,
+export `semtext/md`) rather than growing the reading bundle: the parser is
+the largest single behaviour in the vocabulary and most documents carry
+no Markdown. The parser is hand-written (`src/md/parse.ts`, a GFM subset:
+tables, headings, paragraphs, lists, quotes, rules, fenced code, inline
+code / strong / em / del / links / images / escapes) because no vendored
+Markdown library fits an 8 KB budget with its licence header; output is
+built with `createElement` / `textContent` only, so raw HTML in the
+Markdown is text and `javascript:` URLs are dropped. Measured **7.0 KB**
+against the 8 KB budget after one decision: the raw fence's copy / wrap
+chrome is `sem-code`'s, and importing `reading/code.ts` cost 3.3 KB
+(9.0 KB total), so the Markdown bundle **borrows** `enhanceCodeElement`
+from the reading bundle's global at runtime (the Lit wrapper imports it;
+`semtext.js` grew ≈6 KB, 48.3 KB after W2.1 + W2.2 against 56). The clipboard helper moved to
+`src/shared/clipboard.ts` so both elements copy the same way. `source` is
+the **normalised** Markdown (dedented, blank edges trimmed — the one rule
+in `src/shared/mdsource.ts`), the third recorded exception to normalised
+text; extraction reads it from the raw fence once enhanced and from the
+element's text otherwise, and the rendered body is never extracted.
+`data-view-as` joins the §5c mutable-presentation table. Review of #19
+hardened the parser: destinations are stripped of C0 controls / spaces and
+then **allowlisted** (`http(s)`, `mailto`, `tel`, `ftp`, scheme-less) —
+a blocklist was bypassable with `java&#9;script:` in the angle-bracket
+form; nesting is capped at 16 with a per-element try/catch that restores
+the source; the inline scanner is offset-based (linear); the bundle
+stamps only the element marker, never `<html>` (`web/demo/md-only.html`
+proves a lone Markdown bundle hides nothing); the fence enhancer is
+resolved lazily so load order does not matter; `sem-reader` skips
+headings inside `.sem-md-body`. Measured **8.0 KB** (8170 bytes) after the fixes; the link title
+(accepted, dropped) paid for the code-span run-length rule. Cross-bundle
+cost, recorded: `semtext.js` carries the parser because `<sem-md>` is a
+registered element there, not because of the borrowed `enhanceCodeElement`
+(already in the Lit bundle via `sem-code`); ≈7 KB against a 56 KB cap is
+accepted; a separate Lit-side md bundle stays a later option.
 
 ### M5 — Tier-2 + distribution + publish prep
 

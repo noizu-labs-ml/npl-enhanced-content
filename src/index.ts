@@ -42,3 +42,6 @@ import './lit/sem-table.js';
 /* sem-source — rendered/source section wrapper (thin wrapper over src/reading/source.ts) */
 export { SemSource } from './lit/sem-source.js';
 import './lit/sem-source.js';
+/* R/W2.2 Markdown block — thin wrapper over src/md/* */
+export { SemMd } from './lit/sem-md.js';
+import './lit/sem-md.js';

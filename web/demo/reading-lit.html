@@ -22,6 +22,7 @@
      reading bundle's scan; the wrapper enhances them itself. -->
 <!-- sem:inline fallback -->
 <!-- sem:inline reading -->
+<!-- sem:inline md -->
 <!-- Lit 3 bundle: thin wrappers that claim the upgrade marker and call the
      same enhance functions the reading bundle uses. -->
 <!-- sem:inline bundle -->
@@ -89,6 +90,80 @@
 <pre><code>curl -sS -X POST "$TOKEN_ENDPOINT" -d grant_type=refresh_token -d refresh_token="$REFRESH" -d client_id="$CLIENT_ID" -d code_verifier="$VERIFIER" -H 'Accept: application/json' | jq -r '.access_token'</code></pre>
   </sem-code>
   </sem-source>
+
+  <h2>Markdown</h2>
+  <!-- R/W2.2 sem-md: the element's text is Markdown; the Markdown bundle
+       renders it, keeps the normalised source in a sem-code fence and
+       toggles between the two. JS-off the source reads as pre-wrapped text. -->
+  <sem-md id="m-table" label="Token lifetimes">
+    #### Lifetimes
+
+    Every *session* mints a **short-lived** token; see [RFC 6749](https://www.rfc-editor.org/rfc/rfc6749) and `rotate()`.
+
+    | Token   | Lifetime | Rotates |
+    | :------ | -------: | :-----: |
+    | access  | 15 min   | no      |
+    | refresh | 30 days  | yes     |
+  </sem-md>
+  <sem-md id="m-raw" label="Lists and quotes" view-as="raw">
+    - first item
+    - second item
+      - nested item
+
+    1. step one
+    2. step two
+
+    > A quoted line.
+
+    ---
+
+    ```sh
+    curl -sS "$TOKEN_ENDPOINT"
+    ```
+  </sem-md>
+  <sem-md id="m-inject" controls="copy">
+    &lt;script&gt;alert(1)&lt;/script&gt; and [click](javascript:alert(1)) and &lt;img src=x onerror=alert(1)&gt;
+
+    [tab](&lt;java&#9;script:alert(1)&gt;) [ctl](&lt;&#1;javascript:alert(1)&gt;) [up](JaVaScript:alert(1)) [data](data:text/html,x) [vb](vbscript:x)
+
+    ![tabimg](&lt;java&#9;script:alert(1)&gt;) ![dataimg](data:image/png;base64,AAAA) ![ok](/img/ok.png) [rel](docs/x.html) [frag](#m-table) &lt;https://example.com/a?b=1&gt;
+  </sem-md>
+  <sem-md id="m-edge" label="Edge cases">
+    Setext
+    ------
+
+    - one
+    - two
+      - three
+        - four
+
+    3. third
+    4. fourth
+
+    * * *
+
+    line one\
+    line two
+
+    snake_case_name and _emph_ and foo_bar_baz and [ref][x]
+
+    | Pipe | Code |
+    | :-- | :-- |
+    | a \| b | `x | y` |
+    | ragged |
+    | a | b | extra |
+
+    ~~~md
+    ```js
+    inner
+    ```
+    ~~~
+
+    *unclosed emphasis and *real* text [unclosed link and [linked](#m-table) ``a` b`` [sp](&lt;my file.html&gt;)
+
+    a | b
+    ---
+  </sem-md>
 
   <h2>References</h2>
   <sem-references id="refs" kind="bibliography" role="list">

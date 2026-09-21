@@ -76,7 +76,9 @@ function outline(reader: Element, depth: number): HTMLElement {
   nav.appendChild(stack[0].list);
   let n = 0;
   scope.querySelectorAll<HTMLElement>(sel).forEach((h) => {
-    if (reader.contains(h)) return;
+    // headings rendered inside a sem-md are that record's content, not
+    // the document's outline (spec/schema/sem-md.md)
+    if (reader.contains(h) || h.closest('.sem-md-body')) return;
     // an id on a heading that mints a record would change extraction
     if (!h.id && (param(h, 'kind') !== null || param(h, 'tags') !== null)) return;
     if (!h.id) h.id = 'sem-h-' + ++n;

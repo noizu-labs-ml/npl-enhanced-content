@@ -354,18 +354,20 @@ section { padding-block: var(--pg-space) 0; }
      the shipped page is self-contained and works from file:// with no
      network — which is the same guarantee every SemText document makes.
 
-     CDN SWAP POINT: once cdn.semtext.dev exists, replace the four markers
+     CDN SWAP POINT: once cdn.semtext.dev exists, replace the five markers
      below with
          <script src="https://cdn.semtext.dev/<version>/semtext-fallback.js"></script>
          <script src="https://cdn.semtext.dev/<version>/semtext-reading.js"></script>
          <script src="https://cdn.semtext.dev/<version>/semtext.js"></script>
          <script src="https://cdn.semtext.dev/<version>/semtext-extract.js"></script>
+         <script src="https://cdn.semtext.dev/<version>/semtext-md.js"></script>
      and nothing else on this page changes. The CDN does not exist yet, so
      the page ships self-contained today. -->
 <!-- sem:inline fallback -->
 <!-- sem:inline reading -->
 <!-- sem:inline bundle -->
 <!-- sem:inline extract -->
+<!-- sem:inline md -->
 </head>
 
 <body>
@@ -411,7 +413,7 @@ section { padding-block: var(--pg-space) 0; }
       there is no rendering step and nothing to infer. When a smaller,
       LLM-tailored text is needed instead, <code>semtext-extract.js</code>
       walks the document into a list of <code>SemRecord</code> objects and
-      renders them as annotated text, one line per record — a 9.1 KB
+      renders them as annotated text, one line per record — a 9.7 KB
       (3.3 KB gzipped) script, not a server.
     </p>
     <p class="pg-sub">
@@ -754,10 +756,11 @@ section { padding-block: var(--pg-space) 0; }
           <caption>Shipped scripts, measured by the build</caption>
           <thead><tr><th scope="col">Artifact</th><th scope="col">Minified</th><th scope="col">Gzipped</th><th scope="col">Global</th></tr></thead>
           <tbody>
-            <tr><td>semtext.js</td><td data-value="41.4">41.4 KB</td><td data-value="14.1">14.1 KB</td><td>SemText</td></tr>
+            <tr><td>semtext.js</td><td data-value="48.3">48.3 KB</td><td data-value="16.7">16.7 KB</td><td>SemText</td></tr>
             <tr><td>semtext-fallback.js</td><td data-value="12.5">12.5 KB</td><td data-value="4.4">4.4 KB</td><td>SemTextFallback</td></tr>
             <tr><td>semtext-reading.js</td><td data-value="18.8">18.8 KB</td><td data-value="6.6">6.6 KB</td><td>SemTextReading</td></tr>
-            <tr><td>semtext-extract.js</td><td data-value="9.2">9.2 KB</td><td data-value="3.3">3.3 KB</td><td>SemTextExtract</td></tr>
+            <tr><td>semtext-extract.js</td><td data-value="9.7">9.7 KB</td><td data-value="3.5">3.5 KB</td><td>SemTextExtract</td></tr>
+            <tr><td>semtext-md.js</td><td data-value="7.9">7.9 KB</td><td data-value="3.5">3.5 KB</td><td>SemTextMd</td></tr>
           </tbody>
         </table>
       </div>
@@ -782,6 +785,29 @@ section { padding-block: var(--pg-space) 0; }
           <div class="sem-step" role="listitem" data-status="current">exchange the refresh token</div>
           <div class="sem-step" role="listitem">retire the presented token</div>
         </div>
+      </div>
+
+      <h3 id="rd-md-h">Markdown</h3>
+      <p>
+        <code>sem-md</code> holds Markdown as its text and renders it in the
+        browser; tables are the case it exists for. The renderer is a small
+        recursive-descent parser that builds nodes with
+        <code>createElement</code> and <code>textContent</code>, so markup
+        inside the Markdown arrives as characters rather than elements, and
+        a link with a <code>javascript:</code> URL loses its href. The
+        normalised source is kept in a <code>sem-code</code> fence behind
+        the toggle, and that fence is what extraction reads back as the
+        record. It ships as its own script, <code>semtext-md.js</code>, so a
+        document with no Markdown never loads the parser.
+      </p>
+      <div class="sem-md" id="rd-md" data-label="Who renders sem-md" aria-labelledby="rd-md-h">
+        | Tier     | Script            | Renders `sem-md` as              |
+        | :------- | :---------------- | :------------------------------- |
+        | none     | —                 | the source, pre-wrapped          |
+        | fallback | `semtext-md.js`   | rendered HTML plus a raw fence   |
+        | upgraded | `semtext.js`      | the same, from the Lit wrapper   |
+
+        Both scripted tiers call **one** enhance function; the *tier marker* is the only difference.
       </div>
 
       <h3 id="rd-refs-h">References</h3>
@@ -873,25 +899,27 @@ section { padding-block: var(--pg-space) 0; }
       <p class="pg-eyebrow">Surface</p>
       <h2 id="surface-h">Everything that ships.</h2>
       <p class="pg-narrow">
-        Four independent classic scripts, each installing one global, plus two
+        Five independent classic scripts, each installing one global, plus two
         stylesheets. They are separate on purpose: the fallback tier has to run
-        in a document that never loads Lit, and a document with no listings or
-        references need not carry the reading bundle.
+        in a document that never loads Lit, a document with no listings or
+        references need not carry the reading bundle, and one with no Markdown
+        need not carry the parser.
       </p>
 
       <div class="sem-properties" data-kind="artifacts" role="group"
            aria-label="Shipped artifacts">
-        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · 38.9 KB minified, 13.5 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · 11.9 KB minified, 4.3 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews, the reader bar, table sort and filter · global <code>SemTextReading</code> · 16.6 KB minified, 6.0 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · 9.1 KB minified, 3.3 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · 48.3 KB minified, 16.7 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · 12.5 KB minified, 4.4 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews, the reader bar, table sort and filter · global <code>SemTextReading</code> · 18.8 KB minified, 6.6 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · 9.7 KB minified, 3.5 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-md.js" role="definition" aria-label="semtext-md.js"><span>The <code>sem-md</code> Markdown renderer · global <code>SemTextMd</code> · 7.9 KB minified, 3.5 KB gzipped</span></div>
         <div class="sem-property" data-key="_vocabulary.css" role="definition" aria-label="_vocabulary.css"><span>Structure for the <code>sem-*</code> classes. Reads <code>--sem-*</code> tokens, declares none.</span></div>
         <div class="sem-property" data-key="theme css" role="definition" aria-label="theme css"><span>Token values only, plus a <code>prefers-color-scheme</code> block. A new theme is a copy with new values.</span></div>
       </div>
 
       <h3>The vocabulary</h3>
       <p class="pg-narrow">
-        Twenty element types mint records:
+        Twenty-one element types mint records:
         <code>sem-agent</code>, <code>sem-note</code>, <code>sem-facts</code>
         and <code>sem-fact</code>, <code>sem-details</code> and
         <code>sem-detail</code>, <code>sem-procedure</code> and
@@ -900,10 +928,10 @@ section { padding-block: var(--pg-space) 0; }
         <code>sem-view</code>, <code>sem-reveal</code>,
         <code>sem-progress</code>, <code>sem-chronology</code> and
         <code>sem-event</code>, <code>sem-code</code>,
-        <code>sem-references</code> and <code>sem-reference</code>, and
-        <code>sem-table</code>. <code>sem-reader</code> is chrome and mints
-        nothing. This page
-        mints records for seventeen of them; the three it leaves out are
+        <code>sem-references</code> and <code>sem-reference</code>,
+        <code>sem-table</code> and <code>sem-md</code>. <code>sem-reader</code>
+        is chrome and mints nothing. This page
+        mints records for eighteen of them; the three it leaves out are
         <code>sem-details</code>, <code>sem-detail</code> and
         <code>sem-progress</code>, because nothing here is an occlusion
         exercise and there is no honest number to meter.
