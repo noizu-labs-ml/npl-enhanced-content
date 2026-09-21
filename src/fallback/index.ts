@@ -10,17 +10,18 @@
  * When the Lit bundle is also present, `SemElement.connectedCallback` claims
  * `data-sem-upgraded` and clears that marker, and every hide-rule in the
  * theme CSS is gated on one marker or the other — so with neither script
- * running, nothing is hidden and the document reads as plain prose.
+ * running, nothing is hidden and the document reads as plain prose. The
+ * document root (`<html>`) carries the same marker once `enhance` has run,
+ * for hide rules whose host element is deliberately unmarked (a list-view
+ * deck's distractors).
  *
- * SIZE BUDGET: 8 KB minified. The PRD asks for 2-4 KB across the nine
- * elements; the built artifact measures 7.1 KB minified and 2.6 KB gzipped,
- * so the target is met on the wire but NOT in raw bytes — and raw bytes are
- * what a file:// document actually carries, since nothing gzips an inlined
- * <script>. The budget is therefore stated at the honest raw number rather
- * than quietly kept at 4 KB. Most of the weight is irreducible string
- * literals: markup templates, class names and warning text, which minify to
- * roughly themselves. `scripts/build.mjs` prints measured size against this
- * constant on every build; raise it deliberately, never silently.
+ * SIZE BUDGET: 12 KB minified, raised from 8 KB in the reading-experience
+ * W0 wave (deep-link resolver + audience gating). Raw bytes are what a
+ * file:// document carries, since nothing gzips an inlined <script>, so the
+ * budget is stated raw. Most of the weight is irreducible string literals:
+ * markup templates, class names and warning text. `scripts/build.mjs`
+ * prints measured size against its budget on every build; raise it
+ * deliberately, never silently.
  */
 
 import { enhanceFacts } from './facts.js';
@@ -30,6 +31,8 @@ import { enhanceProperties } from './properties.js';
 import { enhanceViews } from './views.js';
 import { enhanceReveal } from './reveal.js';
 import { enhanceProgress } from './progress.js';
+import { enhanceAudience } from './audience.js';
+import { enhanceTarget } from './target.js';
 
 declare global {
   interface Window {
@@ -45,6 +48,9 @@ export type FallbackHandler = (scope: ParentNode) => void;
  * `enhanceDetails` rewrites `.sem-highlight` nodes that later handlers must
  * not see twice, and `enhanceReveal` moves `.sem-reveal` children into a
  * `<details>` after `enhanceProgress`'s targets have been located.
+ * `enhanceTarget` is LAST: it drives the others' listeners (note summary,
+ * `sem-activate` on views and cards), which must exist before it resolves
+ * the hash.
  */
 export const handlers: FallbackHandler[] = [
   enhanceFacts,
@@ -54,10 +60,13 @@ export const handlers: FallbackHandler[] = [
   enhanceViews,
   enhanceReveal,
   enhanceProgress,
+  enhanceAudience,
+  enhanceTarget,
 ];
 
 /** Run every handler over a scope. Exported so a host can re-run on new DOM. */
 export function enhance(scope: ParentNode = document): void {
+  if (scope === document) document.documentElement.setAttribute('data-sem-fallback', '');
   for (const handler of handlers) handler(scope);
 }
 
@@ -69,6 +78,8 @@ export {
   enhanceViews,
   enhanceReveal,
   enhanceProgress,
+  enhanceAudience,
+  enhanceTarget,
 };
 
 function init(): void {

@@ -27,12 +27,14 @@ semtext/
 │   │   └── sem-note.ts
 │   ├── fallback/                    # Vanilla tier — NO Lit dependency → dist/semtext-fallback.js
 │   │   ├── index.ts
+│   │   ├── audience.ts                # profile-gated visibility (native `hidden`)
 │   │   ├── details.ts
 │   │   ├── facts.ts
 │   │   ├── note.ts
 │   │   ├── progress.ts
 │   │   ├── properties.ts
 │   │   ├── reveal.ts
+│   │   ├── target.ts                  # deep-link resolver + print disclosure (registered last)
 │   │   └── views.ts
 │   ├── extract/                     # Record extraction → dist/semtext-extract.js
 │   │   ├── index.ts
@@ -41,6 +43,7 @@ semtext/
 │       ├── audience.ts
 │       ├── rng.ts
 │       ├── state.ts
+│       ├── summary.ts                 # the one derived-summary rule (render + extraction)
 │       └── tokens.ts
 ├── themes/                          # Theme CSS — top-level on purpose (see note below)
 │   ├── _vocabulary.css

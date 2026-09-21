@@ -111,12 +111,19 @@ Global attributes (any `sem-*` element):
 | `status` | `done`, `current`, `todo`, `blocked`, `pass`, `fail` | lifecycle/verdict |
 | `controls` | comma flags: `shuffle`, `filter`, `retry`, `picker` | which controls render |
 | `collapsed` | boolean | pre-collapse state |
-| `id` | doc-unique | stable anchor, cite target |
+| `audience` | profile spec: `a`, `a, b`, `!a` (profiles from `sem-audiences`) | who the datum is for — **`spec/schema/sem-audiences.md`**; carried verbatim by extraction, never suppresses a record |
+| `id` | doc-unique | stable anchor, cite target — a `#id` or `#container/child` hash reaches it through any closed reveal, collapsed note, inactive view or non-current card (fallback `target`) |
 | `data-*` | free | extension point |
 
 `view-as` is the core inversion: `<sem-fact>` is a fact in every view;
 `view-as` only selects rendering. Unknown `view-as` ⇒ falls back to `list`/
-plain + fallback-handler warning.
+plain + fallback-handler warning. CSS-only modes exist too:
+`sem-note view-as="margin"` (right-gutter aside on wide viewports).
+
+**Hash state.** The hash is `&`-joined segments (`src/shared/state.ts`):
+bare `id` / `container/child` deep links, and `name=value` parameters
+(`sem-audience=<profile>`). Every writer edits its own segment only, so
+`#deploy/argocd&sem-audience=operator` survives a tab switch.
 
 **Class namespace.** Each element owns exactly the class namespace
 `.sem-<element>` and `.sem-<element>-*`; no other element may reuse that
@@ -144,17 +151,32 @@ both present; authors pick one per fact.
 ## 4. Fallback handler & degradation rules
 
 1. `<script id="sem-fallback">` is embedded inline in every portable doc
-   (~2–4KB vanilla JS): `view-as` switching, reveal toggles, `<highlight>`
-   occlusion, basic quiz checking, theme picker. **Zero external resources
+   (`dist/semtext-fallback.js`, ≤12 KB raw): `view-as` switching, reveal
+   toggles, `<highlight>` occlusion, basic quiz checking, audience gating,
+   deep-link resolution, print disclosure. **Zero external resources
    required for full baseline interactivity.**
 2. `semtext/semtext.js` (Lit 3, IIFE) upgrades elements in place when reachable;
    component implementations supersede fallback behaviors. Handoff contract:
    fallback sets `data-sem-fallback` on elements it enhanced; components
-   remove it on upgrade. BDD asserts both tiers + the handoff.
-3. Theme CSS styles the vocabulary via `sem-*:not(:defined)` — presentable
-   JS-off; no layout shift on upgrade where feasible.
-4. Content lives in light DOM (searchable, copyable); shadow DOM carries
+   remove it on upgrade and set `data-sem-upgraded`. Both tiers also stamp
+   their marker on `<html>` once they have run, for hide rules whose host
+   element is deliberately unmarked (a list-view deck's distractors). BDD
+   asserts both tiers + the handoff.
+3. Theme CSS styles **both authoring forms from one rule** —
+   `:is(sem-x, .sem-x)` throughout `themes/_vocabulary.css` (D10) — so an
+   element-form document is presentable before and without the upgrade,
+   with no layout shift on upgrade where feasible.
+4. **Every hide rule is gated** on `:is([data-sem-fallback],
+   [data-sem-upgraded])` (D12). With no script in the page nothing is
+   hidden: distractors render labelled, views stack under their names,
+   collapsed bodies and every conclusion show, audience-qualified content
+   is all visible. `dist/demo/*.nojs.html` is the artifact that proves it.
+5. Content lives in light DOM (searchable, copyable); shadow DOM carries
    interactive chrome only.
+6. Cross-cutting, also in the vocabulary CSS: `@media print` shows
+   everything a reader could open and no chrome (`beforeprint` opens reveal
+   disclosures; CSS cannot); `prefers-reduced-motion` drops transitions and
+   smooth scrolling.
 
 ## 5. Element entries (rough)
 
@@ -164,8 +186,22 @@ both present; authors pick one per fact.
 ```html
 <sem-note variant="warning">Rotation is <strong>per session</strong>.</sem-note>
 ```
-`variant="info|warning|tip|danger"`; `collapsed` ⇒ native `<details>`.
-Light DOM, `role="note"`. *(schema + spec exist — rename + re-attr done.)*
+`variant="info|warning|tip|danger"`; `collapsed` ⇒ native `<details>`;
+`view-as="margin"` ⇒ CSS-only right-gutter aside on wide viewports, inline
+otherwise. Light DOM, `role="note"`. *(schema + spec exist.)*
+
+**sem-audiences / sem-profile** — reader profiles; metadata, mints nothing.
+**Normative: `spec/schema/sem-audiences.md`.**
+```html
+<div class="sem-audiences">
+  <div class="sem-profile" id="reader" data-label="Reader"></div>
+  <div class="sem-profile" id="operator" data-implies="reader"></div>
+</div>
+<div class="sem-note" data-audience="operator">…</div>
+```
+Active profile = hash `sem-audience` param, else `data-audience` on the
+root wrapper / `<html>`. Fallback sets native `hidden` on non-matching
+elements; JS-off everything shows; fail-open on unknown tokens.
 
 **sem-fact** — the atomic unit; assertable Q/A pair.
 ```html
@@ -254,7 +290,8 @@ fires `sem-navigate {id, name, index}`. JS-off: all views stacked,
   Tokens in localStorage are readable by any script on the page…
 </div>
 ```
-`data-summary` optional — first body line (≤60 chars) derives it;
+`data-summary` optional — first body line (≤60 chars) derives it, by the
+one rule in `src/shared/summary.ts` that render and extraction share;
 `collapsed` starts hidden, otherwise open. Fallback wraps in native
 `<details>/<summary>`; JS-off: fully visible (summary as small-caps
 heading). Non-assertive counterpart to `sem-fact` Q/A shape.

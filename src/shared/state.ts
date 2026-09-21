@@ -97,6 +97,33 @@ export function setParam(name: string, value: string | null): void {
   location.hash = composed === '' ? '' : '#' + composed;
 }
 
+/**
+ * Write the bare segment `<prefix>/<value>`, replacing any bare segment that
+ * already starts with `<prefix>/` and leaving every other segment — named
+ * parameters included — intact. This is how sem-views records its active
+ * tab without erasing `sem-audience=…` beside it.
+ */
+export function setBare(prefix: string, value: string): void {
+  if (typeof location === 'undefined') return;
+  const head = prefix + '/';
+  const next: string[] = [];
+  let written = false;
+  for (const segment of hashSegments()) {
+    if (!segment.includes('=') && segment.startsWith(head)) {
+      if (!written) {
+        next.push(head + value);
+        written = true;
+      }
+      continue;
+    }
+    next.push(segment);
+  }
+  if (!written) next.push(head + value);
+  const composed = next.join('&');
+  if (composed === rawHash()) return;
+  location.hash = '#' + composed;
+}
+
 /* -------------------------------------------------------------- storage */
 
 function store(): Storage | null {

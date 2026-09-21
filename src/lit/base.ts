@@ -38,6 +38,9 @@ export class SemElement extends LitElement {
     super.connectedCallback();
     this.setAttribute('data-sem-upgraded', '');
     this.removeAttribute('data-sem-fallback');
+    // Document-level marker: hide rules that have no per-element host
+    // (`.sem-distractor` in a list-view deck) gate on the root instead.
+    this.ownerDocument?.documentElement?.setAttribute('data-sem-upgraded', '');
   }
 
   disconnectedCallback(): void {
@@ -102,24 +105,27 @@ export class SemElement extends LitElement {
   /**
    * Is this element visible to the document's active audience profile?
    *
-   * The active profile lives on the document root as `data-sem-audience`; the
-   * profile declarations live in the `sem-audiences` block. With neither
-   * declared — which is every document today — this returns true for
-   * everything, and an unknown token fails open for the same reason.
+   * Same attributes the fallback and extraction read (spec/schema/
+   * sem-audiences.md): the spec is this element's `data-audience` /
+   * `audience`; the active profile is `<html data-audience>` (where the
+   * fallback reflects the resolved profile), else the root wrapper's
+   * `data-audience` default. With no profiles declared this returns true
+   * for everything, and an unknown token fails open for the same reason.
    */
   audienceMatches(spec?: string | null): boolean {
-    const requested = spec === undefined ? this.getAttribute('data-sem-audience-spec') : spec;
+    const requested =
+      spec === undefined
+        ? this.getAttribute('data-audience') ?? this.getAttribute('audience')
+        : spec;
     return matches(requested, this.#activeProfile(), this.#closure());
   }
 
-  #root(): Element | Document {
-    return this.closest('sem-enhanced-document, .sem-enhanced-document') ?? this.ownerDocument;
-  }
-
   #activeProfile(): string | null {
-    const root = this.#root();
-    if (root instanceof Element) return root.getAttribute('data-sem-audience');
-    return root.documentElement?.getAttribute('data-sem-audience') ?? null;
+    const doc = this.ownerDocument;
+    const onHtml = doc?.documentElement?.getAttribute('data-audience');
+    if (onHtml) return onHtml;
+    const wrapper = this.closest('sem-enhanced-document, .sem-enhanced-document');
+    return wrapper?.getAttribute('data-audience') ?? wrapper?.getAttribute('audience') ?? null;
   }
 
   #closure(): AudienceClosure {

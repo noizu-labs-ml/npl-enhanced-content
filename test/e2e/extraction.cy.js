@@ -58,7 +58,11 @@ const EXPECTED_TYPES = [
   'sem-properties', 'sem-property', 'sem-property',
   'sem-views', 'sem-view', 'sem-view',
   'sem-reveal', 'sem-reveal',
-  'sem-progress', 'sem-progress'
+  'sem-progress', 'sem-progress',
+  // W0 fixtures (audience trio, margin note) — appended after the last
+  // Tier-0 record so every index above stays valid.
+  'sem-note', 'sem-note', 'sem-note',
+  'sem-note'
 ];
 
 const visitJsOff = () =>

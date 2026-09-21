@@ -4,7 +4,7 @@ Living planning doc. **Supersedes PRD.md §10 for forward planning**; PRD.md rem
 format/spec authority (§1–§9 unchanged and binding). Update this file at every milestone
 exit — status drift here is a bug.
 
-Status snapshot: **2026-09-01 · main = 19cb226 (PR#1 merged)**
+Status snapshot: **2026-09-21 · develop = bd3c398 + R/W0 PR open**
 
 ## Non-negotiable invariants (guardrails — every milestone inherits these)
 
@@ -30,6 +30,7 @@ Status snapshot: **2026-09-01 · main = 19cb226 (PR#1 merged)**
 | T  | Theme pipeline (parallel track) | ⬜ not started |
 | M4 | sem-question 7 types + highlight occlusion | ⬜ not started |
 | M5 | Tier-2 elements + MHTML + distribution + npm publish prep | ⬜ not started |
+| R  | Reading experience (W0 foundations → W1 prose → W2 chrome+data → W3 themes) | 🔶 W0 in PR |
 
 ### M1 — Format spec v0 + Tier-0 schemas ✅ (re-baselined)
 
@@ -70,6 +71,33 @@ under all 4 themes via `data-sem-theme` swap.
 `mc | multi | blank | match | order | tf | short` + full `<highlight>` cloze occlusion.
 Schema+spec first per §9. **Exit:** TRP quiz parity, both tiers asserted.
 
+### R — Reading experience (waves, one PR each → `develop`)
+
+Custom elements and cross-cutting behavior that make long-form SemText
+documents readable in a browser, without breaking any invariant above.
+Binding decisions: split bundles (fallback core stays small; a new
+`dist/semtext-reading.js` carries reader/table/code/references from W1);
+Lit elements are thin wrappers over the fallback `enhanceX()`; glossary is
+`sem-properties view-as="glossary"`, not an element; `sem-table` sort may
+reorder the DOM because every row is stamped `data-sem-source-index` and
+extraction restores authored order.
+
+| Wave | Contents | Status |
+|---|---|---|
+| **W0 Foundations** | D10 + D12 repaid; print stylesheet; `prefers-reduced-motion`; `src/fallback/target.ts` deep-link resolver (opens reveal/note/view/card, `.sem-target`, `beforeprint` disclosure); **audience close-out** (`spec/schema/sem-audiences.md`, `src/fallback/audience.ts`, `data-audience` canonical in `lit/base.ts`, extraction populates `audience`, extraction.md §7 closed); `sem-note view-as="margin"`; `src/shared/summary.ts` shared by render + extraction; budgets below | 🔶 in PR (`feature/reading-experience-w0`) |
+| W1 Prose | `sem-chronology`/`sem-event` (CSS-only), `sem-code`, `sem-references`/`sem-reference`, glossary mode, `src/shared/popover.ts`, reading bundle + `<!-- sem:inline reading -->` | ⬜ |
+| W2 Chrome + data | `sem-reader` (outline, progress, focus, type, color, print, audience controls; theme deferred), `sem-table` (sort/filter, source-index ordering), site dogfoods `sem-reader` | ⬜ |
+| W3 Themes | reader `theme` control, dark tokens, retire planned `sem-themes` | ⬜ after Track T |
+
+**Size budgets (raw minified, enforced by `npm run build:strict`)**
+
+| Artifact | W0 | W1 | W2 | W3 |
+|---|---|---|---|---|
+| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | 12 | 12 |
+| `semtext-reading.js` | — | 8 | 14 | 14.5 |
+| `semtext.js` (Lit) | 40 | 48 | 56 | 57 |
+| `semtext-extract.js` | 10 | 12 | 12 | 12 |
+
 ### M5 — Tier-2 + distribution + publish prep
 
 - Tier-2 elements: chronology, table, query, theme-picker, md-aid.
@@ -98,8 +126,10 @@ Every row: what it costs, what it costs *per change*, and the written trigger to
 | D9 | `"type": "module"` vs the `.` export mapping to an IIFE bundle with no ESM/CJS exports — a bundler importing `.` gets a script it can't import from | build-format decision (dual entry or drop the `.` export) | consumers hit a silent/confusing import failure | ✅ repaid **this epic** — the `.` export is dropped rather than faked. The export map is now subpaths that each name the artifact they map to (`semtext/lit`, `semtext/fallback`, `semtext/extract`, `semtext/themes/*`), and `package.json` documents the real format: classic IIFE scripts that install a global and export nothing, consumed via `<script src>` / CDN or as a side-effect import. A dual ESM entry stays available as a later choice, but the manifest no longer promises named imports it cannot deliver | delivery |
 | D11 | `web/demo/standalone-lit.html` inlined a hand-pasted copy of `dist/semtext.js`, so every Lit-tier cypress assertion green-lit a frozen artifact rather than current source | build automation | a Lit regression can land fully green; the gap is invisible and unbounded in time | ✅ repaid **this epic** (`scripts/build-standalone.mjs` substitutes the freshly built bundle; cypress now runs against `dist/demo/`) | correctness |
 | D13 | `sem-note[collapsed]` anti-flash rule was gated on `:not([data-sem-upgraded])`, so with the bundle absent the body stayed `display:none` with no summary to expand — collapsed note content unreachable with JS off | one selector (`:defined`) | every element that adds a pre-upgrade anti-flash rule inherits the bug | ✅ repaid **this epic** — found by the new scripts-stripped artifact, which is the whole reason it exists | degradation |
-| D12 | Ungated `display:none` in the vocabulary hides `.sem-distractor` and every inactive `.sem-view` in the scripts-stripped no-JS artifact — content unreachable with JS off | CSS gating (show distractors and all views when neither tier marker is present) | every new hide-rule inherits the pattern; the no-JS degradation promise stays partly unmet | **axes wave**, alongside D10 | degradation |
-| D10 | Theme CSS ships no `sem-*:not(:defined)` base — custom-element documents render unstyled before/without the Lit upgrade, contradicting conventions §4 rule 3 which promises exactly this | one CSS block in `themes/_vocabulary.css` | every element added in element form inherits the defect; the scripts-stripped no-JS artifact will fail on it | **axes wave** (`sem-controls` + no-JS build artifact both depend on it) | correctness, degradation |
+| D12 | Ungated `display:none` in the vocabulary hides `.sem-distractor` and every inactive `.sem-view` in the scripts-stripped no-JS artifact — content unreachable with JS off | CSS gating (show distractors and all views when neither tier marker is present) | every new hide-rule inherits the pattern; the no-JS degradation promise stays partly unmet | ✅ repaid **R/W0** — every hide rule gated on `:is([data-sem-fallback],[data-sem-upgraded])`; `sem-views` now marks its container; both tiers stamp `<html>` for the list-view distractor case; `nojs-artifact.cy.js` expectations flipped | degradation |
+| D10 | Theme CSS ships no `sem-*:not(:defined)` base — custom-element documents render unstyled before/without the Lit upgrade, contradicting conventions §4 rule 3 which promises exactly this | one CSS block in `themes/_vocabulary.css` | every element added in element form inherits the defect; the scripts-stripped no-JS artifact will fail on it | ✅ repaid **R/W0** — every vocabulary selector is `:is(sem-x, .sem-x)`; the site page's local `sem-note` restatement deleted | correctness, degradation |
+| D14 | Audience qualifier was forward-declared (extraction.md §7) with no schema, no fallback, and `lit/base.ts` reading a different attribute (`data-sem-audience`) than extraction (`data-audience`) | schema + handler + one attribute rename | two spellings in flight; a Lit element and the extractor disagree about the same document | ✅ repaid **R/W0** — `spec/schema/sem-audiences.md`, `src/fallback/audience.ts`, `data-audience` canonical everywhere | correctness |
+| D15 | Fallback derived reveal summaries as "first eight words + …" while extraction used the schema's 60-char rule | share one function | reader and machine see different summaries for the same reveal | ✅ repaid **R/W0** — `src/shared/summary.ts` | correctness |
 
 ## Open decisions (must close before their dependent milestone exits)
 

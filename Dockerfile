@@ -28,5 +28,14 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist/site/ /usr/share/nginx/html/
 COPY --from=builder /app/dist/demo/ /usr/share/nginx/html/demo/
 
+# Runtime GA4 injection. The built landing page carries an inert marker
+# comment; the entrypoint hook rewrites the served copy from this pristine
+# template on every container start (nginx:alpine runs /docker-entrypoint.d/*.sh
+# before nginx). GA_MEASUREMENT_ID is therefore a deploy-time helm value, not
+# something baked into an image sha — unset means no analytics at all.
+COPY --from=builder /app/dist/site/index.html /usr/share/nginx/templates/index.html
+COPY docker/20-ga-measurement-id.sh /docker-entrypoint.d/20-ga-measurement-id.sh
+RUN chmod +x /docker-entrypoint.d/20-ga-measurement-id.sh
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

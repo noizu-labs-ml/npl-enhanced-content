@@ -18,6 +18,8 @@
      Requires the CDN above; harmless (no-op) without it. -->
 <style type="text/tailwindcss">
   .sem-enhanced-document { @apply mx-auto max-w-3xl px-4 py-10; }
+  /* the centred column has a gutter, so margin notes may use it */
+  .sem-enhanced-document { --sem-margin-offset: calc(-1 * (var(--sem-margin-width, 14rem) + 1.5rem)); }
   .sem-agent { @apply shadow-sm; }
   .sem-note { @apply shadow-sm text-sm; }
   .sem-fact { @apply shadow-sm transition hover:border-blue-300; }
@@ -46,7 +48,7 @@
   </div>
 
   <div class="sem-note" data-variant="warning">JWTs must rotate <strong>per session</strong>, not per request.</div>
-  <div class="sem-note" data-variant="tip" collapsed><div class="sem-note-body">Shuffle flashcards before each review session for better recall.</div></div>
+  <div class="sem-note" id="n-tip" data-variant="tip" collapsed><div class="sem-note-body">Shuffle flashcards before each review session for better recall.</div></div>
 
   <h2>Facts — flashcards</h2>
   <div class="sem-facts" data-view-as="flashcards">
@@ -130,7 +132,7 @@
       Chart from the <code>noizu-infra</code> repo; values live in <code>.infra-config.yaml</code>.
     </div>
     <div class="sem-view" data-name="ArgoCD" role="tabpanel">
-      ArgoCD auto-syncs from the product remote's <code>main</code>; CI bumps the image tag.
+      ArgoCD auto-syncs from the product remote's <code>main</code>; <em id="argocd-tag">CI bumps the image tag</em>.
     </div>
   </div>
 
@@ -148,6 +150,24 @@
        role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"></div>
   <div class="sem-progress" id="p-clamp" data-value="1.4" data-label="out-of-range fixture"
        role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1.4"></div>
+
+  <!-- W0 fixtures. Appended AFTER the last Tier-0 record on purpose:
+       test/e2e/extraction.cy.js indexes records positionally. -->
+
+  <h2>Audiences — profile-gated content</h2>
+  <div class="sem-audiences">
+    <div class="sem-profile" id="reader" data-label="Reader"></div>
+    <div class="sem-profile" id="operator" data-label="Operator" data-implies="reader"></div>
+  </div>
+  <p>Append <code>#sem-audience=operator</code> (or <code>reader</code>) to the URL to pick a profile.</p>
+  <div class="sem-note" id="n-op" data-audience="operator">Operators: the token endpoint is behind the MinIO port-forward — start it before the migration step.</div>
+  <div class="sem-note" id="n-reader" data-audience="reader" data-variant="tip">Readers and operators both see this: a profile that implies <code>reader</code> satisfies it.</div>
+  <div class="sem-note" id="n-public" data-audience="!operator" data-variant="warning">Everyone except operators: ask an operator to run the migration for you.</div>
+
+  <h2>Note — margin view</h2>
+  <div class="sem-note" id="n-margin" data-view-as="margin">A margin note floats into the right gutter on wide screens and reads inline on a phone — same record either way.</div>
+  <p>Long-form prose sits beside the margin note. Refresh tokens rotate per use, so each exchange retires the token that was presented; the access token stays short-lived and the refresh grant issues a new pair. Scope capabilities tightly rather than extending lifetime — a long-lived token is an anti-pattern whatever it is scoped to.</p>
+  <p>Nothing in this section changes what a machine reads: the margin mode is a presentation parameter, and extraction reports the note as a note.</p>
 
 </div>
 </body>

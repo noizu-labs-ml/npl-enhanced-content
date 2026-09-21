@@ -13,7 +13,8 @@
  *
  * Each target declares a size budget; the build prints measured size against
  * it and fails only if `--strict-budget` is passed, so a budget overrun is
- * always visible but never silently blocks local work.
+ * always visible but never silently blocks local work. The budget table is
+ * recorded in ROADMAP.md ("R — Reading experience"); change both together.
  */
 
 import { build } from 'vite';
@@ -28,8 +29,8 @@ const strict = process.argv.includes('--strict-budget');
 /** budgetKb is measured against the minified (not gzipped) artifact. */
 const targets = [
   { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 40, required: true },
-  { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 8,  required: true },
-  { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 8,  required: false },
+  { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 12, required: true },
+  { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 10, required: false },
 ];
 
 rmSync(resolve(root, 'dist'), { recursive: true, force: true });
