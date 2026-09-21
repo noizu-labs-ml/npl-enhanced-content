@@ -7,9 +7,11 @@
  * this logic (D5) and both must keep producing the same DOM.
  */
 
+import { sel, part } from '../shared/sel.js';
+
 export function enhanceDetails(scope: ParentNode): void {
-  scope.querySelectorAll('.sem-details[data-view-as="quiz"]').forEach((root) => {
-    root.querySelectorAll('.sem-highlight').forEach((h) => {
+  scope.querySelectorAll(sel('details') + '[data-view-as="quiz"]:not([data-sem-upgraded])').forEach((root) => {
+    root.querySelectorAll(part('highlight')).forEach((h) => {
       const span = document.createElement('span');
       span.className = 'sem-occluded';
       span.textContent = h.textContent;

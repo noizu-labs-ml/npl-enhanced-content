@@ -16,11 +16,15 @@
  */
 
 import { randomFor, shuffle } from '../shared/rng.js';
+import { sel, part } from '../shared/sel.js';
+
+const FACT = sel('fact');
+const CONCLUSION = part('conclusion');
 
 export function enhanceFacts(scope: ParentNode): void {
-  scope.querySelectorAll<HTMLElement>('.sem-facts').forEach((root) => {
+  scope.querySelectorAll<HTMLElement>(sel('facts') + ':not([data-sem-upgraded])').forEach((root) => {
     const view = root.getAttribute('data-view-as') || 'list';
-    const items = Array.from(root.querySelectorAll<HTMLElement>('.sem-fact'));
+    const items = Array.from(root.querySelectorAll<HTMLElement>(FACT));
     if (view === 'list' || items.length === 0) return;
     root.setAttribute('data-sem-fallback', '');
 
@@ -39,11 +43,11 @@ export function enhanceFacts(scope: ParentNode): void {
     const progress = chrome.querySelector('.sem-facts-meter') as HTMLElement;
 
     function optionsFor(item: Element): { text: string; correct: boolean }[] {
-      const correct = item.querySelector('.sem-conclusion');
-      const distractors = Array.from(item.querySelectorAll('.sem-distractor'));
+      const correct = item.querySelector(CONCLUSION);
+      const distractors = Array.from(item.querySelectorAll(sel('distractor')));
       const others = items
         .filter((f) => f !== item)
-        .map((f) => f.querySelector('.sem-conclusion'))
+        .map((f) => f.querySelector(CONCLUSION))
         .filter(Boolean) as Element[];
       const pool = distractors.concat(others).slice(0, 3);
       const opts = shuffle(pool.concat([correct as Element]), rand);
@@ -100,7 +104,7 @@ export function enhanceFacts(scope: ParentNode): void {
       if (!act) return;
       if (act === 'prev') { i = (i - 1 + items.length) % items.length; render(); }
       if (act === 'next') { i = (i + 1) % items.length; render(); }
-      if (act === 'flip' || target.closest('.sem-fact')) {
+      if (act === 'flip' || target.closest(FACT)) {
         items[i].classList.toggle('sem-flipped');
       }
     });

@@ -25,12 +25,15 @@
  */
 
 import { bareSegments } from '../shared/state.js';
+import { sel } from '../shared/sel.js';
 
-const REVEAL = ':is(sem-reveal, .sem-reveal)';
-const SOURCE = ':is(sem-source, .sem-source)[data-view-as="source"]';
+const VIEW = sel('view');
+
+const REVEAL = sel('reveal');
+const SOURCE = sel('source') + '[data-view-as="source"]';
 const OPENERS =
-  ':is(sem-note, .sem-note)[collapsed], .sem-view:not([data-active]), ' +
-  ':is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded]) > .sem-fact:not(.sem-current)';
+  sel('note') + '[collapsed], ' + VIEW + ':not([data-active]), ' +
+  sel('facts') + ':is([data-sem-fallback], [data-sem-upgraded]) > ' + sel('fact') + ':not(.sem-current)';
 
 let timer = 0;
 
@@ -45,7 +48,7 @@ function resolve(segment: string): Element | null {
   if (!root || child === undefined) return root;
   const byId = document.getElementById(child);
   if (byId && root.contains(byId)) return byId;
-  return Array.from(root.querySelectorAll<HTMLElement>('.sem-view')).find(
+  return Array.from(root.querySelectorAll<HTMLElement>(VIEW)).find(
     (v) => (v.getAttribute('data-name') || '').toLowerCase() === child.toLowerCase(),
   ) || null;
 }

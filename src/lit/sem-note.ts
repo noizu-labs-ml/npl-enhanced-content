@@ -1,7 +1,7 @@
 import { SemElement } from './base.js';
 
 /**
- * sem-note — Lit upgrade of the v0.4 class-based callout.
+ * sem-note — Lit upgrade of the callout (tag form or class alias).
  * Light DOM per PRD §4 rule 5: content stays searchable/copyable;
  * Lit owns behavior (collapsed toggle, variant reaction), not markup.
  * Handoff contract (data-sem-upgraded / data-sem-fallback) comes from SemElement.
@@ -44,11 +44,19 @@ export class SemNote extends SemElement {
     }
     if (this.#summary()) return;
 
-    const body = this.querySelector('.sem-note-body');
+    let body = this.querySelector('.sem-note-body');
     if (!body) {
       // element upgraded pre-parse: children aren't there yet at first update
-      this.#awaitBody();
-      return;
+      if (document.readyState === 'loading' || !this.firstChild) {
+        this.#awaitBody();
+        return;
+      }
+      // tag form: the body is the element's own content; wrap it so the
+      // collapsed hide rule (keyed on .sem-note-body) has something to hide
+      body = document.createElement('div');
+      body.className = 'sem-note-body';
+      while (this.firstChild) body.appendChild(this.firstChild);
+      this.appendChild(body);
     }
     const sum = document.createElement('div');
     sum.className = 'sem-note-summary';
@@ -59,7 +67,7 @@ export class SemNote extends SemElement {
   #awaitBody(): void {
     if (this.#awaitingBody) return;
     this.#awaitingBody = true;
-    void this.whenChildrenReady('.sem-note-body').then(() => {
+    void this.whenChildrenReady(':scope > *').then(() => {
       this.#awaitingBody = false;
       this.requestUpdate();
     });
