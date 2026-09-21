@@ -92,7 +92,13 @@ angle-bracket destination such as `<my file.html>` is a legitimate
 relative link — and then admitted
 only when it has no scheme (relative path, fragment, or a
 protocol-relative `//host/path`, which reaches exactly what `https:` can)
-or the scheme is `http`, `https`, `mailto`, `tel` or `ftp`. Anything else (`javascript:`,
+or the scheme is `http`, `https`, `mailto`, `tel` or `ftp`. The admitted
+value is then percent-encoded (`encodeURI`) before it is written to
+`href` / `src`, with escapes the author already wrote (`%20`, `%23`)
+restored rather than double-encoded — so `<my file.html>` becomes
+`my%20file.html` and `docs/a%20b.html` stays as written. This second
+layer is what makes the write visibly sanitised to static analysis
+(CodeQL `js/xss-through-dom`), on top of the allowlist. Anything else (`javascript:`,
 `data:`, `vbscript:`, any casing, angle-bracket form included) renders as
 the link text, or the alt text for an image. Anchors carry
 `rel="noopener noreferrer"`.

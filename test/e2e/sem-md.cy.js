@@ -188,7 +188,7 @@ function assertMd(url, marker) {
       .and('have.text', '```js\ninner\n```');
     // adversarial: unmatched openers stay literal, the real ones still parse
     cy.get('#m-edge .sem-md-body p em').should('have.length', 2).last().should('have.text', 'real');
-    cy.get('#m-edge .sem-md-body a').should('have.length', 2);
+    cy.get('#m-edge .sem-md-body a').should('have.length', 3);
     cy.get('#m-edge .sem-md-body a').first().should('have.text', 'linked').and('have.attr', 'href', '#m-table');
     cy.get('#m-edge .sem-md-body').invoke('text').then((t) => {
       expect(t).to.contain('*unclosed emphasis and real');
@@ -196,8 +196,10 @@ function assertMd(url, marker) {
     });
     // the closing backtick run must match the opener's length
     cy.get('#m-edge .sem-md-body p code').last().should('have.text', 'a` b');
-    // a space inside an angle-bracket destination is kept, not stripped
-    cy.get('#m-edge .sem-md-body a').last().should('have.attr', 'href', 'my file.html');
+    // a space inside an angle-bracket destination is kept (percent-encoded), not stripped
+    cy.get('#m-edge .sem-md-body a').last().should('have.attr', 'href', 'my%20file.html');
+    // authored escapes survive, once (no double-encoding)
+    cy.get('#m-edge .sem-md-body a[href="docs/a%20b%23c.html"]').should('have.length', 1);
     // a bare --- under a paragraph line is a setext heading even when the line has a pipe;
     // a table needs a delimiter row with pipes
     cy.get('#m-edge .sem-md-body > h2').should('have.length', 2).last().should('have.text', 'a | b');
