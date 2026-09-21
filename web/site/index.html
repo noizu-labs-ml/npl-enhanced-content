@@ -6,8 +6,10 @@
   deck, the caveats are `<sem-note>` custom elements, the quick start is a
   `.sem-procedure`, the shipped artifacts are a `.sem-properties` block and
   the three-readers argument is a `.sem-views` group. The Reading section
-  runs the R/W0 + R/W1 elements live: margin note, audience profiles, deep
-  links, glossary, chronology, code and references. Nothing here is a mock
+  runs the R/W0 + R/W1 + R/W2 elements live: margin note, audience profiles,
+  deep links, glossary, chronology, code, references and a sortable table;
+  the reading bar at the top of the document is a `.sem-reader` (outline,
+  progress, focus, type, colour, print, audience). Nothing here is a mock
   of the vocabulary: the real theme CSS and the real built bundles are inlined
   at build time by scripts/build-standalone.mjs, so the page proves its own
   claims or visibly fails to.
@@ -275,6 +277,14 @@ section { padding-block: var(--pg-space) 0; }
 }
 .pg-picker { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0.75rem 0 0;
   font-size: var(--pg-t--1); }
+/* The reading bar spans the viewport; align its contents with the page
+   column so the controls share the left edge with everything below. */
+#pg-reader .sem-reader-chrome, #pg-reader > nav {
+  padding-inline: max(var(--pg-gutter), calc((100% - var(--pg-wide)) / 2)); }
+#pg-reader .sem-reader-chrome { font-size: var(--pg-t--1); }
+/* Focus mode narrows the document; keep the page column inside that measure. */
+:root[data-sem-mode="focus"] .pg-col { width: min(100%, 100% - 2 * var(--pg-gutter)); }
+#rd-table td:nth-child(2), #rd-table td:nth-child(3) { font-variant-numeric: tabular-nums; }
 .sem-code-chrome button { font: inherit; font-size: var(--pg-t--1); }
 :not(pre) > code.pg-plain { background: none; padding: 0; }
 
@@ -378,6 +388,12 @@ section { padding-block: var(--pg-space) 0; }
 </header>
 
 <main id="main" class="sem-enhanced-document">
+
+  <!-- Reading bar: the page dogfoods sem-reader. One per document, first
+       child of the wrapper; the outline is generated from the h2s (depth 2);
+       the audience select reads the sem-audiences block in the Reading
+       section. Extraction skips the whole element. -->
+  <div class="sem-reader" id="pg-reader" data-controls="outline,progress,focus,type,color,print,audience" data-outline-depth="2"></div>
 
   <!-- Hero ------------------------------------------------------------- -->
   <div class="pg-hero pg-col"><div class="pg-narrow">
@@ -584,7 +600,9 @@ section { padding-block: var(--pg-space) 0; }
         a glossary whose terms preview on hover, references with backlinks, a
         dated chronology, listings with provenance, notes that sit in the
         margin, content addressed to a named audience, and links that reach
-        into closed disclosures. Every example in this section is live.
+        into closed disclosures. Every example in this section is live. So is
+        the bar at the top of this page: a <code>sem-reader</code>, described
+        under <a href="#rd-reader-h">Reader</a> below.
       </p>
 
       <div class="sem-note" id="rd-margin" data-view-as="margin" data-variant="tip">
@@ -691,6 +709,46 @@ section { padding-block: var(--pg-space) 0; }
         scrolling. None of this needs page-specific code.
       </p>
 
+      <h3 id="rd-reader-h">Reader</h3>
+      <p>
+        <code>sem-reader</code> is the bar pinned to the top of this page: one
+        per document, first child of the wrapper, mints nothing. Its outline
+        is generated from the <code>h2</code> headings (an authored
+        <code>&lt;nav aria-label="Contents"&gt;</code> child is used verbatim
+        instead), and <code>aria-current="location"</code> follows the
+        heading in view. Focus, type size, face and colour scheme are
+        attributes on <code>&lt;html&gt;</code> that the vocabulary CSS keys
+        on, remembered in <code>localStorage</code> when the browser allows
+        it and forgotten without complaint when it does not. The audience
+        select writes the same hash parameter the picker links above do.
+        None of it binds a global key; <kbd>Esc</kbd> closes the outline
+        only while focus is inside it.
+      </p>
+
+      <h3 id="rd-table-h">Tables</h3>
+      <p>
+        <code>sem-table</code> wraps an authored <code>&lt;table&gt;</code>
+        and adds sort and filter; there is no JSON payload, the markup is the
+        data. Sorting reorders the rows in the DOM, which is the one place the
+        vocabulary moves authored nodes: every row is stamped
+        <code>data-sem-source-index</code> before the first sort, and
+        extraction reads rows back in that order, so a sorted, filtered table
+        extracts exactly as it was written. A numeric cell carries
+        <code>data-value</code> when its text is not the key.
+      </p>
+      <div class="sem-table" id="rd-table" data-kind="artifacts" data-controls="sort,filter" data-sticky aria-labelledby="rd-table-h">
+        <table>
+          <caption>Shipped scripts, measured by the build</caption>
+          <thead><tr><th scope="col">Artifact</th><th scope="col">Minified</th><th scope="col">Gzipped</th><th scope="col">Global</th></tr></thead>
+          <tbody>
+            <tr><td>semtext.js</td><td data-value="37.8">37.8 KB</td><td data-value="13.0">13.0 KB</td><td>SemText</td></tr>
+            <tr><td>semtext-fallback.js</td><td data-value="11.9">11.9 KB</td><td data-value="4.3">4.3 KB</td><td>SemTextFallback</td></tr>
+            <tr><td>semtext-reading.js</td><td data-value="15.5">15.5 KB</td><td data-value="5.5">5.5 KB</td><td>SemTextReading</td></tr>
+            <tr><td>semtext-extract.js</td><td data-value="9.0">9.0 KB</td><td data-value="3.3">3.3 KB</td><td>SemTextExtract</td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <h3 id="rd-refs-h">References</h3>
       <p>
         <code>sem-references</code> numbers its entries with a CSS counter in
@@ -788,17 +846,17 @@ section { padding-block: var(--pg-space) 0; }
 
       <div class="sem-properties" data-kind="artifacts" role="group"
            aria-label="Shipped artifacts">
-        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · 30.6 KB minified, 10.8 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · 37.8 KB minified, 13.0 KB gzipped</span></div>
         <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · 11.9 KB minified, 4.3 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews · global <code>SemTextReading</code> · 6.8 KB minified, 2.6 KB gzipped</span></div>
-        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · 7.9 KB minified, 2.9 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews, the reader bar, table sort and filter · global <code>SemTextReading</code> · 15.5 KB minified, 5.5 KB gzipped</span></div>
+        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · 9.0 KB minified, 3.3 KB gzipped</span></div>
         <div class="sem-property" data-key="_vocabulary.css" role="definition" aria-label="_vocabulary.css"><span>Structure for the <code>sem-*</code> classes. Reads <code>--sem-*</code> tokens, declares none.</span></div>
         <div class="sem-property" data-key="theme css" role="definition" aria-label="theme css"><span>Token values only, plus a <code>prefers-color-scheme</code> block. A new theme is a copy with new values.</span></div>
       </div>
 
       <h3>The vocabulary</h3>
       <p class="pg-narrow">
-        Nineteen element types mint records:
+        Twenty element types mint records:
         <code>sem-agent</code>, <code>sem-note</code>, <code>sem-facts</code>
         and <code>sem-fact</code>, <code>sem-details</code> and
         <code>sem-detail</code>, <code>sem-procedure</code> and
@@ -806,9 +864,11 @@ section { padding-block: var(--pg-space) 0; }
         <code>sem-property</code>, <code>sem-views</code> and
         <code>sem-view</code>, <code>sem-reveal</code>,
         <code>sem-progress</code>, <code>sem-chronology</code> and
-        <code>sem-event</code>, <code>sem-code</code>, and
-        <code>sem-references</code> and <code>sem-reference</code>. This page
-        mints records for sixteen of them; the three it leaves out are
+        <code>sem-event</code>, <code>sem-code</code>,
+        <code>sem-references</code> and <code>sem-reference</code>, and
+        <code>sem-table</code>. <code>sem-reader</code> is chrome and mints
+        nothing. This page
+        mints records for seventeen of them; the three it leaves out are
         <code>sem-details</code>, <code>sem-detail</code> and
         <code>sem-progress</code>, because nothing here is an occlusion
         exercise and there is no honest number to meter.
