@@ -41,10 +41,11 @@ Qualifier — on any `sem-*` element or plain semantic HTML:
 ```html
 <sem-note audience="operator">Operators only.</sem-note>
 <sem-note audience="!operator">Everyone except operators.</sem-note>
-<p audience="reader, operator">Either profile.</p>
+<p data-audience="reader, operator">Either profile.</p>
 ```
 
-(`data-audience` is the alias spelling, on either form.)
+(`data-audience` is the alias spelling on a `sem-*` element, and the
+required spelling on a standard HTML element — conventions §2.)
 
 Spec grammar (`src/shared/audience.ts` is the reference):
 

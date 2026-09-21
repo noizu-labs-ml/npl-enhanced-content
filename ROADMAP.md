@@ -4,7 +4,7 @@ Living planning doc. **Supersedes PRD.md §10 for forward planning**; PRD.md rem
 format/spec authority (§1–§9 unchanged and binding). Update this file at every milestone
 exit — status drift here is a bug.
 
-Status snapshot: **2026-09-22 · develop = 7e88ea4 (W0–W2.2 merged) + tag-form-canonical PR open**
+Status snapshot: **2026-09-22 · develop = 7e88ea4 (W0–W2.2 merged) + PR #30 `feature/tags-canonical` open**
 
 **Tag form canonical (2026-09-22).** conventions.md is re-baselined as
 v0.5: the XHTML custom-element form with bare attributes
@@ -110,13 +110,28 @@ extraction restores authored order.
 
 **Size budgets (raw minified, enforced by `npm run build:strict`)**
 
-| Artifact | W0 | W1 | W2 | W3 |
-|---|---|---|---|---|
-| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **13** (measured 12.5 after W2.1; 12.54 after the W2.1 watcher fixes — see W2.1 decisions); **14** after tag-form canonical (measured 13.0: `:is()` selectors in every handler, the bare→`data-*` mirror, the note body wrap) | 14 |
-| `semtext-reading.js` | — | **8** (measured 6.8) | **19.5** (measured 16.6 at W2, 18.8 after W2.1, 19.1 after the W2.1 watcher fixes — see W2 and W2.1 decisions) | 20 |
-| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 48.3 after W2.1 + W2.2 review fixes) | 57 |
-| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 |
+| Artifact | W0 | W1 | W2 | Tag form (PR #30) | W3 |
+|---|---|---|---|---|---|
+| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **13** (measured 12.5 after W2.1; 12.54 after the W2.1 watcher fixes — see W2.1 decisions) | **14** (measured 13.0 — see tag-form decisions) | 14 |
+| `semtext-reading.js` | — | **8** (measured 6.8) | **19.5** (measured 16.6 at W2, 18.8 after W2.1, 19.1 after the W2.1 watcher fixes — see W2 and W2.1 decisions) | 19.5 (measured 19.4 — at the line; the next reading-bundle feature must raise it deliberately) | 20 |
+| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 48.3 after W2.1 + W2.2 review fixes) | 56 (measured 49.5) | 57 |
+| `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 (9.7) | 12 |
 | `semtext-md.js` | — | — | **8.5** (W2.2, measured 8.0 — 8170 bytes after review; raised from 8 during the CodeQL fixes; final form: `new URL()` + protocol allowlist, `url.href` written) | 8.5 |
+
+**Tag-form canonical decisions (recorded, PR #30).** The fallback core
+budget is **14 KB** (measured 13.0; 13,345 bytes against the old 13,312):
+the growth is the `:is(sem-x, .sem-x)` selector in every core handler
+(+ the child parts `:is(conclusion, .sem-conclusion)`), the first-pass
+bare→`data-*` attribute mirror (`src/fallback/attrs.ts`), the
+`:not([data-sem-upgraded])` guards and the tag-form note body wrap. The
+alias path is not separable: the same selector string serves both forms,
+so making the class form optional would save nothing. Precedence keeps
+extraction §3.6 unchanged — `data-<name>` wins over a bare `<name>` on
+one element — because a mixed spelling on one element is an authoring
+error, not a use case, and the runtime state the tiers write is always
+`data-*`; the `sem-source` fence always shows the authored markup. The
+fallback budget is a guardrail, not an aspiration: any future bump goes
+through this section and `scripts/build.mjs` together.
 
 **W1 decisions (recorded).** Glossary mode lives in the *reading* bundle,
 not the fallback core: the core sits at 11.9 / 12 KB after W0 and the

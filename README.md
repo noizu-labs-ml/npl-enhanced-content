@@ -20,7 +20,7 @@ SemText — XHTML-first semantic markup: one document that reads as a styled int
 </sem-enhanced-document>
 ```
 
-The vocabulary is **custom elements with bare attributes** (`view-as`, `status`, `kind`, `key`). The older `div.sem-*` + `data-*` spelling is a compatibility alias every tier still accepts — see `spec/conventions.md` Appendix A.
+The vocabulary is **custom elements with bare attributes** (`view-as`, `status`, `kind`, `key`); `<sem-enhanced-document>` is the required root wrapper (conventions §1). Record **parts** are deliberately unprefixed children — `<statement>`, `<conclusion>`, `<highlight>` — because they only ever occur inside a `sem-*` record. The older `div.sem-*` + `data-*` spelling is a compatibility alias every tier still accepts — see `spec/conventions.md` Appendix A.
 
 ## What
 

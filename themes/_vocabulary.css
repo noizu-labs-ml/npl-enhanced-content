@@ -10,8 +10,10 @@
    the Lit upgrade (conventions §4 rule 3). Element-form children use their
    bare tags (`<statement>`, `<highlight>`, `<name>`); the alias uses
    `.sem-*`. Parameters are read in both spellings where a rule must hold
-   with NO script (`[status]`/`[data-status]`); rules that only apply once
-   a tier is driving the element key on `data-*`, which the fallback core
+   with NO script (`[status]`/`[data-status]`), and a bare-spelling rule is
+   guarded with `:not([data-<name>])` so `data-*` wins when both are
+   present (conventions §2). Rules that only apply once a tier is driving
+   the element key on the `data-*` spelling alone, which the fallback core
    mirrors from the bare attribute before any handler runs.
 
    HIDE RULES ARE GATED (D12). Nothing in this file hides content unless a
@@ -61,7 +63,7 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
   padding: .1rem .6rem; background: var(--sem-surface); }
 :is(sem-profile, .sem-profile)::before { content: attr(id); }
 :is(sem-profile, .sem-profile)[data-label]::before { content: attr(data-label); }
-:is(sem-profile, .sem-profile)[label]::before { content: attr(label); }
+:is(sem-profile, .sem-profile)[label]:not([data-label])::before { content: attr(label); }
 
 /* note */
 :is(sem-note, .sem-note) { border-left: 4px solid var(--sem-note-info); border-radius: 8px;

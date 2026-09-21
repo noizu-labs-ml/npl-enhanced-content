@@ -115,10 +115,15 @@ PAGES.forEach((page) => {
           const unescape = (t) => t.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
           // the live §5 example inside a sem-source is a demo, not a spec table
           const spec = body.replace(/<sem-source\b[\s\S]*?<\/sem-source>/gi, '');
-          const rows = [...spec.matchAll(/<sem-md\b[^>]*>([\s\S]*?)<\/sem-md>/gi)]
-            .flatMap((m) => unescape(m[1]).split('\n').map((l) => l.trim()).filter((l) => /^\|/.test(l)));
-          expect(rows.length, 'sem-md table rows').to.be.greaterThan(40);
-          rows.forEach((row) => expect(md, row).to.contain(row));
+          const tableRows = (text) => text.split('\n').map((l) => l.trim()).filter((l) => /^\|/.test(l));
+          // one sem-md per Markdown table, in order; every row present on both sides
+          const pageTables = [...spec.matchAll(/<sem-md\b[^>]*>([\s\S]*?)<\/sem-md>/gi)].map((m) => tableRows(unescape(m[1])));
+          // fenced listings in the .md (the sem-md example in §5) are not spec tables
+          const mdTables = md.replace(/```[\s\S]*?```/g, '').split(/\n\s*\n/).map(tableRows).filter((t) => t.length > 0);
+          expect(pageTables.length, 'sem-md tables on the page').to.equal(mdTables.length);
+          pageTables.forEach((rows, i) => {
+            expect(rows, `table ${i} rows`).to.deep.equal(mdTables[i]);
+          });
         });
       });
     });
@@ -208,6 +213,16 @@ PAGES.forEach((page) => {
         cy.get('sem-view[name]:not([data-name])').should('have.length.greaterThan', 0);
         cy.get('sem-reveal[summary]:not([data-summary])').should('have.length.greaterThan', 0);
         cy.get('sem-note[variant="warning"]:not([data-variant])').should('have.length.greaterThan', 0);
+        // data-* wins over the bare spelling when both are present, in every bare-spelling caption
+        cy.get('sem-profile[label]:not([data-label])').should('have.length.greaterThan', 0);
+        cy.document().then((doc) => {
+          const p = doc.createElement('sem-profile');
+          p.setAttribute('label', 'Bare');
+          p.setAttribute('data-label', 'Data');
+          doc.querySelector('sem-audiences').appendChild(p);
+          expect(doc.defaultView.getComputedStyle(p, '::before').content).to.equal('"Data"');
+          p.remove();
+        });
       });
     });
 

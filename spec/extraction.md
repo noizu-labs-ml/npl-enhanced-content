@@ -502,7 +502,7 @@ Input:
 
 ```html
 <sem-enhanced-document>
-  <h2 kind="section" tags="auth, tokens">Token handling</h2>
+  <h2 data-kind="section" data-tags="auth, tokens">Token handling</h2>
   <sem-facts id="auth-facts" view-as="quiz">
     <sem-fact id="f-jwt" kind="concept">
       <statement>JWTs rotate per session</statement>

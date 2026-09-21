@@ -31,6 +31,10 @@ const strict = process.argv.includes('--strict-budget');
 /** budgetKb is measured against the minified (not gzipped) artifact. */
 const targets = [
   { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 56, required: true },
+  // 13 → 14 KB (2026-09-22, tag form canonical, measured 13.0): every core
+  // handler selects both authoring forms (`:is(sem-x, .sem-x)`), the
+  // bare→data-* attribute mirror, the tag-form note body wrap. Recorded in
+  // ROADMAP "Tag-form canonical decisions".
   { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 14, required: true },
   { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 19.5, required: true },
   { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 12, required: false },

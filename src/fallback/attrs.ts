@@ -13,9 +13,10 @@
  */
 
 const MIRRORED = ['view-as', 'variant', 'name', 'active', 'summary', 'value', 'label', 'key'];
+const SELECTOR = MIRRORED.map((a) => '[' + a + ']').join(',');
 
 export function enhanceAttrs(scope: ParentNode): void {
-  scope.querySelectorAll('*').forEach((el) => {
+  scope.querySelectorAll(SELECTOR).forEach((el) => {
     if (el.tagName.slice(0, 4) !== 'SEM-') return;
     for (const a of MIRRORED) {
       if (el.hasAttribute(a) && !el.hasAttribute('data-' + a)) {

@@ -45,8 +45,8 @@ write (`data-active`, `data-view-as` after a toggle, tier markers) is always
 | `<sem-source label view-as>` › any content | `div.sem-source[data-label][data-view-as="html\|source"]` (transparent; mints nothing; children extract as if unwrapped) |
 | `<sem-md label view-as controls>` › Markdown text | `div.sem-md[data-label][data-view-as][data-controls]` › Markdown text (`data-view-as` runtime-mutable) |
 | `<sem-procedure kind>` › `<sem-step status>` | `div.sem-procedure[data-kind]` › `div.sem-step[data-status]` |
-| `<sem-views id>` › `<sem-view name active>` | `div.sem-views[id]` › `div.sem-view[data-name][data-active]` |
-| `<sem-reveal summary collapsed>` | `div.sem-reveal[data-summary][collapsed]` |
+| `<sem-views id>` › `<sem-view name active>` | `div.sem-views[id]` › `div.sem-view[data-name][data-active]` (`id` is the global HTML attribute, spelled the same in both forms) |
+| `<sem-reveal summary collapsed>` | `div.sem-reveal[data-summary][collapsed]` (`collapsed`, like `id`, is a global boolean spelled the same in both forms — conventions §2) |
 | `<sem-progress value label>` | `div.sem-progress[data-value][data-label]` |
 | `<sem-audiences>` › `<sem-profile id label implies>`; `audience="…"` | `div.sem-audiences` › `div.sem-profile[id][data-label][data-implies]`; `data-audience` |
 
@@ -100,7 +100,6 @@ Change order: schema → spec → code.
 | Path | Purpose | Shape |
 |------|---------|-------|
 | `spec/conventions.md` | Authoring spec source of truth (v0.5 draft, tag form canonical) | Markdown, 10 sections + open questions + Appendix A (class-form alias) |
-| `spec/conventions.html` | Rendered conventions (XHTML canonical) | XHTML document exercising the vocabulary |
 | `spec/conventions.html` | The spec as a SemText document in the canonical tag form (dogfood) | Folder-form XHTML: linked theme + vocabulary CSS, shipped bundles by `src`, no inline CSS/JS |
 | `web/demo/reading-lit.html` | Reference tag-form document, both tiers | Single-file XHTML, `sem:inline` markers |
 | `web/demo/index.html` | Reference class-form alias document (v0.4 baseline) | Single-file XHTML: inlined vocabulary CSS + `sem-fallback` vanilla JS |

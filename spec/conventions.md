@@ -89,7 +89,7 @@ defines the interactive ones and upgrades them in place (§4 rule 2).
     <instructions>Answer from sem-fact ids only.</instructions>
   </agent>
 
-  <h1 kind="title">Authoring Guide</h1>
+  <h1 data-kind="title">Authoring Guide</h1>
 
   <sem-note variant="warning">Rotation is <strong>per session</strong>.</sem-note>
 
@@ -109,7 +109,10 @@ defines the interactive ones and upgrades them in place (§4 rule 2).
 
 - `<sem-enhanced-document>` is the required root wrapper (fallback handler
   scopes to it; Lit components register against it). It may carry a
-  landmark role (`role="main"`) — it is the document.
+  landmark role (`role="main"`) — it is the document. The alias form may
+  use `<main class="sem-enhanced-document">` for the native landmark; the
+  tag form trades that for one element that is the same in every consumer,
+  and states the landmark with `role`.
 - `<sem-reader>`, when used, is the wrapper's first child (one per
   document; §5).
 - Metadata children (`agent`, and future `org`, `context`, `audience`) are
@@ -119,8 +122,10 @@ defines the interactive ones and upgrades them in place (§4 rule 2).
   `<conclusion>`, `<sem-distractor>` inside `sem-fact`; `<highlight>` inside
   any prose element; `<name>`, `<bio>`, `<instructions>` inside `agent`.
 - Ordinary semantic HTML is always valid content; `sem-*` enhances where
-  interactivity pays. Plain HTML carrying `kind` or `tags` is a record too
-  (extraction §3).
+  interactivity pays. Plain HTML carrying `data-kind` or `data-tags` is a
+  record too (extraction §3) — on a standard element the qualifier keeps
+  the `data-*` spelling, which is the only valid custom attribute HTML5
+  allows there (§2).
 
 ## 2. Attribute catalog
 
@@ -143,9 +148,23 @@ Element-specific parameters (`variant`, `key`, `name`, `summary`, `value`,
 `cite`, `implies`, `sticky`, `outline-depth`) follow the same rule: bare on
 the element, documented per schema.
 
+**Scope of the bare spelling.** Bare attributes are canonical on `sem-*`
+custom elements and their bare part children (`<statement>`, `<highlight>`,
+`<agent>` › `<name>`), where any attribute name is valid. On a **standard
+HTML element** (`<h2>`, `<p>`, `<a>`, `<td>`) a global qualifier keeps the
+`data-*` spelling — `<h2 data-kind="section" data-tags="auth">`,
+`<p data-audience="operator">`, `<td data-value="900">` — because HTML5
+allows no other custom attribute there and §8 promises tool-parseable
+documents. Every tier reads both spellings on either kind of element.
+
 **Alias spelling.** `data-<name>` is accepted everywhere `<name>` is, and
 wins when both are present (extraction §3.6; the fallback core copies each
 bare parameter to its `data-*` twin before any handler runs, §4 rule 1).
+Writing both spellings on one element is an **authoring error** — the
+precedence exists so extraction stays stable and the mirror is a no-op,
+not so an author can mean two things; a `sem-source` fence always shows
+the markup as authored, so a mixed element would display a parameter the
+tiers do not use.
 **Runtime state** the tiers write is always `data-*` — `data-active` on
 the shown view, `data-view-as` rewritten by a `sem-source` / `sem-md`
 toggle, `data-sem-fallback` / `data-sem-upgraded` tier markers — so an
@@ -204,7 +223,11 @@ both present; authors pick one per fact.
    copy. Its second mirrors each bare tag-form parameter (`view-as`,
    `variant`, `name`, `active`, `summary`, `value`, `label`, `key`) to its
    `data-*` twin when the twin is absent, so the gated CSS rules and every
-   later handler read one spelling. Prose-reading behaviours (sem-code
+   later handler read one spelling. The list is exactly the parameters a
+   core handler or a gated CSS rule reads; `controls`, `sticky`, `lang`,
+   `filename`, `mark`, `wrap`, `outline-depth`, `href`, `cite`, `implies`,
+   `when`, `until`, `status`, `kind` and `tags` are read in both spellings
+   by the bundle or CSS rule that consumes them and need no mirror. Prose-reading behaviours (sem-code
    chrome, reference / glossary previews, backlinks, and from R/W2 the
    `sem-reader` chrome and `sem-table` sort / filter) ship in a second
    vanilla script, `dist/semtext-reading.js` (≤19.5 KB raw, marker
@@ -231,8 +254,10 @@ both present; authors pick one per fact.
    `:is(sem-x, .sem-x)` throughout `themes/_vocabulary.css` (D10). Rules
    that must hold with **no script** read the bare and the `data-*`
    spelling (`[status="done"]`, `[data-status="done"]`; `attr(name)`,
-   `attr(data-name)`); rules that only apply once a tier is driving the
-   element key on `data-*`, which rule 1 guarantees is present. A tag-form
+   `attr(data-name)`), and a bare-spelling rule is guarded with
+   `:not([data-<name>])` so `data-*` still wins when both are present
+   (§2). Rules that only apply once a tier is driving the element key on
+   the `data-*` spelling alone, which rule 1 guarantees is present. A tag-form
    document is therefore presentable before and without any script, with
    no layout shift on upgrade where feasible.
 4. **Every hide rule is gated** on `:is([data-sem-fallback],
@@ -496,7 +521,7 @@ convention.
 - `sem-question` — 7 TRP renderers inside quiz views:
 ```html
 <sem-question type="mc">
-  <p kind="prompt">Which header carries the OIDC token?</p>
+  <p data-kind="prompt">Which header carries the OIDC token?</p>
   <sem-option correct>Authorization</sem-option>
   <sem-option>Cookie</sem-option>
 </sem-question>
@@ -544,7 +569,9 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
   vocabulary is the XML variant of NPL (§9). Custom elements with bare
   attributes are what an XML consumer sees: `<sem-fact kind="concept">`
   is one element with one attribute, no class list to tokenise and no
-  `data-` prefix to strip.
+  `data-` prefix to strip. The document stays **valid HTML5** as well:
+  bare attributes appear only on custom elements, and a standard element
+  carries its qualifier as `data-*` (§2).
 - Events + attrs documented per schema = agent integration surface.
 - "Text extraction" reference recipe (DOM → annotated plain text) ships with
   the lib for terminal/LLM pipelines.
