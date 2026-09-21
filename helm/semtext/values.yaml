@@ -1,4 +1,8 @@
 replicas: 1
+
+# Google Analytics 4 measurement id (e.g. "G-XXXXXXXXXX"). Empty disables
+# analytics entirely: the container serves index.html with no gtag script.
+gaMeasurementId: ""
 domain: semtext.dev
 
 # Additional ingress hosts sharing the same service and TLS secret. The origin
