@@ -30,7 +30,7 @@ Status snapshot: **2026-09-21 · develop = bd3c398 + R/W0 PR open**
 | T  | Theme pipeline (parallel track) | ⬜ not started |
 | M4 | sem-question 7 types + highlight occlusion | ⬜ not started |
 | M5 | Tier-2 elements + MHTML + distribution + npm publish prep | ⬜ not started |
-| R  | Reading experience (W0 foundations → W1 prose → W2 chrome+data → W3 themes) | 🔶 W0 in PR |
+| R  | Reading experience (W0 foundations → W1 prose → W2 chrome+data → W3 themes) | 🔶 W0 + W1 in PR (W1 stacks on W0) |
 
 ### M1 — Format spec v0 + Tier-0 schemas ✅ (re-baselined)
 
@@ -94,9 +94,18 @@ extraction restores authored order.
 | Artifact | W0 | W1 | W2 | W3 |
 |---|---|---|---|---|
 | `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | 12 | 12 |
-| `semtext-reading.js` | — | 8 | 14 | 14.5 |
-| `semtext.js` (Lit) | 40 | 48 | 56 | 57 |
-| `semtext-extract.js` | 10 | 12 | 12 | 12 |
+| `semtext-reading.js` | — | **8** (measured 6.8) | 14 | 14.5 |
+| `semtext.js` (Lit) | 40 | **48** (measured 30.6) | 56 | 57 |
+| `semtext-extract.js` | 10 | **12** (measured 7.9) | 12 | 12 |
+
+**W1 decisions (recorded).** Glossary mode lives in the *reading* bundle,
+not the fallback core: the core sits at 11.9 / 12 KB after W0 and the
+popover alone would have broken it. The Lit wrappers (`sem-code`,
+`sem-references`, `sem-properties`) import the reading bundle's
+per-element enhance functions — one behaviour implementation, idempotent
+on DOM state so either script may run first. `sem-chronology` mints no
+custom element (CSS-only, pattern `sem-procedure`). `sem-code.source` is
+extracted verbatim (second recorded exception to normalised text).
 
 ### M5 — Tier-2 + distribution + publish prep
 

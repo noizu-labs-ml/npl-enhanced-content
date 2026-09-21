@@ -31,6 +31,16 @@ custom elements (`<sem-fact>`) are the target vocabulary for the Lit milestone.
 | `<sem-distractor>` | `div.sem-distractor` |
 | `<sem-details>` / `<sem-detail>` | `div.sem-details` › `div.sem-detail` |
 | `<highlight>` | `span.sem-highlight` (occluded form `.sem-occluded`) |
+| `<sem-chronology view-as>` › `<sem-event when until status>` | `div.sem-chronology[data-view-as]` › `div.sem-event[data-when][data-until][data-status]` |
+| `<sem-code lang filename mark controls>` › `<pre><code>` | `div.sem-code[data-lang][data-filename][data-mark][data-controls]` |
+| `<sem-references kind>` › `<sem-reference id href cite>` | `div.sem-references[data-kind]` › `div.sem-reference[id][data-href][data-cite]` |
+| `<sem-properties view-as="glossary">` | `div.sem-properties[data-view-as="glossary"]` › `div.sem-property[id][data-key]` |
+
+Full per-element contracts (fields, rendered forms, a11y, machine contract):
+`spec/schema/*.md`; extraction payloads per type: `spec/extraction.md` §4.
+R/W1 additions: `sem-event {when, until, ordinal, status?}`, `sem-code
+{lang, filename, marks[], source (verbatim)}`, `sem-reference {href, cite,
+ordinal}`.
 
 ### Global attribute catalog (any sem-* element)
 
@@ -78,10 +88,10 @@ Change order: schema → spec → code.
 | Field | Value |
 |-------|-------|
 | `type` | `module` |
-| `exports` | `./lit` → `dist/semtext.js`, `./fallback` → `dist/semtext-fallback.js`, `./extract` → `dist/semtext-extract.js`, `./themes/*` → `themes/*`. No `.` export — each artifact is a classic IIFE script that installs a global and exports nothing (D9). |
+| `exports` | `./lit` → `dist/semtext.js`, `./fallback` → `dist/semtext-fallback.js`, `./reading` → `dist/semtext-reading.js`, `./extract` → `dist/semtext-extract.js`, `./themes/*` → `themes/*`. No `.` export — each artifact is a classic IIFE script that installs a global and exports nothing (D9). |
 | `files` | `dist`, `themes` |
 | `dependencies` | `lit ^3.3.3` |
-| `devDependencies` | `cypress ^14`, `typescript ^5.6`, `vite ^6` |
+| `devDependencies` | `cypress ^15`, `typescript ^5.6`, `vite ^6`, `vitest ^5`, `happy-dom ^20` |
 | scripts | `build` (`scripts/build.mjs` + `scripts/build-standalone.mjs`), `build:strict` (same, budget-enforcing), `test` / `test:open` (cypress e2e), `serve` (vite preview :4173) |
 
 ### Tool configs
