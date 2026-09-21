@@ -1,6 +1,6 @@
 # Schema — extraction (DOM → records → annotated text)
 
-Contract per conventions.md v0.4 §8 ("Machine-readability contract"). BDD
+Contract per conventions.md v0.5 §8 ("Machine-readability contract"). BDD
 source of truth for `test/e2e/extraction.cy.js`. Reference
 implementation: `src/extract/records.ts`. Changes here precede spec changes
 precede code.
@@ -52,8 +52,9 @@ interface SemRecord {
 }
 ```
 
-- `type` is normalized across authoring forms. `<sem-fact>` (v0.3) and
-  `div.sem-fact` (v0.4) both yield `sem-fact`; `<agent>` yields `sem-agent`.
+- `type` is normalized across authoring forms. `<sem-fact>` (canonical)
+  and `div.sem-fact` (the class-form alias, conventions Appendix A) both
+  yield `sem-fact`; `<agent>` yields `sem-agent`.
 - `parent` carries containment. A fact inside `#auth-facts` cites as
   `#auth-facts/f-jwt`, which the consumer composes from the fact's `id` and
   its parent record's `id`. Containment is a number, not an id, because
@@ -111,9 +112,11 @@ interface SemRecord {
    inserted, moved, or deleted, no event is dispatched. Running extraction
    against a live interactive page leaves that page byte-identical.
 6. **Both authoring forms are accepted.** Parameters are read as
-   `data-<name>` first (v0.4 class form), then as a bare `<name>` attribute
-   (v0.3 custom-element form). The repo is mid-migration; a consumer should
-   not have to know which wave a document came from.
+   `data-<name>` first (the class-form alias, and the spelling the tiers
+   mirror bare attributes to at runtime), then as a bare `<name>` attribute
+   (the canonical tag form). A document may mix forms; a consumer should
+   not have to know which one a document was written in — the same
+   document yields the same records either way.
 7. **`sem-reader` is chrome.** The element is skipped **entirely** — no
    record, no text, no descent — including an authored
    `<nav aria-label="Contents">` child, which is navigation, not content,
@@ -498,18 +501,21 @@ Declared here in v0.4 as a forward declaration; closed by
 Input:
 
 ```html
-<div class="sem-enhanced-document">
-  <h2 data-kind="section" data-tags="auth, tokens">Token handling</h2>
-  <div class="sem-facts" id="auth-facts" data-view-as="quiz">
-    <div class="sem-fact" id="f-jwt" data-kind="concept">
-      <div class="sem-statement">JWTs rotate per session</div>
-      <div class="sem-conclusion">Short-lived access; refresh issues a new pair.</div>
-      <div class="sem-distractor">Store them in localStorage.</div>
-    </div>
-  </div>
-  <div class="sem-progress" id="p-cov" data-value="1.4" data-label="coverage"></div>
-</div>
+<sem-enhanced-document>
+  <h2 kind="section" tags="auth, tokens">Token handling</h2>
+  <sem-facts id="auth-facts" view-as="quiz">
+    <sem-fact id="f-jwt" kind="concept">
+      <statement>JWTs rotate per session</statement>
+      <conclusion>Short-lived access; refresh issues a new pair.</conclusion>
+      <sem-distractor>Store them in localStorage.</sem-distractor>
+    </sem-fact>
+  </sem-facts>
+  <sem-progress id="p-cov" value="1.4" label="coverage"></sem-progress>
+</sem-enhanced-document>
 ```
+
+(The class-form alias of the same document — `div.sem-facts[data-view-as]`
+› `div.sem-fact` › `.sem-statement` … — yields the identical array below.)
 
 Output:
 
@@ -552,7 +558,7 @@ sem-progress (#p-cov): coverage :: 100%
   rawValue: 1.4
 ```
 
-Note what did not appear: `data-view-as="quiz"` (presentation), the
+Note what did not appear: `view-as="quiz"` (presentation), the
 `.sem-quiz-options` the fallback would build (chrome), and the clamped-vs-raw
 distinction collapsing (both `value` and `rawValue` are reported).
 

@@ -1,6 +1,6 @@
 # Schema — `sem-facts` / `sem-fact`
 
-Contract per conventions.md v0.4. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-facts.cy.js`. Changes here precede spec changes
 precede code.
 
@@ -8,29 +8,32 @@ precede code.
 
 A collection of fact/claim pairs. Each `sem-fact` is an assertable
 statement/conclusion pair — the atomic citable unit (`id` is the citation
-token; `kind`, `tags` global). `data-view-as` is a **presentation
+token; `kind`, `tags` global). `view-as` is a **presentation
 parameterization, not a semantic change**: the fact *is* a fact under every
 view; the view selects the recall interaction (list = read, flashcards =
 self-test, quiz = scored recall).
 
-## Authoring form (v0.4 class-based)
+## Authoring form
 
 ```html
-<div class="sem-facts" id="auth-facts" data-view-as="flashcards">
-  <div class="sem-fact" id="f-jwt">
-    <div class="sem-statement">JWTs rotate per session</div>
-    <div class="sem-conclusion">Short-lived access tokens; the refresh
-      grant issues a new pair.</div>
-    <div class="sem-distractor">Store tokens in localStorage.</div>
-  </div>
-</div>
+<sem-facts id="auth-facts" view-as="flashcards">
+  <sem-fact id="f-jwt">
+    <statement>JWTs rotate per session</statement>
+    <conclusion>Short-lived access tokens; the refresh
+      grant issues a new pair.</conclusion>
+    <sem-distractor>Store tokens in localStorage.</sem-distractor>
+  </sem-fact>
+</sem-facts>
 ```
 
-- `data-view-as`: `list` (default) | `flashcards` | `quiz`. Canonical
+Class-form alias (conventions Appendix A): `div.sem-facts[data-view-as]` › `div.sem-fact` › `.sem-statement`,
+`.sem-conclusion`, `.sem-distractor`.
+
+- `view-as`: `list` (default) | `flashcards` | `quiz`. Canonical
   attribute; display-only sugar — machines extract the same pairs
   regardless of view.
-- `.sem-statement` + `.sem-conclusion`: required per fact.
-- `.sem-distractor`: optional, quiz view only — explicit wrong candidate.
+- `<statement>` + `<conclusion>`: required per fact.
+- `<sem-distractor>`: optional, quiz view only — explicit wrong candidate.
   Without one, sibling conclusions serve as distractors.
 - `id` on the container and on facts: required for citation
   (`#auth-facts/f-jwt`); `kind`, `tags` global.
@@ -58,14 +61,14 @@ self-test, quiz = scored recall).
 
 - Conclusions hidden until revealed by a correct selection.
 - Current fact (`.sem-current`) renders `.sem-quiz-options`: shuffled
-  buttons, one per candidate — explicit `.sem-distractor` children (up to
-  3) + the `.sem-conclusion` as correct (`data-correct="true"`).
+  buttons, one per candidate — explicit `sem-distractor` children (up to
+  3) + the `conclusion` as correct (`data-correct="true"`).
 - One answer per question (`data-answered` on the option box): correct
   pick → `.sem-answered` on the button; wrong pick → `.sem-wrong-pick`;
   the meter reports `N/M · score C/A`.
 - Prev/next chrome as in flashcards.
 
-## Rendered form (v0.4)
+## Rendered form
 
 - Fallback JS (vanilla, inline) implements flashcards/quiz behavior and
   sets `data-sem-fallback` on the container (hide rules key off it).

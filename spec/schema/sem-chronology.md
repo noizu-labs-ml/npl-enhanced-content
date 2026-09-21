@@ -1,6 +1,6 @@
 # Schema — `sem-chronology` / `sem-event`
 
-Contract per conventions.md v0.4. BDD source of truth for
+Contract per conventions.md v0.5. BDD source of truth for
 `test/e2e/sem-chronology.cy.js`. Changes here precede spec changes
 precede code.
 
@@ -14,33 +14,31 @@ list and never changes what an event means.
 
 ## Authoring form
 
-Class form (v0.4):
-
 ```html
-<div class="sem-chronology" data-kind="release-history" data-view-as="timeline" role="list">
-  <div class="sem-event" role="listitem" data-when="2026-03-02" data-status="done">
+<sem-chronology kind="release-history" view-as="timeline" role="list">
+  <sem-event role="listitem" when="2026-03-02" status="done">
     <time datetime="2026-03-02">2 Mar 2026</time> v0.1 tagged — fallback tier ships.
-  </div>
-  <div class="sem-event" role="listitem" data-when="2026-06" data-until="2026-08" data-status="current">
+  </sem-event>
+  <sem-event role="listitem" when="2026-06" until="2026-08" status="current">
     <time datetime="2026-06">Jun–Aug 2026</time> Reading-experience waves.
-  </div>
-  <div class="sem-event" role="listitem" data-when="2026-Q4">Theme pipeline.</div>
-</div>
+  </sem-event>
+  <sem-event role="listitem" when="2026-Q4">Theme pipeline.</sem-event>
+</sem-chronology>
 ```
 
-Element form: `<sem-chronology view-as kind>` › `<sem-event when until status>`.
+Class-form alias (conventions Appendix A): `div.sem-chronology[data-kind][data-view-as]` › `div.sem-event[data-when][data-until][data-status]`.
 Parameters are read as `data-<name>` first, then bare `<name>`.
 
-- `data-when` (recommended): the event's date or period start, as the
+- `when` (recommended): the event's date or period start, as the
   author wants a machine to see it (ISO-8601 preferred, free text allowed).
-- `data-until` (optional): period end.
-- `data-status` (optional): `done | current | todo | blocked` — same
+- `until` (optional): period end.
+- `status` (optional): `done | current | todo | blocked` — same
   vocabulary as `sem-step`. Absent means unannotated, **not** `todo`: an
   event is a record of something that happened, not a task.
 - **Recommended first child `<time datetime>`**: the human-readable date.
   When present it is the date the reader sees; when absent the CSS renders
-  `data-when` verbatim as the date label (`:not(:has(time))`).
-- `data-view-as`: `timeline` (default) | `list`. Unknown values render as
+  `when` verbatim as the date label (`:not(:has(time))`).
+- `view-as`: `timeline` (default) | `list`. Unknown values render as
   `timeline`.
 - `id`, `kind`, `tags`, `audience` per the global catalog. DOM order =
   chronological order; there is no ordinal attribute.
@@ -54,7 +52,7 @@ Parameters are read as `data-<name>` first, then bare `<name>`.
 - `view-as="list"`: no rail; events render as a plain stacked list with the
   date label inline.
 - The `<time>` child is the label when present; otherwise `::before`
-  renders `attr(data-when)`. `data-until` is appended by CSS when present
+  renders `when` (`attr()`, either spelling). `until` is appended by CSS when present
   and no `<time>` is authored.
 - Neither tier marks the element; nothing is hidden in any tier.
 
@@ -66,7 +64,7 @@ None.
 
 - `role="list"` / `role="listitem"` authored in markup (no JS needed).
 - `<time datetime>` gives AT and machines the same date the reader sees.
-- Status conveyed by marker colour **and** the `data-status` attribute;
+- Status conveyed by marker colour **and** the `status` attribute;
   colour is never the only signal (`::after` glyph as in `sem-step`).
 
 ## Machine contract

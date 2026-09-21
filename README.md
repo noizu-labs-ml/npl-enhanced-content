@@ -4,6 +4,24 @@
 
 SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. Rendered by Lit web components over a zero-JS fallback tier. Zero React.
 
+```html
+<sem-enhanced-document>
+  <sem-note variant="warning">Refresh tokens rotate per use.</sem-note>
+  <sem-facts view-as="flashcards">
+    <sem-fact id="f-jwt" kind="concept">
+      <statement>JWTs rotate per session</statement>
+      <conclusion>Short-lived access; the refresh grant issues a new pair.</conclusion>
+    </sem-fact>
+  </sem-facts>
+  <sem-procedure kind="runbook" role="list">
+    <sem-step role="listitem" status="done">provision the secret</sem-step>
+    <sem-step role="listitem" status="current">cut the release</sem-step>
+  </sem-procedure>
+</sem-enhanced-document>
+```
+
+The vocabulary is **custom elements with bare attributes** (`view-as`, `status`, `kind`, `key`). The older `div.sem-*` + `data-*` spelling is a compatibility alias every tier still accepts — see `spec/conventions.md` Appendix A.
+
 ## What
 
 The NPL ecosystem's rich-content spec plus its JavaScript artifacts (`package` name: `semtext`):

@@ -12,16 +12,21 @@ interface contract for NPL-enhanced XHTML documents. Repo layout:
 | Config file schemas | `package.json`, `vite.config.ts`, `tsconfig.json`, `cypress.config.js` | §4 |
 | Persistence / KV | — (none) | — |
 
-## 1. Document interface schema (conventions.md v0.4)
+## 1. Document interface schema (conventions.md v0.5)
 
 NPL-enhanced documents are XHTML readable by three consumers: browser (styled/
-interactive), LLM (structural), terminal. Canonical form: **class-based**
-(`div.sem-*` on plain elements) with `data-*` attribute parameters; semantic
-custom elements (`<sem-fact>`) are the target vocabulary for the Lit milestone.
+interactive), LLM (structural), terminal. Canonical form: **custom elements
+with bare attributes** (`<sem-facts view-as="quiz">`, `<sem-fact>` ›
+`<statement>`/`<conclusion>`, `<sem-step status="done">`). The v0.4
+**class-form alias** (`div.sem-*` with `data-*` parameters) is accepted by
+every tier and documented once, in conventions Appendix A; `data-<name>`
+wins over a bare `<name>` when both are present, and runtime state the tiers
+write (`data-active`, `data-view-as` after a toggle, tier markers) is always
+`data-*`.
 
-### v0.3 element → v0.4 class mapping
+### Canonical tag form → class-form alias
 
-| Element form | Class markup |
+| Canonical tag form | Class-form alias |
 | :-- | :-- |
 | `<sem-enhanced-document>` | `div.sem-enhanced-document` (required root wrapper) |
 | `<agent>` + name/bio/instructions | `div.sem-agent` › `.sem-agent-name` / `-bio` / `-instructions` |
@@ -39,6 +44,11 @@ custom elements (`<sem-fact>`) are the target vocabulary for the Lit milestone.
 | `<sem-table controls sticky>` › `<table>` | `div.sem-table[data-controls][data-sticky]` › authored `<table>`, `td[data-value]` sort keys |
 | `<sem-source label view-as>` › any content | `div.sem-source[data-label][data-view-as="html\|source"]` (transparent; mints nothing; children extract as if unwrapped) |
 | `<sem-md label view-as controls>` › Markdown text | `div.sem-md[data-label][data-view-as][data-controls]` › Markdown text (`data-view-as` runtime-mutable) |
+| `<sem-procedure kind>` › `<sem-step status>` | `div.sem-procedure[data-kind]` › `div.sem-step[data-status]` |
+| `<sem-views id>` › `<sem-view name active>` | `div.sem-views[id]` › `div.sem-view[data-name][data-active]` |
+| `<sem-reveal summary collapsed>` | `div.sem-reveal[data-summary][collapsed]` |
+| `<sem-progress value label>` | `div.sem-progress[data-value][data-label]` |
+| `<sem-audiences>` › `<sem-profile id label implies>`; `audience="…"` | `div.sem-audiences` › `div.sem-profile[id][data-label][data-implies]`; `data-audience` |
 
 Full per-element contracts (fields, rendered forms, a11y, machine contract):
 `spec/schema/*.md`; extraction payloads per type: `spec/extraction.md` §4.
@@ -65,7 +75,7 @@ rendered body is never extracted. Reader state on
 | `controls` | comma flags: `shuffle`, `filter`, `retry`, `picker` | which controls render |
 | `collapsed` | boolean | pre-collapse state |
 | `id` | doc-unique token | stable anchor, cite target |
-| `data-*` | free | extension point |
+| `data-*` | free | extension point; alias spelling of every parameter above |
 
 Rule: **attributes are canonical; inline `[hint | reveal]` NPL notation is
 sugar** and legal only where the element schema allows.
@@ -89,9 +99,11 @@ Change order: schema → spec → code.
 
 | Path | Purpose | Shape |
 |------|---------|-------|
-| `spec/conventions.md` | Authoring spec source of truth (v0.4 draft) | Markdown, 10 sections + open questions |
+| `spec/conventions.md` | Authoring spec source of truth (v0.5 draft, tag form canonical) | Markdown, 10 sections + open questions + Appendix A (class-form alias) |
 | `spec/conventions.html` | Rendered conventions (XHTML canonical) | XHTML document exercising the vocabulary |
-| `web/demo/index.html` | Reference implementation of the class-based v0.4 baseline | Single-file XHTML: inline core CSS + Tailwind CDN `@apply` layer + `sem-fallback` vanilla JS |
+| `spec/conventions.html` | The spec as a SemText document in the canonical tag form (dogfood) | Folder-form XHTML: linked theme + vocabulary CSS, shipped bundles by `src`, no inline CSS/JS |
+| `web/demo/reading-lit.html` | Reference tag-form document, both tiers | Single-file XHTML, `sem:inline` markers |
+| `web/demo/index.html` | Reference class-form alias document (v0.4 baseline) | Single-file XHTML: inlined vocabulary CSS + `sem-fallback` vanilla JS |
 
 ## 4. Config file schemas
 
