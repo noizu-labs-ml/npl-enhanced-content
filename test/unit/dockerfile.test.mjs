@@ -86,10 +86,17 @@ function dockerfileHtmlRootEntries() {
       // built file matching the glob, not the glob text itself.
       const dir = path.dirname(path.join(ROOT, src.replace(/^\/app\//, '')));
       const glob = path.basename(src);
-      const re = new RegExp('^' + glob.replace(/[.]/g, '\\.').replace(/\*/g, '.*') + '$');
+      // No regex: a Dockerfile COPY glob here is only `<prefix>*<suffix>`
+      // (e.g. semtext*.js), so match by literal prefix and suffix. This
+      // avoids building a RegExp from the glob text at all (CodeQL
+      // js/incomplete-sanitization on the escaping).
+      const star = glob.indexOf('*');
+      const prefix = glob.slice(0, star);
+      const suffix = glob.slice(star + 1);
+      if (suffix.includes('*')) throw new Error(`unsupported COPY glob: ${glob}`);
       // fall back to a direct fs read since no globbing lib is a dependency here
       for (const f of readDirSafe(dir)) {
-        if (re.test(f)) entries.add(f);
+        if (f.startsWith(prefix) && f.endsWith(suffix) && f.length >= prefix.length + suffix.length) entries.add(f);
       }
     } else {
       // Directory or single-file copy: what matters for this test is only
