@@ -27,11 +27,26 @@ const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SPEC_PAGE = path.join(ROOT, 'dist/spec/conventions.html');
 const DOCKERFILE = path.join(ROOT, 'Dockerfile');
 
+// Every dist/ artifact this test cross-checks the Dockerfile against — not
+// just the spec page. Checking SPEC_PAGE alone would let a partial/stale
+// dist/ (e.g. an interrupted build that produced dist/spec/ but never
+// refreshed dist/themes/ or dist/semtext*.js) pass silently: the test would
+// read real files, just not the ones a fresh build would emit, weakening the
+// cross-check without failing it.
+const REQUIRED_DIST_PATHS = [
+  SPEC_PAGE,
+  path.join(ROOT, 'dist/themes/_vocabulary.css'),
+  path.join(ROOT, 'dist/semtext.js'),
+  path.join(ROOT, 'dist/site/index.html'),
+  path.join(ROOT, 'dist/demo'),
+];
+
 beforeAll(() => {
   // The dist/ artifact this test inspects is a build output, not something
   // committed. Build it if a prior `npm run build` hasn't already produced
-  // it, so `vitest run` is self-sufficient on a clean checkout.
-  if (!existsSync(SPEC_PAGE)) {
+  // a complete dist/, so `vitest run` is self-sufficient on a clean checkout
+  // and doesn't trust a partial dist/ left over from an interrupted build.
+  if (!REQUIRED_DIST_PATHS.every(existsSync)) {
     execFileSync('node', ['scripts/build.mjs'], { cwd: ROOT, stdio: 'inherit' });
     execFileSync('node', ['scripts/build-standalone.mjs'], { cwd: ROOT, stdio: 'inherit' });
   }
@@ -92,7 +107,6 @@ function readDirSafe(dir) {
     return [];
   }
 }
-import { readdirSync } from 'node:fs';
 
 describe('Dockerfile ships every dist/ asset the standalone spec page needs', () => {
   it('COPYs a matching entry for each top-level dist/ ref the built spec page links', () => {
