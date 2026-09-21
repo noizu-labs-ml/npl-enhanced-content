@@ -116,14 +116,33 @@ PAGES.forEach((page) => {
           // the live §5 example inside a sem-source is a demo, not a spec table
           const spec = body.replace(/<sem-source\b[\s\S]*?<\/sem-source>/gi, '');
           const tableRows = (text) => text.split('\n').map((l) => l.trim()).filter((l) => /^\|/.test(l));
-          // one sem-md per Markdown table, in order; every row present on both sides
-          const pageTables = [...spec.matchAll(/<sem-md\b[^>]*>([\s\S]*?)<\/sem-md>/gi)].map((m) => tableRows(unescape(m[1])));
+          // A Markdown table is a run of consecutive `|` lines; it is identified by
+          // its header row (the first line), not by its position in the file.
+          const tablesIn = (text) => {
+            const out = [];
+            let cur = null;
+            text.split('\n').forEach((raw) => {
+              const l = raw.trim();
+              if (/^\|/.test(l)) { (cur = cur || []).push(l); }
+              else if (cur) { out.push(cur); cur = null; }
+            });
+            if (cur) out.push(cur);
+            return out;
+          };
           // fenced listings in the .md (the sem-md example in §5) are not spec tables
-          const mdTables = md.replace(/```[\s\S]*?```/g, '').split(/\n\s*\n/).map(tableRows).filter((t) => t.length > 0);
-          expect(pageTables.length, 'sem-md tables on the page').to.equal(mdTables.length);
-          pageTables.forEach((rows, i) => {
-            expect(rows, `table ${i} rows`).to.deep.equal(mdTables[i]);
+          const mdTables = new Map(tablesIn(md.replace(/```[\s\S]*?```/g, '')).map((t) => [t[0], t]));
+          const pageTables = [...spec.matchAll(/<sem-md\b[^>]*>([\s\S]*?)<\/sem-md>/gi)].map((m) => tableRows(unescape(m[1])));
+          expect(pageTables.length, 'sem-md tables on the page').to.be.greaterThan(3);
+          const seen = new Set();
+          pageTables.forEach((rows) => {
+            const header = rows[0];
+            expect([...mdTables.keys()], `a Markdown table headed ${header}`).to.include(header);
+            seen.add(header);
+            // same row SET (order-insensitive); a dropped or added row fails either way
+            expect([...rows].sort(), `rows under ${header}`).to.deep.equal([...mdTables.get(header)].sort());
           });
+          // every Markdown table is on the page, too
+          [...mdTables.keys()].forEach((header) => expect([...seen], `page table headed ${header}`).to.include(header));
         });
       });
     });

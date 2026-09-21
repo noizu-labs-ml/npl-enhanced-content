@@ -116,7 +116,7 @@ extraction restores authored order.
 | `semtext-reading.js` | — | **8** (measured 6.8) | **19.5** (measured 16.6 at W2, 18.8 after W2.1, 19.1 after the W2.1 watcher fixes — see W2 and W2.1 decisions) | 19.5 (measured 19.4 — at the line; the next reading-bundle feature must raise it deliberately) | 20 |
 | `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 48.3 after W2.1 + W2.2 review fixes) | 56 (measured 49.5) | 57 |
 | `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 (9.7) | 12 |
-| `semtext-md.js` | — | — | **8.5** (W2.2, measured 8.0 — 8170 bytes after review; raised from 8 during the CodeQL fixes; final form: `new URL()` + protocol allowlist, `url.href` written) | 8.5 |
+| `semtext-md.js` | — | — | **8.5** (W2.2, measured 8.0 — 8170 bytes after review; raised from 8 during the CodeQL fixes; final form: `new URL()` + protocol allowlist, `url.href` written) | 8.5 (8.0) | 8.5 |
 
 **Tag-form canonical decisions (recorded, PR #30).** The fallback core
 budget is **14 KB** (measured 13.0; 13,345 bytes against the old 13,312):

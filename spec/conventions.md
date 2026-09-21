@@ -165,6 +165,7 @@ precedence exists so extraction stays stable and the mirror is a no-op,
 not so an author can mean two things; a `sem-source` fence always shows
 the markup as authored, so a mixed element would display a parameter the
 tiers do not use.
+
 **Runtime state** the tiers write is always `data-*` — `data-active` on
 the shown view, `data-view-as` rewritten by a `sem-source` / `sem-md`
 toggle, `data-sem-fallback` / `data-sem-upgraded` tier markers — so an
@@ -227,7 +228,15 @@ both present; authors pick one per fact.
    core handler or a gated CSS rule reads; `controls`, `sticky`, `lang`,
    `filename`, `mark`, `wrap`, `outline-depth`, `href`, `cite`, `implies`,
    `when`, `until`, `status`, `kind` and `tags` are read in both spellings
-   by the bundle or CSS rule that consumes them and need no mirror. Prose-reading behaviours (sem-code
+   by the bundle or CSS rule that consumes them and need no mirror.
+   `status` in particular is never read by a script: its only consumers
+   are the no-script CSS rules of `sem-step`, `sem-event` and
+   `sem-progress`, each written `:is([data-status="x"], [status="x"])`,
+   which select on a *value* rather than render an `attr()` — both
+   spellings of the same value produce the same declaration, so no
+   `:not([data-status])` guard is needed and the alias precedence of §2
+   cannot be observed unless an element carries two different values,
+   which is the authoring error §2 already names. Prose-reading behaviours (sem-code
    chrome, reference / glossary previews, backlinks, and from R/W2 the
    `sem-reader` chrome and `sem-table` sort / filter) ship in a second
    vanilla script, `dist/semtext-reading.js` (≤19.5 KB raw, marker
