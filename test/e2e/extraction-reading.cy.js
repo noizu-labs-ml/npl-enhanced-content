@@ -43,6 +43,7 @@ const EXPECTED_TYPES = [
   'sem-properties', 'sem-property', 'sem-property', 'sem-property',
   'sem-chronology', 'sem-event', 'sem-event', 'sem-event',
   'sem-chronology', 'sem-event', 'sem-event',
+  'sem-note',
   'sem-code', 'sem-code',
   'sem-references', 'sem-reference', 'sem-reference',
   'sem-properties', 'sem-property', 'sem-property',

@@ -11,7 +11,14 @@
 //   Scenario: an authored view-as="source" starts in source mode
 //   Scenario: the snapshot script is inert text/plain
 //   Scenario: upgraded tier — same behaviour, handoff markers
+//   Scenario: focus stays on the activated button; print shows the rendered children
+//   Scenario: audience `hidden`, nested wrappers, missing snapshot (warns), deep link into source mode
 //   Scenario: JS-off — rendered content, no chrome, no fence, nothing hidden
+
+const emulate = (params) =>
+  cy.wrap(null, { log: false }).then(() =>
+    Cypress.automation('remote:debugger:protocol', { command: 'Emulation.setEmulatedMedia', params })
+  );
 
 const visitWithClipboard = (url) =>
   cy.visit(url, {
@@ -88,6 +95,13 @@ function assertSource(url, id, marker, authored) {
     cy.get(`${id} .sem-source-fence .sem-code`).should('have.length', 1);
   });
 
+  it('keeps focus on the activated button and hides nothing from print', () => {
+    cy.get(`${id} [data-act="source"]`).click();
+    cy.focused().should('have.attr', 'data-act', 'source');
+    cy.get(`${id} [data-act="html"]`).click();
+    cy.focused().should('have.attr', 'data-act', 'html');
+  });
+
   it('the snapshot is an inert text/plain script, present once', () => {
     cy.get(`${id} > script.sem-source-raw`).should('have.length', 1)
       .and('have.attr', 'type', 'text/plain');
@@ -106,10 +120,74 @@ describe('sem-source', () => {
       cy.get('#s-initial').should('have.attr', 'data-view-as', 'source');
       cy.get('#s-initial > .sem-source-fence').should('be.visible');
       cy.get('#s-initial [data-act="source"]').should('have.attr', 'aria-pressed', 'true');
-      cy.get('#s-initial .sem-source-fence code').invoke('text').should('contain', '<p>Plain prose');
+      cy.get('#s-initial .sem-source-fence code').invoke('text').should('contain', '<p id="s-initial-p">Plain prose');
       cy.get('#s-initial > p').should('not.be.visible');
       cy.get('#s-initial [data-act="html"]').click();
       cy.get('#s-initial > p').should('be.visible');
+    });
+
+    it('print media shows the rendered children even in source mode', () => {
+      cy.visit('/demo/index.html');
+      cy.get('#s-flash [data-act="source"]').click();
+      cy.get('#s-flash > .sem-source-fence').should('be.visible');
+      emulate({ media: 'print' });
+      cy.get('#s-flash > .sem-source-fence').should('not.be.visible');
+      cy.get('#s-flash > .sem-source-chrome').should('not.be.visible');
+      cy.get('#s-flash .sem-fact').first().should('be.visible');
+      emulate({ media: '', features: [] });
+    });
+
+    it('a child the audience fallback hid carries no `hidden` in the fence', () => {
+      cy.visit('/demo/index.html');
+      cy.get('#n-op').should('have.attr', 'hidden');
+      cy.get('#s-audiences [data-act="source"]').click();
+      cy.get('#s-audiences .sem-source-fence code').invoke('text').then((t) => {
+        expect(t).to.contain('id="n-op"');
+        expect(t).not.to.match(/\shidden(=""|\s|>)/);
+      });
+    });
+
+    it('a deep link into a wrapper in source mode switches it back to rendered', () => {
+      cy.visit('/demo/index.html#s-initial-p');
+      cy.get('#s-initial').should('have.attr', 'data-view-as', 'html');
+      cy.get('#s-initial-p').should('be.visible').and('have.class', 'sem-target');
+      cy.get('#s-initial [data-act="html"]').should('have.attr', 'aria-pressed', 'true');
+    });
+
+    it('a nested wrapper is skipped with a warning; only the outer one snapshots', () => {
+      cy.visit('/demo/index.html', {
+        onBeforeLoad(win) {
+          cy.stub(win.console, 'warn').as('warn');
+          win.addEventListener('DOMContentLoaded', () => {
+            const host = win.document.querySelector('.sem-enhanced-document');
+            const outer = win.document.createElement('div');
+            outer.className = 'sem-source'; outer.id = 's-outer';
+            outer.innerHTML = '<p>outer</p><div class="sem-source" id="s-inner"><p>inner</p></div>';
+            host.appendChild(outer);
+          }, true);
+        }
+      });
+      cy.get('#s-outer > script.sem-source-raw').should('have.length', 1);
+      cy.get('#s-inner > script.sem-source-raw').should('not.exist');
+      cy.get('@warn').should('have.been.calledWithMatch', /sem-source: nested/);
+      cy.get('#s-inner > .sem-source-chrome').should('not.exist');
+      cy.get('#s-outer > .sem-source-chrome [data-act="source"]').click();
+      cy.get('#s-outer .sem-source-fence code').invoke('text').should('contain', 'id="s-inner"');
+    });
+
+    it('without a core snapshot the fence falls back to the live DOM and warns', () => {
+      cy.visit('/demo/index.html', { onBeforeLoad(win) { cy.stub(win.console, 'warn').as('warn'); } });
+      cy.window().then((win) => {
+        const el = win.document.createElement('div');
+        el.className = 'sem-source';
+        el.id = 's-nosnap';
+        el.innerHTML = '<p>late</p>';
+        win.document.querySelector('.sem-enhanced-document').appendChild(el);
+        win.SemTextReading.enhanceSourceElement(el);
+      });
+      cy.get('@warn').should('have.been.calledWithMatch', /sem-source: no snapshot/);
+      cy.get('#s-nosnap [data-act="source"]').click();
+      cy.get('#s-nosnap .sem-source-fence code').should('have.text', '<p>late</p>');
     });
 
     it('a rendered child keeps its own behaviour before and after a round trip', () => {
@@ -130,6 +208,16 @@ describe('sem-source', () => {
     assertSource('/demo/reading-lit.html', '#s-lit',
       { present: 'data-sem-upgraded', absent: 'data-sem-fallback' },
       '<sem-code');
+
+    it('the fence shows a Lit-upgraded note as authored: no role, no data-variant, no reflected default', () => {
+      cy.visit('/demo/reading-lit.html');
+      cy.get('#s-lit-note').should('have.attr', 'role', 'note').and('have.attr', 'data-variant', 'tip');
+      cy.get('#s-lit [data-act="source"]').click();
+      cy.get('#s-lit .sem-source-fence code').invoke('text').then((t) => {
+        expect(t).to.contain('<sem-note id="s-lit-note" variant="tip">');
+        expect(t).not.to.match(/role=|data-variant=|variant="info"|data-sem-upgraded/);
+      });
+    });
   });
 
   describe('JS-off', () => {

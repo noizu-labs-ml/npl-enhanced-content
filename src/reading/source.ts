@@ -13,6 +13,7 @@
  */
 
 import { param } from '../shared/attr.js';
+import { warn } from '../shared/audience.js';
 import { enhanceCodeElement } from './code.js';
 
 export const SOURCE = ':is(sem-source, .sem-source)';
@@ -34,8 +35,10 @@ function clean(raw: string): string {
 
 export function enhanceSourceElement(el: Element): void {
   if (el.querySelector(':scope > .sem-source-chrome')) return;
+  if (el.parentElement?.closest(SOURCE)) return; // nested: the outer wrapper owns it (core warned)
   const snap = el.querySelector(':scope > script.sem-source-raw');
   // No core snapshot (reading bundle alone): best effort, chrome and all.
+  if (!snap) warn('sem-source: no snapshot (load semtext-fallback.js before the reading bundle); showing the live DOM');
   const raw = snap ? snap.textContent || '' : el.innerHTML;
 
   const chrome = document.createElement('div');

@@ -94,8 +94,8 @@ extraction restores authored order.
 
 | Artifact | W0 | W1 | W2 | W3 |
 |---|---|---|---|---|
-| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **12.5** (measured 12.2 after W2.1 — see W2.1 decisions) | 12.5 |
-| `semtext-reading.js` | — | **8** (measured 6.8) | **19** (measured 16.6 at W2, 18.6 after W2.1 — see W2 and W2.1 decisions) | 19.5 |
+| `semtext-fallback.js` | **12 KB** (measured 11.9; planned 10 — the shared audience matcher + resolver cost ~4.8 KB over the 7.1 KB baseline, and dropping either would drop a W0 deliverable) | 12 | **12.5** (measured 12.5 after W2.1 — see W2.1 decisions) | 12.5 |
+| `semtext-reading.js` | — | **8** (measured 6.8) | **19** (measured 16.6 at W2, 18.8 after W2.1 — see W2 and W2.1 decisions) | 19.5 |
 | `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9) | 57 |
 | `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1) | 12 |
 
@@ -113,10 +113,12 @@ W2: a per-section wrapper that flips between rendered content and the
 literal authored markup. The snapshot has to happen in the **core**
 fallback (registered first) because the fence must show the document as
 written and every other handler mutates the subtree on DOMContentLoaded;
-that pass costs **0.3 KB** and takes the core from 11.9 to 12.2 KB, so
-the core budget is 12.5 KB. The chrome, dedent and fence (built once,
-through the existing `sem-code` enhancer) cost **1.9 KB** in the reading
-bundle (16.7 → 18.6 KB); budget 19 KB. The snapshot is an inert
+that pass plus the nested-wrapper guard and the deep-link resolver's
+source-mode step cost **0.6 KB** and take the core from 11.9 to 12.5 KB,
+so the core budget is 12.5 KB — at the line; the next core addition
+must raise it. The chrome, dedent and fence (built once,
+through the existing `sem-code` enhancer) cost **2.1 KB** in the reading
+bundle (16.7 → 18.8 KB); budget 19 KB. The snapshot is an inert
 `text/plain` script child rather than a WeakMap because the reading
 bundle is a sibling IIFE and cannot share module state with the core.
 `sem-source` is the vocabulary's first **transparent** element in

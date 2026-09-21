@@ -8,9 +8,15 @@
  * Idempotent. Spec: spec/schema/sem-source.md.
  */
 
+import { warn } from '../shared/audience.js';
+
+const SOURCE = ':is(sem-source, .sem-source)';
+
 export function enhanceSource(scope: ParentNode): void {
-  scope.querySelectorAll(':is(sem-source, .sem-source)').forEach((el) => {
+  scope.querySelectorAll(SOURCE).forEach((el) => {
     if (el.querySelector(':scope > script.sem-source-raw')) return;
+    // Nested wrappers are unsupported: the inner markup is part of the outer's.
+    if (el.parentElement?.closest(SOURCE)) { warn('sem-source: nested wrapper ignored'); return; }
     const s = document.createElement('script');
     s.type = 'text/plain';
     s.className = 'sem-source-raw';

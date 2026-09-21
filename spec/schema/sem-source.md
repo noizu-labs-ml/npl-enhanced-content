@@ -58,11 +58,15 @@ FIRST.** Before any other handler runs, every `sem-source` receives a
 child `<script type="text/plain" class="sem-source-raw">` holding the
 element's `innerHTML` as it stood at that moment — the authored markup,
 before chrome, before line spans, before any `hidden`. Idempotent: an
-element that already has a snapshot is left alone. The snapshot is inert
-(text/plain), invisible, and skipped by extraction. The tier marker on
-`<html>` that the Lit bundle sets at parse time (`data-sem-upgraded=""`
-on custom elements) can precede the snapshot; the fence strips those
-markers when it renders. A `</script` sequence inside the markup is
+element that already has a snapshot is left alone; a wrapper nested in
+another wrapper is skipped with a console warning (unsupported); the
+reading bundle gives it no chrome either, so the outer wrapper owns it. The
+snapshot is inert (text/plain), invisible, and skipped by extraction.
+Lit elements claim `data-sem-upgraded` at parse time (anti-flash gating
+needs it) and the fence strips that marker when it renders; every other
+attribute a Lit element writes is deferred until the parse has finished
+(`SemElement.afterParse`), i.e. after the snapshot, so the fence is the
+authored markup. A `</script` sequence inside the markup is
 escaped as `<\/script` in the snapshot and restored on read.
 
 **Reading bundle (`dist/semtext-reading.js`) — chrome and fence.**
@@ -88,10 +92,14 @@ escaped as `<\/script` in the snapshot and restored on read.
 - An authored `data-view-as="source"` (either form) builds the fence at
   enhance time and starts in source mode.
 - The fence is built at most once; switching back and forth shows and
-  hides it. Nothing is persisted.
+  hides it. Nothing is persisted. Focus stays on the activated button.
+- A deep link or outline link into a wrapper in source mode switches it
+  back to rendered first (fallback core `target.ts`), so the target is
+  visible when it scrolls into view.
 - Without a snapshot (a document that loaded the reading bundle but not
-  the core) the fence reads `innerHTML` at build time, chrome and all —
-  recorded limit; ship both scripts.
+  the core) the fence reads `innerHTML` at build time, chrome and all,
+  and a console warning names the cause — recorded limit; ship both
+  scripts.
 - The element carries `data-sem-fallback` once wired.
 
 ### Upgraded (Lit `SemSource`)
