@@ -527,7 +527,9 @@ function buildMd(el: Element): Payload {
   // string. Chrome, body and fence are skipped by the walker; the fence is
   // read here on purpose.
   const fence = el.querySelector(':scope > .sem-md-raw code');
-  const source = fence ? collectText(fence, isChrome) : normalizeMd(collectText(el, isChrome));
+  // normalised on BOTH paths (idempotent on an already-normalised fence),
+  // so the invariant does not rest on the fence staying byte-identical
+  const source = normalizeMd(collectText(fence || el, isChrome));
   return { fields: { source: source }, text: norm(source) };
 }
 

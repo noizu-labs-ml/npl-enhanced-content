@@ -307,10 +307,10 @@ normalised single-line form of `source`.
   normalised-text rule: Markdown is whitespace-sensitive, so a consumer
   gets a string it can parse.
 - Once enhanced the element's text lives in the raw fence's `<code>`
-  (`.sem-md-raw`), byte-identical to what the renderer saw; the extractor
-  reads it there, and from the element's own text (normalised) when no
-  fence exists. Both paths yield the same string, which is what §5 relies
-  on. The rendered `.sem-md-body` is never read: a rendering is a
+  (`.sem-md-raw`); the extractor reads it there, and from the element's
+  own text when no fence exists, and applies the (idempotent)
+  normalisation on **both** paths — so the §5 invariant is enforced by the
+  extractor, not by the fence happening to stay byte-identical. The rendered `.sem-md-body` is never read: a rendering is a
   projection of the source, not a second copy of the content.
 - `data-view-as` (`rendered` | `raw`) is presentation, rewritten by the
   toggle, and is not extracted (§5c).

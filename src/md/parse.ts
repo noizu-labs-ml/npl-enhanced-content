@@ -38,7 +38,9 @@ function txt(parent: Node, s: string): void {
 
 /** Allowlisted destination, or null when the URL must render as text. */
 export function safeUrl(raw: string): string | null {
-  const u = raw.replace(/[\u0000- ]/g, '');
+  // WHATWG URL: leading/trailing C0 + space are trimmed, tab/LF/CR removed
+  // anywhere; interior spaces stay (a scheme with one is not a scheme)
+  const u = raw.replace(/^[\u0000- ]+|[\u0000- ]+$/g, '').replace(/[\t\n\r]/g, '');
   const m = /^([a-z][a-z0-9+.-]*):/i.exec(u);
   return !m || /^(https?|mailto|tel|ftp)$/i.test(m[1]) ? u : null;
 }
@@ -70,7 +72,9 @@ export function inline(s: string, out: Node, depth = 0): void {
     if (c === '\\' && i + 1 < s.length && PUNCT.test(s[i + 1])) { buf += s[i + 1]; i += 2; continue; }
     if (c === '`' && (m = at(BACKTICKS))) {
       const run = m[0];
-      const end = s.indexOf(run, i + run.length);
+      let end = s.indexOf(run, i + run.length);
+      // the closing run must be exactly as long as the opener
+      while (end > -1 && (s[end - 1] === '`' || s[end + run.length] === '`')) end = s.indexOf(run, end + 1);
       if (end > -1) {
         flush();
         let code = s.slice(i + run.length, end);
@@ -101,7 +105,7 @@ export function inline(s: string, out: Node, depth = 0): void {
     if (c === '<' && (m = at(AUTOLINK))) {
       const url = safeUrl(m[1]);
       flush();
-      if (url) link(out, url, null).textContent = m[1]; else txt(out, m[0]);
+      if (url) link(out, url).textContent = m[1]; else txt(out, m[0]);
       i += m[0].length;
       continue;
     }
@@ -114,7 +118,7 @@ export function inline(s: string, out: Node, depth = 0): void {
           img.setAttribute('src', url);
           img.setAttribute('alt', m[1]);
         } else txt(out, m[1]);
-      } else inline(m[1], url ? link(out, url, m[4]) : out, depth + 1);
+      } else inline(m[1], url ? link(out, url) : out, depth + 1);
       i += m[0].length;
       continue;
     }
@@ -124,11 +128,11 @@ export function inline(s: string, out: Node, depth = 0): void {
   flush();
 }
 
-function link(out: Node, url: string, title: string | null | undefined): HTMLElement {
+/** A link title (`"…"` after the destination) is accepted and dropped. */
+function link(out: Node, url: string): HTMLElement {
   const a = el('a', out);
   a.setAttribute('href', url);
   a.setAttribute('rel', 'noopener noreferrer');
-  if (title) a.setAttribute('title', title);
   return a;
 }
 

@@ -99,7 +99,7 @@ extraction restores authored order.
 | `semtext-reading.js` | — | **8** (measured 6.8) | **19** (measured 16.6 at W2, 18.8 after W2.1 — see W2 and W2.1 decisions) | 19.5 |
 | `semtext.js` (Lit) | 40 | **48** (measured 30.6) | **56** (measured 38.9 at W2; 48.3 after W2.1 + W2.2 review fixes) | 57 |
 | `semtext-extract.js` | 10 | **12** (measured 7.9) | **12** (measured 9.1; 9.7 after W2.1 + W2.2) | 12 |
-| `semtext-md.js` | — | — | **8** (W2.2, measured 7.0) | 8 |
+| `semtext-md.js` | — | — | **8** (W2.2, measured 8.0 — 8170 bytes after review) | 8 |
 
 **W1 decisions (recorded).** Glossary mode lives in the *reading* bundle,
 not the fallback core: the core sits at 11.9 / 12 KB after W0 and the
@@ -180,7 +180,12 @@ the source; the inline scanner is offset-based (linear); the bundle
 stamps only the element marker, never `<html>` (`web/demo/md-only.html`
 proves a lone Markdown bundle hides nothing); the fence enhancer is
 resolved lazily so load order does not matter; `sem-reader` skips
-headings inside `.sem-md-body`. Measured **7.9 KB** after the fixes.
+headings inside `.sem-md-body`. Measured **8.0 KB** (8170 bytes) after the fixes; the link title
+(accepted, dropped) paid for the code-span run-length rule. Cross-bundle
+cost, recorded: `semtext.js` carries the parser because `<sem-md>` is a
+registered element there, not because of the borrowed `enhanceCodeElement`
+(already in the Lit bundle via `sem-code`); ≈7 KB against a 56 KB cap is
+accepted; a separate Lit-side md bundle stays a later option.
 
 ### M5 — Tier-2 + distribution + publish prep
 

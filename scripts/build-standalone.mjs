@@ -22,6 +22,8 @@
  *   <!-- sem:inline reading -->                    dist/semtext-reading.js
  *   <!-- sem:inline extract -->                    dist/semtext-extract.js
  *   <!-- sem:inline md -->                         dist/semtext-md.js
+ *       (order-independent w.r.t. `reading`: either script enhances the
+ *        raw fence, and the md bundle re-checks on every scan)
  *   <!-- sem:inline theme <name> -->               themes/<name>.css
  *   <!-- sem:inline vocabulary -->                 themes/_vocabulary.css
  *

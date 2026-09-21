@@ -66,22 +66,30 @@ pass-through):
 
 | Inline | Syntax |
 | :-- | :-- |
-| code span | `` `code` `` (any backtick run length) |
+| code span | `` `code` ``; the closing backtick run must be exactly as long as the opening one (`` ``a` b`` `` is one span containing a backtick) |
 | strong / emphasis | `**` `__` / `*` `_` |
 | strikethrough | `~~` |
-| link | `[text](url "title")`; destination allowlist below |
+| link | `[text](url "title")`; destination allowlist below; the title is accepted and dropped |
 | autolink | `<https://…>`, `<mailto:…>`, `<tel:…>`, `<ftp:…>` (written `&lt;…&gt;` in the HTML) |
 | image | `![alt](src)`; same allowlist |
 | escape | `\` before a punctuation character |
 
 Also parsed: **setext headings** (`===` / `---` under a paragraph line →
-`h1` / `h2`; a `---` with no paragraph above it is a rule). `_` never opens
+`h1` / `h2`; a `---` with no paragraph above it is a rule). Precedence: a
+GFM table needs a delimiter row that contains a pipe, so a bare `---`
+under a line is always a setext underline even when that line has a pipe
+(`a | b` / `---` → `h2`), while `a | b` / `-|-` is a table; a `---` after a
+list item is not part of the item (it is not indented), so it is a rule. `_` never opens
 or closes emphasis inside a word (`snake_case_name`, `foo_bar_baz` stay
 text; `*` has no such rule).
 
-**Destination allowlist.** A destination is first stripped of every C0
-control character and space — browsers do the same before resolving a
-scheme, so `java&#9;script:` is `javascript:` to them — and then admitted
+**Destination allowlist.** A destination is first normalised the way the
+WHATWG URL parser does it — leading and trailing C0 controls and spaces
+trimmed, tab / LF / CR removed anywhere (so `java&#9;script:` is
+`javascript:` to a browser and to this check alike); interior spaces are
+kept, since a bare destination cannot contain one (CommonMark) and an
+angle-bracket destination such as `<my file.html>` is a legitimate
+relative link — and then admitted
 only when it has no scheme (relative path, fragment, or a
 protocol-relative `//host/path`, which reaches exactly what `https:` can)
 or the scheme is `http`, `https`, `mailto`, `tel` or `ftp`. Anything else (`javascript:`,
@@ -185,7 +193,10 @@ None.
 
 - `fields: { source }`.
   - `source`: the **normalised Markdown** — common indentation stripped,
-    leading / trailing blank lines dropped, otherwise verbatim. Third
+    leading / trailing blank lines dropped, otherwise verbatim. The
+    extractor applies the normalisation on **both** paths (fence and
+    element text); it is idempotent, so the contract does not rest on
+    the fence staying byte-identical. Third
     recorded exception to the "text is normalised" rule (after
     `sem-progress` and `sem-code`): Markdown is whitespace-sensitive, so
     the record carries what a Markdown consumer can parse.

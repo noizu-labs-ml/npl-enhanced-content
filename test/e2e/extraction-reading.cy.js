@@ -153,6 +153,7 @@ describe('extraction — reading elements', () => {
         const inject = byId(records, 'm-inject');
         expect(inject.fields.source).to.match(/^<script>alert\(1\)<\/script> and \[click\]\(javascript:alert\(1\)\) and <img src=x onerror=alert\(1\)>\n\n\[tab\]\(<java\tscript:alert\(1\)>\) \[ctl\]\(<\u0001javascript/);
         expect(byId(records, 'm-edge').fields.source).to.match(/^Setext\n------\n\n- one\n/);
+        expect(byId(records, 'm-edge').fields.source).to.match(/\n\na \| b\n---$/);
         // the rendered table, the fence's sem-code and the chrome are all invisible
         expect(records.filter((r) => r.parent === md.sourceOrder)).to.have.length(0);
         expect(records.filter((r) => r.type === 'sem-code')).to.have.length(2);

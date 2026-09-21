@@ -12,11 +12,9 @@ import { enhanceCodeElement } from '../reading/code.js';
  * element to wait for) the same idempotent enhance runs here.
  */
 export class SemMd extends SemElement {
-  #wired = false;
-
+  /** Runs after every connect (Lit updates on reconnect too); the enhance
+   *  is idempotent on DOM state, so no latch — a reconnect re-arms it. */
   updated(): void {
-    if (this.#wired) return;
-    this.#wired = true;
     // afterParse: the content is text, so there is no child element to
     // wait for, but writes must not land mid-parse (sem-source snapshots).
     this.afterParse(() => {
