@@ -39,3 +39,6 @@ export { SemReader } from './lit/sem-reader.js';
 import './lit/sem-reader.js';
 export { SemTable } from './lit/sem-table.js';
 import './lit/sem-table.js';
+/* sem-source — rendered/source section wrapper (thin wrapper over src/reading/source.ts) */
+export { SemSource } from './lit/sem-source.js';
+import './lit/sem-source.js';

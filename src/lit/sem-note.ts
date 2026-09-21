@@ -8,7 +8,7 @@ import { SemElement } from './base.js';
  */
 export class SemNote extends SemElement {
   static properties = {
-    variant: { type: String, reflect: true },
+    variant: { type: String },
     collapsed: { type: Boolean, reflect: true },
   };
 
@@ -25,7 +25,8 @@ export class SemNote extends SemElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    this.setAttribute('role', 'note');
+    // deferred: a parse-time write would leak into a sem-source snapshot
+    this.afterParse(() => this.setAttribute('role', 'note'));
     this.addEventListener('click', this.#onSummaryClick);
   }
 
@@ -36,7 +37,7 @@ export class SemNote extends SemElement {
 
   updated(): void {
     // v0.4 CSS contract keys styling/tests off data-variant, not `variant`
-    this.setAttribute('data-variant', this.variant);
+    this.afterParse(() => this.setAttribute('data-variant', this.variant));
     if (!this.collapsed) {
       this.#summary()?.remove();
       return;

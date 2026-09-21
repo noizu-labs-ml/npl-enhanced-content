@@ -33,13 +33,15 @@
      Source lives in src/fallback/**; the built IIFE (dist/semtext-fallback.js)
      is substituted here by scripts/build-standalone.mjs. -->
 <!-- sem:inline fallback -->
+<!-- Reading bundle: sem-source chrome + fence (and the sem-code it renders). -->
+<!-- sem:inline reading -->
 </head>
 
 <body>
 <div class="sem-enhanced-document">
 
   <h1>Auth Patterns — Sample SemText Document</h1>
-  <p>Demonstrates the v0.4 class-based vocabulary: inline CSS + Tailwind refinement + vanilla fallback handler. Open this file directly in any browser.</p>
+  <p>Demonstrates the v0.4 class-based vocabulary: inline CSS + Tailwind refinement + vanilla fallback handler. Open this file directly in any browser. Every section below sits in a <code>sem-source</code> wrapper: <em>Source</em> shows the markup exactly as this file was written.</p>
 
   <div class="sem-agent">
     <div class="sem-agent-name">Auth Guide</div>
@@ -50,6 +52,7 @@
   <div class="sem-note" data-variant="warning">JWTs must rotate <strong>per session</strong>, not per request.</div>
   <div class="sem-note" id="n-tip" data-variant="tip" collapsed><div class="sem-note-body">Shuffle flashcards before each review session for better recall.</div></div>
 
+  <div class="sem-source" id="s-flash" data-label="Facts — flashcards">
   <h2>Facts — flashcards</h2>
   <div class="sem-facts" data-view-as="flashcards">
     <div class="sem-fact" id="f-jwt">
@@ -66,7 +69,9 @@
       <div class="sem-distractor">Store tokens in localStorage for durability.</div>
     </div>
   </div>
+  </div>
 
+  <div class="sem-source" id="s-list" data-label="Facts — list (default view)">
   <h2>Facts — list (default view)</h2>
   <div class="sem-facts" id="facts-list">
     <div class="sem-fact" id="f-rotate">
@@ -78,7 +83,9 @@
       <div class="sem-conclusion">Long-lived tokens are an anti-pattern.</div>
     </div>
   </div>
+  </div>
 
+  <div class="sem-source" id="s-quiz" data-label="Facts — quiz">
   <h2>Facts — quiz</h2>
   <div class="sem-facts" data-view-as="quiz">
     <div class="sem-fact" id="f-oidc">
@@ -93,7 +100,9 @@
       <div class="sem-distractor">Client credentials flow</div>
     </div>
   </div>
+  </div>
 
+  <div class="sem-source" id="s-details-quiz" data-label="Details — highlight occlusion">
   <h2>Details — highlight occlusion</h2>
   <div class="sem-details" data-view-as="quiz">
     <div class="sem-detail">
@@ -101,12 +110,16 @@
       and refresh tokens should never reach the <span class="sem-highlight">browser</span>.
     </div>
   </div>
+  </div>
 
+  <div class="sem-source" id="s-details" data-label="Details — plain reading">
   <h2>Details — plain reading</h2>
   <div class="sem-details">
     <div class="sem-detail">Plain view keeps highlights readable inline — no occlusion without <span class="sem-highlight">data-view-as="quiz"</span>.</div>
   </div>
+  </div>
 
+  <div class="sem-source" id="s-procedure" data-label="Procedure — status runbook">
   <h2>Procedure — status runbook</h2>
   <div class="sem-procedure" data-kind="runbook" role="list">
     <div class="sem-step" role="listitem" data-status="done">provision Infisical path</div>
@@ -114,7 +127,9 @@
     <div class="sem-step" role="listitem">run migrations</div>
     <div class="sem-step" role="listitem" data-status="blocked">cut release — waiting on CI</div>
   </div>
+  </div>
 
+  <div class="sem-source" id="s-properties" data-label="Properties — config block">
   <h2>Properties — config block</h2>
   <div class="sem-properties" data-kind="config">
     <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
@@ -125,7 +140,9 @@
     <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">15m</div>
     <div class="sem-property" data-key="token ttl" role="definition" aria-label="token ttl">14m</div>
   </div>
+  </div>
 
+  <div class="sem-source" id="s-views" data-label="Views — same deploy, two perspectives">
   <h2>Views — same deploy, two perspectives</h2>
   <div class="sem-views" id="deploy">
     <div class="sem-view" data-name="Helm" data-active role="tabpanel">
@@ -135,7 +152,9 @@
       ArgoCD auto-syncs from the product remote's <code>main</code>; <em id="argocd-tag">CI bumps the image tag</em>.
     </div>
   </div>
+  </div>
 
+  <div class="sem-source" id="s-reveal" data-label="Reveal — Q→A disclosure">
   <h2>Reveal — Q→A disclosure</h2>
   <div class="sem-reveal" id="r-storage" data-summary="Why not localStorage?" collapsed>
     Tokens in localStorage are readable by any script on the page — one XSS away from session theft.
@@ -144,16 +163,20 @@
   <div class="sem-reveal" id="r-derived">
     Refresh tokens rotate per use — each exchange retires the presented token.
   </div>
+  </div>
 
+  <div class="sem-source" id="s-progress" data-label="Progress — completion meter">
   <h2>Progress — completion meter</h2>
   <div class="sem-progress" id="p-coverage" data-value="0.62" data-label="coverage"
        role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"></div>
   <div class="sem-progress" id="p-clamp" data-value="1.4" data-label="out-of-range fixture"
        role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="1.4"></div>
+  </div>
 
   <!-- W0 fixtures. Appended AFTER the last Tier-0 record on purpose:
        test/e2e/extraction.cy.js indexes records positionally. -->
 
+  <div class="sem-source" id="s-audiences" data-label="Audiences — profile-gated content">
   <h2>Audiences — profile-gated content</h2>
   <div class="sem-audiences">
     <div class="sem-profile" id="reader" data-label="Reader"></div>
@@ -163,11 +186,21 @@
   <div class="sem-note" id="n-op" data-audience="operator">Operators: the token endpoint is behind the MinIO port-forward — start it before the migration step.</div>
   <div class="sem-note" id="n-reader" data-audience="reader" data-variant="tip">Readers and operators both see this: a profile that implies <code>reader</code> satisfies it.</div>
   <div class="sem-note" id="n-public" data-audience="!operator" data-variant="warning">Everyone except operators: ask an operator to run the migration for you.</div>
+  </div>
 
+  <div class="sem-source" id="s-margin" data-label="Note — margin view">
   <h2>Note — margin view</h2>
   <div class="sem-note" id="n-margin" data-view-as="margin">A margin note floats into the right gutter on wide screens and reads inline on a phone — same record either way.</div>
   <p>Long-form prose sits beside the margin note. Refresh tokens rotate per use, so each exchange retires the token that was presented; the access token stays short-lived and the refresh grant issues a new pair. Scope capabilities tightly rather than extending lifetime — a long-lived token is an anti-pattern whatever it is scoped to.</p>
   <p>Nothing in this section changes what a machine reads: the margin mode is a presentation parameter, and extraction reports the note as a note.</p>
+  </div>
+
+  <!-- sem-source fixture: an authored data-view-as="source" starts in source
+       mode. Plain prose only, so it mints nothing and extraction.cy.js's
+       positional record list is unchanged. -->
+  <div class="sem-source" id="s-initial" data-label="Authored source mode" data-view-as="source">
+    <p id="s-initial-p">Plain prose inside a wrapper that opens on its own markup.</p>
+  </div>
 
 </div>
 </body>

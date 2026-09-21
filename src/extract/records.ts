@@ -110,7 +110,12 @@ const CHROME_CLASSES = [
   'sem-reader-progress',
   'sem-table-chrome',
   'sem-table-status',
-  'sem-table-filter'
+  'sem-table-filter',
+  // sem-source: the toggle chrome, the derived fence (and the sem-code in
+  // it) and the core's text/plain snapshot are never content
+  'sem-source-chrome',
+  'sem-source-fence',
+  'sem-source-raw'
 ];
 
 /** Highlight / cloze markers, in every authoring and runtime form. */
@@ -197,6 +202,8 @@ function recordType(el: Element): string | null {
  */
 function mintsPlainRecord(el: Element): boolean {
   if (hasClass(el, 'sem-enhanced-document')) return false;
+  // sem-source is a transparent wrapper: never a record, whatever it carries
+  if (hasClass(el, 'sem-source')) return false;
   if (tagOf(el).indexOf('sem-') === 0) return false;
   // The <table> inside a sem-table is the wrapper's contract, not a second
   // record — its `kind` (comparison) is a CSS hook (spec/schema/sem-table.md).

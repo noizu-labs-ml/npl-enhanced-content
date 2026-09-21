@@ -90,6 +90,21 @@ export class SemElement extends LitElement {
     });
   }
 
+  /**
+   * Run `fn` once the document has finished parsing (immediately when it
+   * already has). Attribute writes an element makes at parse time land
+   * BEFORE the fallback core's DOMContentLoaded pass — including the
+   * `sem-source` snapshot, which must see the authored markup — so
+   * anything that is not needed for anti-flash gating goes through here.
+   */
+  afterParse(fn: () => void): void {
+    if (typeof document !== 'undefined' && document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => { if (this.isConnected) fn(); }, { once: true });
+      return;
+    }
+    fn();
+  }
+
   /** Bubbling, composed CustomEvent — sem-navigate / sem-flip / sem-complete. */
   emit<T>(name: string, detail?: T): boolean {
     return this.dispatchEvent(

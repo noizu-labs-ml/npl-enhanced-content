@@ -27,6 +27,7 @@
 import { bareSegments } from '../shared/state.js';
 
 const REVEAL = ':is(sem-reveal, .sem-reveal)';
+const SOURCE = ':is(sem-source, .sem-source)[data-view-as="source"]';
 const OPENERS =
   ':is(sem-note, .sem-note)[collapsed], .sem-view:not([data-active]), ' +
   ':is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded]) > .sem-fact:not(.sem-current)';
@@ -60,6 +61,8 @@ function run(): void {
       // The reveal's <details> is its child, so it is opened from the reveal
       // whether the target is the reveal itself or something inside it.
       if (el.matches(REVEAL)) el.querySelector(':scope > details')?.setAttribute('open', '');
+      // A wrapper showing its markup hides the target: switch it back to rendered.
+      if (el.matches(SOURCE)) el.querySelector<HTMLElement>(':scope > .sem-source-chrome [data-act="html"]')?.click();
       if (!el.matches(OPENERS)) return;
       const sum = el.querySelector<HTMLElement>(':scope > .sem-note-summary');
       if (sum) sum.click();
