@@ -1,0 +1,683 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://semtext.noizu.com/schemas/semtext.schema.json",
+  "title": "SemText document schema",
+  "description": "Machine-readable contract for SemText documents, derived from spec/conventions.md (v0.5) and the per-element prose contracts in spec/schema/*.md. The prose files are normative; this file is the enforcement layer that semtext-validate reads. Changes here precede spec changes precede code, same as the prose contracts.",
+  "x-semtext": {
+    "specVersion": "0.5",
+    "document": {
+      "root": {
+        "tag": "sem-enhanced-document",
+        "classAliases": [
+          "div.sem-enhanced-document",
+          "main.sem-enhanced-document"
+        ],
+        "description": "Exactly one per document when the document uses the SemText vocabulary; plain HTML without vocabulary is not a SemText document (conventions.md §1).",
+        "requiredWhenVocabularyPresent": true
+      },
+      "tierMarkers": {
+        "attributes": [
+          "data-sem-fallback",
+          "data-sem-upgraded"
+        ],
+        "severity": "warning",
+        "description": "Runtime-written markers (conventions.md §4); authored occurrences suggest a stale export or a hand-edited render."
+      },
+      "generatedChrome": {
+        "severity": "warning",
+        "description": "Elements the tiers generate at runtime must not appear in authored source.",
+        "elements": [
+          "sem-facts-chrome",
+          "sem-facts-meter",
+          "sem-quiz-options",
+          "sem-views-tabs",
+          "sem-note-summary",
+          "sem-progress-track",
+          "sem-progress-fill",
+          "sem-code-chrome",
+          "sem-code-status",
+          "sem-references-backlinks",
+          "sem-references-link",
+          "sem-popover",
+          "sem-reader-chrome",
+          "sem-reader-outline",
+          "sem-reader-progress",
+          "sem-table-chrome",
+          "sem-md-chrome",
+          "sem-md-body",
+          "sem-md-raw",
+          "sem-md-status"
+        ]
+      },
+      "childRules": [
+        {
+          "rule": "atMostOne",
+          "selector": "sem-reader",
+          "severity": "warning"
+        }
+      ]
+    },
+    "standardAttributes": [
+      "class",
+      "id",
+      "style",
+      "title",
+      "hidden",
+      "lang",
+      "dir",
+      "role",
+      "tabindex",
+      "accesskey",
+      "draggable",
+      "spellcheck",
+      "translate",
+      "datetime",
+      "href",
+      "scope",
+      "colspan",
+      "rowspan",
+      "label",
+      "aria-label",
+      "aria-labelledby",
+      "aria-describedby",
+      "aria-hidden",
+      "aria-expanded",
+      "aria-pressed",
+      "aria-current",
+      "aria-live",
+      "aria-controls",
+      "aria-orientation",
+      "aria-setsize",
+      "aria-posinset",
+      "aria-valuemin",
+      "aria-valuemax",
+      "aria-valuenow",
+      "aria-valuetext"
+    ],
+    "globalAttributes": {
+      "kind": {
+        "type": "token"
+      },
+      "tags": {
+        "type": "flaglist"
+      },
+      "audience": {
+        "type": "any",
+        "source": "spec/schema/sem-audiences.md"
+      },
+      "view-as": {
+        "type": "token",
+        "elementDefined": true
+      },
+      "status": {
+        "type": "token",
+        "values": [
+          "done",
+          "current",
+          "todo",
+          "blocked",
+          "pass",
+          "fail"
+        ]
+      },
+      "controls": {
+        "type": "flaglist",
+        "elementDefined": true
+      },
+      "collapsed": {
+        "type": "flag"
+      },
+      "summary": {
+        "type": "any"
+      },
+      "variant": {
+        "type": "token",
+        "elementDefined": true
+      },
+      "key": {
+        "type": "any"
+      },
+      "name": {
+        "type": "any"
+      },
+      "value": {
+        "type": "number"
+      },
+      "when": {
+        "type": "any"
+      },
+      "until": {
+        "type": "any"
+      },
+      "lang": {
+        "type": "any"
+      },
+      "filename": {
+        "type": "any"
+      },
+      "mark": {
+        "type": "any"
+      },
+      "wrap": {
+        "type": "flag"
+      },
+      "cite": {
+        "type": "any"
+      },
+      "implies": {
+        "type": "flaglist"
+      },
+      "sticky": {
+        "type": "flag"
+      },
+      "outline-depth": {
+        "type": "number"
+      },
+      "active": {
+        "type": "flag"
+      },
+      "label": {
+        "type": "any"
+      }
+    },
+    "spelling": {
+      "description": "conventions.md §2: bare attributes are canonical on sem-* custom elements; standard HTML elements keep the data-* spelling; writing both spellings on one element is an authoring error.",
+      "dualSpellingSeverity": "error"
+    },
+    "unknownAttributeSeverity": "warning",
+    "unknownElementSeverity": "error"
+  },
+  "$defs": {
+    "document": {
+      "source": "spec/conventions.md#1",
+      "record": false
+    },
+    "agent": {
+      "source": "spec/conventions.md#1, Appendix A",
+      "record": true,
+      "tagAliases": [
+        "agent"
+      ],
+      "classAliases": [
+        "div.sem-agent"
+      ],
+      "attributes": {},
+      "children": [
+        "name",
+        "bio",
+        "instructions"
+      ]
+    },
+    "name": {
+      "source": "spec/conventions.md#1",
+      "record": false,
+      "partOf": [
+        "agent"
+      ],
+      "classAliases": [
+        "div.sem-agent-name",
+        "span.sem-agent-name"
+      ]
+    },
+    "bio": {
+      "source": "spec/conventions.md#1",
+      "record": false,
+      "partOf": [
+        "agent"
+      ],
+      "classAliases": [
+        "div.sem-agent-bio",
+        "span.sem-agent-bio"
+      ]
+    },
+    "instructions": {
+      "source": "spec/conventions.md#1",
+      "record": false,
+      "partOf": [
+        "agent"
+      ],
+      "classAliases": [
+        "div.sem-agent-instructions",
+        "span.sem-agent-instructions"
+      ]
+    },
+    "sem-audiences": {
+      "source": "spec/schema/sem-audiences.md",
+      "record": false,
+      "attributes": {},
+      "children": [
+        "sem-profile"
+      ]
+    },
+    "sem-profile": {
+      "source": "spec/schema/sem-audiences.md",
+      "record": false,
+      "attributes": {
+        "id": {
+          "required": true
+        },
+        "label": {},
+        "implies": {
+          "type": "flaglist"
+        },
+        "audience": {}
+      }
+    },
+    "sem-note": {
+      "source": "spec/schema/sem-note.md",
+      "record": true,
+      "attributes": {
+        "variant": {
+          "type": "token",
+          "values": [
+            "info",
+            "warning",
+            "tip",
+            "danger"
+          ],
+          "default": "info"
+        },
+        "collapsed": {
+          "type": "flag"
+        },
+        "view-as": {
+          "type": "token",
+          "values": [
+            "margin"
+          ]
+        }
+      }
+    },
+    "sem-facts": {
+      "source": "spec/schema/sem-facts.md",
+      "record": true,
+      "attributes": {
+        "view-as": {
+          "type": "token",
+          "values": [
+            "list",
+            "flashcards",
+            "quiz"
+          ],
+          "default": "list"
+        }
+      },
+      "children": [
+        "sem-fact"
+      ]
+    },
+    "sem-fact": {
+      "source": "spec/schema/sem-facts.md",
+      "record": true,
+      "attributes": {
+        "id": {}
+      },
+      "children": [
+        "statement",
+        "conclusion",
+        "sem-distractor"
+      ],
+      "childRules": [
+        {
+          "rule": "exactlyOne",
+          "selector": "statement",
+          "severity": "error"
+        },
+        {
+          "rule": "exactlyOne",
+          "selector": "conclusion",
+          "severity": "error"
+        }
+      ]
+    },
+    "statement": {
+      "source": "spec/schema/sem-facts.md",
+      "record": false,
+      "partOf": [
+        "sem-fact"
+      ],
+      "classAliases": [
+        "div.sem-statement",
+        "span.sem-statement"
+      ]
+    },
+    "conclusion": {
+      "source": "spec/schema/sem-facts.md",
+      "record": false,
+      "partOf": [
+        "sem-fact"
+      ],
+      "classAliases": [
+        "div.sem-conclusion",
+        "span.sem-conclusion"
+      ]
+    },
+    "sem-distractor": {
+      "source": "spec/schema/sem-facts.md",
+      "record": false,
+      "partOf": [
+        "sem-fact"
+      ],
+      "classAliases": [
+        "div.sem-distractor",
+        "span.sem-distractor"
+      ]
+    },
+    "highlight": {
+      "source": "spec/conventions.md#1",
+      "record": false,
+      "classAliases": [
+        "span.sem-highlight",
+        "div.sem-highlight"
+      ]
+    },
+    "sem-details": {
+      "source": "spec/schema/sem-details.md",
+      "record": true,
+      "attributes": {
+        "view-as": {
+          "type": "token",
+          "values": [
+            "plain",
+            "quiz"
+          ],
+          "default": "plain"
+        }
+      },
+      "children": [
+        "sem-detail"
+      ]
+    },
+    "sem-detail": {
+      "source": "spec/schema/sem-details.md",
+      "record": true,
+      "attributes": {},
+      "children": [
+        "highlight"
+      ]
+    },
+    "sem-procedure": {
+      "source": "spec/schema/sem-procedure.md",
+      "record": true,
+      "attributes": {},
+      "children": [
+        "sem-step"
+      ]
+    },
+    "sem-step": {
+      "source": "spec/schema/sem-procedure.md",
+      "record": true,
+      "attributes": {
+        "status": {
+          "type": "token",
+          "values": [
+            "done",
+            "current",
+            "todo",
+            "blocked"
+          ],
+          "default": "todo"
+        }
+      }
+    },
+    "sem-properties": {
+      "source": "spec/schema/sem-properties.md",
+      "record": true,
+      "attributes": {
+        "view-as": {
+          "type": "token",
+          "values": [
+            "glossary"
+          ],
+          "default": null
+        }
+      },
+      "children": [
+        "sem-property"
+      ]
+    },
+    "sem-property": {
+      "source": "spec/schema/sem-properties.md",
+      "record": true,
+      "attributes": {
+        "key": {
+          "required": true
+        },
+        "id": {}
+      }
+    },
+    "sem-views": {
+      "source": "spec/schema/sem-views.md",
+      "record": true,
+      "attributes": {
+        "id": {
+          "recommended": true
+        }
+      },
+      "children": [
+        "sem-view"
+      ]
+    },
+    "sem-view": {
+      "source": "spec/schema/sem-views.md",
+      "record": false,
+      "attributes": {
+        "name": {
+          "required": true
+        },
+        "active": {
+          "type": "flag"
+        }
+      }
+    },
+    "sem-reveal": {
+      "source": "spec/schema/sem-reveal.md",
+      "record": true,
+      "attributes": {
+        "summary": {},
+        "collapsed": {
+          "type": "flag"
+        }
+      }
+    },
+    "sem-progress": {
+      "source": "spec/schema/sem-progress.md",
+      "record": true,
+      "attributes": {
+        "value": {
+          "type": "number",
+          "required": true,
+          "min": 0,
+          "max": 1,
+          "severityOnUnknown": "warning",
+          "note": "out-of-range clamps for rendering; raw attr stays (sem-progress.md)"
+        },
+        "label": {}
+      }
+    },
+    "sem-chronology": {
+      "source": "spec/schema/sem-chronology.md",
+      "record": true,
+      "attributes": {
+        "view-as": {
+          "type": "token",
+          "values": [
+            "timeline",
+            "list"
+          ],
+          "default": "timeline"
+        }
+      },
+      "children": [
+        "sem-event"
+      ]
+    },
+    "sem-event": {
+      "source": "spec/schema/sem-chronology.md",
+      "record": true,
+      "attributes": {
+        "when": {
+          "recommended": true
+        },
+        "until": {},
+        "status": {
+          "type": "token",
+          "values": [
+            "done",
+            "current",
+            "todo",
+            "blocked"
+          ]
+        }
+      }
+    },
+    "sem-code": {
+      "source": "spec/schema/sem-code.md",
+      "record": true,
+      "attributes": {
+        "lang": {},
+        "filename": {},
+        "mark": {},
+        "wrap": {
+          "type": "flag"
+        },
+        "controls": {
+          "type": "flaglist",
+          "values": [
+            "copy",
+            "wrap"
+          ],
+          "default": "copy",
+          "severityOnUnknown": "warning"
+        }
+      },
+      "childRules": [
+        {
+          "rule": "exactlyOne",
+          "selector": "pre",
+          "severity": "error"
+        }
+      ]
+    },
+    "sem-references": {
+      "source": "spec/schema/sem-references.md",
+      "record": true,
+      "attributes": {
+        "kind": {
+          "type": "token"
+        }
+      },
+      "children": [
+        "sem-reference"
+      ]
+    },
+    "sem-reference": {
+      "source": "spec/schema/sem-references.md",
+      "record": true,
+      "attributes": {
+        "id": {
+          "required": true
+        },
+        "href": {},
+        "cite": {}
+      }
+    },
+    "sem-source": {
+      "source": "spec/schema/sem-source.md",
+      "record": false,
+      "attributes": {
+        "label": {},
+        "view-as": {
+          "type": "token",
+          "values": [
+            "html",
+            "source"
+          ],
+          "default": "html"
+        },
+        "kind": {
+          "forbidden": true,
+          "severity": "error",
+          "note": "kind/tags are not global on sem-source (sem-source.md)"
+        },
+        "tags": {
+          "forbidden": true,
+          "severity": "error"
+        }
+      }
+    },
+    "sem-reader": {
+      "source": "spec/schema/sem-reader.md",
+      "record": false,
+      "attributes": {
+        "controls": {
+          "type": "flaglist",
+          "values": [
+            "outline",
+            "progress",
+            "focus",
+            "type",
+            "color",
+            "print",
+            "audience"
+          ],
+          "default": "outline,progress",
+          "severityOnUnknown": "warning"
+        },
+        "outline-depth": {
+          "type": "number"
+        },
+        "audience": {}
+      }
+    },
+    "sem-md": {
+      "source": "spec/schema/sem-md.md",
+      "record": true,
+      "attributes": {
+        "label": {},
+        "view-as": {
+          "type": "token",
+          "values": [
+            "rendered",
+            "raw"
+          ],
+          "default": "rendered"
+        },
+        "controls": {
+          "type": "flaglist",
+          "values": [
+            "toggle",
+            "copy"
+          ],
+          "default": "toggle",
+          "severityOnUnknown": "warning"
+        }
+      }
+    },
+    "sem-table": {
+      "source": "spec/schema/sem-table.md",
+      "record": true,
+      "attributes": {
+        "controls": {
+          "type": "flaglist",
+          "values": [
+            "sort",
+            "filter"
+          ],
+          "default": "sort",
+          "severityOnUnknown": "warning"
+        },
+        "sticky": {
+          "type": "flag"
+        }
+      },
+      "childRules": [
+        {
+          "rule": "exactlyOne",
+          "selector": "table",
+          "severity": "error"
+        }
+      ]
+    }
+  }
+}
