@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SemText · v0.4 baseline</title>
+<!-- <title> is RCDATA, so this marker reads as literal text if you open the
+     SOURCE page directly in a browser; the BUILT page in dist/demo/ carries
+     the real revision. Spec revision comes from package.json `specVersion` —
+     bump it there, never here. -->
+<title>SemText · <!-- sem:inline spec-version --> baseline</title>
 
 <!-- Tailwind (CDN). Refinement layer only — core styles below are offline-safe. -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -41,7 +45,7 @@
 <div class="sem-enhanced-document">
 
   <h1>Auth Patterns — Sample SemText Document</h1>
-  <p>Demonstrates the v0.4 class-based vocabulary: inline CSS + Tailwind refinement + vanilla fallback handler. Open this file directly in any browser. Every section below sits in a <code>sem-source</code> wrapper: <em>Source</em> shows the section's markup as parsed, before any enhancement.</p>
+  <p>Demonstrates the <!-- sem:inline spec-version --> class-based vocabulary: inline CSS + Tailwind refinement + vanilla fallback handler. Open this file directly in any browser. Every section below sits in a <code>sem-source</code> wrapper: <em>Source</em> shows the section's markup as parsed, before any enhancement.</p>
 
   <div class="sem-agent">
     <div class="sem-agent-name">Auth Guide</div>

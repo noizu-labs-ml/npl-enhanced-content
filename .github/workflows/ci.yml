@@ -35,7 +35,11 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
-      - run: npm run build
+      # build:strict = build.mjs --strict-budget: a bundle over its ROADMAP
+      # budget fails the run here. Local `npm run build` stays lenient so an
+      # in-progress size creep never silently blocks local work — CI is where
+      # the gate closes.
+      - run: npm run build:strict
       - name: Cypress e2e
         uses: cypress-io/github-action@v6
         with:
@@ -129,7 +133,8 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
-      - run: npm run build
+      # Same gate as the test job: published bundles meet their budgets.
+      - run: npm run build:strict
       - name: Stage CDN payload
         id: payload
         run: |

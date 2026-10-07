@@ -37,6 +37,20 @@
  *                                                   (or dist/semtext.js for
  *                                                   "bundle") — never
  *                                                   hardcode a size in copy.
+ *   <!-- sem:inline spec-version -->                "v0.5" — the draft spec
+ *                                                   revision, from package.json
+ *                                                   `specVersion`. Demo titles
+ *                                                   and copy self-label from
+ *                                                   here; never hardcode the
+ *                                                   spec revision in a page.
+ *   <!-- sem:inline pkg-version -->                 "0.1.0" — package.json
+ *                                                   `version`.
+ *   <!-- sem:inline build-sha -->                   short SHA of the checkout
+ *                                                   the build ran in ("unknown"
+ *                                                   when git is unavailable,
+ *                                                   e.g. an exported tarball).
+ *                                                   Landing footer only —
+ *                                                   provenance, not identity.
  *
  * A marker whose source file is missing is a hard error: silently emitting a
  * page with no behavior in it is exactly the failure this script exists to
@@ -45,6 +59,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, statSync, copyFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
+import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, basename } from 'node:path';
 import { stripScripts, specAssetRefs, rewriteSpecPage } from './standalone-lib.mjs';
@@ -53,6 +68,30 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = resolve(root, 'dist', 'demo');
 
 const MARKER = /<!--\s*sem:inline\s+([a-z-]+)(?:\s+([A-Za-z0-9._-]+))?\s*-->/g;
+
+/** package.json, read once. `specVersion` labels the draft spec revision the
+ *  pages advertise; `version` is the npm package version. They move on
+ *  different schedules and are deliberately separate fields. */
+let pkgJson;
+function pkg() {
+  if (!pkgJson) pkgJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
+  if (!pkgJson.specVersion) {
+    throw new Error('package.json has no specVersion — demo/copy markers `spec-version` need it; bump it with the spec');
+  }
+  return pkgJson;
+}
+
+/** Short SHA of the current checkout, for the landing footer's build
+ *  provenance line. Falls back to a visible placeholder rather than failing
+ *  the build: a tarball export has no git, and a missing SHA is worth seeing
+ *  in the footer, not worth a red CI run. */
+function buildSha() {
+  try {
+    return execSync('git rev-parse --short HEAD', { cwd: root, encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
 
 function readOrDie(path, marker) {
   if (!existsSync(path)) {
@@ -87,6 +126,12 @@ function expand(kind, arg) {
       return sizeParts(arg, 'size-kb').rawKb;
     case 'size-gzkb':
       return sizeParts(arg, 'size-gzkb').gzipKb;
+    case 'spec-version':
+      return `v${pkg().specVersion}`;
+    case 'pkg-version':
+      return pkg().version;
+    case 'build-sha':
+      return buildSha();
     default:
       throw new Error(`unknown inline marker "${kind}"`);
   }
