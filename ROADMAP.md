@@ -13,6 +13,9 @@ Cypress e2e files green. Engineering is healthy; the product is plateaued — th
 surface (validation, onboarding, agent contract) is the bottleneck. Forward planning now
 runs through the 6-epic story set below (`project-management/`).
 
+Status glyphs used throughout: ✅ complete / repaid · 🔶 in progress · ⬜ not started
+(externally gated where the row says so — W3 is the only gated row today).
+
 ## Personas & stories
 
 Personas (`project-management/personas/`, P-001…P-008) and user stories
