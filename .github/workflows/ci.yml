@@ -13,7 +13,7 @@ on:
     # develop pushes run the test jobs only (build-push is main-gated below);
     # they exist to seed develop-ref caches that feature-PR runs can restore —
     # a PR-ref cache is invisible to sibling PRs.
-    branches: [main, develop]
+    branches: [main, develop, stage]
   pull_request:
 
 concurrency:
