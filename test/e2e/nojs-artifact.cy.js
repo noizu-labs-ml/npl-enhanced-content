@@ -92,6 +92,30 @@ describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
       });
       cy.get('#p-clamp .sem-progress-track').should('not.exist');
     });
+
+    // status is tier-independent by design (conventions §4 rule 1: no
+    // script ever reads it — its consumers are no-script CSS rules, same
+    // catalog as sem-step), so the done checkmark renders with either
+    // attribute spelling and needs no tier marker.
+    it('sem-progress status="done" renders the sem-step checkmark in either spelling', () => {
+      cy.document().then((doc) => {
+        const data = doc.createElement('div');
+        data.className = 'sem-progress';
+        data.setAttribute('data-value', '1');
+        data.setAttribute('data-status', 'done');
+        const bare = doc.createElement('sem-progress');
+        bare.setAttribute('value', '1');
+        bare.setAttribute('status', 'done');
+        doc.body.append(data, bare);
+      });
+      cy.document().then((doc) => {
+        for (const sel of ['div.sem-progress[data-status="done"]', 'sem-progress[status="done"]']) {
+          const el = doc.querySelector(sel);
+          const after = el.ownerDocument.defaultView.getComputedStyle(el, '::after');
+          expect(after.content, sel + ' ::after').to.contain('✓');
+        }
+      });
+    });
   });
 
   describe('custom elements — standalone-lit.nojs.html', () => {
