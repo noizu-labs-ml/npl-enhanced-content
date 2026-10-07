@@ -26,6 +26,9 @@
 //   R/W2.2 (the page shows a live sem-md):
 //   Scenario: the Markdown example renders its table, flips to the source and back, extracts the source
 //   Scenario: JS-off the Markdown example is its pre-wrapped source
+//   Hygiene (build provenance — scripts/build-standalone.mjs markers):
+//   Scenario: the demo page self-labels the spec revision from package.json, not a hardcoded number
+//   Scenario: the landing footer carries a non-empty build SHA
 
 describe('semtext.dev landing page', () => {
   beforeEach(() => cy.visit('/site/index.html'));
@@ -289,6 +292,35 @@ describe('semtext.dev landing page', () => {
       cy.get('#rd-code pre').should('be.visible');
       cy.get('#rd-history .sem-event').each(($e) => cy.wrap($e).should('be.visible'));
       cy.get('#rd-glossary .sem-property').should('have.length', 3);
+    });
+  });
+
+  describe('build provenance (hygiene: labels injected at build, never hardcoded)', () => {
+    // The spec revision lives in package.json `specVersion` and reaches the
+    // pages through `<!-- sem:inline spec-version -->` markers. Asserting
+    // against the same field the build reads is the point: if someone bumps
+    // the spec but not package.json — or hardcodes a label in a page — the
+    // two sources diverge and this spec goes red.
+    it('the demo page self-labels the spec revision from package.json, not a hardcoded number', () => {
+      cy.readFile('package.json').then((pkg) => {
+        const label = `v${pkg.specVersion}`;
+        cy.visit('/demo/index.html');
+        cy.title().should('contain', label);
+        cy.title().should('not.contain', '<!--');
+        cy.contains('p', 'class-based vocabulary').should('contain.text', label);
+        // visual evidence for the PR
+        cy.screenshot('demo-spec-version-label', { capture: 'fullPage' });
+      });
+    });
+
+    it('the landing footer carries a non-empty build SHA', () => {
+      // 'unknown' is the documented fallback for a git-less build (an
+      // exported tarball); anything else must look like a short SHA.
+      cy.get('[data-sem-build-sha]').invoke('text').should('match', /^build (?:[0-9a-f]{7,}|unknown)$/);
+      cy.get('[data-sem-build-sha]').invoke('text').then((t) => {
+        expect(t.replace('build ', '').trim(), 'build SHA present').to.not.equal('');
+      });
+      cy.screenshot('landing-footer-build-sha', { capture: 'fullPage' });
     });
   });
 });

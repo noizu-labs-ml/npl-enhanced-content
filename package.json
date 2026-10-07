@@ -1,6 +1,8 @@
 {
   "name": "semtext",
   "version": "0.1.0",
+  "//specVersion": "Draft revision of spec/conventions.{html,md} that the demo pages and landing copy self-label. Bump it WITH the spec, not with releases — `version` is the package, `specVersion` is the format draft.",
+  "specVersion": "0.5",
   "description": "SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. Rendered by Lit web components over a zero-JS fallback tier. Zero React.",
   "type": "module",
   "//exports": "Five subpaths, one per shipped artifact, plus raw theme CSS. Each artifact is a classic IIFE script that installs a global (SemText, SemTextFallback, SemTextReading, SemTextExtract, SemTextMd) and exports NOTHING — so consume a subpath either as a <script src> tag / CDN asset, or as a side-effect ESM import (`import 'semtext/lit'`, which registers the custom elements). Named imports are not available from any subpath. There is deliberately no '.' export: ROADMAP debt D9 was 'type: module' advertising an ESM package whose root mapped to a non-importable script. Dropping '.' removes the false promise rather than papering over it.",
