@@ -15,7 +15,8 @@ WORKDIR /app
 ENV CYPRESS_INSTALL_BINARY=0
 
 COPY package.json package-lock.json ./
-RUN npm ci
+# npm's download cache survives lockfile changes (the layer itself does not).
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 COPY . .
 RUN npm run build

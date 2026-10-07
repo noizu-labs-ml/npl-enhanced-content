@@ -49,11 +49,20 @@ dogfooded SemText documents — steal from them freely.
 
 ## Checking your work today
 
-There is no validator CLI yet — `semtext-validate` is roadmap item
-US-301 (E3/W4, PR pending; see `ROADMAP.md`). Until it lands:
+The validator exists: `semtext-validate` (US-301) checks a document
+against the machine-readable schema derived from the spec and reports
+`file:line: severity rule — message` diagnostics — unknown `sem-*`
+elements, missing required attributes, dual-spelling authoring errors,
+unknown attributes, and more.
 
-1. **Open it in a browser.** Unstyled or collapsed weirdness usually
-   means a mistyped element or a misspelled attribute.
+```bash
+npx semtext-validate my-doc.html        # text diagnostics; --format json also
+```
+
+Three manual checks remain worth running alongside it:
+
+1. **Open it in a browser.** The validator catches contract violations;
+   rendering still catches what only eyes catch.
 2. **Read it with scripts off** — devtools "disable JavaScript", or
    strip the `<script>` tags into a copy. If anything becomes
    unreadable or disappears, your document (or your CSS) broke the
@@ -250,7 +259,8 @@ unstyled, for agents. Schema: [`sem-reader.md`](../spec/schema/sem-reader.md).
 
 ## What is stable, what is growing
 
-The Tier-0 vocabulary above is shipped and spec'd (v0.5). The wider
-surface — a published validator, JSON Schemas, an editor story — is the
-W4 wave in [`ROADMAP.md`](../ROADMAP.md); `semtext-validate` (US-301) is
-the piece this guide most wants to link to, and will when it exists.
+The Tier-0 vocabulary above is shipped and spec'd (v0.5). The machine
+validator and its schema shipped with it (`semtext-validate`, US-301;
+`spec/schema/semtext.schema.json`, US-302); the W4 wave continues with
+the CI corpus action, an md→SemText converter, and editor support — see
+[`ROADMAP.md`](../ROADMAP.md).
