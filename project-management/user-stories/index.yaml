@@ -1,0 +1,238 @@
+user_stories:
+  # E1 Hygiene & Release Integrity (Sprint 0)
+  - id: US-101
+    title: Fix /demo/ version label to v0.5 via build-injected stamp
+    slug: fix-demo-version-label
+    epic: E1 Hygiene & Release Integrity
+    priority: must-have
+    personas: [P-005, P-008]
+    file: US-101-fix-demo-version-label.md
+  - id: US-102
+    title: Correct ROADMAP status column and add status-as-of line
+    slug: correct-roadmap-status
+    epic: E1 Hygiene & Release Integrity
+    priority: must-have
+    personas: [P-005]
+    file: US-102-correct-roadmap-status.md
+  - id: US-103
+    title: Verify remote main release state and codify release policy
+    slug: verify-main-release-state
+    epic: E1 Hygiene & Release Integrity
+    priority: must-have
+    personas: [P-005]
+    file: US-103-verify-main-release-state.md
+  - id: US-104
+    title: Make --strict-budget the CI default
+    slug: strict-budget-ci-default
+    epic: E1 Hygiene & Release Integrity
+    priority: should-have
+    personas: [P-005]
+    file: US-104-strict-budget-ci-default.md
+  - id: US-105
+    title: Show served commit SHA in live-site footer
+    slug: served-sha-footer
+    epic: E1 Hygiene & Release Integrity
+    priority: should-have
+    personas: [P-005, P-008]
+    file: US-105-served-sha-footer.md
+  # E2 W3 Reader Themes (gated on Track T)
+  - id: US-201
+    title: Theme control in sem-reader (light/dark/system + per-doc pinning)
+    slug: reader-theme-control
+    epic: E2 W3 Reader Themes
+    priority: must-have
+    personas: [P-003, P-006]
+    file: US-201-reader-theme-control.md
+  - id: US-202
+    title: Dark tokens via color-modes contract, not inverted aliases
+    slug: dark-tokens-color-modes
+    epic: E2 W3 Reader Themes
+    priority: must-have
+    personas: [P-003, P-006]
+    file: US-202-dark-tokens-color-modes.md
+  - id: US-203
+    title: Retire sem-themes with a spec migration note
+    slug: retire-sem-themes
+    epic: E2 W3 Reader Themes
+    priority: should-have
+    personas: [P-003, P-005]
+    file: US-203-retire-sem-themes.md
+  - id: US-204
+    title: Theme preference persists per origin and honors prefers-color-scheme on first visit
+    slug: theme-preference-persistence
+    epic: E2 W3 Reader Themes
+    priority: should-have
+    personas: [P-003, P-006]
+    file: US-204-theme-preference-persistence.md
+  - id: US-205
+    title: Theme preview swatches in the reader control
+    slug: theme-preview-swatches
+    epic: E2 W3 Reader Themes
+    priority: could-have
+    personas: [P-003]
+    file: US-205-theme-preview-swatches.md
+  # E3 Authoring & Validation (W4 — the adoption gate)
+  - id: US-301
+    title: semtext-validate CLI with file:line errors and CI exit codes
+    slug: validate-cli
+    epic: E3 Authoring & Validation
+    priority: must-have
+    personas: [P-001, P-008]
+    file: US-301-validate-cli.md
+  - id: US-302
+    title: Published, versioned JSON Schemas; validator reads the spec's schemas
+    slug: published-json-schemas
+    epic: E3 Authoring & Validation
+    priority: must-have
+    personas: [P-001, P-008, P-005]
+    file: US-302-published-json-schemas.md
+  - id: US-303
+    title: GitHub Action wrapping the validator for corpus CI
+    slug: validator-github-action
+    epic: E3 Authoring & Validation
+    priority: should-have
+    personas: [P-008, P-001]
+    file: US-303-validator-github-action.md
+  - id: US-304
+    title: Authoring guide — your first SemText document
+    slug: authoring-guide
+    epic: E3 Authoring & Validation
+    priority: should-have
+    personas: [P-001]
+    file: US-304-authoring-guide.md
+  - id: US-305
+    title: Best-effort md-to-sem converter flagging manual-pass items
+    slug: md-to-sem-converter
+    epic: E3 Authoring & Validation
+    priority: should-have
+    personas: [P-001, P-008]
+    file: US-305-md-to-sem-converter.md
+  - id: US-306
+    title: Editor LSP — completion + live validation for SemText
+    slug: editor-lsp
+    epic: E3 Authoring & Validation
+    priority: could-have
+    personas: [P-001]
+    file: US-306-editor-lsp.md
+  - id: US-307
+    title: Implement sem-query (tier-2, spec'd unshipped)
+    slug: implement-sem-query
+    epic: E3 Authoring & Validation
+    priority: must-have
+    personas: [P-001, P-003]
+    file: US-307-implement-sem-query.md
+  - id: US-308
+    title: Implement md-aid (tier-2)
+    slug: implement-md-aid
+    epic: E3 Authoring & Validation
+    priority: should-have
+    personas: [P-001]
+    file: US-308-implement-md-aid.md
+  # E4 Agent Surface (W5)
+  - id: US-401
+    title: Publish the extraction contract with invariant evidence
+    slug: extraction-contract
+    epic: E4 Agent Surface
+    priority: must-have
+    personas: [P-002]
+    file: US-401-extraction-contract.md
+  - id: US-402
+    title: llms.txt plus per-document plain-text representation
+    slug: llms-txt-plain-text
+    epic: E4 Agent Surface
+    priority: must-have
+    personas: [P-002, P-008]
+    file: US-402-llms-txt-plain-text.md
+  - id: US-403
+    title: JSON-LD / schema.org output mode from extraction
+    slug: json-ld-output
+    epic: E4 Agent Surface
+    priority: should-have
+    personas: [P-002]
+    file: US-403-json-ld-output.md
+  - id: US-404
+    title: semtext extract CLI subcommand (headless)
+    slug: extract-cli
+    epic: E4 Agent Surface
+    priority: should-have
+    personas: [P-002]
+    file: US-404-extract-cli.md
+  - id: US-405
+    title: MCP server wrapping extract + validate
+    slug: mcp-server
+    epic: E4 Agent Surface
+    priority: could-have
+    personas: [P-002, P-004]
+    file: US-405-mcp-server.md
+  # E5 Onboarding & Distribution (W6)
+  - id: US-501
+    title: Interactive playground — edit source, see three-tier live render
+    slug: interactive-playground
+    epic: E5 Onboarding & Distribution
+    priority: must-have
+    personas: [P-008, P-004, P-001]
+    file: US-501-interactive-playground.md
+  - id: US-502
+    title: Integration quickstart — three script tags, fallback-first, theme link
+    slug: integration-quickstart
+    epic: E5 Onboarding & Distribution
+    priority: must-have
+    personas: [P-004, P-008]
+    file: US-502-integration-quickstart.md
+  - id: US-503
+    title: Spec versioning process — v0.6 changelog, resolved §10, compat rules
+    slug: spec-versioning-process
+    epic: E5 Onboarding & Distribution
+    priority: should-have
+    personas: [P-005, P-008]
+    file: US-503-spec-versioning-process.md
+  - id: US-504
+    title: Adopter gallery on the landing (semtext.dev is entry #1)
+    slug: adopter-gallery
+    epic: E5 Onboarding & Distribution
+    priority: should-have
+    personas: [P-008, P-004]
+    file: US-504-adopter-gallery.md
+  - id: US-505
+    title: npm landing docs / quickstart redirect
+    slug: npm-landing-docs
+    epic: E5 Onboarding & Distribution
+    priority: could-have
+    personas: [P-004]
+    file: US-505-npm-landing-docs.md
+  # E6 Accessibility & Degradation (slot-any)
+  - id: US-601
+    title: Fix sem-progress JS-off rendering (CSS attr() text rule)
+    slug: sem-progress-js-off
+    epic: E6 Accessibility & Degradation
+    priority: must-have
+    personas: [P-007, P-006]
+    file: US-601-sem-progress-js-off.md
+  - id: US-602
+    title: Per-element JS-off audit with hide-rule gating tests
+    slug: js-off-audit
+    epic: E6 Accessibility & Degradation
+    priority: must-have
+    personas: [P-007]
+    file: US-602-js-off-audit.md
+  - id: US-603
+    title: Keyboard operability pass on sem-reader controls + sem-source toggle
+    slug: keyboard-operability
+    epic: E6 Accessibility & Degradation
+    priority: should-have
+    personas: [P-006, P-007]
+    file: US-603-keyboard-operability.md
+  - id: US-604
+    title: Print stylesheet per reading element
+    slug: print-stylesheets
+    epic: E6 Accessibility & Degradation
+    priority: should-have
+    personas: [P-003, P-006]
+    file: US-604-print-stylesheets.md
+  - id: US-605
+    title: Reduced-motion coverage for reader transitions
+    slug: reduced-motion
+    epic: E6 Accessibility & Degradation
+    priority: could-have
+    personas: [P-006, P-003]
+    file: US-605-reduced-motion.md
