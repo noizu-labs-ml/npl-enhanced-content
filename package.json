@@ -24,6 +24,7 @@
     "test": "cypress run --e2e",
     "test:open": "cypress open --e2e",
     "test:unit": "vitest run",
+    "test:unit:cover": "vitest run --coverage",
     "validate": "node bin/semtext-validate.mjs \"web/**/*.html\" \"spec/*.html\"",
     "serve": "vite preview --outDir dist --port 4173 --strictPort"
   },
@@ -40,6 +41,7 @@
     }
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^5.0.0",
     "cypress": "^15.21.1",
     "happy-dom": "^20.14.0",
     "typescript": "^5.6.0",

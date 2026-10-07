@@ -10,12 +10,17 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # develop pushes run the test jobs only (build-push is main-gated below);
+    # they exist to seed develop-ref caches that feature-PR runs can restore —
+    # a PR-ref cache is invisible to sibling PRs.
+    branches: [main, develop]
   pull_request:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Supersede stale PR runs only. A release push to main must never be
+  # cancelled mid build-push / bump-chart.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   REGISTRY: ops.noizu.com
@@ -23,10 +28,12 @@ env:
   CDN_BUCKET: cdn-semtext-dev
 
 jobs:
-  test:
-    # Build the bundles + demo pages, serve dist/, run the cypress e2e suite.
-    # The preview server must be up before cypress starts or every spec fails.
-    runs-on: ubuntu-latest # amd64
+  unit:
+    # vitest unit tier + coverage gate (threshold in vite.config.ts). The
+    # dockerfile spec reads dist/, so build first.
+    runs-on: ubuntu-latest
+    env:
+      CYPRESS_INSTALL_BINARY: 0 # no browser needed here
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,21 +42,61 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
+      - run: npm run build
+      - run: npm run test:unit:cover
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-coverage
+          path: coverage/
+          retention-days: 14
+
+  test:
+    # Build the bundles + demo pages, serve dist/, run the cypress e2e suite,
+    # split across parallel shards (scripts/cypress-shard.mjs assigns every
+    # spec to exactly one shard). The preview server must be up before cypress
+    # starts or every spec fails.
+    runs-on: ubuntu-latest # amd64
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    name: test (e2e ${{ matrix.shard }}/3)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      # setup-node caches ~/.npm only; the cypress binary npm ci installs
+      # lives in ~/.cache/Cypress.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-cypress-
+      - run: npm ci
       # build:strict = build.mjs --strict-budget: a bundle over its ROADMAP
       # budget fails the run here. Local `npm run build` stays lenient so an
       # in-progress size creep never silently blocks local work — CI is where
       # the gate closes.
       - run: npm run build:strict
+      - name: Select specs
+        id: specs
+        run: echo "list=$(node scripts/cypress-shard.mjs ${{ matrix.shard }} 3)" >> "$GITHUB_OUTPUT"
       - name: Cypress e2e
         uses: cypress-io/github-action@v6
         with:
           install: false
+          spec: ${{ steps.specs.outputs.list }}
           start: npm run serve
           wait-on: "http://localhost:4173/demo/index.html"
           wait-on-timeout: 120
 
   build-push:
-    needs: [test]
+    # Release is gated on both test tiers (all e2e shards + unit/coverage).
+    needs: [unit, test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:

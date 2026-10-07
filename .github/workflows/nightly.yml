@@ -1,0 +1,65 @@
+name: Nightly
+
+# Main-branch regression + release-cache warmer.
+#
+# Releases to main are often more than 7 days apart, and GitHub evicts
+# caches unused for 7 days — so every release build-push started cold. This
+# rebuilds the image on main nightly with the SAME buildx cache scope as
+# ci.yml's build-push (scope=web) but never pushes, keeping the main-ref
+# cache warm. It also runs the full unit + e2e suite (unsharded) against main.
+
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  full-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('package-lock.json') }}
+          restore-keys: ${{ runner.os }}-cypress-
+      - run: npm ci
+      - run: npm run build:strict
+      - run: npm run test:unit:cover
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-unit-coverage
+          path: coverage/
+          retention-days: 14
+      - name: Cypress e2e (full)
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          start: npm run serve
+          wait-on: "http://localhost:4173/demo/index.html"
+          wait-on-timeout: 120
+
+  warm-docker-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build web (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: production
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
