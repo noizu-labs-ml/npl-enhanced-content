@@ -73,6 +73,25 @@ describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
       cy.get('#n-op, #n-public, #n-reader').each(($n) => cy.wrap($n).should('be.visible'));
       cy.get('#n-margin').should('be.visible');
     });
+
+    // US-601 — the meter is text-only from its attributes (spec/schema/
+    // sem-progress.md): `label :: value`, raw attr, no fake bar.
+    it('renders sem-progress as text from its attributes', () => {
+      cy.get('#p-coverage').should('be.visible').and('not.have.descendants', '*');
+      cy.get('#p-coverage').should(($p) => {
+        const before = $p[0].ownerDocument.defaultView.getComputedStyle($p[0], '::before');
+        expect(before.content).to.contain('coverage');
+        expect(before.content).to.contain('0.62');
+      });
+    });
+
+    it('shows the raw out-of-range attr JS-off — no clamp, no lie', () => {
+      cy.get('#p-clamp').should(($p) => {
+        const before = $p[0].ownerDocument.defaultView.getComputedStyle($p[0], '::before');
+        expect(before.content).to.contain('1.4');
+      });
+      cy.get('#p-clamp .sem-progress-track').should('not.exist');
+    });
   });
 
   describe('custom elements — standalone-lit.nojs.html', () => {

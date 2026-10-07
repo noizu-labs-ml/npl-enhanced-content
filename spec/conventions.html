@@ -432,7 +432,7 @@
   <p><strong>Normative: <a href="#r-sem-progress">spec/schema/sem-progress.md</a>.</strong></p>
   <sem-code id="c-progress" lang="html"><pre><code>&lt;sem-progress value="0.62" label="coverage"
      role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"&gt;&lt;/sem-progress&gt;</code></pre></sem-code>
-  <p><code>value</code> canonical 0..1 (render clamps, attr untouched); <code>label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code> — no fake bar. <code>status="done"</code> ⇔ 1 by convention.</p>
+  <p><code>value</code> canonical 0..1 (render clamps, attr untouched); <code>label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code> — no fake bar; the caption is gated on the tier marker (<code>data-sem-fallback</code> / <code>data-sem-upgraded</code> on the element), so it never duplicates the fallback text. <code>status="done"</code> ⇔ 1 by convention.</p>
   <sem-source id="s-progress" label="Live: sem-progress">
     <sem-progress id="x-progress" value="0.7" label="Tier-0 spec coverage" role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7"></sem-progress>
   </sem-source>
