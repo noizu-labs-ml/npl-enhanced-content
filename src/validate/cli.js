@@ -11,7 +11,9 @@
  *   -h, --help
  *
  * Exit codes: 0 clean (or warnings only, under --max-warnings) ·
- * 1 validation errors (or warning budget exceeded) · 2 usage / IO error.
+ * 1 validation errors, warning budget exceeded, or an unreadable input
+ * file (all reported per file) · 2 usage error (bad flags, no paths,
+ * unreadable schema).
  */
 
 import { globSync } from 'node:fs';
@@ -124,7 +126,7 @@ Options:
   --max-warnings <n>   exit 1 when warnings exceed n
   -h, --help           this help
 
-Exit codes: 0 clean · 1 errors · 2 usage/IO error
+Exit codes: 0 clean · 1 errors (incl. unreadable files) · 2 usage error
 `;
 
 export { loadSchema, validateFile };

@@ -28,6 +28,15 @@
   "dependencies": {
     "lit": "^3.3.3"
   },
+  "peerDependencies": {
+    "happy-dom": "^20.14.0"
+  },
+  "peerDependenciesMeta": {
+    "happy-dom": {
+      "optional": true,
+      "//": "Only bin/semtext-validate + src/validate import happy-dom at runtime; the semtext/lit|fallback|reading|extract|md artifacts never do. Library consumers can skip it; CLI users get an actionable error without it."
+    }
+  },
   "devDependencies": {
     "cypress": "^15.21.1",
     "happy-dom": "^20.14.0",

@@ -27,8 +27,19 @@
  * step — scripts/build.mjs is out of scope for this tool.
  */
 
-import { Window } from 'happy-dom';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+/** happy-dom is an optional peer (install with the validator if you use
+ *  it outside this repo); imported eagerly with an actionable error so a
+ *  missing install fails with instructions, not a module-not-found stack. */
+const { Window } = await (async () => {
+  try {
+    return await import('happy-dom');
+  } catch {
+    throw new Error('semtext-validate needs the "happy-dom" package — install it (npm i -D happy-dom)');
+  }
+})();
 
 /* ------------------------------------------------------------------ *
  * Schema loading
@@ -46,9 +57,9 @@ export function loadSchema(schemaPath) {
   return schema;
 }
 
-/** Resolve the schema path that ships beside this module. */
+/** Resolve the schema path that ships beside this module (platform-safe). */
 export function defaultSchemaPath() {
-  return new URL('../../spec/schema/semtext.schema.json', import.meta.url).pathname;
+  return fileURLToPath(new URL('../../spec/schema/semtext.schema.json', import.meta.url));
 }
 
 /* ------------------------------------------------------------------ *
