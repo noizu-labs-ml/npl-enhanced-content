@@ -4,12 +4,14 @@ Living planning doc. **Supersedes PRD.md §10 for forward planning**; PRD.md rem
 format/spec authority (§1–§9 unchanged and binding). Update this file at every milestone
 exit — status drift here is a bug.
 
-**Status as of 2026-10-07** · develop = f295847. v0.5 shipped 2026-09-22 (tag-form
+**Status as of 2026-10-07** · develop = ba069ce. v0.5 shipped 2026-09-22 (tag-form
 canonical, class form = Appendix A alias). W0–W2.2 merged (PRs #10, #12, #14, #17, #19);
 `sem-source`, `sem-md`, and tag-form-canonical all landed. Spec pages ship in the image
 (Dockerfile fixed), CodeQL hardening r1–3 done, landing re-angled to the
-XHTML-replaces-Markdown thesis. **W3 (themes) is externally gated on Track T.** 25
-Cypress e2e files green. Engineering is healthy; the product is plateaued — the adoption
+XHTML-replaces-Markdown thesis. **W3 (themes) is externally gated on Track T.** The
+2026-10-07 improvement day landed 7 threads on this SHA (hygiene #36, sem-progress
+JS-off #37, ROADMAP v2 + PM artifacts #35/#38, agent surface, validate CLI, onboarding
+#41, arch-doc refresh). Engineering is healthy; the product is plateaued — the adoption
 surface (validation, onboarding, agent contract) is the bottleneck. Forward planning now
 runs through the 6-epic story set below (`project-management/`).
 
