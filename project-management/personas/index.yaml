@@ -1,0 +1,49 @@
+personas:
+  - id: P-001
+    name: Doc Author
+    slug: doc-author
+    archetype: Long-form spec writer using SemText as her single source
+    segment: primary
+    file: P-001-doc-author.md
+  - id: P-002
+    name: LLM Agent
+    slug: llm-agent
+    archetype: Coding/doc agent consuming XHTML as a structural record
+    segment: primary
+    file: P-002-llm-agent.md
+  - id: P-003
+    name: Human Reader
+    slug: human-reader
+    archetype: Engineer reading long docs and flipping views to match depth
+    segment: primary
+    file: P-003-human-reader.md
+  - id: P-004
+    name: Framework Integrator
+    slug: framework-integrator
+    archetype: Developer embedding semtext*.js into a host site
+    segment: secondary
+    file: P-004-framework-integrator.md
+  - id: P-005
+    name: Spec Steward
+    slug: spec-steward
+    archetype: Maintainer evolving the vocabulary and versioning the spec
+    segment: secondary
+    file: P-005-spec-steward.md
+  - id: P-006
+    name: Accessibility-first Reader
+    slug: accessibility-first-reader
+    archetype: Screen-reader / keyboard-only / reduced-motion user auditing the affordances
+    segment: edge-case
+    file: P-006-accessibility-first-reader.md
+  - id: P-007
+    name: JS-off / Low-bandwidth Reader
+    slug: js-off-low-bandwidth-reader
+    archetype: Reader for whom the fallback tier IS the product
+    segment: edge-case
+    file: P-007-js-off-low-bandwidth-reader.md
+  - id: P-008
+    name: Content Platform Owner
+    slug: content-platform-owner
+    archetype: Evaluator deciding whether a docs platform adopts SemText
+    segment: secondary
+    file: P-008-content-platform-owner.md
