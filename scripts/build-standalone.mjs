@@ -268,6 +268,18 @@ if (specPages.length) {
   for (const css of readdirSync(specSrcDir).filter((f) => f.endsWith('.css'))) {
     copyFileSync(resolve(specSrcDir, css), resolve(specOutDir, css));
   }
+  // The normative Markdown ships next to the HTML pages, and the per-element
+  // schemas with them: llms.txt (below) links both, and a link that 404s in
+  // the shipped image is the same failure as a missing marker source.
+  const schemaSrcDir = resolve(specSrcDir, 'schema');
+  const schemaOutDir = resolve(specOutDir, 'schema');
+  mkdirSync(schemaOutDir, { recursive: true });
+  for (const md of readdirSync(specSrcDir).filter((f) => f.endsWith('.md'))) {
+    copyFileSync(resolve(specSrcDir, md), resolve(specOutDir, md));
+  }
+  for (const md of readdirSync(schemaSrcDir).filter((f) => f.endsWith('.md'))) {
+    copyFileSync(resolve(schemaSrcDir, md), resolve(schemaOutDir, md));
+  }
 
   console.log('  spec page                     size     nojs');
   console.log('  ---------------------------------------------------------');
@@ -291,3 +303,52 @@ if (specPages.length) {
   }
   console.log('');
 }
+
+/* ---------------------------------------------------------------------------
+ * llms.txt — the agent-facing index, generated into dist/site/ (the image's
+ * site root: Dockerfile COPYs dist/site/ to /usr/share/nginx/html/).
+ *
+ * Generated, never hand-written, for the same reason page copy measures sizes
+ * instead of hardcoding them: a listed link that 404s is the exact failure
+ * this build exists to prevent. Every link is checked to exist before it is
+ * written. Paths are relative to the file itself (`../spec/…`), so the same
+ * text resolves from the image root (/llms.txt) and from the local preview
+ * (/site/llms.txt) without a rebuild.
+ * ------------------------------------------------------------------------ */
+
+const invariantAnchor = '8-machine-readability-contract';
+const conventionsHtml = readOrDie(resolve(root, 'dist', 'spec', 'conventions.html'), 'llms.txt conventions.html');
+if (!conventionsHtml.includes(`id="${invariantAnchor}"`)) {
+  throw new Error(`llms.txt links spec/conventions.html#${invariantAnchor}, but that anchor is missing from the built page`);
+}
+
+const schemaMds = readdirSync(resolve(root, 'spec', 'schema')).filter((f) => f.endsWith('.md')).sort();
+
+const llms = [
+  '# SemText',
+  '',
+  '> SemText is a custom-element vocabulary — the document-shaped XML variant of NPL — that enriches valid HTML5 with machine-readable semantics while staying readable with JavaScript off. Extraction projects any SemText document to a stable, ordered record array or to annotated plain text. The extraction invariant E(D) = E(R(D)) = E(I(R(D))) is normative: the machine consumer never gets a degraded reading of what the human consumer saw.',
+  '',
+  `Spec v${pkg().specVersion} (draft) · package v${pkg().version}.`,
+  '',
+  '## Docs',
+  '',
+  '- [Specification (HTML)](../spec/conventions.html): the vocabulary, document skeleton, attribute catalog, fallback and degradation rules, element entries, themes, distribution forms',
+  '- [Specification (Markdown)](../spec/conventions.md): the same document, normative Markdown source',
+  `- [Machine-readability contract (§8)](../spec/conventions.html#${invariantAnchor}): the extraction invariant, what a consumer may rely on, and what is best-effort only`,
+  '- [Extraction schema (Markdown)](../spec/extraction.md): record shape, emission rules, the central invariant and its recorded exception, annotated plain text',
+  '',
+  '## Element schemas',
+  '',
+  ...schemaMds.map((f) => `- [${basename(f, '.md')}](../spec/schema/${f})`),
+  '',
+  '## Demo',
+  '',
+  '- [Live demo](../demo/index.html): the vocabulary running on all three tiers',
+  '- [JavaScript-off artifact](../demo/index.nojs.html): the same page with every script stripped — readable, and extraction-identical',
+  '',
+].join('\n');
+
+const llmsPath = resolve(root, 'dist', 'site', 'llms.txt');
+writeFileSync(llmsPath, llms);
+console.log(`  llms.txt                       ${(statSync(llmsPath).size / 1024).toFixed(1).padStart(6)} KB  (${schemaMds.length} schema links)`);
