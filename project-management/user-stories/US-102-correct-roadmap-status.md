@@ -29,5 +29,7 @@ tags: [hygiene, docs]
 
 ## Notes
 
-Repo finding F2. Being executed by the very PR that introduces the project-management
-tree (2026-10-07) — the ROADMAP v2 restructure is this story's implementation.
+Repo finding F2 — the defect was the stale **status snapshot line** (dated 2026-09-22,
+naming PR #30 as open after it merged), not the R-track rows, which were already
+accurate. Being executed by the very PR that introduces the project-management tree
+(2026-10-07) — the ROADMAP v2 restructure is this story's implementation.
