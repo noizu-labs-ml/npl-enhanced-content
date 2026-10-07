@@ -521,7 +521,9 @@ plain HTML cell, not a vocabulary parameter — it stays `data-*`.)
 ```
 `value` canonical 0..1 (render clamps, attr untouched); `label`
 default `progress`; fallback renders track + fill + `label :: N%`; JS-off:
-text-only via CSS `attr()` — no fake bar. `status="done"` ⇔ 1 by
+text-only via CSS `attr()` — no fake bar; the caption is gated on the
+tier marker (`data-sem-fallback` / `data-sem-upgraded` on the element),
+so it never duplicates the fallback text. `status="done"` ⇔ 1 by
 convention.
 
 ### Tier 1 — flagship buildout

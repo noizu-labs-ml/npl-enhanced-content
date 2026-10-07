@@ -26,5 +26,9 @@ export function enhanceReveal(scope: ParentNode): void {
     while (r.firstChild) body.appendChild(r.firstChild);
     d.appendChild(body);
     r.appendChild(d);
+    // Mark what was wired (tier handoff): the vocabulary suppresses the
+    // JS-off `data-summary` ::before caption once a script built the
+    // <details>, whose <summary> carries the same string.
+    r.setAttribute('data-sem-fallback', '');
   });
 }

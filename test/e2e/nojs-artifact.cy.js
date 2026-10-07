@@ -73,6 +73,49 @@ describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
       cy.get('#n-op, #n-public, #n-reader').each(($n) => cy.wrap($n).should('be.visible'));
       cy.get('#n-margin').should('be.visible');
     });
+
+    // US-601 — the meter is text-only from its attributes (spec/schema/
+    // sem-progress.md): `label :: value`, raw attr, no fake bar.
+    it('renders sem-progress as text from its attributes', () => {
+      cy.get('#p-coverage').should('be.visible').and('not.have.descendants', '*');
+      cy.get('#p-coverage').should(($p) => {
+        const before = $p[0].ownerDocument.defaultView.getComputedStyle($p[0], '::before');
+        expect(before.content).to.contain('coverage');
+        expect(before.content).to.contain('0.62');
+      });
+    });
+
+    it('shows the raw out-of-range attr JS-off — no clamp, no lie', () => {
+      cy.get('#p-clamp').should(($p) => {
+        const before = $p[0].ownerDocument.defaultView.getComputedStyle($p[0], '::before');
+        expect(before.content).to.contain('1.4');
+      });
+      cy.get('#p-clamp .sem-progress-track').should('not.exist');
+    });
+
+    // status is tier-independent by design (conventions §4 rule 1: no
+    // script ever reads it — its consumers are no-script CSS rules, same
+    // catalog as sem-step), so the done checkmark renders with either
+    // attribute spelling and needs no tier marker.
+    it('sem-progress status="done" renders the sem-step checkmark in either spelling', () => {
+      cy.document().then((doc) => {
+        const data = doc.createElement('div');
+        data.className = 'sem-progress';
+        data.setAttribute('data-value', '1');
+        data.setAttribute('data-status', 'done');
+        const bare = doc.createElement('sem-progress');
+        bare.setAttribute('value', '1');
+        bare.setAttribute('status', 'done');
+        doc.body.append(data, bare);
+      });
+      cy.document().then((doc) => {
+        for (const sel of ['div.sem-progress[data-status="done"]', 'sem-progress[status="done"]']) {
+          const el = doc.querySelector(sel);
+          const after = el.ownerDocument.defaultView.getComputedStyle(el, '::after');
+          expect(after.content, sel + ' ::after').to.contain('✓');
+        }
+      });
+    });
   });
 
   describe('custom elements — standalone-lit.nojs.html', () => {
