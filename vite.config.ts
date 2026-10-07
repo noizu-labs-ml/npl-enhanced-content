@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 
 /**
@@ -16,5 +17,20 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   build: { outDir: 'dist', target: 'es2022' },
   server: { port: 5173 },
-  preview: { port: 4173 }
+  preview: { port: 4173 },
+  // Unit tier (vitest). Coverage is measured over the whole shipped source
+  // tree, not just the files the unit specs happen to import, so the number
+  // is honest: most of src/ is exercised only by the cypress e2e suite, which
+  // is not instrumented. The threshold is a ratchet (unit line % minus 5,
+  // floored) — raise it as unit coverage grows; see docs/TEST-HEALTH.md.
+  test: {
+    include: ['test/unit/**/*.test.{ts,mjs,js}'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**', 'scripts/**', 'bin/**'],
+      reporter: ['text-summary', 'html', 'json-summary'],
+      reportsDirectory: 'coverage',
+      thresholds: { lines: 16 }
+    }
+  }
 });
