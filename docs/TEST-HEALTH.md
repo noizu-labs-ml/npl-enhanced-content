@@ -1,5 +1,5 @@
 # Test Health — npl-enhanced-content (SemText)
-_Last measured: 2026-10-07 · branch develop@4df29ee_
+_Last measured: 2026-10-07 · before develop@4df29ee · after develop@8a0be46_
 
 Two tiers, both in acceptance (no slow tier — the full suite fits the budget once sharded):
 
@@ -11,9 +11,9 @@ Two tiers, both in acceptance (no slow tier — the full suite fits the budget o
 
 | Metric | Before | After |
 |---|---|---|
-| CI PR wall-clock — critical path (warm / cold) | 3m16s (`test` job, single cypress run) | see PR / report (3 parallel e2e shards ‖ unit) |
-| Main release build (warm / cold) | — / 4m31s (test 3m30s → build-push 51s → bump 6s; docker cache cold after a 16-day release gap) | gated on unit + e2e shards; nightly warms `scope=web` |
-| CI acceptance test job (warm / cold) | e2e 3m16s (cypress step 2m53s); unit: not run | per shard, see report |
+| CI PR wall-clock — critical path (warm / cold) | 3m16s (`test` job, single cypress run) | ~1m40s warm (1m38s–1m52s, slowest shard) / 1m42s cold — 3 e2e shards ‖ unit |
+| Main release build (warm / cold) | — / 4m31s (test 3m30s → build-push 51s → bump 6s; docker cache cold after a 16-day release gap) | ≈ 1m40s tests → build-push → bump (≈ 2m40s total, est.); gated on unit + all e2e shards; nightly warms `scope=web` |
+| CI acceptance test job (warm / cold) | e2e 3m16s (cypress step 2m53s); unit: not run | e2e shards 83–112s warm / 97–102s cold (npm ci 13s → 3–5s with the cypress-binary cache); unit 16–25s |
 | Local full-suite runtime (uptime load) | unit 2.3s (load 28) · e2e not run locally | unchanged (no test changes) |
 | Docker build (warm / cold) | — / 28s (19s of it is the gha cache export) | npm cache mount added; warm via nightly |
 | Tests in acceptance / slow tier | 355 e2e (+45 unit not in CI) / 0 | 400 / 0 |
