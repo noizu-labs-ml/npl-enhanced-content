@@ -1,22 +1,35 @@
 # Project Architecture — Summary
 
-XHTML-first rich-content format for NPL: one document serves browser (styled/interactive), LLM (structural), terminal (text extraction). Spec-first repo — `spec/` tier-0 specs govern code; Lit `SemNote` + demo + cypress currently ship.
+SemText (spec draft v0.5): XHTML-first semantic markup vocabulary — one
+document, three readings (styled interactive page / structural record for
+LLM agents / extracted plain text). Zero React; Lit components are thin
+wrappers over a zero-JS fallback tier. Spec-first repo.
 
-## Components
+## Architecture
 
-- **Tier-0 specs** (`spec/conventions.md` v0.4, `schema/sem-note.md`) — BDD source of truth; change order spec → spec → code → e2e.
-- **Class-based vocabulary** — identity = `sem-*` classes, parameters = `data-*`; mechanical map to future custom elements.
-- **`sem-fallback` handler** — inline ~2–4KB vanilla JS; full baseline interactivity with zero external resources.
-- **Lit 3 components** — upgrade in place, light-DOM content, shadow-DOM chrome; handoff via `data-sem-fallback`.
-- **Theme layer** — `data-sem-theme`, `--sem-*` tokens, 4 TRP-ported themes, zero-JS flips.
-- **Demo + cypress** — reference impl (`web/demo/index.html`) validated by `test/e2e/sem-note.cy.js`.
-
-## Rendering tiers
-
-JS-off theme CSS → fallback JS → Lit upgrade; no layout shift; content always light DOM.
+- **Bundle tiers** — five IIFE scripts layering over one document: fallback
+  (contract tier, works JS-off), reading (prose chrome), full (Lit upgrade),
+  md, extract. Minified size budgets CI-enforced via `build:strict`.
+- **Extraction invariant** — `E(D) = E(R(D)) = E(I(R(D)))`; every interactive
+  layer is chrome and mints nothing; enforced by e2e, contract in
+  `spec/extraction.md` §5.
+- **Vocabulary model** — tag form canonical (class form = Appendix A alias);
+  dual-spelling selectors and `data-sem-fallback`/`data-sem-upgraded` tier
+  markers gate styling per tier; JS-off tier is text-only via `attr()`.
+- **Build & distribution** — `build.mjs` (bundles) + `build-standalone.mjs`
+  (pages, `.nojs.html` variants, `sem:inline` version/size markers); folder
+  and single-file portable forms.
+- **Deployment** — single CI workflow: e2e + budget gate → image on `main` →
+  CI-bot helm tag bump → ArgoCD auto-sync; CDN publish gated on a repo
+  variable.
 
 ## Key decisions
 
-- XHTML-first canonical; attributes canonical, inline notation is sugar; no preprocessing layer in v0.4.
-- Distribution: folder / single-file / MHTML; no ES-module scripts, no runtime fetch in portable docs.
-- Vocabulary = document-shaped XML variant of NPL; this repo publishes the schema file, NPL MCP consumes (Q4).
+- Bottom tier is the contract: zero-JS support forces semantics into the
+  document itself.
+- Tag form canonical: bare attributes, no `data-*`; XML-consumer-clean.
+- Lit upgrades in place; light-DOM content; chrome mints nothing.
+- XHTML over Markdown: the document is the data, no preprocessing layer.
+
+Details: docs/arch/bundles.md · extraction.md · vocabulary.md ·
+build-deploy.md · decisions.md
