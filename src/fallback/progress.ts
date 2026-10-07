@@ -16,6 +16,10 @@ export function enhanceProgress(scope: ParentNode): void {
     const label = p.getAttribute('data-label') || 'progress';
     const pct = Math.round(v * 100);
     p.textContent = label + ' :: ' + pct + '%';
+    // Mark what was wired (tier handoff): the JS-off attr() caption in the
+    // vocabulary is gated on the element marker, so without it the meter
+    // would read twice — caption + fallback text.
+    p.setAttribute('data-sem-fallback', '');
     const track = document.createElement('span');
     track.className = 'sem-progress-track';
     const fill = document.createElement('span');

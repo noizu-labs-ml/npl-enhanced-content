@@ -178,6 +178,9 @@ footer > div { padding-block: 2.25rem 3rem; }
 footer ul { list-style: none; margin: 0 0 1.25rem; padding: 0;
   display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; }
 footer p { color: var(--sem-muted); font-size: var(--pg-t--1); }
+/* Build provenance — deliberately quieter than the rest of the line. */
+.pg-build-sha { display: block; margin-top: 0.25rem; opacity: 0.6;
+  font-size: calc(var(--pg-t--1) * 0.85); font-family: ui-monospace, monospace; }
 
 /* --- hero ---------------------------------------------------------------- */
 
@@ -972,9 +975,10 @@ section { padding-block: var(--pg-space) 0; }
 
       <sem-note variant="warning">
         <div class="sem-note-body">
-          The spec is a draft at v0.4. The class-based vocabulary is the current
-          baseline and the custom-element form is arriving alongside it, so
-          element names and attributes can still change. Pin a version.
+          The spec is a draft at <!-- sem:inline spec-version -->. The
+          class-based vocabulary is the current baseline and the
+          custom-element form is arriving alongside it, so element names and
+          attributes can still change. Pin a version.
         </div>
       </sem-note>
 
@@ -1026,7 +1030,10 @@ section { padding-block: var(--pg-space) 0; }
       <li><a href="../demo/index.nojs.html">The same demo, scripts stripped</a></li>
     </ul>
     <p>
-      SemText v0.1.0 · draft spec v0.4 · part of Noizu Prompt Lingua.
+      SemText v<!-- sem:inline pkg-version --> ·
+      <!-- sem:inline spec-version --> draft spec ·
+      part of Noizu Prompt Lingua.
+      <span class="pg-build-sha" data-sem-build-sha title="Build revision">build <!-- sem:inline build-sha --></span>
       This page is a SemText document and carries its own stylesheets and
       scripts inline, so it works from <code>file://</code> with no network.
     </p>

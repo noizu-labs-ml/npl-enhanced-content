@@ -521,7 +521,9 @@ plain HTML cell, not a vocabulary parameter — it stays `data-*`.)
 ```
 `value` canonical 0..1 (render clamps, attr untouched); `label`
 default `progress`; fallback renders track + fill + `label :: N%`; JS-off:
-text-only via CSS `attr()` — no fake bar. `status="done"` ⇔ 1 by
+text-only via CSS `attr()` — no fake bar; the caption is gated on the
+tier marker (`data-sem-fallback` / `data-sem-upgraded` on the element),
+so it never duplicates the fallback text. `status="done"` ⇔ 1 by
 convention.
 
 ### Tier 1 — flagship buildout
@@ -584,6 +586,64 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
 - Events + attrs documented per schema = agent integration surface.
 - "Text extraction" reference recipe (DOM → annotated plain text) ships with
   the lib for terminal/LLM pipelines.
+
+### The extraction invariant (normative)
+
+For any document `D`, where `E` is extraction, `R(D)` is `D` after the
+fallback handler or the Lit upgrade has run, and `I(D)` is `D` after any
+sequence of user interactions the vocabulary supports (tab switches, card
+flips, reveals, table sorts and filters, audience profile switches,
+`sem-source` / `sem-md` view toggles, reader chrome changes):
+
+```
+E(D) = E(R(D)) = E(I(R(D)))
+```
+
+Equality is deep equality of the record array, including `sourceOrder`, and
+the same guarantee covers every `view-as` mode. This is the format's central
+promise: the machine consumer does not get a degraded reading of what the
+human consumer saw. The full formal statement — the three refusal rules that
+make it hold (extraction never looks at generated chrome, runtime state, or
+presentation attributes: `data-view-as`, `data-active`, `collapsed`) and the
+one recorded exception (`sem-table` row reordering, made safe by the
+`data-sem-source-index` stamp) — is normative and lives in
+`spec/extraction.md` §5; this section does not weaken or restate it.
+
+### What a consumer may rely on
+
+Normative, each item enforced by the tests named below:
+
+- The record array: flat, document-ordered, `sourceOrder` = array index,
+  containment a `parent` index tree; record shape fixed
+  (`type`, `id`, `kind`, `tags`, `audience`, `parent`, `fields`, `text`,
+  `sourceOrder` — `spec/extraction.md` §2).
+- `audience` is carried verbatim on every record and never removes one;
+  filtering by audience is a consumer operation on the extracted array.
+- The annotated plain-text tier (`extractText` / `renderRecordsAsText`) is a
+  pure function of the records, so it inherits the invariant unchanged.
+- Extraction itself is a total, pure function: no configuration, no I/O, no
+  DOM mutation (`spec/extraction.md` §9).
+
+### Best-effort only (not guaranteed)
+
+- Which view an author meant to show first: `data-active` is a state marker,
+  excluded from extraction by design. An author marks a primary perspective
+  with a durable qualifier (`kind`, `tags`) on the view.
+- Live presentation state (quiz answers, current sort, reader font/mode,
+  disclosure state): invisible to extraction. If a consumer needs it, the
+  vocabulary must carry it as a durable qualifier instead.
+- Element families without a schema entry extract as plain records
+  (`fields: {}`, prose `text`); their payloads are best-effort until a
+  schema defines them.
+
+Evidence (each bullet is asserted, not aspirational):
+`test/e2e/extraction.cy.js` (invariant core: JS-off = JS-on, every
+`view-as`, before/after interaction), `test/e2e/extraction-reading.cy.js`
+(reading elements; sort + filter deep-equal baseline),
+`test/e2e/sem-table.cy.js` (the recorded reordering exception),
+`test/e2e/sem-audiences.cy.js` (invariant across profile switches),
+`test/e2e/spec-pages.cy.js` (this document itself: records identical JS-off,
+JS-on, and after interaction).
 
 ## 9. NPL XML-variant alignment
 

@@ -432,7 +432,7 @@
   <p><strong>Normative: <a href="#r-sem-progress">spec/schema/sem-progress.md</a>.</strong></p>
   <sem-code id="c-progress" lang="html"><pre><code>&lt;sem-progress value="0.62" label="coverage"
      role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"&gt;&lt;/sem-progress&gt;</code></pre></sem-code>
-  <p><code>value</code> canonical 0..1 (render clamps, attr untouched); <code>label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code> — no fake bar. <code>status="done"</code> ⇔ 1 by convention.</p>
+  <p><code>value</code> canonical 0..1 (render clamps, attr untouched); <code>label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code> — no fake bar; the caption is gated on the tier marker (<code>data-sem-fallback</code> / <code>data-sem-upgraded</code> on the element), so it never duplicates the fallback text. <code>status="done"</code> ⇔ 1 by convention.</p>
   <sem-source id="s-progress" label="Live: sem-progress">
     <sem-progress id="x-progress" value="0.7" label="Tier-0 spec coverage" role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7"></sem-progress>
   </sem-source>
@@ -481,6 +481,28 @@
     <li>Events + attrs documented per schema = agent integration surface.</li>
     <li>"Text extraction" reference recipe (DOM → annotated plain text) ships with the lib for terminal/LLM pipelines<a href="#r-extraction" id="cite-extraction">[2]</a>.</li>
   </ul>
+
+  <h3 id="the-extraction-invariant-normative">The extraction invariant (normative)</h3>
+  <p>For any document <code>D</code>, where <code>E</code> is extraction, <code>R(D)</code> is <code>D</code> after the fallback handler or the Lit upgrade has run, and <code>I(D)</code> is <code>D</code> after any sequence of user interactions the vocabulary supports (tab switches, card flips, reveals, table sorts and filters, audience profile switches, <code>sem-source</code> / <code>sem-md</code> view toggles, reader chrome changes):</p>
+  <p><code>E(D) = E(R(D)) = E(I(R(D)))</code></p>
+  <p>Equality is deep equality of the record array, including <code>sourceOrder</code>, and the same guarantee covers every <code>view-as</code> mode. This is the format's central promise: the machine consumer does not get a degraded reading of what the human consumer saw. The full formal statement — the three refusal rules that make it hold (extraction never looks at generated chrome, runtime state, or presentation attributes: <code>data-view-as</code>, <code>data-active</code>, <code>collapsed</code>) and the one recorded exception (<code>sem-table</code> row reordering, made safe by the <code>data-sem-source-index</code> stamp) — is normative and lives in <a href="#r-extraction">spec/extraction.md</a> §5; this section does not weaken or restate it.</p>
+
+  <h3 id="what-a-consumer-may-rely-on">What a consumer may rely on</h3>
+  <p>Normative, each item enforced by the tests named below:</p>
+  <ul>
+    <li>The record array: flat, document-ordered, <code>sourceOrder</code> = array index, containment a <code>parent</code> index tree; record shape fixed (<code>type</code>, <code>id</code>, <code>kind</code>, <code>tags</code>, <code>audience</code>, <code>parent</code>, <code>fields</code>, <code>text</code>, <code>sourceOrder</code> — spec/extraction.md §2).</li>
+    <li><code>audience</code> is carried verbatim on every record and never removes one; filtering by audience is a consumer operation on the extracted array.</li>
+    <li>The annotated plain-text tier (<code>extractText</code> / <code>renderRecordsAsText</code>) is a pure function of the records, so it inherits the invariant unchanged.</li>
+    <li>Extraction itself is a total, pure function: no configuration, no I/O, no DOM mutation (spec/extraction.md §9).</li>
+  </ul>
+
+  <h3 id="best-effort-only-not-guaranteed">Best-effort only (not guaranteed)</h3>
+  <ul>
+    <li>Which view an author meant to show first: <code>data-active</code> is a state marker, excluded from extraction by design. An author marks a primary perspective with a durable qualifier (<code>kind</code>, <code>tags</code>) on the view.</li>
+    <li>Live presentation state (quiz answers, current sort, reader font/mode, disclosure state): invisible to extraction. If a consumer needs it, the vocabulary must carry it as a durable qualifier instead.</li>
+    <li>Element families without a schema entry extract as plain records (<code>fields: {}</code>, prose <code>text</code>); their payloads are best-effort until a schema defines them.</li>
+  </ul>
+  <p>Evidence (each bullet is asserted, not aspirational): <code>test/e2e/extraction.cy.js</code> (invariant core: JS-off = JS-on, every <code>view-as</code>, before/after interaction), <code>test/e2e/extraction-reading.cy.js</code> (reading elements; sort + filter deep-equal baseline), <code>test/e2e/sem-table.cy.js</code> (the recorded reordering exception), <code>test/e2e/sem-audiences.cy.js</code> (invariant across profile switches), <code>test/e2e/spec-pages.cy.js</code> (this document itself: records identical JS-off, JS-on, and after interaction).</p>
 
   <h2 id="9-npl-xml-variant-alignment">9. NPL XML-variant alignment</h2>
   <p>This vocabulary is the <strong>XML variant of NPL</strong>: NPL yaml already models agents (name/bio/instructions), instructions, and structured prompt sections via the MCP server; this format is its document-shaped rendering target. Alignment tasks (tracked, not blocking M1): map <code>&lt;agent&gt;</code> children to NPL agent schema; map <code>sem-fact</code> to NPL fact/knowledge records; define <code>sem-enhanced-document</code> as a valid MCP <code>NPLLoad</code>/render target.</p>

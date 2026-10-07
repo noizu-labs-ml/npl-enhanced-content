@@ -1,6 +1,8 @@
 {
   "name": "semtext",
   "version": "0.1.0",
+  "//specVersion": "Draft revision of spec/conventions.{html,md} that the demo pages and landing copy self-label. Bump it WITH the spec, not with releases — `version` is the package, `specVersion` is the format draft.",
+  "specVersion": "0.5",
   "description": "SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. Rendered by Lit web components over a zero-JS fallback tier. Zero React.",
   "type": "module",
   "//exports": "Five subpaths, one per shipped artifact, plus raw theme CSS. Each artifact is a classic IIFE script that installs a global (SemText, SemTextFallback, SemTextReading, SemTextExtract, SemTextMd) and exports NOTHING — so consume a subpath either as a <script src> tag / CDN asset, or as a side-effect ESM import (`import 'semtext/lit'`, which registers the custom elements). Named imports are not available from any subpath. There is deliberately no '.' export: ROADMAP debt D9 was 'type: module' advertising an ESM package whose root mapped to a non-importable script. Dropping '.' removes the false promise rather than papering over it.",
@@ -12,17 +14,30 @@
     "./md": "./dist/semtext-md.js",
     "./themes/*": "./themes/*"
   },
-  "files": ["dist", "themes"],
+  "files": ["dist", "themes", "bin", "src/validate", "spec/schema"],
+  "bin": {
+    "semtext-validate": "bin/semtext-validate.mjs"
+  },
   "scripts": {
     "build": "node scripts/build.mjs && node scripts/build-standalone.mjs",
     "build:strict": "node scripts/build.mjs --strict-budget && node scripts/build-standalone.mjs",
     "test": "cypress run --e2e",
     "test:open": "cypress open --e2e",
     "test:unit": "vitest run",
+    "validate": "node bin/semtext-validate.mjs \"web/**/*.html\" \"spec/*.html\"",
     "serve": "vite preview --outDir dist --port 4173 --strictPort"
   },
   "dependencies": {
     "lit": "^3.3.3"
+  },
+  "peerDependencies": {
+    "happy-dom": "^20.14.0"
+  },
+  "peerDependenciesMeta": {
+    "happy-dom": {
+      "optional": true,
+      "//": "Only bin/semtext-validate + src/validate import happy-dom at runtime; the semtext/lit|fallback|reading|extract|md artifacts never do. Library consumers can skip it; CLI users get an actionable error without it."
+    }
   },
   "devDependencies": {
     "cypress": "^15.21.1",

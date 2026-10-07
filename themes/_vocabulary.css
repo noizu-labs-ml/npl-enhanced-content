@@ -335,6 +335,8 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
   content: attr(data-label) " :: " attr(data-value); }
 :is(sem-progress, .sem-progress):not([data-sem-fallback], [data-sem-upgraded])[label][value]:not([data-value])::before {
   content: attr(label) " :: " attr(value); }
+/* status pairs with the value (schema: done ⇔ 1); same catalog as sem-step */
+:is(sem-progress, .sem-progress):is([data-status="done"], [status="done"])::after { content: " ✓"; color: var(--sem-correct); }
 :is(sem-progress, .sem-progress) .sem-progress-track { display: block; height: .5rem;
   background: color-mix(in srgb, var(--sem-border) 60%, transparent);
   border-radius: 999px; overflow: hidden; margin-top: .25rem; }
