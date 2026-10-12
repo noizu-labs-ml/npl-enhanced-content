@@ -38,6 +38,12 @@ const targets = [
   { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 14, required: true },
   { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 19.5, required: true },
   { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 12, required: false },
+  // Agent toolkit (filter/search/outline/expand/write/edit). Consumed by
+  // bin/semtext-agent.mjs and `semtext/agent`; required: false so the
+  // CLI-only dependency never blocks the browser artifacts' budget.
+  // Budget 24 KB = the extractor bundle (12) plus the toolkit itself
+  // (measured 20.2 at introduction, 2026-10).
+  { name: 'semtext-agent.js',    entry: 'src/agent/index.ts',    global: 'SemTextAgent',    budgetKb: 24, required: false },
   { name: 'semtext-md.js',       entry: 'src/md/index.ts',       global: 'SemTextMd',       budgetKb: 8.5,  required: true },
 ];
 

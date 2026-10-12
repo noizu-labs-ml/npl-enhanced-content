@@ -12,11 +12,19 @@
     "./reading": "./dist/semtext-reading.js",
     "./extract": "./dist/semtext-extract.js",
     "./md": "./dist/semtext-md.js",
-    "./themes/*": "./themes/*"
+    "./themes/*": "./themes/*",
+    "./agent": "./dist/semtext-agent.js"
   },
-  "files": ["dist", "themes", "bin", "src/validate", "spec/schema"],
+  "files": [
+    "dist",
+    "themes",
+    "bin",
+    "src/validate",
+    "spec/schema"
+  ],
   "bin": {
-    "semtext-validate": "bin/semtext-validate.mjs"
+    "semtext-validate": "bin/semtext-validate.mjs",
+    "semtext-agent": "bin/semtext-agent.mjs"
   },
   "scripts": {
     "build": "node scripts/build.mjs && node scripts/build-standalone.mjs",
@@ -32,12 +40,17 @@
     "lit": "^3.3.3"
   },
   "peerDependencies": {
-    "happy-dom": "^20.14.0"
+    "happy-dom": "^20.14.0",
+    "xslt-processor": "^5.1.2"
   },
   "peerDependenciesMeta": {
     "happy-dom": {
       "optional": true,
       "//": "Only bin/semtext-validate + src/validate import happy-dom at runtime; the semtext/lit|fallback|reading|extract|md artifacts never do. Library consumers can skip it; CLI users get an actionable error without it."
+    },
+    "xslt-processor": {
+      "optional": true,
+      "//": "Only bin/semtext-agent's xslt command imports it at runtime, and only when the xsltproc binary is absent; every other command runs without it."
     }
   },
   "devDependencies": {
@@ -46,6 +59,7 @@
     "happy-dom": "^20.14.0",
     "typescript": "^5.6.0",
     "vite": "^6.0.0",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.0",
+    "xslt-processor": "^5.1.2"
   }
 }
