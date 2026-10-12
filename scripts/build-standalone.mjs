@@ -207,6 +207,16 @@ for (const file of sources) {
   const kb = (p) => (statSync(p).size / 1024).toFixed(1).padStart(6) + ' KB';
   console.log(`  ${file.padEnd(30)}${String(count).padStart(5)}  ${kb(page)}${kb(nojs)}`);
 }
+
+// Static demo assets: the data-visualizer showcase fetches files relative to
+// the page (web/demo/data/**), so dist/demo needs them copied verbatim.
+const dataSrc = resolve(root, 'web', 'demo', 'data');
+if (existsSync(dataSrc)) {
+  const dataOut = resolve(outDir, 'data');
+  mkdirSync(dataOut, { recursive: true });
+  for (const f of readdirSync(dataSrc)) copyFileSync(resolve(dataSrc, f), resolve(dataOut, f));
+  console.log(`\n  copied web/demo/data/** → dist/demo/data/ (${readdirSync(dataSrc).length} files)`);
+}
 console.log('');
 
 /* ---------------------------------------------------------------------------
