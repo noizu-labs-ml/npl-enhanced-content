@@ -72,8 +72,8 @@ Current, after tag-form canonical (PR #30):
 | Artifact | Budget | Measured |
 |---|---|---|
 | `semtext-fallback.js` | **14 KB** | 13.0 |
-| `semtext-reading.js` | **36 KB** | 35.3 |
-| `semtext.js` (Lit) | **66 KB** | 65.5 |
+| `semtext-reading.js` | **40 KB** | 39.7 |
+| `semtext.js` (Lit) | **70 KB** | 69.9 |
 | `semtext-extract.js` | **12 KB** | 9.7 |
 | `semtext-md.js` | **8.5 KB** | 8.0 |
 
@@ -87,6 +87,10 @@ now carry the shared data-source module (`src/data/table.ts` + `src/reading/data
 Data-visualizer phase 2 (2026-10-13) raised reading 27 → 36 KB (measured 35.3) and Lit
 63 → 66 KB (measured 65.5): inline csv/yaml/json parsers + sql shape declarations
 (`src/data/{csv,yaml,json,sql}.ts`).
+
+Data-visualizer phase 3 (2026-10-13) raised reading 36 → 40 KB (measured 39.7) and Lit
+66 → 70 KB (measured 69.9): declared structures — the data-columns overlay and the
+OpenAPI-style yaml-schema flattener (`src/data/structure.ts`).
 
 
 ## History (recorded decisions — preserved)

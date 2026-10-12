@@ -31,19 +31,25 @@ import {
   visibleColumns,
   type ColumnSchema,
   type ColumnType,
-  type SourceParse,
   type TableData,
 } from '../data/table.js';
 import { parseCsv } from '../data/csv.js';
 import { parseYamlSubset, yamlToTable } from '../data/yaml.js';
 import { extractPath, jsonToTable } from '../data/json.js';
 import { parseSelectShape } from '../data/sql.js';
+import { applyColumnDecl, flattenYamlSchema, parseColumnDecl } from '../data/structure.js';
 
 export const DATA_VISUALIZER = ':is(sem-data-visualizer, .sem-data-visualizer)';
 export const DATA_SOURCE = ':is(sem-data-source, .sem-data-source)';
 const STAMP = 'data-sem-source-index';
 
 const FORMATS = new Set(['table', 'csv', 'yaml', 'json', 'sql']);
+const STRUCTURES = new Set(['rows', 'yaml-schema']);
+
+/** A successful parse may carry a declared schema (phase 3) and warnings. */
+type ParseResult =
+  | { ok: true; table: TableData; schema?: ColumnSchema[]; warnings?: string[] }
+  | { ok: false; error: string };
 
 /**
  * Enhance one container: render every direct source child that has not been
@@ -54,12 +60,17 @@ export function enhanceDataVisualizerElement(el: Element): void {
   el.querySelectorAll(':scope > ' + DATA_SOURCE).forEach((src) => renderSource(src));
 }
 
+/** The declared structure, if any: data-type / type, lowercased. */
+export function declaredType(src: Element): string {
+  return (param(src, 'type') ?? '').trim().toLowerCase();
+}
+
 /**
  * Parse one source's payload (element attrs + text ⇒ TableData). Pure aside
  * from reading the element; used by the render path and by sql `*`
  * resolution, which must see sibling columns regardless of document order.
  */
-export function parsePayload(src: Element): SourceParse {
+export function parsePayload(src: Element): ParseResult {
   const format = (param(src, 'format') ?? 'table').trim().toLowerCase();
   if (!FORMATS.has(format)) {
     return { ok: false, error: 'unknown data-format "' + format + '" — supported: table, csv, yaml, json, sql' };
@@ -67,15 +78,29 @@ export function parsePayload(src: Element): SourceParse {
   if (param(src, 'source') !== null || src.hasAttribute('source')) {
     return { ok: false, error: 'file and API sources (source="…") land in phase 4 — inline the payload for now' };
   }
+  const structure = declaredType(src);
+  if (structure && !STRUCTURES.has(structure)) {
+    return { ok: false, error: 'unknown data-type "' + structure + '" — supported: rows, yaml-schema' };
+  }
+  if (structure === 'yaml-schema' && format !== 'yaml') {
+    return { ok: false, error: 'data-type="yaml-schema" needs a yaml payload (data-format="yaml")' };
+  }
   const text = src.textContent || '';
   switch (format) {
-    case 'table':
-      return parseGfmTable(text);
-    case 'csv':
-      return parseCsv(text, (param(src, 'header') ?? 'true').trim().toLowerCase() !== 'false');
+    case 'table': {
+      const r = parseGfmTable(text);
+      return r.ok ? { ok: true, table: r.table } : r;
+    }
+    case 'csv': {
+      const r = parseCsv(text, (param(src, 'header') ?? 'true').trim().toLowerCase() !== 'false');
+      return r.ok ? { ok: true, table: r.table } : r;
+    }
     case 'yaml': {
       const parsed = parseYamlSubset(text);
-      return parsed.ok ? yamlToTable(parsed.value) : parsed;
+      if (!parsed.ok) return parsed;
+      if (structure === 'yaml-schema') return flattenYamlSchema(parsed.value);
+      const r = yamlToTable(parsed.value);
+      return r.ok ? { ok: true, table: r.table } : r;
     }
     case 'json': {
       let value: unknown;
@@ -84,7 +109,8 @@ export function parsePayload(src: Element): SourceParse {
       } catch (e) {
         return { ok: false, error: 'invalid json: ' + (e as Error).message };
       }
-      return jsonToTable(extractPath(value, param(src, 'path')));
+      const r = jsonToTable(extractPath(value, param(src, 'path')));
+      return r.ok ? { ok: true, table: r.table } : r;
     }
     default: {
       const shape = parseSelectShape(text);
@@ -123,20 +149,27 @@ export function normalizeRef(ref: string): string {
 
 function renderSource(src: Element): void {
   const format = (param(src, 'format') ?? 'table').trim().toLowerCase();
-  if (param(src, 'type') !== null) {
-    warn('sem-data-source[@data-type]: declared structures land in phase 3; inferring the schema (spec/data-visualizer.md)');
-  }
+  const structure = declaredType(src);
 
   const parsed = parsePayload(src);
   if (!parsed.ok) {
     renderError(src, parsed.error);
     return;
   }
-  renderTable(src, parsed.table, format);
+  (parsed.warnings ?? []).forEach((w) => warn('sem-data-source: ' + w));
+
+  let schema = parsed.schema ?? inferSchema(parsed.table);
+  if (structure === 'rows') {
+    const decl = parseColumnDecl(param(src, 'columns'));
+    decl.warnings.forEach((w) => warn('sem-data-source: ' + w));
+    const applied = applyColumnDecl(parsed.table, decl.cols, schema);
+    schema = applied.schema;
+    applied.warnings.forEach((w) => warn('sem-data-source: ' + w));
+  }
+  renderTable(src, parsed.table, schema, format, structure);
 }
 
-function renderTable(src: Element, table: TableData, format: string): void {
-  const schema = inferSchema(table);
+function renderTable(src: Element, table: TableData, schema: ColumnSchema[], format: string, structure: string): void {
   const views = parseViews(param(src, 'views'));
   const view = resolveView(views, param(src, 'view'));
   const shown = visibleColumns(view, table.columns);
@@ -155,6 +188,7 @@ function renderTable(src: Element, table: TableData, format: string): void {
   json.textContent = JSON.stringify({
     name: name || null,
     format,
+    type: structure || null,
     view: view.name,
     views: views.map((v) => v.name),
     columns: schema,
