@@ -286,7 +286,7 @@ describe('sem-md', () => {
           d.className = 'sem-md';
           d.id = id;
           d.textContent = text;
-          win.document.querySelector('.sem-enhanced-document').appendChild(d);
+          win.document.querySelector('sem-enhanced-document').appendChild(d);
           return d;
         };
         make('p-stars', '*'.repeat(10000) + ' end');

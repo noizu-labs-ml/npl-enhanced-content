@@ -16,7 +16,7 @@
 //   Scenario: INVARIANT — JS-off equals JS-on
 //   Scenario: INVARIANT — identical under every view-as mode
 //   Scenario: INVARIANT — copy, wrap, preview and backlink do not change output
-//   Scenario: INVARIANT — element form equals class form
+//   Scenario: INVARIANT — both demo pages extract identically
 //   R/W2 additions (spec/schema/sem-reader.md, sem-table.md):
 //   Scenario: sem-reader mints nothing — not the element, not its authored nav, not its chrome
 //   Scenario: sem-table — caption, columns, rows in AUTHORED order; the inner <table kind> mints nothing
@@ -80,10 +80,10 @@ const visitWithViews = (chronologyMode, propertiesMode) =>
   cy.visit('/demo/reading.html', {
     onBeforeLoad(win) {
       win.document.addEventListener('DOMContentLoaded', () => {
-        win.document.querySelectorAll('.sem-chronology').forEach((el) => {
+        win.document.querySelectorAll('sem-chronology').forEach((el) => {
           el.setAttribute('data-view-as', chronologyMode);
         });
-        win.document.querySelectorAll('.sem-properties').forEach((el) => {
+        win.document.querySelectorAll('sem-properties').forEach((el) => {
           if (propertiesMode) el.setAttribute('data-view-as', propertiesMode);
           else el.removeAttribute('data-view-as');
         });
@@ -293,7 +293,7 @@ describe('extraction — reading elements', () => {
       [['timeline', 'glossary'], ['list', 'glossary'], ['timeline', null], ['list', null]].forEach(
         ([chron, props]) => {
           visitWithViews(chron, props);
-          cy.get('.sem-chronology').first().should('have.attr', 'data-view-as', chron);
+          cy.get('sem-chronology').first().should('have.attr', 'data-view-as', chron);
           extract().then((records) => {
             expect(records, 'view-as=' + chron + '/' + props).to.deep.equal(baseline);
           });
@@ -384,12 +384,12 @@ describe('extraction — reading elements', () => {
     });
 
     it('element form extracts identically to class form', () => {
-      let classForm;
+      let readingRecords;
       cy.visit('/demo/reading.html');
-      extract().then((records) => { classForm = records; });
+      extract().then((records) => { readingRecords = records; });
       cy.visit('/demo/reading-lit.html');
       cy.get('sem-code[data-sem-upgraded]').should('exist');
-      extract().then((elementForm) => expect(elementForm).to.deep.equal(classForm));
+      extract().then((litRecords) => expect(litRecords).to.deep.equal(readingRecords));
       let jsOn;
       cy.document().then((doc) => { jsOn = extractText(doc); });
       visitJsOff('/demo/reading-lit.html');

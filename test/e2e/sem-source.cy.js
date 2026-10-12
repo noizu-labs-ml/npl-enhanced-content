@@ -112,10 +112,12 @@ function assertSource(url, id, marker, authored) {
 }
 
 describe('sem-source', () => {
-  describe('fallback tier — /demo/index.html (class form)', () => {
+  // /demo/index.html is element-form now, but it still loads the fallback
+  // bundle, which claims its records; only the authored markup changed.
+  describe('fallback tier — /demo/index.html (element form)', () => {
     assertSource('/demo/index.html', '#s-flash',
       { present: 'data-sem-fallback', absent: 'data-sem-upgraded' },
-      '<div class="sem-facts" data-view-as="flashcards">');
+      '<sem-facts data-view-as="flashcards">');
 
     it('an authored data-view-as="source" starts in source mode', () => {
       cy.visit('/demo/index.html');
@@ -135,7 +137,7 @@ describe('sem-source', () => {
       emulate({ media: 'print' });
       cy.get('#s-flash > .sem-source-fence').should('not.be.visible');
       cy.get('#s-flash > .sem-source-chrome').should('not.be.visible');
-      cy.get('#s-flash .sem-fact').first().should('be.visible');
+      cy.get('#s-flash sem-fact').first().should('be.visible');
       emulate({ media: '', features: [] });
     });
 
@@ -161,7 +163,7 @@ describe('sem-source', () => {
         onBeforeLoad(win) {
           cy.stub(win.console, 'warn').as('warn');
           win.addEventListener('DOMContentLoaded', () => {
-            const host = win.document.querySelector('.sem-enhanced-document');
+            const host = win.document.querySelector('sem-enhanced-document');
             const outer = win.document.createElement('div');
             outer.className = 'sem-source'; outer.id = 's-outer';
             outer.innerHTML = '<p>outer</p><div class="sem-source" id="s-inner"><p>inner</p></div>';
@@ -184,7 +186,7 @@ describe('sem-source', () => {
         el.className = 'sem-source';
         el.id = 's-nosnap';
         el.innerHTML = '<p>late</p>';
-        win.document.querySelector('.sem-enhanced-document').appendChild(el);
+        win.document.querySelector('sem-enhanced-document').appendChild(el);
         win.SemTextReading.enhanceSourceElement(el);
       });
       cy.get('@warn').should('have.been.calledWithMatch', /sem-source: no snapshot/);
@@ -237,11 +239,11 @@ describe('sem-source', () => {
 
     it('a rendered child keeps its own behaviour before and after a round trip', () => {
       cy.visit('/demo/index.html');
-      cy.get('#s-flash .sem-fact.sem-current').should('be.visible');
+      cy.get('#s-flash sem-fact.sem-current').should('be.visible');
       cy.get('#s-flash [data-act="source"]').click();
       cy.get('#s-flash [data-act="html"]').click();
       cy.get('#s-flash .sem-facts-chrome').should('be.visible');
-      cy.get('#s-flash .sem-fact.sem-current').should('be.visible');
+      cy.get('#s-flash sem-fact.sem-current').should('be.visible');
     });
   });
 
@@ -269,7 +271,7 @@ describe('sem-source', () => {
     it('/demo/index.nojs.html — rendered content, no chrome, no fence, nothing hidden', () => {
       cy.visit('/demo/index.nojs.html');
       cy.get('.sem-source-chrome, .sem-source-fence, .sem-source-raw').should('not.exist');
-      cy.get('#s-flash .sem-fact').each(($f) => cy.wrap($f).should('be.visible'));
+      cy.get('#s-flash sem-fact').each(($f) => cy.wrap($f).should('be.visible'));
       // an authored source mode still reads as HTML when nothing can build a fence
       cy.get('#s-initial').should('have.attr', 'data-view-as', 'source');
       cy.get('#s-initial > p').should('be.visible');

@@ -57,7 +57,7 @@ describe('sem-audiences', () => {
 
     it('coexists with the sem-views deep link in one hash', () => {
       cy.visit('/demo/index.html#deploy/argocd&sem-audience=operator');
-      cy.get('#deploy .sem-view[data-name="ArgoCD"]').should('be.visible');
+      cy.get('#deploy sem-view[data-name="ArgoCD"]').should('be.visible');
       cy.get('#n-op').should('be.visible');
       // Switching tabs rewrites only the views segment.
       cy.get('#deploy .sem-views-tabs button').contains('Helm').click();
@@ -67,7 +67,7 @@ describe('sem-audiences', () => {
 
     it('renders the profile block as readable metadata', () => {
       cy.visit('/demo/index.html');
-      cy.get('.sem-audiences .sem-profile').should('have.length', 2).each(($p) => {
+      cy.get('sem-audiences sem-profile').should('have.length', 2).each(($p) => {
         cy.wrap($p).should('be.visible');
       });
     });

@@ -14,7 +14,7 @@ describe('sem-details', () => {
     beforeEach(() => cy.visit('/demo/index.html'));
 
     it('quiz view: highlights occluded, click reveals per item', () => {
-      const dt = '.sem-details[data-view-as="quiz"] ';
+      const dt = 'sem-details[data-view-as="quiz"] ';
       cy.get(dt + '.sem-occluded').should('have.length.at.least', 2);
       cy.get(dt + '.sem-occluded').first()
         .should('have.attr', 'role', 'button')
@@ -27,16 +27,16 @@ describe('sem-details', () => {
     });
 
     it('quiz view: keyboard reveal with Enter', () => {
-      const dt = '.sem-details[data-view-as="quiz"] ';
+      const dt = 'sem-details[data-view-as="quiz"] ';
       cy.get(dt + '.sem-occluded').first().focus().type('{enter}');
       cy.get(dt + '.sem-highlight.sem-revealed').should('exist');
     });
 
     it('plain view: highlights emphasized, nothing occluded', () => {
-      const dt = '.sem-details:not([data-view-as="quiz"]) ';
-      cy.get(dt + '.sem-highlight').should('be.visible');
+      const dt = 'sem-details:not([data-view-as="quiz"]) ';
+      cy.get(dt + 'highlight').should('be.visible');
       cy.get(dt + '.sem-occluded').should('not.exist');
-      cy.get('.sem-details:not([data-view-as="quiz"])')
+      cy.get('sem-details:not([data-view-as="quiz"])')
         .should('not.have.attr', 'data-sem-fallback');
     });
 
@@ -44,9 +44,9 @@ describe('sem-details', () => {
       cy.visit('/demo/index.html', {
         onBeforeLoad(win) { win.__semJsOff = true; }
       });
-      cy.get('.sem-details .sem-highlight').should('be.visible');
+      cy.get('sem-details highlight').should('be.visible');
       cy.get('.sem-occluded').should('not.exist');
-      cy.get('.sem-details[data-sem-fallback]').should('not.exist');
+      cy.get('sem-details[data-sem-fallback]').should('not.exist');
     });
   });
 
@@ -70,7 +70,7 @@ describe('sem-details', () => {
     });
 
     it('plain view: highlights stay readable', () => {
-      cy.get('sem-details:not([data-view-as="quiz"]) .sem-highlight')
+      cy.get('sem-details:not([data-view-as="quiz"]) highlight')
         .should('be.visible');
       cy.get('sem-details:not([data-view-as="quiz"]) .sem-occluded')
         .should('not.exist');

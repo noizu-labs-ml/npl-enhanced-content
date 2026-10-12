@@ -27,20 +27,20 @@ const clone = (v) => JSON.parse(JSON.stringify(v));
 const extract = () => cy.document().then((doc) => clone(extractRecords(doc)));
 
 const RECORD_SELECTOR = [
-  '.sem-agent',
-  '.sem-note',
-  '.sem-facts',
-  '.sem-fact',
-  '.sem-details',
-  '.sem-detail',
-  '.sem-procedure',
-  '.sem-step',
-  '.sem-properties',
-  '.sem-property',
-  '.sem-views',
-  '.sem-view',
-  '.sem-reveal',
-  '.sem-progress'
+  'agent',
+  'sem-note',
+  'sem-facts',
+  'sem-fact',
+  'sem-details',
+  'sem-detail',
+  'sem-procedure',
+  'sem-step',
+  'sem-properties',
+  'sem-property',
+  'sem-views',
+  'sem-view',
+  'sem-reveal',
+  'sem-progress'
 ].join(', ');
 
 // Document order of web/demo/index.html, per spec/extraction.md §3.1.
@@ -82,10 +82,10 @@ const visitWithViews = (factsMode, detailsMode) =>
   cy.visit('/demo/index.html', {
     onBeforeLoad(win) {
       win.document.addEventListener('DOMContentLoaded', () => {
-        win.document.querySelectorAll('.sem-facts').forEach((el) => {
+        win.document.querySelectorAll('sem-facts').forEach((el) => {
           el.setAttribute('data-view-as', factsMode);
         });
-        win.document.querySelectorAll('.sem-details').forEach((el) => {
+        win.document.querySelectorAll('sem-details').forEach((el) => {
           el.setAttribute('data-view-as', detailsMode);
         });
       });
@@ -195,7 +195,7 @@ describe('extraction', () => {
     it('sem-detail: highlights extracted whether authored or occluded', () => {
       extract().then((records) => {
         const passages = byType(records, 'sem-detail');
-        // Quiz-view passage: the fallback has replaced .sem-highlight with
+        // Quiz-view passage: the fallback has replaced highlight with
         // .sem-occluded; extraction reads through the mask.
         expect(passages[0].fields.highlights).to.deep.equal([
           'Authorization',
@@ -397,7 +397,7 @@ describe('extraction', () => {
       modes.forEach(([facts, details]) => {
         visitWithViews(facts, details);
         // The substitution really did take effect on the enhanced page.
-        cy.get('.sem-facts').first().should('have.attr', 'data-view-as', facts);
+        cy.get('sem-facts').first().should('have.attr', 'data-view-as', facts);
         extract().then((records) => {
           expect(records, 'view-as=' + facts + '/' + details).to.deep.equal(
             baseline
@@ -414,19 +414,19 @@ describe('extraction', () => {
       });
 
       // Flip a flashcard.
-      cy.get('.sem-facts[data-view-as="flashcards"] .sem-fact.sem-current').click();
+      cy.get('sem-facts[data-view-as="flashcards"] sem-fact.sem-current').click();
       // Advance the deck.
-      cy.get('.sem-facts[data-view-as="flashcards"] [data-act="next"]').click();
+      cy.get('sem-facts[data-view-as="flashcards"] [data-act="next"]').click();
       // Answer a quiz option.
-      cy.get('.sem-facts[data-view-as="quiz"] .sem-current .sem-quiz-options button')
+      cy.get('sem-facts[data-view-as="quiz"] .sem-current .sem-quiz-options button')
         .first()
         .click();
       // Switch a view (moves data-active).
       cy.get('#deploy .sem-views-tabs [role="tab"]').eq(1).click();
       // Reveal an occluded highlight.
-      cy.get('.sem-details[data-view-as="quiz"] .sem-occluded').first().click();
+      cy.get('sem-details[data-view-as="quiz"] .sem-occluded').first().click();
       // Expand the collapsed note (removes the `collapsed` attribute).
-      cy.get('.sem-note[data-variant="tip"] .sem-note-summary').click();
+      cy.get('sem-note[data-variant="tip"] .sem-note-summary').click();
 
       extract().then((after) => {
         expect(after).to.deep.equal(before);

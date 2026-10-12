@@ -12,26 +12,26 @@ describe('sem-views', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
 
   it('first view active by default, others hidden', () => {
-    cy.get('#deploy .sem-view[data-name="Helm"]').should('be.visible');
-    cy.get('#deploy .sem-view[data-name="ArgoCD"]').should('not.be.visible');
-    cy.get('#deploy .sem-view[data-active]').should('have.length', 1);
+    cy.get('#deploy sem-view[data-name="Helm"]').should('be.visible');
+    cy.get('#deploy sem-view[data-name="ArgoCD"]').should('not.be.visible');
+    cy.get('#deploy sem-view[data-active]').should('have.length', 1);
   });
 
   it('tab click switches active view', () => {
     cy.get('#deploy .sem-views-tabs button').contains('ArgoCD').click();
-    cy.get('#deploy .sem-view[data-name="ArgoCD"]').should('be.visible');
-    cy.get('#deploy .sem-view[data-name="Helm"]').should('not.be.visible');
+    cy.get('#deploy sem-view[data-name="ArgoCD"]').should('be.visible');
+    cy.get('#deploy sem-view[data-name="Helm"]').should('not.be.visible');
   });
 
   it('arrow keys move active view', () => {
     cy.get('#deploy .sem-views-tabs button').first().focus().type('{rightarrow}');
-    cy.get('#deploy .sem-view[data-name="ArgoCD"]').should('be.visible');
+    cy.get('#deploy sem-view[data-name="ArgoCD"]').should('be.visible');
   });
 
   it('deep-link hash activates that view', () => {
     cy.visit('/demo/index.html#deploy/argocd');
-    cy.get('#deploy .sem-view[data-name="ArgoCD"]').should('be.visible');
-    cy.get('#deploy .sem-view[data-name="Helm"]').should('not.be.visible');
+    cy.get('#deploy sem-view[data-name="ArgoCD"]').should('be.visible');
+    cy.get('#deploy sem-view[data-name="Helm"]').should('not.be.visible');
   });
 
   it('sem-navigate event fires with name and index', () => {

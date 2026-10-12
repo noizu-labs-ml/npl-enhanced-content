@@ -2,6 +2,13 @@ import { LitElement } from 'lit';
 import { parseTokens } from '../shared/tokens.js';
 import { closureFor, matches, warn as semWarn, type AudienceClosure } from '../shared/audience.js';
 
+declare global {
+  interface Window {
+    /** Test hook: simulate a JS-off document without stripping the script. */
+    __semJsOff?: boolean;
+  }
+}
+
 /**
  * SemElement — the shared base for every SemText custom element.
  *
@@ -176,6 +183,9 @@ export class SemElement extends LitElement {
   static register(tag: string, ctor: CustomElementConstructor): void {
     if (typeof customElements === 'undefined') return;
     if (customElements.get(tag)) return;
+    // Test-hook parity with the fallback/reading/md bundles: a JS-off
+    // document (__semJsOff) must define nothing, so no tier mints chrome.
+    if (typeof window !== 'undefined' && window.__semJsOff) return;
     customElements.define(tag, ctor);
   }
 }

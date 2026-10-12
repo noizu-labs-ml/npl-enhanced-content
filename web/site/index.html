@@ -2,13 +2,13 @@
 <!--
   web/site/index.html — semtext.dev landing page.
 
-  This page is itself a SemText document. The feature list is a `.sem-facts`
+  This page is itself a SemText document. The feature list is a `<sem-facts>`
   deck, the caveats are `<sem-note>` custom elements, the quick start is a
-  `.sem-procedure`, the shipped artifacts are a `.sem-properties` block and
-  the three-readers argument is a `.sem-views` group. The Reading section
+  `<sem-procedure>`, the shipped artifacts are a `<sem-properties>` block and
+  the three-readers argument is a `<sem-views>` group. The Reading section
   runs the R/W0 + R/W1 + R/W2 elements live: margin note, audience profiles,
   deep links, glossary, chronology, code, references and a sortable table;
-  the reading bar at the top of the document is a `.sem-reader` (outline,
+  the reading bar at the top of the document is a `<sem-reader>` (outline,
   progress, focus, type, colour, print, audience). Nothing here is a mock
   of the vocabulary: the real theme CSS and the real built bundles are inlined
   at build time by scripts/build-standalone.mjs, so the page proves its own
@@ -625,11 +625,11 @@ agent { font-size: var(--pg-t--1); }
       </p>
 
       <sem-note id="rd-margin" data-view-as="margin" data-variant="tip">
-        
+        <div class="sem-note-body">
           This note is <code>data-view-as="margin"</code>. On a wide viewport
           CSS floats it into the right gutter; on a phone it reads inline.
           Extraction reports the same <code>sem-note</code> record either way.
-        
+        </div>
       </sem-note>
 
       <h3 id="rd-glossary-h">Glossary</h3>
@@ -706,15 +706,9 @@ agent { font-size: var(--pg-t--1); }
         <a href="#sem-audience=operator">Read as an operator</a>
         <a href="#reading">Clear</a>
       </p>
-      <sem-note id="rd-n-operator" data-audience="operator" data-variant="warning">
-        Operators only: an operator implies reader, so this profile sees every reader note as well.
-      </sem-note>
-      <sem-note id="rd-n-reader" data-audience="reader" data-variant="info">
-        Readers and operators: content for a profile is hidden until a reader claims it, never deleted.
-      </sem-note>
-      <sem-note id="rd-n-public" data-audience="!operator">
-        Everyone except operators: a negated spec shows by default and hides once the excluded profile is active.
-      </sem-note>
+      <sem-note id="rd-n-operator" data-audience="operator" data-variant="warning"><div class="sem-note-body">Operators only: an operator implies reader, so this profile sees every reader note as well.</div></sem-note>
+      <sem-note id="rd-n-reader" data-audience="reader" data-variant="info"><div class="sem-note-body">Readers and operators: content for a profile is hidden until a reader claims it, never deleted.</div></sem-note>
+      <sem-note id="rd-n-public" data-audience="!operator"><div class="sem-note-body">Everyone except operators: a negated spec shows by default and hides once the excluded profile is active.</div></sem-note>
 
       <h3 id="rd-links-h">Deep links, print, motion</h3>
       <p>
@@ -781,9 +775,7 @@ agent { font-size: var(--pg-t--1); }
         mints nothing and its children extract as if it were absent.
       </p>
       <sem-source id="rd-source" data-label="A note and a runbook">
-        <sem-note id="rd-src-note" data-variant="tip">
-          Rotate the refresh token on every exchange; the presented token is retired.
-        </sem-note>
+        <sem-note id="rd-src-note" data-variant="tip"><div class="sem-note-body">Rotate the refresh token on every exchange; the presented token is retired.</div></sem-note>
         <sem-procedure id="rd-src-steps" data-kind="runbook" role="list">
           <sem-step role="listitem" data-status="done">issue the pair</sem-step>
           <sem-step role="listitem" data-status="current">exchange the refresh token</sem-step>
@@ -966,28 +958,28 @@ agent { font-size: var(--pg-t--1); }
       <h2 id="scope-h">What it is not.</h2>
 
       <sem-note variant="info">
-        
+        <div class="sem-note-body">
           SemText is a markup vocabulary and three small scripts. It is not a
           CMS, a site generator or an application framework, and it has no
           opinion about how you produce the HTML.
-        
+        </div>
       </sem-note>
 
       <sem-note variant="warning">
-        
+        <div class="sem-note-body">
           The spec is a draft at <!-- sem:inline spec-version -->. The
-          class-based vocabulary is the current baseline and the
-          custom-element form is arriving alongside it, so element names and
-          attributes can still change. Pin a version.
-        
+          element form is the current baseline and the class aliases remain
+          supported alongside it, so element names and attributes can still
+          change. Pin a version.
+        </div>
       </sem-note>
 
       <sem-note variant="tip">
-        
+        <div class="sem-note-body">
           There is no React in the dependency tree and there is not going to be
           one. Lit 3 is the only runtime dependency, and it is optional — the
           fallback tier has none.
-        
+        </div>
       </sem-note>
 
       <h3 id="questions">Reasonable questions</h3>
@@ -1105,10 +1097,16 @@ agent { font-size: var(--pg-t--1); }
   }
 
   function setView(mode) {
-    deck.innerHTML = pristine;
-    deck.removeAttribute('data-sem-fallback');
-    deck.setAttribute('data-view-as', mode);
-    if (window.SemTextFallback) window.SemTextFallback.enhanceFacts(scope);
+    // The deck is tag-form, so the Lit element owns it: enhanceFacts skips
+    // records marked data-sem-upgraded. Swapping in a fresh clone restarts
+    // the upgrade, and the element wires chrome for the new data-view-as.
+    var fresh = deck.cloneNode(false);
+    fresh.removeAttribute('data-sem-fallback');
+    fresh.removeAttribute('data-sem-upgraded');
+    fresh.setAttribute('data-view-as', mode);
+    fresh.innerHTML = pristine;
+    deck.replaceWith(fresh);
+    deck = fresh;
     if (mode === 'flashcards') makeCardsKeyboardOperable();
     if (current) current.textContent = mode;
     Array.prototype.forEach.call(toggle.querySelectorAll('button'), function (b) {

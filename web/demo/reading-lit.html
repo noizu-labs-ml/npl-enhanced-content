@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SemText · reading elements (element form)</title>
+<title>SemText · reading elements (Lit)</title>
 
 <!-- Core CSS, substituted at build time by scripts/build-standalone.mjs so
      the emitted dist/demo page opens from file:// with no network. -->
@@ -46,7 +46,7 @@
   </sem-reader>
 
   <h1>Token Rotation — a reading document</h1>
-  <p>Exercises the R/W1 prose elements in the v0.3 <strong>element form</strong>: a glossary, a chronology, code listings and references. Open this file directly in any browser; <code>reading.html</code> is the same document in class form.</p>
+  <p>Exercises the R/W1 prose elements in the v0.3 <strong>element form</strong>: a glossary, a chronology, code listings and references. Open this file directly in any browser; <code>reading.html</code> is the same document without the Lit bundle.</p>
   <sem-audiences id="audiences">
     <sem-profile id="dev" label="Developer"></sem-profile>
     <sem-profile id="ops" label="Operator" implies="dev"></sem-profile>
@@ -216,9 +216,10 @@
   </sem-table>
 
   <h2>Disclosures</h2>
-  <!-- Class form on both pages: the reveal and views fallbacks (core) drive
-       `.sem-reveal` / `.sem-views` only. Headings inside them are reached
-       from the outline through the deep-link resolver. -->
+  <!-- Element form on both pages: the reveal and views fallbacks (core) drive
+       the sem-reveal / sem-views elements through their dual selectors.
+       Headings inside them are reached from the outline through the deep-link
+       resolver. -->
   <sem-reveal id="rv-keys" data-summary="Key rotation detail" collapsed>
     <h3 id="rv-h">Signing keys</h3>
     <p>Rotate the signing key on the refresh cadence; publish both keys during the overlap.</p>

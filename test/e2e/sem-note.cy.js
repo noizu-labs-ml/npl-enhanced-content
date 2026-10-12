@@ -16,32 +16,32 @@ describe('v0.4 baseline (web/demo/index.html)', () => {
   beforeEach(() => cy.visit('/demo/index.html'));
 
   it('renders agent metadata block', () => {
-    cy.get('.sem-agent .sem-agent-name').should('contain', 'Auth Guide');
-    cy.get('.sem-agent .sem-agent-instructions').should('exist');
+    cy.get('agent name').should('contain', 'Auth Guide');
+    cy.get('agent instructions').should('exist');
   });
 
   it('renders note variants; collapsed hides body until clicked', () => {
-    cy.get('.sem-note[data-variant="warning"]').should('be.visible');
-    cy.get('.sem-note[collapsed] .sem-note-body').should('not.be.visible');
-    cy.get('.sem-note[collapsed] .sem-note-summary').click();
-    cy.get('.sem-note[collapsed] .sem-note-body').should('not.exist');
+    cy.get('sem-note[data-variant="warning"]').should('be.visible');
+    cy.get('sem-note[collapsed] .sem-note-body').should('not.be.visible');
+    cy.get('sem-note[collapsed] .sem-note-summary').click();
+    cy.get('sem-note[collapsed] .sem-note-body').should('not.exist');
     cy.contains('Shuffle flashcards').should('be.visible');
   });
 
   it('flashcards view: one card at a time, flip reveals conclusion', () => {
-    const fc = '.sem-facts[data-view-as="flashcards"] ';
-    cy.get(fc + '.sem-fact.sem-current').should('have.length', 1);
-    cy.get(fc + '.sem-current .sem-conclusion').should('not.be.visible');
+    const fc = 'sem-facts[data-view-as="flashcards"] ';
+    cy.get(fc + 'sem-fact.sem-current').should('have.length', 1);
+    cy.get(fc + '.sem-current conclusion').should('not.be.visible');
     cy.get(fc + '.sem-current').click();
-    cy.get(fc + '.sem-current.sem-flipped .sem-conclusion').should('be.visible');
+    cy.get(fc + '.sem-current.sem-flipped conclusion').should('be.visible');
     cy.get(fc + '[data-act="next"]').click();
     cy.get(fc + '.sem-current').should('have.length', 1);
     cy.get(fc + '.sem-facts-meter').should('contain', '2/3');
   });
 
   it('quiz view: conclusion hidden, options scored, distractors count', () => {
-    const qz = '.sem-facts[data-view-as="quiz"] ';
-    cy.get(qz + '.sem-fact .sem-conclusion').should('not.be.visible');
+    const qz = 'sem-facts[data-view-as="quiz"] ';
+    cy.get(qz + 'sem-fact conclusion').should('not.be.visible');
     cy.get(qz + '.sem-current .sem-quiz-options button').should('have.length.at.least', 2);
     cy.get(qz + '.sem-current .sem-quiz-options button[data-correct="true"]').click();
     cy.get(qz + '.sem-facts-meter').should('contain', 'score 1/1');
@@ -56,9 +56,9 @@ describe('v0.4 baseline (web/demo/index.html)', () => {
     cy.visit('/demo/index.html', {
       onBeforeLoad(win) { win.__semJsOff = true; }
     });
-    cy.get('.sem-fact .sem-statement').should('be.visible');
-    cy.get('.sem-fact .sem-conclusion').should('be.visible');
-    cy.get('.sem-highlight').should('be.visible');
+    cy.get('sem-fact statement').should('be.visible');
+    cy.get('sem-fact conclusion').should('be.visible');
+    cy.get('highlight').should('be.visible');
     cy.get('.sem-occluded').should('not.exist');
   });
 

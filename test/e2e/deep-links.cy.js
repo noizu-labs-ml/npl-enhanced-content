@@ -36,12 +36,12 @@ describe('deep links', () => {
   it('selects the flashcard that contains the target', () => {
     cy.visit('/demo/index.html#f-device');
     cy.get('#f-device').should('have.class', 'sem-current').and('be.visible');
-    cy.get('.sem-facts[data-view-as="flashcards"] .sem-facts-meter').should('contain', '2/3');
+    cy.get('sem-facts[data-view-as="flashcards"] .sem-facts-meter').should('contain', '2/3');
   });
 
   it('activates the view enclosing a descendant id and keeps the hash', () => {
     cy.visit('/demo/index.html#argocd-tag');
-    cy.get('#deploy .sem-view[data-name="ArgoCD"]')
+    cy.get('#deploy sem-view[data-name="ArgoCD"]')
       .should('be.visible')
       .and('have.attr', 'data-active');
     cy.get('#deploy .sem-views-tabs button[aria-selected="true"]').should('contain', 'ArgoCD');
@@ -51,7 +51,7 @@ describe('deep links', () => {
 
   it('resolves the container/child form to the named view', () => {
     cy.visit('/demo/index.html#deploy/argocd');
-    cy.get('#deploy .sem-view[data-name="ArgoCD"]')
+    cy.get('#deploy sem-view[data-name="ArgoCD"]')
       .should('be.visible')
       .and('have.class', 'sem-target');
   });
@@ -65,7 +65,7 @@ describe('deep links', () => {
 
   it('ignores unknown ids and name=value segments', () => {
     cy.visit('/demo/index.html#nope&sem-audience=operator');
-    cy.get('.sem-fact').should('have.length.greaterThan', 0);
+    cy.get('sem-fact').should('have.length.greaterThan', 0);
     cy.get('.sem-target').should('not.exist');
   });
 

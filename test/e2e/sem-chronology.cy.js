@@ -2,7 +2,7 @@
 //
 // Feature: an ordered, dated event list renders as a CSS-only timeline in
 //          both authoring forms, with no script and no tier marker
-//   Scenario: authored roles, DOM order, no tier marker (class form)
+//   Scenario: authored roles, DOM order, no tier marker (fallback tier)
 //   Scenario: date label — <time> child wins, else attr(data-when)
 //   Scenario: status glyph beside colour
 //   Scenario: view-as="list" drops the rail, keeps every event
@@ -55,9 +55,9 @@ function assertChronology(root) {
 }
 
 describe('sem-chronology', () => {
-  describe('class form — /demo/reading.html', () => {
+  describe('fallback tier — /demo/reading.html', () => {
     beforeEach(() => cy.visit('/demo/reading.html'));
-    assertChronology('.sem-chronology');
+    assertChronology('sem-chronology');
   });
 
   describe('element form — /demo/reading-lit.html (CSS-only, no custom element)', () => {
@@ -74,7 +74,7 @@ describe('sem-chronology', () => {
     beforeEach(() => cy.visit('/demo/reading.nojs.html'));
     it('ships no script and renders every event with its label', () => {
       cy.request('/demo/reading.nojs.html').its('body').should('not.match', /<script/i);
-      cy.get('.sem-event').should('have.length', 5).each(($e) => cy.wrap($e).should('be.visible'));
+      cy.get('sem-event').should('have.length', 5).each(($e) => cy.wrap($e).should('be.visible'));
       cy.get('#e-themes').then(($e) => {
         expect(cs($e[0], '::before').content).to.match(/2026-Q4|attr\(/);
       });

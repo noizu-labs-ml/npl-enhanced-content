@@ -44,7 +44,7 @@ describe('print & reduced motion', () => {
     });
 
     it('stacks every view, headed by its name', () => {
-      cy.get('#deploy .sem-view').should('have.length', 2).each(($v) => {
+      cy.get('#deploy sem-view').should('have.length', 2).each(($v) => {
         cy.wrap($v).should('be.visible');
         expect(cs($v[0], '::before').content).to.match(/attr\(data-name\)|ArgoCD|Helm/);
       });
@@ -52,12 +52,12 @@ describe('print & reduced motion', () => {
 
     it('shows collapsed note bodies and every conclusion', () => {
       cy.get('#n-tip .sem-note-body').should('be.visible');
-      cy.get('.sem-facts[data-view-as="quiz"] .sem-fact .sem-conclusion').each(($c) => {
+      cy.get('sem-facts[data-view-as="quiz"] sem-fact conclusion').each(($c) => {
         cy.wrap($c).should('be.visible');
       });
-      cy.get('.sem-facts[data-view-as="flashcards"] .sem-fact').each(($f) => {
+      cy.get('sem-facts[data-view-as="flashcards"] sem-fact').each(($f) => {
         cy.wrap($f).should('be.visible');
-        cy.wrap($f).find('.sem-conclusion').should('be.visible');
+        cy.wrap($f).find('conclusion').should('be.visible');
       });
     });
 
@@ -78,10 +78,10 @@ describe('print & reduced motion', () => {
     });
 
     it('keeps fact cards and steps unbroken across pages', () => {
-      cy.get('.sem-fact').first().should(($f) => {
+      cy.get('sem-fact').first().should(($f) => {
         expect(cs($f[0]).breakInside).to.equal('avoid');
       });
-      cy.get('.sem-step').first().should(($s) => {
+      cy.get('sem-step').first().should(($s) => {
         expect(cs($s[0]).breakInside).to.equal('avoid');
       });
     });
