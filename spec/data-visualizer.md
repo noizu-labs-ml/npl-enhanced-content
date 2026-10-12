@@ -187,8 +187,8 @@ Every parsed source registers a bucket under its `data-name`; every
 1. exact match, then
 2. case-insensitive match, then
 3. **normalized** match — lowercase, runs of non-alphanumeric characters
-   collapsed to `-` (so `Token lifetimes`, `token-lifetimes` and
-   `token_lifetimes` name one bucket).
+   collapsed to `-`, edge `-` trimmed (so `Token lifetimes`, `token-lifetimes`
+   and `token_lifetimes` name one bucket).
 
 `SELECT … FROM`, `data-left`/`data-right`, and cross-source view references
 all use this resolution. A reference nothing resolves to is a clear error, on

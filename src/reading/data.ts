@@ -39,11 +39,13 @@ import { extractPath, jsonToTable } from '../data/json.js';
 import { parseSelectShape } from '../data/sql.js';
 import { applyColumnDecl, flattenYamlSchema, parseColumnDecl } from '../data/structure.js';
 import { formatFromUrl, resolveSource, sniffFormat } from '../data/load.js';
+import { normalizeRef } from '../data/names.js';
 import { fetchSource } from './data-load.js';
+import { buildTable, wireSort, STAMP } from './data-tableview.js';
+import { registerBucket, wireQueryChrome, wireViewButtons } from './data-query.js';
 
 export const DATA_VISUALIZER = ':is(sem-data-visualizer, .sem-data-visualizer)';
 export const DATA_SOURCE = ':is(sem-data-source, .sem-data-source)';
-const STAMP = 'data-sem-source-index';
 
 const FORMATS = new Set(['table', 'csv', 'yaml', 'json', 'sql']);
 const STRUCTURES = new Set(['rows', 'yaml-schema']);
@@ -58,8 +60,11 @@ type ParseResult =
  * rendered yet. Idempotent on the presence of a rendered body/error.
  */
 export function enhanceDataVisualizerElement(el: Element): void {
-  if (el.querySelector(':scope > ' + DATA_SOURCE + ' > :is(.sem-data-body, .sem-data-error, .sem-data-pending)')) return;
-  el.querySelectorAll(':scope > ' + DATA_SOURCE).forEach((src) => renderSource(src));
+  if (!el.querySelector(':scope > ' + DATA_SOURCE + ' > :is(.sem-data-body, .sem-data-error, .sem-data-pending)')) {
+    el.querySelectorAll(':scope > ' + DATA_SOURCE).forEach((src) => renderSource(src));
+  }
+  // Joins + the default query chrome wire on every pass (both idempotent).
+  wireQueryChrome(el);
 }
 
 /** The declared structure, if any: data-type / type, lowercased. */
@@ -150,10 +155,7 @@ function resolveStarColumns(src: Element, ref: string): string[] | null {
   return null;
 }
 
-/** Bucket-reference normalization (§5): lowercase, non-alnum runs → `-`. */
-export function normalizeRef(ref: string): string {
-  return ref.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
-}
+export { normalizeRef };
 
 function renderSource(src: Element): void {
   const format = (param(src, 'format') ?? 'table').trim().toLowerCase();
@@ -190,6 +192,8 @@ function finishSource(src: Element, parsed: { ok: true; table: TableData; schema
     schema = applied.schema;
     applied.warnings.forEach((w) => warn('sem-data-source: ' + w));
   }
+  const name = (param(src, 'name') ?? '').trim();
+  if (name) registerBucket(src, name, parsed.table); // joins + queries see this bucket
   renderTable(src, parsed.table, schema, format, structure);
 }
 
@@ -259,123 +263,10 @@ function renderTable(src: Element, table: TableData, schema: ColumnSchema[], for
   });
   src.appendChild(json);
 
-  wireSort(body.querySelector('table') as HTMLTableElement, schema);
+  const tableEl = body.querySelector('table') as HTMLTableElement;
+  wireSort(tableEl, schema);
+  wireViewButtons(src, tableEl, table.columns);
   src.setAttribute('data-sem-fallback', '');
-  // Late-bucket signal: file/API sources fill in after the sync pass; the
-  // phase-5 query chrome listens for this to re-run pending queries.
-  src.dispatchEvent(new CustomEvent('sem-data-bucket', { bubbles: true }));
-}
-
-function buildTable(
-  table: { columns: string[]; rows: string[][] },
-  schema: ColumnSchema[],
-  shown: boolean[],
-  name: string,
-): HTMLTableElement {
-  const el = document.createElement('table');
-  if (name) {
-    const caption = document.createElement('caption');
-    caption.textContent = name;
-    el.appendChild(caption);
-  }
-  const thead = document.createElement('thead');
-  const hr = document.createElement('tr');
-  table.columns.forEach((col, k) => {
-    const th = document.createElement('th');
-    th.setAttribute('scope', 'col');
-    th.textContent = col;
-    // Views hide columns with native `hidden` — the data stays in the DOM,
-    // so extraction and a later view switch never lose it.
-    if (!shown[k]) th.setAttribute('hidden', '');
-    if (schema[k].nullable) th.setAttribute('data-nullable', '');
-    hr.appendChild(th);
-  });
-  thead.appendChild(hr);
-  el.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
-  table.rows.forEach((row) => {
-    const tr = document.createElement('tr');
-    row.forEach((cell, k) => {
-      const td = document.createElement('td');
-      td.textContent = cell;
-      if (!shown[k]) td.setAttribute('hidden', '');
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
-  el.appendChild(tbody);
-  return el;
-}
-
-/* Sort — the sem-table contract, typed by the inferred schema. */
-
-function sortKey(type: ColumnType, text: string): number | boolean | string | null {
-  if (text === '') return null;
-  switch (type) {
-    case 'integer':
-    case 'number':
-      return +text;
-    case 'boolean':
-      return text === 'true';
-    case 'date':
-      return Date.parse(text);
-    default:
-      return text;
-  }
-}
-
-function compareValues(a: ReturnType<typeof sortKey>, b: ReturnType<typeof sortKey>): number {
-  // Nulls sort last regardless of direction (handled by the caller's sign).
-  if (a === null) return b === null ? 0 : 1;
-  if (b === null) return -1;
-  if (typeof a === 'number' && typeof b === 'number') return a - b;
-  if (typeof a === 'boolean' && typeof b === 'boolean') return +a - +b;
-  return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
-}
-
-function wireSort(table: HTMLTableElement, schema: ColumnSchema[]): void {
-  if (!table) return;
-  const rows = (): HTMLTableRowElement[] =>
-    Array.from(table.querySelectorAll<HTMLTableRowElement>(':scope > tbody > tr'));
-  rows().forEach((r, i) => {
-    if (!r.hasAttribute(STAMP)) r.setAttribute(STAMP, String(i));
-  });
-  // A row inserted after enhancement has no stamp; treat it as 0.
-  const stamp = (r: Element): number => +(r.getAttribute(STAMP) || 0);
-
-  const heads = Array.from(
-    table.querySelectorAll<HTMLTableCellElement>(':scope > thead > tr:first-of-type > th'),
-  );
-  heads.forEach((th, col) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'sem-data-sort';
-    while (th.firstChild) b.appendChild(th.firstChild);
-    th.appendChild(b);
-    th.setAttribute('aria-sort', 'none');
-    b.addEventListener('click', () => {
-      const was = th.getAttribute('aria-sort');
-      const dir = was === 'ascending' ? 'descending' : was === 'descending' ? 'none' : 'ascending';
-      heads.forEach((h) => h.setAttribute('aria-sort', h === th ? dir : 'none'));
-      const type = schema[col]?.type ?? 'string';
-      const sign = dir === 'descending' ? -1 : 1;
-      const cmp = (p: HTMLTableRowElement, q: HTMLTableRowElement): number =>
-        (dir === 'none'
-          ? 0
-          : sign * compareValues(sortKey(type, (p.cells[col]?.textContent || '').trim()),
-            sortKey(type, (q.cells[col]?.textContent || '').trim()))) ||
-        stamp(p) - stamp(q);
-      // Sort within each <tbody>; a sort reorders rows, it never re-parents
-      // them, and the stamp keeps authored order as the tiebreak.
-      const bodies = new Map<HTMLElement, HTMLTableRowElement[]>();
-      rows().forEach((r) => {
-        const body = r.parentElement as HTMLElement;
-        (bodies.get(body) || bodies.set(body, []).get(body)!).push(r);
-      });
-      bodies.forEach((list, body) => list.sort(cmp).forEach((r) => body.appendChild(r)));
-    });
-  });
 }
 
 function renderError(src: Element, message: string): void {

@@ -469,6 +469,34 @@ th[aria-sort="ascending"] .sem-data-sort::after { content: "↑"; opacity: 1; co
 th[aria-sort="descending"] .sem-data-sort::after { content: "↓"; opacity: 1; color: var(--sem-accent); }
 .sem-data-sort:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; border-radius: 4px; }
 
+/* data visualizer — async loads + query/view chrome (phases 4–5) */
+.sem-data-pending { margin: 0; padding: .6rem .9rem; font-size: .85rem; color: var(--sem-muted); }
+.sem-data-views { display: flex; gap: .4rem; padding: .5rem .9rem 0; flex-wrap: wrap; }
+.sem-data-view { all: unset; font: inherit; font-size: .8rem; cursor: pointer; padding: .15rem .7rem;
+  border: 1px solid var(--sem-border); border-radius: 999px; color: var(--sem-muted); }
+.sem-data-view[aria-pressed="true"] { background: var(--sem-accent); border-color: var(--sem-accent); color: var(--sem-surface); }
+.sem-data-view:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+:is(sem-data-join, .sem-data-join) { margin: .25rem 0; }
+:is(sem-data-query, .sem-data-query) { display: block; margin: .5rem 0; }
+.sem-data-query-chrome { margin: .5rem 0; display: block; }
+.sem-data-query-label { display: block; font-variant-caps: all-small-caps; letter-spacing: .05em;
+  font-size: .85rem; color: var(--sem-muted); margin-bottom: .3rem; }
+.sem-data-query-input { display: block; width: 100%; box-sizing: border-box; font: .85rem/1.5 ui-monospace, monospace;
+  padding: .55rem .8rem; border: 1px solid var(--sem-border); border-radius: 10px;
+  background: var(--sem-surface); color: inherit; resize: vertical; }
+.sem-data-query-input:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 1px; }
+.sem-data-query-controls { display: flex; align-items: center; gap: .75rem; margin: .4rem 0 .6rem; }
+.sem-data-query-run { all: unset; font: inherit; font-size: .85rem; cursor: pointer; padding: .25rem 1rem;
+  border: 1px solid var(--sem-border); border-radius: 999px; }
+.sem-data-query-run:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+.sem-data-query-status { font-size: .8rem; color: var(--sem-muted); }
+.sem-data-query-error { margin: 0; padding: .6rem .9rem; font-size: .85rem; color: var(--sem-note-danger, currentColor); }
+.sem-data-query-results table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: .9rem;
+  border: 1px solid var(--sem-border); border-radius: 12px; overflow: hidden; }
+.sem-data-query-results :is(th, td) { padding: .45rem .9rem; text-align: left; border-bottom: 1px solid var(--sem-border); }
+.sem-data-query-results th { font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); }
+.sem-data-query-results tbody tr:last-child :is(th, td) { border-bottom: 0; }
+
 /* print — everything a reader could open, none of the chrome. Reveal
    <details> are opened by fallback/target on `beforeprint`; CSS cannot. */
 @media print {

@@ -30,7 +30,7 @@ const strict = process.argv.includes('--strict-budget');
 
 /** budgetKb is measured against the minified (not gzipped) artifact. */
 const targets = [
-  { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 73, required: true },
+  { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 85, required: true },
   // 13 → 14 KB (2026-09-22, tag form canonical, measured 13.0): every core
   // handler selects both authoring forms (`:is(sem-x, .sem-x)`), the
   // bare→data-* attribute mirror, the tag-form note body wrap. Recorded in
@@ -48,9 +48,13 @@ const targets = [
   // (src/data/structure.ts).
   // 40 → 43 KB (2026-10-13, phase 4, measured 42.4): the source loader tier —
   // URL policy, sniffing, fetch + cache (src/data/load.ts,
-  // src/reading/data-load.ts). Phase 5 adds the query engine; budgets move
-  // with scripts/build.mjs and ROADMAP "Size budgets" together.
-  { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 43, required: true },
+  // src/reading/data-load.ts).
+  // 43 → 55 KB (2026-10-13, phase 5, measured 54.1): the query engine +
+  // chrome — §8 SQL subset parser/executor, sem-data-join materialization,
+  // editable query textarea, view buttons (src/data/query.ts,
+  // src/reading/data-query.ts, data-tableview.ts). Budgets move with
+  // scripts/build.mjs and ROADMAP "Size budgets" together.
+  { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 55, required: true },
   { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 12, required: false },
   { name: 'semtext-md.js',       entry: 'src/md/index.ts',       global: 'SemTextMd',       budgetKb: 8.5,  required: true },
 ];
