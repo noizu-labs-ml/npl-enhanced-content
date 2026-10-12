@@ -72,8 +72,8 @@ Current, after tag-form canonical (PR #30):
 | Artifact | Budget | Measured |
 |---|---|---|
 | `semtext-fallback.js` | **14 KB** | 13.0 |
-| `semtext-reading.js` | **27 KB** | 25.6 |
-| `semtext.js` (Lit) | **63 KB** | 55.8 |
+| `semtext-reading.js` | **36 KB** | 35.3 |
+| `semtext.js` (Lit) | **66 KB** | 65.5 |
 | `semtext-extract.js` | **12 KB** | 9.7 |
 | `semtext-md.js` | **8.5 KB** | 8.0 |
 
@@ -83,6 +83,11 @@ section and `scripts/build.mjs` together.
 Data-visualizer phase 1 (2026-10-13, spec/data-visualizer.md) raised the reading budget
 19.5 → 27 KB (measured 25.6) and the Lit budget 56 → 63 KB (measured 55.8): both bundles
 now carry the shared data-source module (`src/data/table.ts` + `src/reading/data.ts`).
+
+Data-visualizer phase 2 (2026-10-13) raised reading 27 → 36 KB (measured 35.3) and Lit
+63 → 66 KB (measured 65.5): inline csv/yaml/json parsers + sql shape declarations
+(`src/data/{csv,yaml,json,sql}.ts`).
+
 
 ## History (recorded decisions — preserved)
 

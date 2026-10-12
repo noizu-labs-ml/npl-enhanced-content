@@ -31,11 +31,19 @@ import {
   visibleColumns,
   type ColumnSchema,
   type ColumnType,
+  type SourceParse,
+  type TableData,
 } from '../data/table.js';
+import { parseCsv } from '../data/csv.js';
+import { parseYamlSubset, yamlToTable } from '../data/yaml.js';
+import { extractPath, jsonToTable } from '../data/json.js';
+import { parseSelectShape } from '../data/sql.js';
 
 export const DATA_VISUALIZER = ':is(sem-data-visualizer, .sem-data-visualizer)';
 export const DATA_SOURCE = ':is(sem-data-source, .sem-data-source)';
 const STAMP = 'data-sem-source-index';
+
+const FORMATS = new Set(['table', 'csv', 'yaml', 'json', 'sql']);
 
 /**
  * Enhance one container: render every direct source child that has not been
@@ -46,30 +54,97 @@ export function enhanceDataVisualizerElement(el: Element): void {
   el.querySelectorAll(':scope > ' + DATA_SOURCE).forEach((src) => renderSource(src));
 }
 
+/**
+ * Parse one source's payload (element attrs + text ⇒ TableData). Pure aside
+ * from reading the element; used by the render path and by sql `*`
+ * resolution, which must see sibling columns regardless of document order.
+ */
+export function parsePayload(src: Element): SourceParse {
+  const format = (param(src, 'format') ?? 'table').trim().toLowerCase();
+  if (!FORMATS.has(format)) {
+    return { ok: false, error: 'unknown data-format "' + format + '" — supported: table, csv, yaml, json, sql' };
+  }
+  if (param(src, 'source') !== null || src.hasAttribute('source')) {
+    return { ok: false, error: 'file and API sources (source="…") land in phase 4 — inline the payload for now' };
+  }
+  const text = src.textContent || '';
+  switch (format) {
+    case 'table':
+      return parseGfmTable(text);
+    case 'csv':
+      return parseCsv(text, (param(src, 'header') ?? 'true').trim().toLowerCase() !== 'false');
+    case 'yaml': {
+      const parsed = parseYamlSubset(text);
+      return parsed.ok ? yamlToTable(parsed.value) : parsed;
+    }
+    case 'json': {
+      let value: unknown;
+      try {
+        value = JSON.parse(text);
+      } catch (e) {
+        return { ok: false, error: 'invalid json: ' + (e as Error).message };
+      }
+      return jsonToTable(extractPath(value, param(src, 'path')));
+    }
+    default: {
+      const shape = parseSelectShape(text);
+      if (!shape.ok) return shape;
+      if (shape.shape.projection === '*') {
+        const cols = resolveStarColumns(src, shape.shape.from);
+        if (!cols) {
+          return { ok: false, error: 'SELECT * cannot determine columns: no bucket named "' + shape.shape.from + '" in this visualizer (a sql declaration is a shape, not a result)' };
+        }
+        return { ok: true, table: { columns: cols, rows: [] } };
+      }
+      return { ok: true, table: { columns: shape.shape.projection, rows: [] } };
+    }
+  }
+}
+
+/** A sql `SELECT *` declaration mirrors the FROM bucket's columns. */
+function resolveStarColumns(src: Element, ref: string): string[] | null {
+  const container = src.parentElement;
+  if (!container) return null;
+  const want = normalizeRef(ref);
+  for (const sib of Array.from(container.querySelectorAll(':scope > ' + DATA_SOURCE))) {
+    if (sib === src) continue;
+    const name = (param(sib, 'name') ?? '').trim();
+    if (!name || normalizeRef(name) !== want) continue;
+    const parsed = parsePayload(sib);
+    if (parsed.ok) return parsed.table.columns;
+  }
+  return null;
+}
+
+/** Bucket-reference normalization (§5): lowercase, non-alnum runs → `-`. */
+export function normalizeRef(ref: string): string {
+  return ref.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+}
+
 function renderSource(src: Element): void {
   const format = (param(src, 'format') ?? 'table').trim().toLowerCase();
-  if (format !== 'table') {
-    renderError(src, 'data-format="' + format + '" is not built yet — phases 2-4 add csv, yaml, json and sql (spec/data-visualizer.md)');
-    return;
-  }
   if (param(src, 'type') !== null) {
-    warn('sem-data-source[@data-type]: declared structures land in phase 3; inferring the schema from the table (spec/data-visualizer.md)');
+    warn('sem-data-source[@data-type]: declared structures land in phase 3; inferring the schema (spec/data-visualizer.md)');
   }
 
-  const parsed = parseGfmTable(src.textContent || '');
+  const parsed = parsePayload(src);
   if (!parsed.ok) {
     renderError(src, parsed.error);
     return;
   }
-  const schema = inferSchema(parsed.table);
+  renderTable(src, parsed.table, format);
+}
+
+function renderTable(src: Element, table: TableData, format: string): void {
+  const schema = inferSchema(table);
   const views = parseViews(param(src, 'views'));
   const view = resolveView(views, param(src, 'view'));
-  const shown = visibleColumns(view, parsed.table.columns);
+  const shown = visibleColumns(view, table.columns);
   const name = (param(src, 'name') ?? '').trim();
 
   const body = document.createElement('div');
   body.className = 'sem-data-body';
-  body.appendChild(buildTable(parsed.table, schema, shown, name));
+  body.appendChild(buildTable(table, schema, shown, name));
   src.appendChild(body);
 
   // Schema exposure: machine-readable JSON, standard script child so no

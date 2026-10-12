@@ -224,13 +224,13 @@ ${TABLE}
     ]);
   });
 
-  it('errors clearly on a non-table body and on unbuilt formats, rendering no table', () => {
+  it('errors clearly on a non-table body, rendering no table', () => {
     const dv = document.getElementById('dv')!;
     enhanceDataVisualizerElement(dv);
     expect(dv.querySelector('#s2 .sem-data-error')?.textContent).toMatch(/not a table/);
     expect(dv.querySelector('#s2 table')).toBeNull();
-    expect(dv.querySelector('#s3 .sem-data-error')?.textContent).toMatch(/not built yet/);
-    expect(dv.querySelector('#s3 table')).toBeNull();
+    // phase 2: the csv payload s3 now renders (spec/data-visualizer.md §7.2)
+    expect(dv.querySelector('#s3 table')).not.toBeNull();
   });
 
   it('sorts per column on header click and restores order on the third click', () => {
@@ -258,9 +258,10 @@ ${TABLE}
     const dv = document.getElementById('dv')!;
     enhanceDataVisualizerElement(dv);
     enhanceDataVisualizerElement(dv);
-    expect(document.querySelectorAll('#dv .sem-data-body')).toHaveLength(1);
-    // one error per failing source (s2, s3), none duplicated
-    expect(document.querySelectorAll('#dv .sem-data-error')).toHaveLength(2);
+    // s1 (table) + s3 (csv, since phase 2) each render exactly one body
+    expect(document.querySelectorAll('#dv .sem-data-body')).toHaveLength(2);
+    // one error per failing source (s2 prose), none duplicated
+    expect(document.querySelectorAll('#dv .sem-data-error')).toHaveLength(1);
   });
 
   it('renders nothing when the container has no source children', () => {
