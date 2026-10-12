@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-embed</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#resolution">Resolution order</a></li>
+        <li><a href="#failure">Failure, cycles, depth</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#security">Security</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-embed</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. The element is specced here before any renderer exists — the reference implementation is out of scope until ❓ Q7 resolves. This contract is authored directly as SemText; it has no Markdown twin yet, unlike the other schema documents.</sem-note>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-embed source="../other-semtext.sem.html"&gt;&lt;/sem-embed&gt;
+&lt;sem-embed source="../other-semtext.sem.html#section-id"&gt;&lt;/sem-embed&gt;
+&lt;sem-embed source="../glossary.sem.html" view="g-jwt" mode="card"&gt;&lt;/sem-embed&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-embed[data-source][data-view][data-depth][data-mode]</code>, same parameters; the element is authored empty in both forms.</p>
+
+  <ul>
+    <li><code>source</code>: <strong>required</strong>. Resolved relative to the containing document. An absolute URL is allowed only when the containing document is itself served from http/https; a document opened from the filesystem (<code>file://</code>) must never fetch over the network (conventions §7 hard rule: no runtime fetch in portable docs), so there <code>source</code> must be a relative path that resolves beside the document. <code>javascript:</code>, <code>data:</code> and every other non-http(s) scheme are never valid — checked on the parsed URL object against the document base, exactly as the <code>sem-md</code> destination allowlist does.</li>
+    <li><code>view</code>: optional. The <code>id</code> of one block in the referenced document — that element and its subtree are embedded instead of the whole document. A <code>#fragment</code> written in <code>source</code> (<code>../other-semtext.sem.html#section-id</code>) is sugar for the same selection; carrying both is an authoring error (warned; <code>view</code> wins), mirroring the statement-vs-compact-form rule of <code>sem-fact</code>.</li>
+    <li><code>depth</code>: optional number ≥ 1 — the maximum number of embedding hops this element may still perform, itself included. Absent means the format maximum (❓ Q8 below). A value above the format maximum is an authoring error (warned; clamped to the maximum); a non-number or a value below 1 is an authoring error (warned; treated as absent).</li>
+    <li><code>mode</code>: optional, <code>inline</code> (default) | <code>card</code>. Presentation only (extraction §5c): <code>card</code> renders the resolved content inside a bordered region labelled with the referenced document and, when one was used, the selected block. The content is identical in both modes; extraction is identical in both modes.</li>
+    <li>The element must be authored empty — content comes only from resolution. Authored children are an authoring error (warned; a renderer must replace them on resolution).</li>
+    <li><code>id</code>, <code>kind</code>, <code>tags</code>, <code>audience</code> per the global attribute catalog.</li>
+  </ul>
+
+  <h2 id="resolution">Resolution order</h2>
+  <ol>
+    <li><strong>Resolve the location.</strong> <code>source</code> is resolved against the containing document's location and parsed as a URL. The protocol check runs on the parsed object (never the authored string): a relative path inherits the document's own scheme; an absolute <code>http:</code>/<code>https:</code> URL is admitted only when the host document was served from http/https; every other scheme fails (§ Failure).</li>
+    <li><strong>Load and parse.</strong> The referenced document must be a SemText document — exactly one <code>sem-enhanced-document</code> root, well-formed. Anything else (missing file, unparsable markup, zero or several roots) is a missing-source failure (§ Failure). At build time a failed load must fail the build; in a served-document runtime upgrade (❓ Q7) it must render the visible failure card.</li>
+    <li><strong>Select.</strong> With <code>view</code> (or the <code>#fragment</code> sugar): the element in the referenced document whose <code>id</code> matches, plus its subtree; no match is a missing-source failure. Without a selection: every child of the referenced document's root wrapper except <code>sem-reader</code> (reading chrome is per-document) and <code>agent</code> (metadata about the other document must not leak into this one).</li>
+    <li><strong>Recurse.</strong> <code>sem-embed</code> elements inside the selected content resolve in the same order with <code>depth</code> reduced by one. A cycle or exhausted depth fails that embed, visibly (§ Failure) — never the whole document build.</li>
+    <li><strong>Sanitise.</strong> Embedded content is sanitised exactly as the host document (§ Security): scripts dropped, handler attributes dropped, destinations generated inside embedded content through the same allowlist as the host's own.</li>
+    <li><strong>Mount.</strong> The selected, sanitised content becomes the <code>sem-embed</code> element's children in the distributed document; the element and its <code>source</code> remain as provenance.</li>
+  </ol>
+
+  <h2 id="failure">Failure, cycles, depth</h2>
+  <ul>
+    <li><strong>A missing source must fail visibly, never silently drop.</strong> The unresolved element renders a visible diagnostic card naming the source and the cause; a build that cannot resolve an embed must fail the build. An empty hole, a console-only warning or a silent skip are all contract violations.</li>
+    <li><strong>Cycles are authoring errors.</strong> A document embedding itself, or any document in its own embed ancestor chain, is an authoring error. The offending embed renders the same visible diagnostic naming the cycle, and recursion stops on that path — a cycle never loops the build or the renderer.</li>
+    <li><strong>Maximum depth (decision, ❓ Q8):</strong> the format maximum is <strong>4</strong> hops — the host document plus three levels of embedded documents. Deeper is almost always an accident: documents compose far more explosively than inline nesting (which <code>sem-md</code> caps at 16), and a small bound keeps a misdetected near-cycle cheap to stop. The bound is a decision, not a derived constant — revisiting it is an editorial change to this document and the Q8 lean, never a renderer tweak.</li>
+    <li>Depth exhaustion fails the offending embed visibly, exactly as a missing source; sibling embeds are unaffected.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+  <ul>
+    <li><code>mode="inline"</code> (default): the resolved content flows into the host document as if authored there; the element adds no box of its own.</li>
+    <li><code>mode="card"</code>: the resolved content sits in a bordered region headed by the source — the referenced document's title (or its <code>source</code> path) and, with a selection, the selected block's <code>id</code> — linked back to the source document.</li>
+    <li>Upgraded / pre-upgrade / JS-off: the resolved content is authored children of the element in the distributed artifact, so every tier renders it without any embed-aware code; nothing is hidden in any tier (§4.4). Embed-specific behaviour (runtime resolution for served documents, ❓ Q7) is an enhancement layered on an already-readable artifact, never a prerequisite for reading it.</li>
+  </ul>
+
+  <h2 id="security">Security</h2>
+  <ul>
+    <li>An embedded document's scripts are <strong>never executed</strong> — not in the host page, not in any tier. <code>&lt;script&gt;</code> elements are dropped at resolution (removed, never merely made inert), and <code>on*</code> handler attributes are dropped with them.</li>
+    <li>Embedded content is subject to the <strong>same sanitisation as the host</strong>: destinations minted inside embedded content pass the same parsed-URL allowlist as the host's own (<code>sem-md</code> machinery); generated chrome classes and runtime tier markers inside embedded content are chrome and session state exactly as they are in the host.</li>
+    <li>The network rule stands per containing document: a <code>file://</code>-opened document must never fetch — its embeds are local, relative, and resolved at build time (❓ Q7). Only a document served from http/https may name an absolute http(s) <code>source</code>.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <p>None.</p>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>Resolved content participates in the host document as ordinary content — real headings, real buttons, light DOM, nothing in a shadow root (§4.5); embedded headings enter the <code>sem-reader</code> outline exactly as authored ones.</li>
+    <li>Card mode's region is labelled with the source; the failure diagnostic is real text, never colour alone.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>The embed is <strong>transparent — it mints no record</strong> (the <code>sem-source</code> precedent): extraction descends into the resolved content as if it were authored in place.</li>
+    <li><strong>Extraction invariant (normative, per conventions §8).</strong> For a document D in which every <code>sem-embed</code> has resolved, and D′ the same document with every <code>&lt;sem-embed&gt;</code> physically replaced by its selected content: <code>E(D) = E(D′)</code> — deep equality of the record array, including <code>sourceOrder</code>. An embed must produce the same extraction as the inlined content; no consumer can tell a resolved embed from hand-inlined markup by extraction alone. The §8 chain <code>E(D) = E(R(D)) = E(I(R(D)))</code> then applies to the resolved document unchanged.</li>
+    <li>Consequence (❓ Q7): extraction is a total, pure function — no I/O (extraction §9) — so it can never resolve an embed itself. Resolution must happen before distribution; the invariant is stated over the distributed (resolved) artifact, and an unresolved <code>sem-embed</code> reaching a distributed document is a build error, not an extraction mode.</li>
+    <li><code>mode</code> never changes extraction (both modes carry the same content); <code>depth</code> is a build-time bound and is not reported; <code>source</code> is provenance on the wrapper and is not extracted — the records of embedded content carry no marker of their origin, so an author who wants provenance in the records must inline the content beside a <code>sem-note</code> instead.</li>
+  </ul>
+
+  <sem-note id="q7-resolution" variant="warning" kind="decision"><strong>Open (Q7, §10) — decision wanted:</strong> resolution timing — build-time inlining by the CLI vs runtime fetch in the browser. <strong>Recommendation: build-time inlining.</strong> Runtime fetch in the browser collides with two normative rules: the §7 hard rule (no runtime fetch in portable docs — a double-clicked file must work with zero network) and extraction purity (extraction §9: no I/O), without which <code>E(D) = E(R(D))</code> cannot hold across an unresolved/resolved boundary. Build-time resolution keeps the distributed artifact self-contained and machine-identical to hand-inlined markup; a served-document runtime fetch can exist only as a non-canonical enhancement on top of an already-resolved artifact.</sem-note>
+
+  <sem-note id="q8-depth" variant="warning" kind="decision"><strong>Open (Q8, §10) — decision wanted:</strong> the maximum embed depth. <strong>Recommendation: 4</strong> — the host plus three hops: enough for spec → runbook → checklist compositions, small enough that a near-cycle the detector missed stops cheaply. Recorded here as a decision to revisit, not a derived constant.</sem-note>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-conventions" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/conventions.md" cite="conventions.md">Root spec — §7 distribution hard rules, §8 the extraction invariant.</sem-reference>
+    <sem-reference id="r-extraction" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/extraction.md" cite="extraction.md">Extraction contract — §5c presentation parameters, §9 purity.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

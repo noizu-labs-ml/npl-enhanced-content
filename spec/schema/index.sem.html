@@ -21,13 +21,13 @@
 
   <h1 id="title" data-kind="title">SemText — Schema index</h1>
 
-  <sem-note variant="info">One SemText document per schema contract, rendered from <code>spec/schema/*.md</code>; the Markdown files remain the editing source and every sub-document names its own. Root spec: <a href="../semtext.sem.html">spec/semtext.sem.html</a>. Changes here precede spec changes precede code.</sem-note>
+  <sem-note variant="info">One SemText document per schema contract, rendered from <code>spec/schema/*.md</code>; the Markdown files remain the editing source and every sub-document names its own (<code>embed.sem.html</code> is the exception so far — authored directly, no Markdown twin yet). Root spec: <a href="../semtext.sem.html">spec/semtext.sem.html</a>. Changes here precede spec changes precede code.</sem-note>
 
   <h2 id="documents">Schema documents</h2>
 
   <sem-table kind="reference">
     <table>
-      <caption>Element contracts (16)</caption>
+      <caption>Element contracts (17)</caption>
       <thead><tr><th scope="col">Element</th><th scope="col">Contract</th><th scope="col">E2E</th></tr></thead>
       <tbody>
         <tr><td><code>sem-note</code></td><td><a href="sem-note.sem.html">sem-note.sem.html</a></td><td><code>test/e2e/sem-note.cy.js</code></td></tr>
@@ -35,6 +35,7 @@
         <tr><td><code>sem-chronology</code> / <code>sem-event</code></td><td><a href="sem-chronology.sem.html">sem-chronology.sem.html</a></td><td><code>test/e2e/sem-chronology.cy.js</code></td></tr>
         <tr><td><code>sem-code</code></td><td><a href="sem-code.sem.html">sem-code.sem.html</a></td><td><code>test/e2e/sem-code.cy.js</code></td></tr>
         <tr><td><code>sem-details</code> / <code>sem-detail</code> / <code>highlight</code></td><td><a href="sem-details.sem.html">sem-details.sem.html</a></td><td><code>test/e2e/sem-details.cy.js</code></td></tr>
+        <tr><td><code>sem-embed</code></td><td><a href="embed.sem.html">embed.sem.html</a></td><td><code>—</code> (renderer not yet implemented)</td></tr>
         <tr><td><code>sem-facts</code> / <code>sem-fact</code></td><td><a href="sem-facts.sem.html">sem-facts.sem.html</a></td><td><code>test/e2e/sem-facts.cy.js</code></td></tr>
         <tr><td><code>sem-md</code></td><td><a href="sem-md.sem.html">sem-md.sem.html</a></td><td><code>test/e2e/sem-md.cy.js</code></td></tr>
         <tr><td><code>sem-procedure</code> / <code>sem-step</code></td><td><a href="sem-procedure.sem.html">sem-procedure.sem.html</a></td><td><code>test/e2e/sem-procedure.cy.js</code></td></tr>

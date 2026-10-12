@@ -141,6 +141,8 @@
     <sem-property key="wrap" role="definition" aria-label="wrap">sem-code soft-wrap flag</sem-property>
     <sem-property key="href" role="definition" aria-label="href">sem-reference external location</sem-property>
     <sem-property key="cite" role="definition" aria-label="cite">sem-reference short citation label</sem-property>
+    <sem-property key="source" role="definition" aria-label="source">sem-embed referenced document (required)</sem-property>
+    <sem-property key="view" role="definition" aria-label="view">sem-embed selected block id</sem-property>
     <sem-property key="implies" role="definition" aria-label="implies">sem-profile satisfied profiles</sem-property>
     <sem-property key="sticky" role="definition" aria-label="sticky">sem-table sticky header flag</sem-property>
     <sem-property key="outline-depth" role="definition" aria-label="outline-depth">sem-reader outline depth</sem-property>
@@ -226,6 +228,7 @@
         <tr><td><code>sem-code</code></td><td>verbatim listing with provenance, copy / wrap</td><td><a href="#el-sem-code">§5</a></td></tr>
         <tr><td><code>sem-source</code></td><td>section flipping rendered ↔ authored markup</td><td><a href="#el-sem-source">§5</a></td></tr>
         <tr><td><code>sem-md</code></td><td>Markdown block, rendered in the browser</td><td><a href="#el-sem-md">§5</a></td></tr>
+        <tr><td><code>sem-embed</code></td><td>embed another SemText document, or one block of it</td><td><a href="#el-sem-embed">§5</a></td></tr>
         <tr><td><code>sem-references</code> / <code>sem-reference</code></td><td>numbered citable entries</td><td><a href="#el-sem-references">§5</a></td></tr>
         <tr><td><code>sem-table</code></td><td>sortable, filterable authored table</td><td><a href="#el-sem-table">§5</a></td></tr>
         <tr><td><code>sem-progress</code></td><td>completion meter</td><td><a href="#el-sem-progress">§5</a></td></tr>
@@ -468,6 +471,19 @@
     <li>Machine: <code>fields: { source }</code> — the <strong>normalised Markdown</strong> (common indentation stripped, leading/trailing blank lines dropped, otherwise verbatim). The extractor applies the normalisation on <strong>both</strong> paths (fence and element text); it is idempotent, so the contract does not rest on the fence staying byte-identical. Third recorded exception to the "text is normalised" rule (after <code>sem-progress</code> and <code>sem-code</code>): Markdown is whitespace-sensitive, so the record carries what a Markdown consumer can parse. <code>text</code> = the single-line normalised form of <code>source</code>. The annotated-text renderer emits <code>source</code> as an indented block under the record head, exactly as <code>sem-code</code> does. <code>.sem-md-chrome</code>, <code>.sem-md-body</code> and <code>.sem-md-raw</code> (the fence and the <code>sem-code</code> inside it included) are chrome: they mint nothing and contribute no text; extraction reads <code>source</code> from the fence when it exists and from the element's own text otherwise, applying the same normalisation, so a JS-off document and an enhanced one extract identically, in either view. <code>data-view-as</code> is presentation; not extracted.</li>
   </ul>
 
+  <h3 id="el-sem-embed">sem-embed — embed another SemText document, or one block of it</h3>
+  <p>Normative: <a href="schema/embed.sem.html">schema/embed.sem.html</a>.</p>
+  <sem-code id="c-sem-embed" lang="html"><pre><code>&lt;sem-embed source="../other-semtext.sem.html"&gt;&lt;/sem-embed&gt;
+&lt;sem-embed source="../other-semtext.sem.html#section-id"&gt;&lt;/sem-embed&gt;
+&lt;sem-embed source="../glossary.sem.html" view="g-jwt" mode="card"&gt;&lt;/sem-embed&gt;</code></pre></sem-code>
+  <ul>
+    <li>References another SemText document instead of inlining its content by hand: the author writes the reference, the resolved artifact carries the content. <code>source</code> is <strong>required</strong> and relative to the containing document; an absolute URL is allowed <strong>only</strong> when the host document is served from http/https — a document opened from the filesystem must never fetch over the network (§7 hard rule: no runtime fetch in portable docs).</li>
+    <li>Selection: <code>view</code> (optional) names the <code>id</code> of one block in the referenced document — that element and its subtree are embedded instead of the whole document. A <code>#fragment</code> in <code>source</code> (<code>…#section-id</code>) is sugar for the same selection; carrying both is an authoring error, <code>view</code> wins. Without a selection the referenced document's root content is embedded — never its <code>sem-reader</code> chrome or its <code>agent</code> metadata.</li>
+    <li>The element must be authored empty: content comes only from resolution. <code>depth</code> (optional number) caps how many embedding hops remain from this element; <code>mode</code> (optional: <code>inline</code> default | <code>card</code>) is presentation only and never changes extraction. <code>id</code>, <code>kind</code>, <code>tags</code>, <code>audience</code> global.</li>
+    <li>Resolution order, cycles, depth, failure and the security rules are normative in <a href="schema/embed.sem.html">schema/embed.sem.html</a>: a missing source must fail visibly — never silently dropped; a document embedding itself or an ancestor is an authoring error; the format maximum depth is four (❓ Q8); an embedded document's scripts are never executed and embedded content is sanitised exactly as the host.</li>
+    <li>Machine (§8): an embed is transparent — it mints no record, and a resolved embed must extract identically to the same content inlined by hand: <code>E(D) = E(D′)</code>, where D′ replaces every <code>&lt;sem-embed&gt;</code> with its selected content, deep equality including <code>sourceOrder</code>. Extraction is a total, pure function — no I/O (extraction §9) — so it can never resolve an embed itself: resolution happens before distribution, and an unresolved embed reaching a distributed artifact is a build error (❓ Q7).</li>
+  </ul>
+
   <h3 id="el-sem-references">sem-references / sem-reference — numbered citable entries</h3>
   <p>Normative: <a href="schema/sem-references.sem.html">schema/sem-references.sem.html</a>.</p>
   <sem-code id="c-sem-references" lang="html"><pre><code>&lt;p&gt;…per use&lt;a href="#r-rfc"&gt;[1]&lt;/a&gt;.&lt;/p&gt;
@@ -623,10 +639,12 @@
         <tr><td>Q4</td><td>NPL MCP alignment ownership</td><td>we publish the schema file; MCP consumes</td></tr>
         <tr><td>Q5</td><td>fallback handler scope: baseline interactivity only vs full quiz logic</td><td>full logic v1 — it's small and makes single-file form Lit-free</td></tr>
         <tr><td>Q6</td><td>class-form alias lifetime: keep indefinitely, or retire once every reference document is tag-form</td><td>keep — it costs one <code>:is()</code> per rule and lets HTML generators that cannot emit custom elements participate</td></tr>
+        <tr><td>Q7</td><td><code>sem-embed</code> resolution timing: build-time inlining by the CLI vs runtime fetch in the browser</td><td>build-time inlining — portable docs must not fetch (§7) and extraction is pure (§9); runtime fetch only as a served-document enhancement (<a href="schema/embed.sem.html">schema/embed.sem.html</a>)</td></tr>
+        <tr><td>Q8</td><td><code>sem-embed</code> maximum depth</td><td>4 — host plus three hops (<a href="schema/embed.sem.html">schema/embed.sem.html</a>)</td></tr>
       </tbody>
     </table>
   </sem-table>
-  <sem-note id="n-q5-q6" variant="warning" kind="ambiguity"><strong>Leans, not resolutions:</strong> Q5 (fallback ships the full quiz logic in v1) and Q6 (the class-form alias is kept) carry leans only; neither is marked resolved in the source, and both remain open. Q2 and Q3 are marked <strong>resolved (this branch)</strong> in the source and are restated here as resolved.</sem-note>
+  <sem-note id="n-q5-q6" variant="warning" kind="ambiguity"><strong>Leans, not resolutions:</strong> Q5 (fallback ships the full quiz logic in v1) and Q6 (the class-form alias is kept) carry leans only; neither is marked resolved in the source, and both remain open. Q2 and Q3 are marked <strong>resolved (this branch)</strong> in the source and are restated here as resolved. Q7 and Q8 (sem-embed, <a href="schema/embed.sem.html">schema/embed.sem.html</a>) are new on this branch and carry leans only.</sem-note>
 
   <h2 id="appendix-a">Appendix A — Class-form alias (v0.4 compatibility)</h2>
 
@@ -658,6 +676,7 @@
         <tr><td><code>&lt;sem-source label view-as="html|source"&gt;</code> › any content</td><td><code>div.sem-source[data-label][data-view-as]</code> › any content; transparent wrapper, mints nothing</td></tr>
         <tr><td><code>&lt;sem-reader controls outline-depth&gt;</code> › optional <code>&lt;nav aria-label="Contents"&gt;</code></td><td><code>div.sem-reader[data-controls][data-outline-depth]</code> › same optional nav; chrome, mints nothing</td></tr>
         <tr><td><code>&lt;sem-md label view-as="rendered|raw" controls&gt;</code> › Markdown text</td><td><code>div.sem-md[data-label][data-view-as][data-controls]</code> › Markdown text</td></tr>
+        <tr><td><code>&lt;sem-embed source view depth mode&gt;</code></td><td><code>div.sem-embed[data-source][data-view][data-depth][data-mode]</code>, authored empty in both forms</td></tr>
         <tr><td><code>&lt;sem-table controls sticky&gt;</code> › <code>&lt;table&gt;</code></td><td><code>div.sem-table[data-controls][data-sticky]</code> › authored <code>&lt;table&gt;</code> (<code>&lt;th scope="col"&gt;</code>, <code>td[data-value]</code> sort keys)</td></tr>
       </tbody>
     </table>
@@ -674,6 +693,7 @@
     <sem-reference id="r-sc-sem-chronology" role="listitem" href="schema/sem-chronology.sem.html" cite="sem-chronology">Schema — sem-chronology / sem-event.</sem-reference>
     <sem-reference id="r-sc-sem-code" role="listitem" href="schema/sem-code.sem.html" cite="sem-code">Schema — sem-code.</sem-reference>
     <sem-reference id="r-sc-sem-details" role="listitem" href="schema/sem-details.sem.html" cite="sem-details">Schema — sem-details / sem-detail / highlight.</sem-reference>
+    <sem-reference id="r-sc-embed" role="listitem" href="schema/embed.sem.html" cite="embed">Schema — sem-embed.</sem-reference>
     <sem-reference id="r-sc-sem-facts" role="listitem" href="schema/sem-facts.sem.html" cite="sem-facts">Schema — sem-facts / sem-fact.</sem-reference>
     <sem-reference id="r-sc-sem-md" role="listitem" href="schema/sem-md.sem.html" cite="sem-md">Schema — sem-md.</sem-reference>
     <sem-reference id="r-sc-sem-note" role="listitem" href="schema/sem-note.sem.html" cite="sem-note">Schema — sem-note.</sem-reference>
