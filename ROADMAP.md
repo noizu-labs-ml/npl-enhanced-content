@@ -72,8 +72,8 @@ Current, after tag-form canonical (PR #30):
 | Artifact | Budget | Measured |
 |---|---|---|
 | `semtext-fallback.js` | **14 KB** | 13.0 |
-| `semtext-reading.js` | **40 KB** | 39.7 |
-| `semtext.js` (Lit) | **70 KB** | 69.9 |
+| `semtext-reading.js` | **43 KB** | 42.4 |
+| `semtext.js` (Lit) | **73 KB** | 72.5 |
 | `semtext-extract.js` | **12 KB** | 9.7 |
 | `semtext-md.js` | **8.5 KB** | 8.0 |
 
@@ -91,6 +91,10 @@ Data-visualizer phase 2 (2026-10-13) raised reading 27 → 36 KB (measured 35.3)
 Data-visualizer phase 3 (2026-10-13) raised reading 36 → 40 KB (measured 39.7) and Lit
 66 → 70 KB (measured 69.9): declared structures — the data-columns overlay and the
 OpenAPI-style yaml-schema flattener (`src/data/structure.ts`).
+
+Data-visualizer phase 4 (2026-10-13) raised reading 40 → 43 KB (measured 42.4) and Lit
+70 → 73 KB (measured 72.5): the source loader tier — URL policy, format sniffing,
+fetch + cache (`src/data/load.ts`, `src/reading/data-load.ts`).
 
 
 ## History (recorded decisions — preserved)

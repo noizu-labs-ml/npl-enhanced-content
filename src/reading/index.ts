@@ -79,7 +79,7 @@ export function enhanceData(scope: ParentNode): void {
   scope.querySelectorAll(DATA_VISUALIZER).forEach((el) => {
     if (upgraded(el)) return;
     enhanceDataVisualizerElement(el);
-    if (el.querySelector(':scope > ' + DATA_SOURCE + ' > :is(.sem-data-body, .sem-data-error)')) {
+    if (el.querySelector(':scope > ' + DATA_SOURCE + ' > :is(.sem-data-body, .sem-data-error, .sem-data-pending)')) {
       el.setAttribute('data-sem-fallback', '');
     }
   });

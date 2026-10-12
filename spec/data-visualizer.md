@@ -70,8 +70,9 @@ view/query state (R3/5). Zero-JS: shows its source children unenhanced (like
 
 Each direct `sem-data-source` child of a visualizer is one **named data
 bucket**. Its payload is either the element's inline text body **or** the
-resource named by `source` — never both (both present is an authoring error;
-inline wins with a warning if a `source` also sneaks in).
+resource named by `source`: an *empty* body plus `source` is the file/API
+form, and a *non-empty* inline body together with `source` is an authoring
+error (rendered as a clear error, never silently resolved).
 
 | Attribute | Values | Meaning |
 | :-- | :-- | :-- |
@@ -416,8 +417,7 @@ copy-link button. Phase 6 is design-only in this slice.
 | **1** | Container + inline Markdown-table source; schema inference + JSON exposure; native-table render; per-column typed sort; `data-views`/`data-view` parsing + default selection; clear errors. Unit-tested. | **BUILT (this branch)** |
 | **2** | Inline `csv` (RFC 4180), `yaml` (§7.3 subset), `json` (§7.4) payloads; `sql` result-shape declarations (§7.5). Unit-tested. | **BUILT (this branch)** |
 | **3** | Structure declarations: `data-type="rows"` + `data-columns` (§6.1) and OpenAPI-style YAML payloads (§6.2); declared-over-inferred types; nested flattening to dotted paths; advisory validation. Unit-tested. | **BUILT (this branch)** |
-| **4** | `source` loaders: relative and same-origin files, absolute http(s) with CORS-as-error, `file://` refusal (§9); async render contract; `data-path`; `data-cache`. Unit-tested. | **BUILT (this branch)** |
-| **5** | Query chrome: editable default query (`sem-data-query`) re-run on change; named buckets (§5); `sem-data-join` on a named key; the §8 SQL subset engine; per-source view-switch buttons (§3). Unit-tested. | **BUILT (this branch)** |
+| **4** | `source` loaders: relative and same-origin files, absolute http(s) with CORS-as-error, `file://` refusal (§9); async render contract; `data-path`; `data-cache`. Unit-tested. | **BUILT (this branch)** || **5** | Query chrome: editable default query (`sem-data-query`) re-run on change; named buckets (§5); `sem-data-join` on a named key; the §8 SQL subset engine; per-source view-switch buttons (§3). Unit-tested. | **BUILT (this branch)** |
 | 6 | Modal full-page viewer + `#`-deep-links (§10). | designed |
 
 ## 12. Open questions

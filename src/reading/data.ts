@@ -38,6 +38,8 @@ import { parseYamlSubset, yamlToTable } from '../data/yaml.js';
 import { extractPath, jsonToTable } from '../data/json.js';
 import { parseSelectShape } from '../data/sql.js';
 import { applyColumnDecl, flattenYamlSchema, parseColumnDecl } from '../data/structure.js';
+import { formatFromUrl, resolveSource, sniffFormat } from '../data/load.js';
+import { fetchSource } from './data-load.js';
 
 export const DATA_VISUALIZER = ':is(sem-data-visualizer, .sem-data-visualizer)';
 export const DATA_SOURCE = ':is(sem-data-source, .sem-data-source)';
@@ -56,7 +58,7 @@ type ParseResult =
  * rendered yet. Idempotent on the presence of a rendered body/error.
  */
 export function enhanceDataVisualizerElement(el: Element): void {
-  if (el.querySelector(':scope > ' + DATA_SOURCE + ' > :is(.sem-data-body, .sem-data-error)')) return;
+  if (el.querySelector(':scope > ' + DATA_SOURCE + ' > :is(.sem-data-body, .sem-data-error, .sem-data-pending)')) return;
   el.querySelectorAll(':scope > ' + DATA_SOURCE).forEach((src) => renderSource(src));
 }
 
@@ -65,17 +67,23 @@ export function declaredType(src: Element): string {
   return (param(src, 'type') ?? '').trim().toLowerCase();
 }
 
+/** The `source` attribute in either spelling (phase 4 file/API loads). */
+export function sourceHref(src: Element): string | null {
+  return param(src, 'source') ?? src.getAttribute('source');
+}
+
 /**
  * Parse one source's payload (element attrs + text ⇒ TableData). Pure aside
  * from reading the element; used by the render path and by sql `*`
  * resolution, which must see sibling columns regardless of document order.
+ * `load` carries a fetched body (phase 4) with its resolved format.
  */
-export function parsePayload(src: Element): ParseResult {
-  const format = (param(src, 'format') ?? 'table').trim().toLowerCase();
+export function parsePayload(src: Element, load?: { text: string; format: string }): ParseResult {
+  const format = (load?.format ?? param(src, 'format') ?? 'table').trim().toLowerCase();
   if (!FORMATS.has(format)) {
     return { ok: false, error: 'unknown data-format "' + format + '" — supported: table, csv, yaml, json, sql' };
   }
-  if (param(src, 'source') !== null || src.hasAttribute('source')) {
+  if (!load && sourceHref(src) !== null) {
     return { ok: false, error: 'file and API sources (source="…") land in phase 4 — inline the payload for now' };
   }
   const structure = declaredType(src);
@@ -85,7 +93,7 @@ export function parsePayload(src: Element): ParseResult {
   if (structure === 'yaml-schema' && format !== 'yaml') {
     return { ok: false, error: 'data-type="yaml-schema" needs a yaml payload (data-format="yaml")' };
   }
-  const text = src.textContent || '';
+  const text = load ? load.text : src.textContent || '';
   switch (format) {
     case 'table': {
       const r = parseGfmTable(text);
@@ -150,12 +158,28 @@ export function normalizeRef(ref: string): string {
 function renderSource(src: Element): void {
   const format = (param(src, 'format') ?? 'table').trim().toLowerCase();
   const structure = declaredType(src);
+  const href = sourceHref(src);
+  const inline = (src.textContent || '').trim() !== '';
+
+  if (href !== null && inline) {
+    renderError(src, 'an inline payload and source="' + href + '" are mutually exclusive — keep one');
+    return;
+  }
+  if (href !== null) {
+    loadSource(src);
+    return;
+  }
 
   const parsed = parsePayload(src);
   if (!parsed.ok) {
     renderError(src, parsed.error);
     return;
   }
+  finishSource(src, parsed, format, structure);
+}
+
+/** Shared tail of both render paths: declarations, table, schema json. */
+function finishSource(src: Element, parsed: { ok: true; table: TableData; schema?: ColumnSchema[]; warnings?: string[] }, format: string, structure: string): void {
   (parsed.warnings ?? []).forEach((w) => warn('sem-data-source: ' + w));
 
   let schema = parsed.schema ?? inferSchema(parsed.table);
@@ -167,6 +191,46 @@ function renderSource(src: Element): void {
     applied.warnings.forEach((w) => warn('sem-data-source: ' + w));
   }
   renderTable(src, parsed.table, schema, format, structure);
+}
+
+/**
+ * Phase 4 file/API loads: policy check (§9), pending placeholder, fetch,
+ * format resolution (explicit > extension > sniff), parse + render. The
+ * sync path above stays unchanged for inline sources.
+ */
+function loadSource(src: Element): void {
+  const href = sourceHref(src) ?? '';
+  const policy = resolveSource(href, document.baseURI || location.href);
+  if (policy.kind === 'refused') {
+    renderError(src, policy.reason);
+    return;
+  }
+  const pending = document.createElement('div');
+  pending.className = 'sem-data-pending';
+  pending.setAttribute('role', 'status');
+  pending.textContent = 'Loading ' + href + '…';
+  src.appendChild(pending);
+
+  const explicit = param(src, 'format');
+  const structure = declaredType(src);
+  const noCache = (param(src, 'cache') ?? '').trim().toLowerCase() === 'no';
+  fetchSource(policy.url, noCache).then((text) => {
+    const format = (explicit ?? '').trim().toLowerCase() || formatFromUrl(policy.url) || sniffFormat(text);
+    const parsed = parsePayload(src, { text, format });
+    pending.remove();
+    if (!parsed.ok) {
+      renderError(src, parsed.error);
+      return;
+    }
+    finishSource(src, parsed, format, structure);
+  }).catch((err: unknown) => {
+    pending.remove();
+    const message = err instanceof Error ? err.message : String(err);
+    const cors = policy.crossOrigin
+      ? ' — a cross-origin request needs CORS: the server at ' + policy.url + ' must allow this origin'
+      : '';
+    renderError(src, 'failed to load "' + href + '": ' + message + cors);
+  });
 }
 
 function renderTable(src: Element, table: TableData, schema: ColumnSchema[], format: string, structure: string): void {
@@ -197,6 +261,9 @@ function renderTable(src: Element, table: TableData, schema: ColumnSchema[], for
 
   wireSort(body.querySelector('table') as HTMLTableElement, schema);
   src.setAttribute('data-sem-fallback', '');
+  // Late-bucket signal: file/API sources fill in after the sync pass; the
+  // phase-5 query chrome listens for this to re-run pending queries.
+  src.dispatchEvent(new CustomEvent('sem-data-bucket', { bubbles: true }));
 }
 
 function buildTable(
