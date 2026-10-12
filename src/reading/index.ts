@@ -26,6 +26,7 @@ import { PROPERTIES, enhanceGlossaryElement } from './glossary.js';
 import { READER, enhanceReaderElement, disposeReaderElement } from './reader.js';
 import { TABLE, enhanceTableElement } from './table.js';
 import { SOURCE, enhanceSourceElement } from './source.js';
+import { DATA_SOURCE, DATA_VISUALIZER, enhanceDataVisualizerElement } from './data.js';
 
 declare global {
   interface Window {
@@ -74,6 +75,16 @@ export function enhanceSource(scope: ParentNode): void {
   });
 }
 
+export function enhanceData(scope: ParentNode): void {
+  scope.querySelectorAll(DATA_VISUALIZER).forEach((el) => {
+    if (upgraded(el)) return;
+    enhanceDataVisualizerElement(el);
+    if (el.querySelector(':scope > ' + DATA_SOURCE + ' > :is(.sem-data-body, .sem-data-error)')) {
+      el.setAttribute('data-sem-fallback', '');
+    }
+  });
+}
+
 /** The reader runs LAST: its outline reads the headings other handlers leave alone. */
 export function enhanceReader(scope: ParentNode): void {
   scope.querySelectorAll(READER).forEach((el) => {
@@ -83,7 +94,7 @@ export function enhanceReader(scope: ParentNode): void {
   });
 }
 
-export const handlers = [enhanceCode, enhanceReferences, enhanceGlossary, enhanceTable, enhanceSource, enhanceReader];
+export const handlers = [enhanceCode, enhanceReferences, enhanceGlossary, enhanceTable, enhanceData, enhanceSource, enhanceReader];
 
 /** Run every reading handler over a scope. */
 export function enhance(scope: ParentNode = document): void {
@@ -91,7 +102,7 @@ export function enhance(scope: ParentNode = document): void {
   for (const handler of handlers) handler(scope);
 }
 
-export { enhanceCodeElement, enhanceReferencesElement, enhanceGlossaryElement, enhanceTableElement, enhanceSourceElement, enhanceReaderElement, disposeReaderElement };
+export { enhanceCodeElement, enhanceReferencesElement, enhanceGlossaryElement, enhanceTableElement, enhanceDataVisualizerElement, enhanceSourceElement, enhanceReaderElement, disposeReaderElement };
 
 function init(): void {
   if (typeof window !== 'undefined' && window.__semJsOff) return;

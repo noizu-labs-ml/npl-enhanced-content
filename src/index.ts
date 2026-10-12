@@ -45,3 +45,14 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
+/* Data visualizer — inline data sources (spec/data-visualizer.md) */
+export { SemDataVisualizer } from './lit/sem-data-visualizer.js';
+import './lit/sem-data-visualizer.js';
+export {
+  parseGfmTable,
+  inferSchema,
+  parseViews,
+  resolveView,
+  visibleColumns,
+} from './data/table.js';
+export type { ColumnSchema, ColumnType, TableData, ViewSpec, SourceParse } from './data/table.js';

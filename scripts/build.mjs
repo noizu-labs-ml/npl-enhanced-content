@@ -30,13 +30,18 @@ const strict = process.argv.includes('--strict-budget');
 
 /** budgetKb is measured against the minified (not gzipped) artifact. */
 const targets = [
-  { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 56, required: true },
+  { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 63, required: true },
   // 13 → 14 KB (2026-09-22, tag form canonical, measured 13.0): every core
   // handler selects both authoring forms (`:is(sem-x, .sem-x)`), the
   // bare→data-* attribute mirror, the tag-form note body wrap. Recorded in
   // ROADMAP "Tag-form canonical decisions".
   { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 14, required: true },
-  { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 19.5, required: true },
+  // 19.5 → 27 KB (2026-10-13, data-visualizer phase 1, measured 25.6): the
+  // sem-data-visualizer render/sort tier (src/reading/data.ts +
+  // src/data/table.ts) joins the bundle; spec/data-visualizer.md §11. The
+  // Lit bundle carries the same module (56 → 63). Recorded in ROADMAP
+  // "Size budgets".
+  { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 27, required: true },
   { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 12, required: false },
   { name: 'semtext-md.js',       entry: 'src/md/index.ts',       global: 'SemTextMd',       budgetKb: 8.5,  required: true },
 ];

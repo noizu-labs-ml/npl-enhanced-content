@@ -678,6 +678,47 @@
           "severity": "error"
         }
       ]
+    },
+    "sem-data-visualizer": {
+      "source": "spec/data-visualizer.md",
+      "record": false,
+      "attributes": {}
+    },
+    "sem-data-source": {
+      "source": "spec/data-visualizer.md",
+      "record": true,
+      "attributes": {
+        "name": {
+          "note": "data-name alias spelling; renders as the table caption"
+        },
+        "format": {
+          "type": "token",
+          "values": [
+            "table",
+            "csv",
+            "yaml",
+            "json",
+            "sql"
+          ],
+          "default": "table",
+          "severityOnUnknown": "error"
+        },
+        "type": {
+          "type": "token",
+          "values": [
+            "rows",
+            "yaml-schema"
+          ],
+          "note": "structure declaration; absent = infer (phase 3)"
+        },
+        "source": {},
+        "views": {
+          "note": "name=colspec; ... — named views (phase 1: parsing + default)"
+        },
+        "view": {
+          "note": "default view name"
+        }
+      }
     }
   }
 }
