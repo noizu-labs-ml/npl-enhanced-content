@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-facts</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#scope">Scope semantics</a></li>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#views">View contracts</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-facts / sem-fact</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-facts.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-facts.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>The core knowledge primitive: a container of <code>sem-fact</code> items, each a <code>statement</code> plus an optional <code>conclusion</code>, rendered as a plain annotated list, flashcards, or a quiz.</p>
+
+  <h2 id="scope">Scope semantics</h2>
+  <ul>
+    <li><code>statement</code> (required, first): what is claimed.</li>
+    <li><code>conclusion</code> (optional): what follows.</li>
+    <li>Container <code>view-as</code>: <code>list</code> (default) | <code>flashcards</code> | <code>quiz</code>.</li>
+    <li>The <strong>quiz is a view of the same facts</strong> — the fallback derives distractors from sibling conclusions when none are authored. Every <code>sem-distractor</code> is authored content (a wrong answer); the fallback reads those when present, otherwise it samples conclusions from sibling facts in the same container (never <code>conclusion</code> of the fact being asked) — so a quiz works with zero distractor markup, deterministically, with no network and no random source. Distractors mint no records of their own; they decorate their fact's record.</li>
+  </ul>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-facts view-as="quiz"&gt;
+  &lt;sem-fact&gt;
+    &lt;statement&gt;The sky is blue.&lt;/statement&gt;
+    &lt;conclusion&gt;Rayleigh scattering dominates.&lt;/conclusion&gt;
+    &lt;sem-distractor&gt;Oceans absorb red light.&lt;/sem-distractor&gt;
+  &lt;/sem-fact&gt;
+&lt;/sem-facts&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-facts[data-view-as]</code> › <code>div.sem-fact</code> › <code>.sem-statement</code>, <code>.sem-conclusion</code>; <code>div.sem-distractor</code>.</p>
+
+  <h2 id="views">View contracts</h2>
+
+  <h3 id="views-list">list (default)</h3>
+  <p>Statement (bold marker) + conclusion (indented follow-on). No chrome, no interaction.</p>
+
+  <h3 id="views-flashcards">flashcards</h3>
+  <p>One card per fact: statement face, conclusion back; flip on click, <kbd>Space</kbd>/<kbd>Enter</kbd>/<kbd>F</kbd>; prev/next buttons + arrow keys. State (current card) is presentation only.</p>
+
+  <h3 id="views-quiz">quiz</h3>
+  <p>One question per fact: "Which conclusion follows from: &lt;statement&gt;?" — options = the fact's conclusion + distractors (authored, else derived), shuffled <strong>deterministically</strong> (seeded from the fact's content hash, stable across runs and across fallback/upgraded); multi-select when ≥ 2 conclusions. Choosing reveals correctness inline; a summary score renders after the last question; <code>data-sem-quiz-complete</code> marks the container. Answers are live presentation state — <strong>not extracted, not recorded, never synchronized</strong>.</p>
+
+  <h2 id="rendered">Rendered form</h2>
+  <ul>
+    <li>Fallback (<code>src/fallback/facts.ts</code>): list view is attribute-level styling only; flashcards/quiz are small DOM builders over the same authored nodes — the statements/conclusions stay in the DOM in authored order.</li>
+    <li>Upgraded (Lit): same DOM contract, richer chrome.</li>
+    <li>JS-off: the list view — every statement, conclusion and distractor readable in order. No view rewrites content.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <ul>
+    <li><code>sem-quiz-answer</code>, cancelable — before a choice registers; <code>detail</code> carries the fact id and the chosen option. Canceling is a consumer hook (LMS recording, gated mode); the fallback's own state change never cancels itself.</li>
+  </ul>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>list: a real list; statement/conclusion readable as text.</li>
+    <li>flashcards: buttons with accessible names; flip state via <code>aria-pressed</code>.</li>
+    <li>quiz: <code>fieldset/legend</code> or radiogroup per question; inline feedback text (no color-only); summary is text.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>Each <code>sem-fact</code> mints one record; <code>fields.statement</code>, <code>fields.conclusion</code>; distractors fold into the fact's record (<code>fields.distractors</code>); <code>view-as</code> never extracted (extraction §5c) — all three views yield identical records, including after answering a quiz to completion.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-facts.md" cite="sem-facts.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

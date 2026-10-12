@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-md</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-md</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-md.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-md.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>Markdown rendered in place, with a toggle between the rendered view and the raw source. Unlike the rest of the vocabulary it takes <strong>Markdown text content</strong>, not HTML.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-md label="Release notes" view-as="rendered" controls="toggle"&gt;
+## Heading
+
+- item one
+- item two
+&lt;/sem-md&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-md[data-label][data-view-as][data-controls]</code> › Markdown text.</p>
+
+  <ul>
+    <li><code>label</code> (optional): accessible name / header label.</li>
+    <li><code>view-as</code>: <code>rendered</code> (default) | <code>raw</code>.</li>
+    <li><code>controls</code>: <code>toggle</code> — switch between views.</li>
+    <li>The Markdown source is preserved verbatim in the DOM (in a hidden template/attribute-equivalent node), so the raw view needs no re-fetch.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: renders the Markdown with the bundled minimal renderer (headings, lists, emphasis, links, fenced code, tables — no raw HTML passthrough, sanitization default-deny); the toggle flips to a <code>&lt;pre&gt;</code> of the raw source. Tables are real <code>&lt;table&gt;</code> elements with <code>&lt;thead&gt;</code>, <code>&lt;th scope="col"&gt;</code> and <code>&lt;tbody&gt;</code>; links get <code>target="_blank"</code> + <code>rel="noopener"</code>.</li>
+    <li>Upgraded: same DOM contract; the same renderer by default so the two tiers agree.</li>
+    <li>JS-off: the raw source is readable; the rendered view appears on first run.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <ul>
+    <li><code>sem-view-toggle</code> (shared with <code>sem-source</code>), cancelable — before the view flips; <code>detail</code> carries the target view.</li>
+  </ul>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>The toggle is a button with an accessible name (the <code>label</code> when present).</li>
+    <li>Rendered output uses real headings/lists/tables — not images of text, not <code>aria-label</code> summaries.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>One record; <code>text</code> is the <strong>raw Markdown source</strong>, not the rendered prose; <code>fields.label</code> when present.</li>
+    <li><code>view-as</code> never extracted (extraction §5c) — rendered and raw yield the same record.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-md.md" cite="sem-md.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

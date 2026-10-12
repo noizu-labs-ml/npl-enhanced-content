@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-progress</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-progress</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-progress.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-progress.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>A single scalar progress indicator: value, optional label, no children semantics beyond a label. The reader chrome's own progress bar is separate reader state, not this element.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-progress value="0.4" label="Migration"&gt;&lt;/sem-progress&gt;
+&lt;sem-progress value="0.9"&gt;&lt;/sem-progress&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-progress[data-value][data-label]</code>.</p>
+
+  <ul>
+    <li><code>value</code> (required): 0–1.</li>
+    <li><code>label</code> (optional): accessible name / visible label.</li>
+    <li>No <code>view-as</code> variants; one canonical presentation.</li>
+  </ul>
+
+  <sem-note variant="warning" kind="ambiguity"><strong>Source typo preserved:</strong> the schema file states <code>label ∈ [0,1]</code>; the intent — value is the 0–1 scalar, label is free text — is what this contract means, and the upstream typo is flagged rather than silently corrected.</sem-note>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: a horizontal bar with the value; label above when present.</li>
+    <li>Upgraded: same presentation, animated transitions between values.</li>
+    <li>JS-off: a static bar renders from the attribute alone.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <p>None.</p>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li><code>role="progressbar"</code> with <code>aria-valuenow</code>/<code>aria-valuemin</code>/<code>aria-valuemax</code> (authored or set on upgrade).</li>
+    <li><code>aria-label</code> from <code>label</code> when present.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>One record; <code>fields.value</code> (number), <code>fields.label</code> when present; <code>text</code> empty.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-progress.md" cite="sem-progress.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-views</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-views / sem-view</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-views.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-views.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>A named set of alternative presentations of one topic — tabs by another name, kept general on purpose: the active view can be <strong>deep-linked</strong>, which is why the state lives in the hash and why the name avoids <code>tab</code>.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-views id="delivery"&gt;
+  &lt;sem-view name="summary" active&gt;
+    &lt;p&gt;Short version.&lt;/p&gt;
+  &lt;/sem-view&gt;
+  &lt;sem-view name="detail"&gt;
+    &lt;p&gt;Long version.&lt;/p&gt;
+  &lt;/sem-view&gt;
+&lt;/sem-views&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-views[id]</code> › <code>div.sem-view[data-name]</code>, <code>data-active</code> marker.</p>
+
+  <ul>
+    <li><code>name</code> (required, each view): the view token used in links; document-unique within the container.</li>
+    <li><code>active</code>: flag — the initial view; the first view is active when absent everywhere.</li>
+    <li><code>id</code> (container): anchor for deep links — <code>#delivery/detail</code> (bare segment) and the query form <code>#…&amp;sem-views=delivery/detail</code> are the same state.</li>
+    <li>Nested <code>sem-views</code> compose: <code>#outer/inner</code> chains.</li>
+  </ul>
+
+  <sem-note variant="tip" kind="resolved"><strong>Q3 resolved (this branch):</strong> the element is <code>sem-views</code>, not <code>sem-perspectives</code>.</sem-note>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: a segmented control (one segment per view name) + view bodies; the active body visible, others <code>hidden</code>; the state marker moves.</li>
+    <li>Deep links: on load and on every <code>hashchange</code>, the state resolver (<code>src/shared/state.ts</code>) scans the hash for a bare <code>container/view</code> segment whose container matches; matches set the active view; the bare segment survives next to other hash params (<code>sem-audience</code> etc.).</li>
+    <li>Upgraded: same DOM contract, animated transitions.</li>
+    <li>JS-off: all views visible in authored order — the state markers are invisible to CSS by design, so a static page reads top to bottom.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <ul>
+    <li><code>sem-view-change</code>, cancelable — before the active view switches; canceling blocks the switch (the hash still updates, the DOM follows the resolver, not the reverse).</li>
+  </ul>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>The control is a real tab pattern where tab semantics fit (<code>tablist/tab/tabpanel</code>) or a segmented group of buttons — either way the active segment is <code>aria-selected</code>/<code>aria-pressed</code>.</li>
+    <li>Keyboard: arrows move between segments, <kbd>Enter</kbd>/<kbd>Space</kbd> activate; focus is not trapped.</li>
+    <li>JS-off, all panels visible: no roles are removed — the panels read as ordinary sections.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>Each <code>sem-view</code> mints a record; <code>fields.name</code>; prose <code>text</code> = the view body.</li>
+    <li>Extraction reads <strong>every view, visible or not</strong> — <code>data-active</code> is excluded from records by design (extraction §5c); a consumer that needs "which view did the author feature first" reads a durable qualifier (<code>kind</code>, <code>tags</code>) authored on the view.</li>
+    <li>The invariant holds across switching and across deep links: <code>E(D)</code> is identical in every state.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-views.md" cite="sem-views.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

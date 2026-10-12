@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-references</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-references / sem-reference</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-references.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-references.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>A bibliography: <code>sem-reference</code> entries (any content model, defaulting to prose) plus the inline citation element <code>sem-ref</code> that points at them. Citations are plain <code>&lt;a href="#id"&gt;</code> links — no widget.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;p&gt;As shown&lt;sem-ref target="smith2024"&gt;&lt;/sem-ref&gt;, the mechanism holds.&lt;/p&gt;
+
+&lt;sem-references kind="bibliography"&gt;
+  &lt;sem-reference id="smith2024" role="listitem" href="https://example.com/smith" cite="Smith 2024"&gt;The mechanism.&lt;/sem-reference&gt;
+&lt;/sem-references&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-references[data-kind]</code> › <code>div.sem-reference[id][data-href][data-cite]</code>; citations are plain <code>&lt;a href="#id"&gt;</code>.</p>
+
+  <ul>
+    <li><code>id</code> (required, each reference): the anchor target of the citation link; document-unique.</li>
+    <li><code>href</code> (optional): external target; renders as a link on the <code>cite</code> label.</li>
+    <li><code>cite</code> (optional): the rendered label; the id renders when absent.</li>
+    <li><code>kind</code> (container): <code>bibliography</code> | <code>footnotes</code> — presentation grouping only.</li>
+    <li><code>role="listitem"</code>: authored on entries (and <code>role="list"</code> on the container) so the machine reading sees the list structure without JS.</li>
+    <li><code>sem-ref</code>: inline citation; <code>target</code> = reference id; renders as the citation link (numbered or labeled per the container's kind); empty content is legal — the label comes from the reference.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: the container renders entries as an ordered list; each <code>sem-ref</code> becomes an anchor link to its entry; a missing target is a console warning + an inert marker, never a broken page.</li>
+    <li>Upgraded: same DOM; hover previews of the target entry where practical.</li>
+    <li>JS-off: citations are still plain anchors; the list reads as authored.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <p>None.</p>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>Entries form a real list with roles present in the authored DOM.</li>
+    <li>Citation links have accessible names (the cite label or entry id).</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>Each <code>sem-reference</code> mints a record; <code>fields.href</code>, <code>fields.cite</code>, prose <code>text</code>; <code>id</code> joins it to citations.</li>
+    <li><code>sem-ref</code> mints no record of its own — it is a citation edge; consumers reconstruct the edge from <code>target</code> + the reference's <code>id</code> if needed.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-references.md" cite="sem-references.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

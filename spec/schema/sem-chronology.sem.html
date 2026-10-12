@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-chronology</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-chronology / sem-event</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-chronology.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-chronology.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>A dated, ordered sequence: a container of <code>sem-event</code> items, each with a <code>when</code>, optional <code>until</code>, optional <code>status</code>, and mixed content (title + prose). The same markup renders as a vertical timeline, a compact list, or a data table — the view is a rendering choice, never a rewriting of the DOM.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-chronology view-as="timeline"&gt;
+  &lt;sem-event when="2026-01-15" status="done"&gt;
+    &lt;strong&gt;Kickoff&lt;/strong&gt;
+    &lt;p&gt;Scope agreed.&lt;/p&gt;
+  &lt;/sem-event&gt;
+  &lt;sem-event when="2026-02-01" until="2026-03-01" status="active"&gt;
+    &lt;strong&gt;Build phase&lt;/strong&gt;
+  &lt;/sem-event&gt;
+  &lt;sem-event when="2026-06-01" status="planned"&gt;
+    &lt;strong&gt;Launch&lt;/strong&gt;
+  &lt;/sem-event&gt;
+&lt;/sem-chronology&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-chronology[data-view-as]</code> › <code>div.sem-event[data-when][data-until][data-status]</code>, with <code>&lt;time datetime&gt;</code> inside.</p>
+
+  <ul>
+    <li><code>view-as</code>: <code>timeline</code> (default) | <code>list</code> | <code>table</code>.</li>
+    <li><code>when</code> (required, each event): date or ISO 8601 datetime.</li>
+    <li><code>until</code> (optional): the other end of a range; implied <code>ongoing</code> when the range reaches the present.</li>
+    <li><code>status</code> (optional, each event): <code>planned</code> | <code>active</code> | <code>done</code> — future/present/past coloring; documents author it explicitly so a static page carries the state.</li>
+    <li>Events stay in authored order; the tier never re-sorts.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: container base style + per-event marker; <code>view-as="table"</code> gets a generated header row from the known attributes (When / Until / Status / content) and grid column alignment — one rule set, all three views.</li>
+    <li>Upgraded: same DOM; the component only re-derives <code>status</code> against "now" for coloring (missing <code>status</code> derived, never overwritten as an attribute).</li>
+    <li>JS-off: identical reading in all three views.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <p>None.</p>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>Content-only roles: the container is a <code>&lt;dl&gt;</code> or list semantically; each event keeps its heading/prose structure.</li>
+    <li>The table view is a real <code>&lt;table&gt;</code> with headers, so screen readers navigate it natively.</li>
+    <li><code>status</code> is never color-only — the label text is present.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>Each <code>sem-event</code> mints one record; <code>fields</code> carry <code>when</code>, <code>until</code>, <code>status</code>; child content is the prose <code>text</code>.</li>
+    <li><code>view-as</code> never extracted (extraction §5c) — all three views yield the same records.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-chronology.md" cite="sem-chronology.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-details</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-details / sem-detail / highlight</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-details.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-details.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>Three related pieces: a <strong>set of collapsible entries</strong> (<code>sem-details</code> / <code>sem-detail</code>), and an inline <strong><code>highlight</code></strong> with an optional occluded form. Disclosure state is presentation; extraction reads it all.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-details&gt;
+  &lt;sem-detail summary="First"&gt;body&lt;/sem-detail&gt;
+  &lt;sem-detail summary="Second"&gt;body&lt;/sem-detail&gt;
+&lt;/sem-details&gt;
+
+&lt;p&gt;The &lt;highlight&gt;key term&lt;/highlight&gt; matters.&lt;/p&gt;
+&lt;p&gt;&lt;highlight&gt;occluded&lt;occluded&gt;hidden full form&lt;/occluded&gt;&lt;/highlight&gt;&lt;/p&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-details</code> › <code>div.sem-detail</code> with <code>data-summary</code>; <code>span.sem-highlight</code> with <code>.sem-occluded</code> for the occluded form.</p>
+
+  <ul>
+    <li><code>sem-detail</code>: <code>summary</code> attribute = collapsed label; body is the element's content.</li>
+    <li><code>highlight</code>: inline; <code>occluded</code> child = the full form shown on interaction.</li>
+    <li>Global attrs (<code>id</code>, <code>kind</code>, <code>tags</code>, <code>audience</code>) apply to entries and highlights alike.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: <code>sem-details</code> renders entries with disclosure markers; each entry body hides/shows via the tier marker; occluded highlight shows the base form and reveals the occluded one on hover/focus/click.</li>
+    <li>Upgraded: same DOM; per-entry state; the occluded form animates open.</li>
+    <li>JS-off: all bodies and occluded forms readable inline (hide rules gated on tier markers).</li>
+    <li>Print: everything expands (all bodies + occluded forms visible).</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <ul>
+    <li><code>sem-detail-toggle</code>, cancelable — before an entry opens/closes.</li>
+  </ul>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>Entries use native <code>&lt;details&gt;/&lt;summary&gt;</code> semantics (authored or applied on upgrade).</li>
+    <li>Occluded highlight keeps both forms in the accessibility tree; the occluded form is announced as supplementary, not hidden.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>Each <code>sem-detail</code> mints a record: <code>fields.summary</code> + prose <code>text</code>.</li>
+    <li><code>highlight</code> mints a record with its base text; when an <code>occluded</code> child exists, <code>fields.occluded</code> carries the full form. Disclosure state never changes a record.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-details.md" cite="sem-details.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-properties</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#glossary">Glossary view</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-properties / sem-property</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-properties.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-properties.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>A key/value table. The <code>glossary</code> view turns the same pairs into a term list with anchored terms — one body of content, two presentations.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-properties view-as="glossary"&gt;
+  &lt;sem-property key="MIME" id="g-mime"&gt;Multipurpose Internet Mail Extensions.&lt;/sem-property&gt;
+  &lt;sem-property key="CORS"&gt;Cross-Origin Resource Sharing.&lt;/sem-property&gt;
+&lt;/sem-properties&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-properties[data-view-as]</code> › <code>div.sem-property[data-key]</code>; glossary form adds <code>[id]</code> for term anchors, optional <code>&lt;dfn&gt;</code>.</p>
+
+  <ul>
+    <li><code>key</code> (required, each property): the term / key.</li>
+    <li><code>value</code> (optional): shorthand when the body is plain text; body content wins when both exist.</li>
+    <li><code>view-as</code>: <code>table</code> (default) | <code>glossary</code>.</li>
+    <li><code>id</code> on a property = anchor target for the glossary view's term links; cross-references use plain <code>&lt;a href="#id"&gt;</code> pointing at it (the same pattern as references).</li>
+  </ul>
+
+  <h2 id="glossary">Glossary view (Q2 — resolved)</h2>
+
+  <p><strong>Resolved this branch: the glossary view is a pure <code>&lt;dl&gt;</code>.</strong> No per-term toggle chrome, no disclosure widgets. The view is: <code>&lt;dl&gt;</code> with <code>&lt;dt&gt;</code>key<code>&lt;/dd&gt;</code>value pairs, terms wrapped so <code>id</code>-anchored links land correctly, sorted or authored order preserved (authored order). Chrome (a per-term expand) returns only if a consumer demands it; the semantics do not change either way.</p>
+
+  <sem-note variant="tip" kind="resolved"><strong>Q2 resolved (this branch):</strong> pure <code>&lt;dl&gt;</code> for the glossary view; disclosure chrome deferred until a consumer demands it.</sem-note>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: table view = a two-column grid/table from the pairs; glossary view = the <code>&lt;dl&gt;</code> above.</li>
+    <li>Upgraded: same DOM contract; optional sorting in the table view.</li>
+    <li>JS-off: readable in both views.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <p>None.</p>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>Table view is a real table with headers; glossary view is a native <code>&lt;dl&gt;</code>.</li>
+    <li>Term anchors are focusable targets.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>Each <code>sem-property</code> mints a record; <code>fields.key</code> (required), <code>fields.value</code> when the shorthand is used, <code>text</code> = body.</li>
+    <li><code>view-as</code> never extracted (extraction §5c) — table and glossary yield identical records.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-properties.md" cite="sem-properties.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

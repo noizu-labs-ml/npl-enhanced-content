@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-source</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-source</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-source.cy.js</code> (which also proves the cross-form extraction equality). Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-source.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>A <strong>transparent wrapper</strong>: it renders its children — real HTML, not a copy — with an optional toggle to view the markup source. It adds a view; it mints nothing and hides nothing.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-source label="Live example" view-as="html" controls="toggle"&gt;
+  &lt;sem-note variant="tip"&gt;Renders in place.&lt;/sem-note&gt;
+&lt;/sem-source&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-source[data-label][data-view-as]</code> › any content.</p>
+
+  <ul>
+    <li><code>label</code> (optional): header label for the example frame.</li>
+    <li><code>view-as</code>: <code>html</code> (default) | <code>source</code> — the source view shows the children's serialized markup.</li>
+    <li><code>controls</code>: <code>toggle</code>.</li>
+    <li><strong>Transparent:</strong> any content is legal, exactly as if the wrapper were absent — children remain live vocabulary (nested <code>sem-*</code> elements upgrade normally, events propagate). The source view is generated from the DOM at toggle time; the author never maintains a second copy of the markup.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: a framed region (label header + toggle); <code>view-as="source"</code> swaps the frame's body for a <code>&lt;pre&gt;&lt;code class="language-html"&gt;</code> serialization of the children — from the DOM, so docs never maintain a stale copy.</li>
+    <li>Upgraded: same contract; children keep upgrading inside the frame.</li>
+    <li>JS-off: children render normally; no frame chrome beyond CSS.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <ul>
+    <li><code>sem-view-toggle</code> (shared with <code>sem-md</code>), cancelable — before the view flips; <code>detail</code> carries the target view.</li>
+  </ul>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>The frame is a region with an accessible name from <code>label</code>; the toggle is a button.</li>
+    <li>Children inside the frame keep their native roles and semantics; nothing is iframed.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li><strong>Mints no records.</strong> The children extract as themselves, in document order, exactly as if the wrapper were absent — an invariant the extraction contract states and the cross-form test asserts: identical records from the tag form and the class form, and with the wrapper present or absent.</li>
+    <li><code>view-as</code> never extracted (extraction §5c) — html and source views yield identical records.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-source.md" cite="sem-source.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

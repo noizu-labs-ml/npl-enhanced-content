@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-procedure</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-procedure / sem-step</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-procedure.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-procedure.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>An ordered sequence of steps with a completion state per step. Progress is presentation; the authored <code>status</code> is content.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-procedure&gt;
+  &lt;sem-step status="done"&gt;Install the CLI.&lt;/sem-step&gt;
+  &lt;sem-step status="active"&gt;Run the migration.&lt;/sem-step&gt;
+  &lt;sem-step&gt;Verify the schema.&lt;/sem-step&gt;
+&lt;/sem-procedure&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-procedure</code> › <code>div.sem-step[data-status]</code>.</p>
+
+  <ul>
+    <li><code>status</code> (optional, each step): <code>done</code> | <code>active</code> | <code>blocked</code> — authored explicitly; the tier never derives it.</li>
+    <li>Steps are numbered by position; content is mixed (prose, nested lists, code).</li>
+    <li>Nested <code>sem-procedure</code> inside a step is legal and indents.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: ordered list chrome — position number, status marker per step; no interactivity.</li>
+    <li>Upgraded: same chrome; an optional step-through mode (check off steps) whose state is presentation only.</li>
+    <li>JS-off: identical reading.</li>
+    <li>Print: statuses and numbers visible; no chrome.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <ul>
+    <li><code>sem-step-activate</code>, cancelable — before a step becomes active in the step-through mode.</li>
+  </ul>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>An ordered list semantically; step status never color-only — the status word is in the DOM.</li>
+    <li>The step-through mode uses buttons with accessible names; state changes announced politely.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>Each <code>sem-step</code> mints a record; <code>fields.status</code> (verbatim, <code>null</code> when absent), <code>text</code> = step prose; position is <code>sourceOrder</code>.</li>
+    <li>Step-through state is never extracted — the invariant holds across it.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-procedure.md" cite="sem-procedure.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

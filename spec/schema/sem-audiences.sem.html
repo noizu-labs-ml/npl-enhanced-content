@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-audiences</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#active-profile">Active profile</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-audiences / sem-profile and the audience qualifier</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5 §2 (global attribute catalog). BDD source of truth for <code>test/e2e/sem-audiences.cy.js</code>. Changes here precede spec changes precede code. Closes the forward declaration in <code>spec/extraction.md</code> §7. This document renders <code>spec/schema/sem-audiences.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>Two halves, one contract: a <strong>declaration block</strong> names the profiles a document knows about, and an <strong><code>audience</code> qualifier</strong> on any content element says which of those profiles the element is for. The reader picks a profile; the fallback hides what is not for them. Nothing is ever removed from the document, and extraction never looks at the result.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <p>Declaration block — document metadata, one per document, anywhere inside the root wrapper (conventionally next to <code>sem-agent</code>):</p>
+
+  <sem-code lang="html"><pre><code>&lt;sem-audiences&gt;
+  &lt;sem-profile id="reader" label="Reader"&gt;&lt;/sem-profile&gt;
+  &lt;sem-profile id="operator" label="Operator" implies="reader"&gt;&lt;/sem-profile&gt;
+&lt;/sem-audiences&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-audiences</code> › <code>div.sem-profile[id][data-label][data-implies]</code>. Both forms are accepted; parameters are read as <code>data-&lt;name&gt;</code> first, then bare <code>&lt;name&gt;</code>.</p>
+
+  <ul>
+    <li><code>id</code> (required, document-unique): the profile token that <code>audience</code> specs and the hash parameter refer to. It is an ordinary element id, so it shares the document's id space.</li>
+    <li><code>label</code> (optional): human label; the id renders when absent.</li>
+    <li><code>implies</code> (optional, comma list): profiles this one satisfies as well. <code>operator implies reader</code> means an operator sees reader content. Closure is transitive; a cycle is an authoring error, warned once and broken.</li>
+  </ul>
+
+  <p>Qualifier — on any <code>sem-*</code> element or plain semantic HTML:</p>
+
+  <sem-code lang="html"><pre><code>&lt;sem-note audience="operator"&gt;Operators only.&lt;/sem-note&gt;
+&lt;sem-note audience="!operator"&gt;Everyone except operators.&lt;/sem-note&gt;
+&lt;p data-audience="reader, operator"&gt;Either profile.&lt;/p&gt;</code></pre></sem-code>
+
+  <p>(<code>data-audience</code> is the alias spelling on a <code>sem-*</code> element, and the required spelling on a standard HTML element — conventions §2.)</p>
+
+  <p>Spec grammar (<code>src/shared/audience.ts</code> is the reference):</p>
+
+  <sem-table>
+    <table>
+      <caption>Audience spec grammar</caption>
+      <thead><tr><th scope="col">Spec</th><th scope="col">Visible when</th></tr></thead>
+      <tbody>
+        <tr><td>absent / empty</td><td>always</td></tr>
+        <tr><td><code>a</code></td><td>active profile is <code>a</code>, or implies <code>a</code></td></tr>
+        <tr><td><code>a, b</code></td><td>either term matches</td></tr>
+        <tr><td><code>!a</code></td><td>active profile is not <code>a</code> and does not imply <code>a</code></td></tr>
+        <tr><td><code>a, !b</code></td><td>authoring error; warned; positive terms only</td></tr>
+        <tr><td>unknown token</td><td>authoring error; warned; <strong>shown</strong> (fail-open)</td></tr>
+      </tbody>
+    </table>
+  </sem-table>
+
+  <p>With <strong>no active profile</strong>, a positive spec does not match and a negated spec does. Content that is "for operators" is therefore hidden until a reader says they are one; content that is "not for operators" is shown. Authors who want a default audience declare it (below).</p>
+
+  <h2 id="active-profile">Active profile</h2>
+
+  <p>Resolved in this order; first hit wins:</p>
+  <ol>
+    <li>hash parameter <code>sem-audience</code> (<code>#…&amp;sem-audience=operator</code>, composed via <code>src/shared/state.ts</code> so the sem-views bare segment survives beside it);</li>
+    <li><code>audience</code> / <code>data-audience</code> on the root wrapper (<code>sem-enhanced-document</code>) — the author's default;</li>
+    <li><code>data-audience</code> on <code>&lt;html&gt;</code> — the same default, spelled on the document.</li>
+  </ol>
+  <p>The fallback reflects the resolved profile onto <code>&lt;html data-audience&gt;</code> and re-resolves on every <code>hashchange</code>. <code>data-audience</code> on the wrapper or on <code>&lt;html&gt;</code> is a <strong>default marker, never a restriction</strong> — neither element is hidden by it.</p>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback (<code>src/fallback/audience.ts</code>): every element carrying <code>data-audience</code> / <code>audience</code> gets the <code>hidden</code> attribute when its spec does not match, and loses it when it does. Native <code>hidden</code> — no class, no inline style — so a theme needs no rule and AT sees ordinary hidden content. The profile block itself renders as a muted metadata strip, one chip per profile.</li>
+    <li>Upgraded (Lit): <code>SemElement.audienceMatches()</code> reads the same attributes and the same <code>&lt;html data-audience&gt;</code> and returns the same answer. An element that renders audience-dependent chrome asks it; the vanilla hide is not undone.</li>
+    <li>JS-off: <strong>everything is visible.</strong> The qualifier is invisible to CSS by design — a document is a readable artifact first. A printed page shows what the screen showed.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <p>None. State lives in the hash so a link carries it.</p>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>Hidden content uses the native <code>hidden</code> attribute, so it is removed from the accessibility tree while hidden and returns intact.</li>
+    <li>The profile block carries no role; it is metadata, like <code>sem-agent</code>.</li>
+    <li>No live region announces a switch — the switch is the reader's own navigation.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract (extraction §7 closed)</h2>
+  <ul>
+    <li>Every record carries <code>audience</code>: the element's own <code>data-audience</code> / <code>audience</code> string <strong>verbatim</strong>, <code>null</code> when absent. Spec syntax is not parsed into the record; the consumer that filters parses it.</li>
+    <li><strong>Never suppressed.</strong> Extraction reads the <code>hidden</code> element exactly as it reads a visible one. Filtering is a consumer operation over the array.</li>
+    <li><strong>No inheritance.</strong> A record's <code>audience</code> is its own attribute only. A fact inside an operator-only <code>sem-facts</code> reports <code>audience: null</code>; containment is available through <code>parent</code> for a consumer who wants to apply the container's audience downward. Recording the inherited value would make one attribute change rewrite every descendant record, which is the kind of instability §7 was declared to prevent.</li>
+    <li><code>sem-audiences</code> and <code>sem-profile</code> mint <strong>no records</strong>. They are declarations, not content; a consumer that needs the profile list reads the block directly.</li>
+    <li>The central invariant holds across profile switches: <code>E(D)</code> is identical with any profile active, with none, and JS-off.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-audiences.md" cite="sem-audiences.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-reveal</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-reveal</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-reveal.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-reveal.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>A progressive disclosure block: teaser first, body hidden until the reader reveals it. The reader-chrome complement of <code>sem-note</code>'s collapsed form, for body-size content.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-reveal summary="Show the derivation" collapsed&gt;
+  &lt;p&gt;The derivation…&lt;/p&gt;
+&lt;/sem-reveal&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-reveal[data-summary]</code>, same <code>collapsed</code> attribute.</p>
+
+  <ul>
+    <li><code>summary</code> (optional): the teaser label; defaults to a generic "Show more" label localized by the theme.</li>
+    <li><code>collapsed</code>: boolean attr — start hidden. Without it the block renders open (the reveal control collapses it).</li>
+    <li>Body is the element's content; any inline or block content is legal.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: teaser row with a disclosure control; body hidden/shown via the tier marker.</li>
+    <li>Upgraded: same DOM; smooth open/close animation.</li>
+    <li>JS-off: body readable (hide rule gated on tier markers); the teaser reads as a plain paragraph.</li>
+    <li>Print: bodies expand.</li>
+    <li>Deep links: the resolver opens a reveal whose body contains the hash target.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <ul>
+    <li><code>sem-reveal-toggle</code>, cancelable — before the body opens/closes.</li>
+  </ul>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>The control is a button with <code>aria-expanded</code>; the body is its controlled region.</li>
+    <li>The teaser text is the accessible name.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>One record; <code>fields.summary</code> when present; prose <code>text</code> = the body, read regardless of open/closed state.</li>
+    <li><code>collapsed</code> is presentation state — never extracted; the invariant holds across toggling.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-reveal.md" cite="sem-reveal.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

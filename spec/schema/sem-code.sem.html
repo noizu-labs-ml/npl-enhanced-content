@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-code</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-code</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-code.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-code.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>A code block with a language, an optional filename, optional marked lines, and a control set. The content is always a real <code>&lt;pre&gt;&lt;code&gt;</code> pair — a code block whose content is not in the DOM is not a code block.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-code lang="js" filename="app.js" mark="3,5-7" controls="copy,wrap"&gt;
+  &lt;pre&gt;&lt;code&gt;const x = 1;
+const y = 2;
+return x + y;&lt;/code&gt;&lt;/pre&gt;
+&lt;/sem-code&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-code[data-lang][data-filename][data-mark][data-controls]</code> › <code>&lt;pre&gt;&lt;code&gt;</code>.</p>
+
+  <ul>
+    <li><code>lang</code> (optional): language hint; the tier sets <code>class="language-&lt;info&gt;"</code> on the inner <code>code</code> for highlighters.</li>
+    <li><code>filename</code> (optional): label shown in the header.</li>
+    <li><code>mark</code> (optional): comma list of line numbers / ranges (<code>3,5-7</code>) — highlight; <code>del:2,add:4</code> — diff tint (delete red / add green).</li>
+    <li><code>wrap</code> (optional): boolean; default wrap off (overflow scrolls); the toggle inverts it.</li>
+    <li><code>controls</code> (optional): <code>copy</code> | <code>wrap</code> — toggles rendered into the header.</li>
+    <li>Exactly one <code>&lt;pre&gt;</code> child containing exactly one <code>&lt;code&gt;</code> child; nothing else inside the <code>pre</code>.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: header (filename left, controls right) + pre; <code>data-mark</code> applied by <code>src/fallback/highlight.ts</code> — line boxes for marks, diff tint for <code>del:</code>/<code>add:</code>, no token-level highlighting (no dependency).</li>
+    <li>Upgraded: same DOM; syntax highlighting optional (reads <code>language-</code> class if a highlighter is present); copy button uses the Clipboard API with a <code>document.execCommand</code> fallback.</li>
+    <li>JS-off: readable, marked, scrollable; copy unavailable.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <ul>
+    <li><code>sem-copy</code>, <code>detail: {text}</code> — after a successful copy; not cancelable.</li>
+  </ul>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>Header is plain text; controls are real buttons with accessible names.</li>
+    <li>Marked lines carry no color-only meaning — a <code>data-mark</code> attribute stays on the element for AT and tools.</li>
+    <li>Content keeps its native <code>&lt;pre&gt;&lt;code&gt;</code> semantics.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>One record; <code>fields</code> carry <code>lang</code>, <code>filename</code>, <code>mark</code>; <code>text</code> is the verbatim code content from the <code>pre</code>.</li>
+    <li>Line numbers are positional in the extracted text, so <code>mark</code> stays meaningful downstream.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-code.md" cite="sem-code.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-table</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-table</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-table.cy.js</code> (including the extraction invariant's recorded reordering exception). Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-table.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>A real HTML <code>&lt;table&gt;</code> (the author writes it — headings, groups, captions, whatever the table needs) with optional sort/filter controls. No data model is introduced: the DOM <em>is</em> the data.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-table controls="sort,filter" sticky&gt;
+  &lt;table&gt;
+    &lt;thead&gt;
+      &lt;tr&gt;&lt;th scope="col"&gt;Name&lt;/th&gt;&lt;th scope="col"&gt;Value&lt;/th&gt;&lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+      &lt;tr&gt;&lt;td&gt;alpha&lt;/td&gt;&lt;td data-value="1"&gt;one&lt;/td&gt;&lt;/tr&gt;
+    &lt;/tbody&gt;
+  &lt;/table&gt;
+&lt;/sem-table&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-table[data-controls][data-sticky]</code> › authored <code>&lt;table&gt;</code> with <code>&lt;th scope="col"&gt;</code> and <code>td[data-value]</code> sort keys.</p>
+
+  <ul>
+    <li><code>controls</code>: <code>sort</code> | <code>filter</code> — per-column sort buttons and/or a filter input rendered into the header.</li>
+    <li><code>sticky</code>: flag — the header row sticks on scroll.</li>
+    <li><code>data-value</code> on a cell: explicit sort/filter key overriding the cell text.</li>
+    <li><code>data-filter</code> on a cell: extra haystack text for the filter beyond the cell's text.</li>
+    <li>The author owns the markup: <code>scope</code>, <code>colspan</code>, <code>caption</code>, <code>colgroup</code> all pass through untouched.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: sort = DOM row reordering + arrow state on the active column; filter = row <code>hidden</code> for non-matching rows, match count announced; sticky via CSS.</li>
+    <li>Upgraded: same operations, animated reordering.</li>
+    <li>JS-off: the authored table, sortable/filterable not at all — and that is a valid reading.</li>
+    <li>Print: rows print in current (possibly sorted) order; the filter is a state, not a mutation — clearing restores all rows.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <ul>
+    <li><code>sem-sort</code>, cancelable — before a column sorts.</li>
+    <li><code>sem-filter</code>, cancelable — before the filter applies.</li>
+  </ul>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>Sort buttons carry <code>aria-sort</code> on the sorted column; filter input has an accessible name and the result count is announced politely.</li>
+    <li>The table keeps its native semantics — no ARIA grid overlay is required because the operations are plain DOM changes.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li>One record for the block; <code>text</code> = the table serialized as plain text (rows in <strong>document order</strong>); <code>fields.controls</code>, <code>fields.sticky</code>.</li>
+    <li><strong>The recorded exception:</strong> sorting reorders rows in the DOM, so a naive extractor inside an interaction would see a different order. The handler stamps each row with <code>data-sem-source-index</code> at bind time, and the extraction contract's exception clause (extraction §5) makes sorting the one interaction whose effect is visible in <code>E(I(R(D)))</code> — as a stable, invertible permutation of an unchanged record set, never a content change. Filtering, which hides rather than moves, is <em>not</em> covered by the exception: extraction ignores <code>hidden</code> rows the same way it ignores any hidden element — they are still in the array.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-table.md" cite="sem-table.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

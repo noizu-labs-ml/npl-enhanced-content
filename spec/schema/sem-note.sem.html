@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-note</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-note</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-note.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-note.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-note variant="warning"&gt;body HTML&lt;/sem-note&gt;
+&lt;sem-note variant="tip" collapsed&gt;body HTML&lt;/sem-note&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-note[data-variant]</code> › <code>div.sem-note-body</code>, same <code>collapsed</code> attribute. In the tag form the body is the element's own content; the tier that hides a collapsed body wraps it in <code>.sem-note-body</code> first.</p>
+
+  <ul>
+    <li><code>variant</code>: <code>info</code> (default) | <code>warning</code> | <code>tip</code> | <code>danger</code>.</li>
+    <li><code>collapsed</code>: boolean attr — the body is hidden behind a ten-word teaser (<code>.sem-note-summary</code>) that expands on click.</li>
+    <li><code>view-as="margin"</code>: presentation only. On wide viewports the note floats right beside the prose that follows it (width <code>--sem-margin-width</code>, default 14rem), inside the container; a document whose column has a gutter pushes it out with <code>--sem-margin-offset</code>. On narrow viewports and in print it reads inline as an ordinary callout. CSS-only — no handler, no chrome, no record change.</li>
+    <li><code>id</code>, <code>kind</code>, <code>tags</code> per global attribute catalog.</li>
+    <li><code>[hint | reveal]</code> notation: this element hosts the first definition of the agent-instruction notation (conventions §3) — parse in v1 only if the fallback handler ships it for free; otherwise defer.</li>
+  </ul>
+
+  <sem-note variant="warning" kind="ambiguity"><strong>Unresolved condition:</strong> whether the <code>[hint | reveal]</code> notation parses in v1 depends on the fallback handler shipping it for free; otherwise it is deferred.</sem-note>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Upgraded: <code>&lt;sem-note&gt;</code> itself (Lit <code>SemNote</code> — minimal: variant icon, collapsed behavior). No shadow root; light DOM, content searchable.</li>
+    <li>Pre-upgrade / JS-off: <code>:is(sem-note, .sem-note)</code> base in <code>themes/_vocabulary.css</code> — accent border + variant label via attribute selectors, both authoring forms from one rule (D10). The collapsed-body hide rule is gated on a tier marker, so JS-off the body is readable.</li>
+    <li><code>view-as="margin"</code>: <code>float: right</code> at <code>min-width: 64rem</code>, right margin <code>--sem-margin-offset</code> (0 by default, negative to reach a gutter); inline otherwise and under <code>@media print</code>.</li>
+    <li><code>role="note"</code>: component sets on upgrade; docs author it pre-set so machine readers see the role without JS.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <p>None.</p>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li><code>role="note"</code> present in DOM (authored or set on upgrade).</li>
+    <li>Variant by accent + the <code>variant</code> attribute; no aria-live.</li>
+    <li>Collapsed form: the teaser is a click target; the deep-link resolver opens it for a hash inside.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li><code>variant</code> + <code>kind</code> read as qualified annotation; statement content is the assertion text.</li>
+    <li><code>view-as</code> is never extracted (extraction §5c): a margin note and an inline note yield the same record.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-note.md" cite="sem-note.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

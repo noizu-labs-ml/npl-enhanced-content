@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — index</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#documents">Schema documents</a></li>
+        <li><a href="#references">Normative references</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">SemText — Schema index</h1>
+
+  <sem-note variant="info">One SemText document per schema contract, rendered from <code>spec/schema/*.md</code>; the Markdown files remain the editing source and every sub-document names its own. Root spec: <a href="../semtext.sem.html">spec/semtext.sem.html</a>. Changes here precede spec changes precede code.</sem-note>
+
+  <h2 id="documents">Schema documents</h2>
+
+  <sem-table kind="reference">
+    <table>
+      <caption>Element contracts (16)</caption>
+      <thead><tr><th scope="col">Element</th><th scope="col">Contract</th><th scope="col">E2E</th></tr></thead>
+      <tbody>
+        <tr><td><code>sem-note</code></td><td><a href="sem-note.sem.html">sem-note.sem.html</a></td><td><code>test/e2e/sem-note.cy.js</code></td></tr>
+        <tr><td><code>sem-audiences</code> / <code>sem-profile</code></td><td><a href="sem-audiences.sem.html">sem-audiences.sem.html</a></td><td><code>test/e2e/sem-audiences.cy.js</code></td></tr>
+        <tr><td><code>sem-chronology</code> / <code>sem-event</code></td><td><a href="sem-chronology.sem.html">sem-chronology.sem.html</a></td><td><code>test/e2e/sem-chronology.cy.js</code></td></tr>
+        <tr><td><code>sem-code</code></td><td><a href="sem-code.sem.html">sem-code.sem.html</a></td><td><code>test/e2e/sem-code.cy.js</code></td></tr>
+        <tr><td><code>sem-details</code> / <code>sem-detail</code> / <code>highlight</code></td><td><a href="sem-details.sem.html">sem-details.sem.html</a></td><td><code>test/e2e/sem-details.cy.js</code></td></tr>
+        <tr><td><code>sem-facts</code> / <code>sem-fact</code></td><td><a href="sem-facts.sem.html">sem-facts.sem.html</a></td><td><code>test/e2e/sem-facts.cy.js</code></td></tr>
+        <tr><td><code>sem-md</code></td><td><a href="sem-md.sem.html">sem-md.sem.html</a></td><td><code>test/e2e/sem-md.cy.js</code></td></tr>
+        <tr><td><code>sem-procedure</code> / <code>sem-step</code></td><td><a href="sem-procedure.sem.html">sem-procedure.sem.html</a></td><td><code>test/e2e/sem-procedure.cy.js</code></td></tr>
+        <tr><td><code>sem-progress</code></td><td><a href="sem-progress.sem.html">sem-progress.sem.html</a></td><td><code>test/e2e/sem-progress.cy.js</code></td></tr>
+        <tr><td><code>sem-properties</code> / <code>sem-property</code></td><td><a href="sem-properties.sem.html">sem-properties.sem.html</a></td><td><code>test/e2e/sem-properties.cy.js</code></td></tr>
+        <tr><td><code>sem-reader</code></td><td><a href="sem-reader.sem.html">sem-reader.sem.html</a></td><td><code>test/e2e/sem-reader.cy.js</code></td></tr>
+        <tr><td><code>sem-references</code> / <code>sem-reference</code> / <code>sem-ref</code></td><td><a href="sem-references.sem.html">sem-references.sem.html</a></td><td><code>test/e2e/sem-references.cy.js</code></td></tr>
+        <tr><td><code>sem-reveal</code></td><td><a href="sem-reveal.sem.html">sem-reveal.sem.html</a></td><td><code>test/e2e/sem-reveal.cy.js</code></td></tr>
+        <tr><td><code>sem-source</code></td><td><a href="sem-source.sem.html">sem-source.sem.html</a></td><td><code>test/e2e/sem-source.cy.js</code></td></tr>
+        <tr><td><code>sem-table</code></td><td><a href="sem-table.sem.html">sem-table.sem.html</a></td><td><code>test/e2e/sem-table.cy.js</code></td></tr>
+        <tr><td><code>sem-views</code> / <code>sem-view</code></td><td><a href="sem-views.sem.html">sem-views.sem.html</a></td><td><code>test/e2e/sem-views.cy.js</code></td></tr>
+      </tbody>
+    </table>
+  </sem-table>
+
+  <p>Elements documented in the root spec only (no schema file): <code>sem-agent</code>, <code>sem-question</code> (Tier-1 demo element, <a href="../semtext.sem.html">root spec §5</a>). Global attributes (<code>kind</code>, <code>tags</code>, <code>view-as</code>, <code>status</code>, <code>controls</code>, <code>audience</code>, …) are specified once in <a href="../semtext.sem.html#s2">root spec §2</a> and referenced by every sub-document.</p>
+
+  <h2 id="references">Normative references</h2>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema — the single source the validator reads; the contracts above are its human-readable BDD form.</sem-reference>
+    <sem-reference id="r-conventions" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/conventions.md" cite="conventions.md">SemText — Format Spec &amp; Conventions (Markdown source of the root document).</sem-reference>
+    <sem-reference id="r-extraction" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/extraction.md" cite="extraction.md">SemText extraction contract.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

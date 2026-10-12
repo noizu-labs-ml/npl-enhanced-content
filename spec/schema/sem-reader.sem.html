@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-reader</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#rendered">Rendered form</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#a11y">A11y contract</a></li>
+        <li><a href="#machine">Machine contract</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-reader</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. BDD source of truth for <code>test/e2e/sem-reader.cy.js</code>. Changes here precede spec changes precede code. This document renders <code>spec/schema/sem-reader.md</code>; the Markdown file remains the editing source.</sem-note>
+
+  <p>Reader chrome: outline, reading progress, focus mode, type/color controls, print, audience selector. It mints <strong>nothing</strong> — it is navigation and preference chrome around the document's content.</p>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-reader controls="outline,progress,focus,type,color,print,audience" outline-depth="3"&gt;
+  &lt;nav aria-label="Contents"&gt;
+    &lt;ol&gt;
+      &lt;li&gt;&lt;a href="#s1"&gt;Section 1&lt;/a&gt;&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/nav&gt;
+&lt;/sem-reader&gt;</code></pre></sem-code>
+
+  <p>Class-form alias (conventions Appendix A): <code>div.sem-reader[data-controls][data-outline-depth]</code> › the same optional nav.</p>
+
+  <ul>
+    <li><code>controls</code>: <code>outline</code> | <code>progress</code> | <code>focus</code> | <code>type</code> | <code>color</code> | <code>print</code> | <code>audience</code>.</li>
+    <li><code>outline-depth</code>: the heading depth the outline tracks; the component may auto-build it, but an <strong>authored nav wins</strong> and is used verbatim.</li>
+    <li>Placement: document metadata, near <code>sem-agent</code> / <code>sem-audiences</code>; chrome only, not content.</li>
+  </ul>
+
+  <h2 id="rendered">Rendered form</h2>
+
+  <ul>
+    <li>Fallback: sticky header (controls) + generated outline from authored headings when no nav is present; the progress bar reads scroll position; focus mode dims everything outside the current section; type/color controls flip a <code>--sem-*</code> token on <code>&lt;html&gt;</code>; the audience control is visible only when a <code>sem-audiences</code> block exists.</li>
+    <li>Upgraded: same behaviors, richer transitions.</li>
+    <li>JS-off: the authored nav renders as a plain list; no chrome.</li>
+  </ul>
+
+  <h2 id="events">Events</h2>
+  <p>None. Reader state (current section, font size, color mode, focus on/off) is live presentation state — carried in the hash where shareable, never extracted.</p>
+
+  <h2 id="a11y">A11y contract</h2>
+  <ul>
+    <li>The outline is a <code>&lt;nav aria-label="Contents"&gt;</code> with a real list.</li>
+    <li>Controls are buttons/switches with accessible names; focus mode preserves tab order.</li>
+    <li>The progress bar is decorative (aria-hidden) — its state is derivable from scroll.</li>
+  </ul>
+
+  <h2 id="machine">Machine contract</h2>
+  <ul>
+    <li><strong>Mints no records</strong> — chrome, not content. An authored <code>&lt;nav&gt;</code> inside is plain authored HTML and extracts as generic DOM records.</li>
+    <li>All reader state is invisible to extraction; the invariant holds across every reader interaction.</li>
+  </ul>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-src-md" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-reader.md" cite="sem-reader.md">Markdown source of this schema document.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>
