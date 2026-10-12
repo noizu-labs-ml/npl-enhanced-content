@@ -220,7 +220,7 @@ section { padding-block: var(--pg-space) 0; }
 .pg-caption { font-size: var(--pg-t--1); color: var(--sem-muted); margin-top: 0.6rem; }
 /* A statement that opens with a code chip would otherwise sit ~6px right of
    its neighbours, because the chip carries horizontal padding. */
-.sem-statement > code:first-child { margin-left: -0.35em; }
+statement > code:first-child { margin-left: -0.35em; }
 
 /* --- view-as toggle ------------------------------------------------------ */
 
@@ -270,7 +270,7 @@ section { padding-block: var(--pg-space) 0; }
 }
 /* Deck cards are clickable in flashcard view only; the vocabulary sets
    cursor:pointer on .sem-fact there, so nothing is needed for list view. */
-#try-deck .sem-fact { scroll-margin-top: 2rem; }
+#try-deck sem-fact { scroll-margin-top: 2rem; }
 
 /* --- reading section ------------------------------------------------------ */
 /* The prose column has a right gutter only on wide viewports; push the margin
@@ -302,12 +302,12 @@ section { padding-block: var(--pg-space) 0; }
    string via ::before, which is what keeps the question visible with JS off —
    but it duplicates the text once the <details> exists. Suppress the ::before
    only in that case. */
-/* Specificity has to beat .sem-reveal[data-summary]::before (0,2,0) in the
-   vocabulary file; :has(details) only contributes a type selector, so the
+/* Specificity has to beat the vocabulary's :is(sem-reveal, .sem-reveal)[data-summary]::before
+   (0,2,0); :has(details) only contributes a type selector, so the
    attribute has to be repeated here. */
-.sem-reveal[data-summary]:has(details)::before { content: none; }
-.sem-reveal summary { padding: 0.6rem 0.9rem; cursor: pointer; font-weight: 550; }
-.sem-reveal summary::marker { color: var(--sem-muted); }
+:is(sem-reveal, .sem-reveal)[data-summary]:has(details)::before { content: none; }
+sem-reveal summary { padding: 0.6rem 0.9rem; cursor: pointer; font-weight: 550; }
+sem-reveal summary::marker { color: var(--sem-muted); }
 
 /* JS-off completeness for sem-views.
    themes/_vocabulary.css hides .sem-view unconditionally and reveals only
@@ -320,28 +320,28 @@ section { padding-block: var(--pg-space) 0; }
    this page must not ship a section a reader cannot finish.
    The tab bar only exists once the fallback has run, so :has() on it is the
    same enhancement gate the other rules use. */
-.sem-views:not(:has(.sem-views-tabs)) .sem-view {
+sem-views:not(:has(.sem-views-tabs)) sem-view {
   display: block; border-top: 1px solid var(--sem-border);
   border-radius: 12px; margin-bottom: 0.5rem;
 }
-.sem-views:not(:has(.sem-views-tabs)) .sem-view::before {
+sem-views:not(:has(.sem-views-tabs)) sem-view::before {
   content: attr(data-name); display: block; font-weight: 620;
   margin-bottom: 0.35rem;
 }
 
-.sem-views { margin-top: 1.25rem; }
+sem-views { margin-top: 1.25rem; }
 .sem-views-tabs button { font: inherit; font-size: var(--pg-t--1); font-weight: 550; }
 .sem-facts-chrome button { font: inherit; }
 
 /* break-word, not anywhere: a token like --sem-* fits and must not be
    split mid-word just because the column is narrow. */
-.sem-property { align-items: baseline; overflow-wrap: break-word; }
-.sem-property::before { overflow-wrap: break-word; }
+sem-property { align-items: baseline; overflow-wrap: break-word; }
+sem-property::before { overflow-wrap: break-word; }
 @media (max-width: 34rem) {
-  .sem-property { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+  sem-property { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
 }
 
-.sem-agent { font-size: var(--pg-t--1); }
+agent { font-size: var(--pg-t--1); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -392,13 +392,13 @@ section { padding-block: var(--pg-space) 0; }
   </div>
 </header>
 
-<main id="main" class="sem-enhanced-document">
+<sem-enhanced-document id="main" role="main">
 
   <!-- Reading bar: the page dogfoods sem-reader. One per document, first
        child of the wrapper; the outline is generated from the h2s (depth 2);
        the audience select reads the sem-audiences block in the Reading
        section. Extraction skips the whole element. -->
-  <div class="sem-reader" id="pg-reader" data-controls="outline,progress,focus,type,color,print,audience" data-outline-depth="2"></div>
+  <sem-reader id="pg-reader" data-controls="outline,progress,focus,type,color,print,audience" data-outline-depth="2"></sem-reader>
 
   <!-- Hero ------------------------------------------------------------- -->
   <div class="pg-hero pg-col"><div class="pg-narrow">
@@ -455,17 +455,17 @@ section { padding-block: var(--pg-space) 0; }
         Pick a reader to see what each one gets from the same file.
       </p>
 
-      <div class="sem-views" id="readers" role="region"
+      <sem-views id="readers" role="region"
            aria-label="The three readers of a SemText document">
-        <div class="sem-view" data-name="Browser" data-active role="tabpanel" aria-label="Browser">
+        <sem-view data-name="Browser" data-active role="tabpanel" aria-label="Browser">
           <p>
             The theme CSS styles the vocabulary directly, so a document is
             readable the moment it opens. Flashcards flip, quizzes score, tabs
             switch and disclosures expand — driven by roughly 7 KB of vanilla
             JavaScript with no dependencies and no network calls.
           </p>
-        </div>
-        <div class="sem-view" data-name="Model" role="tabpanel" aria-label="Model">
+        </sem-view>
+        <sem-view data-name="Model" role="tabpanel" aria-label="Model">
           <p>
             The same file read as XHTML. Attributes qualify every datum:
             <code>data-kind</code> says what a thing is,
@@ -474,8 +474,8 @@ section { padding-block: var(--pg-space) 0; }
             distinguish an answer from a decoy. A model does not have to infer
             the structure, because the structure is written down.
           </p>
-        </div>
-        <div class="sem-view" data-name="Text" role="tabpanel" aria-label="Text">
+        </sem-view>
+        <sem-view data-name="Text" role="tabpanel" aria-label="Text">
           <p>
             The file opened in an editor, a diff, or a terminal is readable
             as it is: prose in document order, each qualifier written beside
@@ -484,8 +484,8 @@ section { padding-block: var(--pg-space) 0; }
             useful, an optional script derives one from the markup, but
             nothing depends on it.
           </p>
-        </div>
-      </div>
+        </sem-view>
+      </sem-views>
     </div></div>
   </section>
 
@@ -516,28 +516,28 @@ section { padding-block: var(--pg-space) 0; }
       <div class="pg-demo">
         <div id="try-scope">
           <h3 class="pg-panel-title" style="margin-top:0">What a person sees</h3>
-          <div class="sem-facts" id="try-deck" data-view-as="list" data-kind="capability">
-            <div class="sem-fact" id="f-view-as" data-kind="rule">
-              <div class="sem-statement"><code>view-as</code> is a parameter, not an identity</div>
-              <div class="sem-conclusion">A fact is a fact in every view; the attribute only selects a rendering.</div>
-              <div class="sem-distractor">Each view is a different element type.</div>
-            </div>
-            <div class="sem-fact" id="f-light-dom" data-kind="rule">
-              <div class="sem-statement">Components render into light DOM</div>
-              <div class="sem-conclusion">Content stays in the page, so find-in-page, copy and plain CSS all still reach it.</div>
-              <div class="sem-distractor">Content moves into a shadow root for encapsulation.</div>
-            </div>
-            <div class="sem-fact" id="f-invariant" data-kind="rule">
-              <div class="sem-statement">Extraction reads the authored document</div>
-              <div class="sem-conclusion">Generated chrome is skipped, so records do not depend on the view on screen.</div>
-              <div class="sem-distractor">Extraction reads whatever is currently rendered.</div>
-            </div>
-            <div class="sem-fact" id="f-no-build" data-kind="rule">
-              <div class="sem-statement">Authoring needs no build step</div>
-              <div class="sem-conclusion">Two stylesheets and one script tag in a plain HTML file.</div>
-              <div class="sem-distractor">A bundler compiles the vocabulary down to HTML.</div>
-            </div>
-          </div>
+          <sem-facts id="try-deck" data-view-as="list" data-kind="capability">
+            <sem-fact id="f-view-as" data-kind="rule">
+              <statement><code>view-as</code> is a parameter, not an identity</statement>
+              <conclusion>A fact is a fact in every view; the attribute only selects a rendering.</conclusion>
+              <sem-distractor>Each view is a different element type.</sem-distractor>
+            </sem-fact>
+            <sem-fact id="f-light-dom" data-kind="rule">
+              <statement>Components render into light DOM</statement>
+              <conclusion>Content stays in the page, so find-in-page, copy and plain CSS all still reach it.</conclusion>
+              <sem-distractor>Content moves into a shadow root for encapsulation.</sem-distractor>
+            </sem-fact>
+            <sem-fact id="f-invariant" data-kind="rule">
+              <statement>Extraction reads the authored document</statement>
+              <conclusion>Generated chrome is skipped, so records do not depend on the view on screen.</conclusion>
+              <sem-distractor>Extraction reads whatever is currently rendered.</sem-distractor>
+            </sem-fact>
+            <sem-fact id="f-no-build" data-kind="rule">
+              <statement>Authoring needs no build step</statement>
+              <conclusion>Two stylesheets and one script tag in a plain HTML file.</conclusion>
+              <sem-distractor>A bundler compiles the vocabulary down to HTML.</sem-distractor>
+            </sem-fact>
+          </sem-facts>
         </div>
 
         <div>
@@ -573,32 +573,32 @@ section { padding-block: var(--pg-space) 0; }
         without moving content.
       </p>
 
-      <div class="sem-facts" id="tier-facts" data-kind="architecture">
-        <div class="sem-fact" id="f-tier-1" data-kind="tier">
-          <div class="sem-statement">Tier 1 — CSS only</div>
-          <div class="sem-conclusion">
+      <sem-facts id="tier-facts" data-kind="architecture">
+        <sem-fact id="f-tier-1" data-kind="tier">
+          <statement>Tier 1 — CSS only</statement>
+          <conclusion>
             Two stylesheets render every element readably. Quiz answers, collapsed
             notes and inactive views all stay on the page, because the rules that
             would hide them never match.
-          </div>
-        </div>
-        <div class="sem-fact" id="f-tier-2" data-kind="tier">
-          <div class="sem-statement">Tier 2 — the fallback script</div>
-          <div class="sem-conclusion">
+          </conclusion>
+        </sem-fact>
+        <sem-fact id="f-tier-2" data-kind="tier">
+          <statement>Tier 2 — the fallback script</statement>
+          <conclusion>
             About 7 KB of vanilla JavaScript wires flashcards, quizzes, tabs,
             disclosure and meters. No dependencies, no network, no build. It is
             the tier a file you email still has.
-          </div>
-        </div>
-        <div class="sem-fact" id="f-tier-3" data-kind="tier">
-          <div class="sem-statement">Tier 3 — Lit components</div>
-          <div class="sem-conclusion">
+          </conclusion>
+        </sem-fact>
+        <sem-fact id="f-tier-3" data-kind="tier">
+          <statement>Tier 3 — Lit components</statement>
+          <conclusion>
             When the component bundle loads, elements claim
             <code>data-sem-upgraded</code>, drop the fallback marker and take
             over in place. Content is never re-parented into a shadow root.
-          </div>
-        </div>
-      </div>
+          </conclusion>
+        </sem-fact>
+      </sem-facts>
 
       <p class="pg-caption">
         The notes further down this page are <code>&lt;sem-note&gt;</code> custom
@@ -624,13 +624,13 @@ section { padding-block: var(--pg-space) 0; }
         under <a href="#rd-reader-h">Reader</a> below.
       </p>
 
-      <div class="sem-note" id="rd-margin" data-view-as="margin" data-variant="tip">
-        <div class="sem-note-body">
+      <sem-note id="rd-margin" data-view-as="margin" data-variant="tip">
+        
           This note is <code>data-view-as="margin"</code>. On a wide viewport
           CSS floats it into the right gutter; on a phone it reads inline.
           Extraction reports the same <code>sem-note</code> record either way.
-        </div>
-      </div>
+        
+      </sem-note>
 
       <h3 id="rd-glossary-h">Glossary</h3>
       <p>
@@ -641,11 +641,11 @@ section { padding-block: var(--pg-space) 0; }
         anchor still navigates. With scripts off the link simply jumps to the
         definition.
       </p>
-      <div class="sem-properties" id="rd-glossary" data-kind="glossary" data-view-as="glossary" role="group" aria-labelledby="rd-glossary-h">
-        <div class="sem-property" id="rd-g-record" data-key="record" role="definition" aria-label="record">One entry in the array extraction returns: a type, an id, qualifiers, a payload of fields and a one-line text.</div>
-        <div class="sem-property" id="rd-g-tier" data-key="tier" role="definition" aria-label="tier">Which script, if any, is driving the document: none (CSS only), the fallback bundle, or the Lit components.</div>
-        <div class="sem-property" id="rd-g-marker" data-key="tier marker" role="definition" aria-label="tier marker">The <code>data-sem-fallback</code> or <code>data-sem-upgraded</code> attribute a script sets on what it wired; every hide rule is gated on one of them.</div>
-      </div>
+      <sem-properties id="rd-glossary" data-kind="glossary" data-view-as="glossary" role="group" aria-labelledby="rd-glossary-h">
+        <sem-property id="rd-g-record" data-key="record" role="definition" aria-label="record">One entry in the array extraction returns: a type, an id, qualifiers, a payload of fields and a one-line text.</sem-property>
+        <sem-property id="rd-g-tier" data-key="tier" role="definition" aria-label="tier">Which script, if any, is driving the document: none (CSS only), the fallback bundle, or the Lit components.</sem-property>
+        <sem-property id="rd-g-marker" data-key="tier marker" role="definition" aria-label="tier marker">The <code>data-sem-fallback</code> or <code>data-sem-upgraded</code> attribute a script sets on what it wired; every hide rule is gated on one of them.</sem-property>
+      </sem-properties>
       <p>
         Because every hide rule is gated on a
         <a href="#rd-g-marker" id="rd-term-marker">tier marker</a>, a document
@@ -664,12 +664,12 @@ section { padding-block: var(--pg-space) 0; }
         <code>&lt;time&gt;</code>; without one, CSS renders the attribute.
         Extraction gives each event a positional ordinal.
       </p>
-      <div class="sem-chronology" id="rd-history" data-kind="release-history" data-view-as="timeline" role="list" aria-labelledby="rd-chron-h">
-        <div class="sem-event" id="rd-e-spec" role="listitem" data-when="2026-01" data-status="done"><time datetime="2026-01">Jan 2026</time> Format spec v0 and the Tier-0 schemas.</div>
-        <div class="sem-event" id="rd-e-fallback" role="listitem" data-when="2026-03" data-status="done"><time datetime="2026-03">Mar 2026</time> Fallback tier, extraction contract, scripts-stripped artifact.</div>
-        <div class="sem-event" id="rd-e-reading" role="listitem" data-when="2026-09" data-status="current"><time datetime="2026-09">Sep 2026</time> Reading experience: foundations, then the prose elements on this page.</div>
-        <div class="sem-event" id="rd-e-themes" role="listitem" data-when="2026-Q4">Theme pipeline and the reader chrome.</div>
-      </div>
+      <sem-chronology id="rd-history" data-kind="release-history" data-view-as="timeline" role="list" aria-labelledby="rd-chron-h">
+        <sem-event id="rd-e-spec" role="listitem" data-when="2026-01" data-status="done"><time datetime="2026-01">Jan 2026</time> Format spec v0 and the Tier-0 schemas.</sem-event>
+        <sem-event id="rd-e-fallback" role="listitem" data-when="2026-03" data-status="done"><time datetime="2026-03">Mar 2026</time> Fallback tier, extraction contract, scripts-stripped artifact.</sem-event>
+        <sem-event id="rd-e-reading" role="listitem" data-when="2026-09" data-status="current"><time datetime="2026-09">Sep 2026</time> Reading experience: foundations, then the prose elements on this page.</sem-event>
+        <sem-event id="rd-e-themes" role="listitem" data-when="2026-Q4">Theme pipeline and the reader chrome.</sem-event>
+      </sem-chronology>
 
       <h3 id="rd-code-h">Code</h3>
       <p>
@@ -680,13 +680,13 @@ section { padding-block: var(--pg-space) 0; }
         byte-identical, and extraction reports it verbatim rather than
         whitespace-collapsed.
       </p>
-      <div class="sem-code" id="rd-code" data-lang="html" data-filename="doc.html" data-mark="3-4" data-controls="copy,wrap" aria-labelledby="rd-code-h">
+      <sem-code id="rd-code" data-lang="html" data-filename="doc.html" data-mark="3-4" data-controls="copy,wrap" aria-labelledby="rd-code-h">
 <pre><code>&lt;p&gt;Rotate per use&lt;a href="#r-rfc"&gt;[1]&lt;/a&gt;.&lt;/p&gt;
 &lt;div class="sem-references" data-kind="bibliography" role="list"&gt;
   &lt;div class="sem-reference" id="r-rfc" role="listitem"
        data-href="https://www.rfc-editor.org/rfc/rfc6749" data-cite="RFC 6749"&gt;…&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-      </div>
+      </sem-code>
 
       <h3 id="rd-audience-h">Audience</h3>
       <p>
@@ -697,24 +697,24 @@ section { padding-block: var(--pg-space) 0; }
         is not for the reader; nothing is removed, and extraction never looks
         at <code>hidden</code>, so a filtered document still extracts whole.
       </p>
-      <div class="sem-audiences" id="rd-audiences">
-        <div class="sem-profile" id="reader" data-label="Reader"></div>
-        <div class="sem-profile" id="operator" data-label="Operator" data-implies="reader"></div>
-      </div>
+      <sem-audiences id="rd-audiences">
+        <sem-profile id="reader" data-label="Reader"></sem-profile>
+        <sem-profile id="operator" data-label="Operator" data-implies="reader"></sem-profile>
+      </sem-audiences>
       <p class="pg-picker" role="group" aria-label="Choose an audience">
         <a href="#sem-audience=reader">Read as a reader</a>
         <a href="#sem-audience=operator">Read as an operator</a>
         <a href="#reading">Clear</a>
       </p>
-      <div class="sem-note" id="rd-n-operator" data-audience="operator" data-variant="warning">
-        <div class="sem-note-body">Operators only: an operator implies reader, so this profile sees every reader note as well.</div>
-      </div>
-      <div class="sem-note" id="rd-n-reader" data-audience="reader" data-variant="info">
-        <div class="sem-note-body">Readers and operators: content for a profile is hidden until a reader claims it, never deleted.</div>
-      </div>
-      <div class="sem-note" id="rd-n-public" data-audience="!operator">
-        <div class="sem-note-body">Everyone except operators: a negated spec shows by default and hides once the excluded profile is active.</div>
-      </div>
+      <sem-note id="rd-n-operator" data-audience="operator" data-variant="warning">
+        Operators only: an operator implies reader, so this profile sees every reader note as well.
+      </sem-note>
+      <sem-note id="rd-n-reader" data-audience="reader" data-variant="info">
+        Readers and operators: content for a profile is hidden until a reader claims it, never deleted.
+      </sem-note>
+      <sem-note id="rd-n-public" data-audience="!operator">
+        Everyone except operators: a negated spec shows by default and hides once the excluded profile is active.
+      </sem-note>
 
       <h3 id="rd-links-h">Deep links, print, motion</h3>
       <p>
@@ -755,7 +755,7 @@ section { padding-block: var(--pg-space) 0; }
         extracts exactly as it was written. A numeric cell carries
         <code>data-value</code> when its text is not the key.
       </p>
-      <div class="sem-table" id="rd-table" data-kind="artifacts" data-controls="sort,filter" data-sticky aria-labelledby="rd-table-h">
+      <sem-table id="rd-table" data-kind="artifacts" data-controls="sort,filter" data-sticky aria-labelledby="rd-table-h">
         <table>
           <caption>Shipped scripts, measured by the build</caption>
           <thead><tr><th scope="col">Artifact</th><th scope="col">Minified</th><th scope="col">Gzipped</th><th scope="col">Global</th></tr></thead>
@@ -767,7 +767,7 @@ section { padding-block: var(--pg-space) 0; }
             <tr><td>semtext-md.js</td><td data-value="<!-- sem:inline size-kb md -->"><!-- sem:inline size-kb md --> KB</td><td data-value="<!-- sem:inline size-gzkb md -->"><!-- sem:inline size-gzkb md --> KB</td><td>SemTextMd</td></tr>
           </tbody>
         </table>
-      </div>
+      </sem-table>
 
       <h3 id="rd-source-h">Source</h3>
       <p>
@@ -780,16 +780,16 @@ section { padding-block: var(--pg-space) 0; }
         <code>sem-code</code> (copy, wrap) on the first switch. The wrapper
         mints nothing and its children extract as if it were absent.
       </p>
-      <div class="sem-source" id="rd-source" data-label="A note and a runbook">
-        <div class="sem-note" id="rd-src-note" data-variant="tip">
-          <div class="sem-note-body">Rotate the refresh token on every exchange; the presented token is retired.</div>
-        </div>
-        <div class="sem-procedure" id="rd-src-steps" data-kind="runbook" role="list">
-          <div class="sem-step" role="listitem" data-status="done">issue the pair</div>
-          <div class="sem-step" role="listitem" data-status="current">exchange the refresh token</div>
-          <div class="sem-step" role="listitem">retire the presented token</div>
-        </div>
-      </div>
+      <sem-source id="rd-source" data-label="A note and a runbook">
+        <sem-note id="rd-src-note" data-variant="tip">
+          Rotate the refresh token on every exchange; the presented token is retired.
+        </sem-note>
+        <sem-procedure id="rd-src-steps" data-kind="runbook" role="list">
+          <sem-step role="listitem" data-status="done">issue the pair</sem-step>
+          <sem-step role="listitem" data-status="current">exchange the refresh token</sem-step>
+          <sem-step role="listitem">retire the presented token</sem-step>
+        </sem-procedure>
+      </sem-source>
 
       <h3 id="rd-md-h">Markdown</h3>
       <p>
@@ -804,7 +804,7 @@ section { padding-block: var(--pg-space) 0; }
         record. It ships as its own script, <code>semtext-md.js</code>, so a
         document with no Markdown never loads the parser.
       </p>
-      <div class="sem-md" id="rd-md" data-label="Who renders sem-md" aria-labelledby="rd-md-h">
+      <sem-md id="rd-md" data-label="Who renders sem-md" aria-labelledby="rd-md-h">
         | Tier     | Script            | Renders `sem-md` as              |
         | :------- | :---------------- | :------------------------------- |
         | none     | —                 | the source, pre-wrapped          |
@@ -812,7 +812,7 @@ section { padding-block: var(--pg-space) 0; }
         | upgraded | `semtext.js`      | the same, from the Lit wrapper   |
 
         Both scripted tiers call **one** enhance function; the *tier marker* is the only difference.
-      </div>
+      </sem-md>
 
       <h3 id="rd-refs-h">References</h3>
       <p>
@@ -822,10 +822,10 @@ section { padding-block: var(--pg-space) 0; }
         external link where an entry has an <code>href</code>. In print the
         href is written out inside the block, never at the citation<a href="#rd-r-print" id="rd-cite-2">[2]</a>.
       </p>
-      <div class="sem-references" id="rd-refs" data-kind="bibliography" role="list" aria-labelledby="rd-refs-h">
-        <div class="sem-reference" id="rd-r-extraction" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/extraction.md" data-cite="extraction.md §5">The central invariant: extraction output is identical whether or not JS ran, under any view, and after any interaction.</div>
-        <div class="sem-reference" id="rd-r-print" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-references.md" data-cite="sem-references.md">Print appends <code>(href)</code> inside the references block only.</div>
-      </div>
+      <sem-references id="rd-refs" data-kind="bibliography" role="list" aria-labelledby="rd-refs-h">
+        <sem-reference id="rd-r-extraction" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/extraction.md" data-cite="extraction.md §5">The central invariant: extraction output is identical whether or not JS ran, under any view, and after any interaction.</sem-reference>
+        <sem-reference id="rd-r-print" role="listitem" data-href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/sem-references.md" data-cite="sem-references.md">Print appends <code>(href)</code> inside the references block only.</sem-reference>
+      </sem-references>
     </div></div>
   </section>
 
@@ -915,16 +915,16 @@ section { padding-block: var(--pg-space) 0; }
         need not carry the parser.
       </p>
 
-      <div class="sem-properties" data-kind="artifacts" role="group"
+      <sem-properties data-kind="artifacts" role="group"
            aria-label="Shipped artifacts">
-        <div class="sem-property" data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · <!-- sem:inline size-mg bundle --></span></div>
-        <div class="sem-property" data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · <!-- sem:inline size-mg fallback --></span></div>
-        <div class="sem-property" data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews, the reader bar, table sort and filter · global <code>SemTextReading</code> · <!-- sem:inline size-mg reading --></span></div>
-        <div class="sem-property" data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · <!-- sem:inline size-mg extract --></span></div>
-        <div class="sem-property" data-key="semtext-md.js" role="definition" aria-label="semtext-md.js"><span>The <code>sem-md</code> Markdown renderer · global <code>SemTextMd</code> · <!-- sem:inline size-mg md --></span></div>
-        <div class="sem-property" data-key="_vocabulary.css" role="definition" aria-label="_vocabulary.css"><span>Structure for the <code>sem-*</code> classes. Reads <code>--sem-*</code> tokens, declares none.</span></div>
-        <div class="sem-property" data-key="theme css" role="definition" aria-label="theme css"><span>Token values only, plus a <code>prefers-color-scheme</code> block. A new theme is a copy with new values.</span></div>
-      </div>
+        <sem-property data-key="semtext.js" role="definition" aria-label="semtext.js"><span>Lit 3 components · global <code>SemText</code> · <!-- sem:inline size-mg bundle --></span></sem-property>
+        <sem-property data-key="semtext-fallback.js" role="definition" aria-label="semtext-fallback.js"><span>Vanilla interactivity, no dependencies · global <code>SemTextFallback</code> · <!-- sem:inline size-mg fallback --></span></sem-property>
+        <sem-property data-key="semtext-reading.js" role="definition" aria-label="semtext-reading.js"><span>Code chrome, reference and glossary previews, the reader bar, table sort and filter · global <code>SemTextReading</code> · <!-- sem:inline size-mg reading --></span></sem-property>
+        <sem-property data-key="semtext-extract.js" role="definition" aria-label="semtext-extract.js"><span>DOM to records and annotated text · global <code>SemTextExtract</code> · <!-- sem:inline size-mg extract --></span></sem-property>
+        <sem-property data-key="semtext-md.js" role="definition" aria-label="semtext-md.js"><span>The <code>sem-md</code> Markdown renderer · global <code>SemTextMd</code> · <!-- sem:inline size-mg md --></span></sem-property>
+        <sem-property data-key="_vocabulary.css" role="definition" aria-label="_vocabulary.css"><span>Structure for the <code>sem-*</code> classes. Reads <code>--sem-*</code> tokens, declares none.</span></sem-property>
+        <sem-property data-key="theme css" role="definition" aria-label="theme css"><span>Token values only, plus a <code>prefers-color-scheme</code> block. A new theme is a copy with new values.</span></sem-property>
+      </sem-properties>
 
       <h3>The vocabulary</h3>
       <p class="pg-narrow">
@@ -946,11 +946,11 @@ section { padding-block: var(--pg-space) 0; }
         exercise and there is no honest number to meter.
       </p>
 
-      <div class="sem-agent">
-        <div class="sem-agent-name">SemText Guide</div>
-        <div class="sem-agent-bio">Answers questions about SemText from the facts on this page.</div>
-        <div class="sem-agent-instructions">Answer only from sem-fact records in this document; cite ids.</div>
-      </div>
+      <agent>
+        <name>SemText Guide</name>
+        <bio>Answers questions about SemText from the facts on this page.</bio>
+        <instructions>Answer only from sem-fact records in this document; cite ids.</instructions>
+      </agent>
       <p class="pg-caption">
         A <code>sem-agent</code> block, above: document-level metadata aimed at
         a model, carried by the same file a person is reading. It is inert to a
@@ -966,57 +966,57 @@ section { padding-block: var(--pg-space) 0; }
       <h2 id="scope-h">What it is not.</h2>
 
       <sem-note variant="info">
-        <div class="sem-note-body">
+        
           SemText is a markup vocabulary and three small scripts. It is not a
           CMS, a site generator or an application framework, and it has no
           opinion about how you produce the HTML.
-        </div>
+        
       </sem-note>
 
       <sem-note variant="warning">
-        <div class="sem-note-body">
+        
           The spec is a draft at <!-- sem:inline spec-version -->. The
           class-based vocabulary is the current baseline and the
           custom-element form is arriving alongside it, so element names and
           attributes can still change. Pin a version.
-        </div>
+        
       </sem-note>
 
       <sem-note variant="tip">
-        <div class="sem-note-body">
+        
           There is no React in the dependency tree and there is not going to be
           one. Lit 3 is the only runtime dependency, and it is optional — the
           fallback tier has none.
-        </div>
+        
       </sem-note>
 
       <h3 id="questions">Reasonable questions</h3>
 
-      <div class="sem-reveal" id="q-markdown" data-summary="Why not Markdown?" collapsed>
+      <sem-reveal id="q-markdown" data-summary="Why not Markdown?" collapsed>
         Markdown has nowhere to put the attributes that make a datum
         machine-readable — no way to mark a conclusion as distinct from a
         decoy, or a step as blocked. An authoring aid that compiles Markdown
         into SemText is a reasonable thing to build, but the canonical artifact
         stays XHTML, because that is the artifact all three readers consume.
-      </div>
+      </sem-reveal>
 
-      <div class="sem-reveal" id="q-why-model" data-summary="Does a language model really need this?" collapsed>
+      <sem-reveal id="q-why-model" data-summary="Does a language model really need this?" collapsed>
         A model can read any HTML. What it cannot do reliably is tell a
         conclusion from a distractor, or a caveat from a heading, when nothing
         in the markup says so. The claim here is narrow: the attributes remove
         that guesswork, and the extraction contract makes the result stable
         enough to cite.
-      </div>
+      </sem-reveal>
 
-      <div class="sem-reveal" id="q-adoption" data-summary="Is anyone using it?" collapsed>
+      <sem-reveal id="q-adoption" data-summary="Is anyone using it?" collapsed>
         Not yet. This is a draft spec, a reference implementation and a Cypress
         suite. There are no users to point at, no benchmarks to quote and no
         production deployments beyond this page and its demos.
-      </div>
+      </sem-reveal>
     </div></div>
   </section>
 
-</main>
+</sem-enhanced-document>
 
 <footer>
   <div class="pg-col">
@@ -1086,13 +1086,13 @@ section { padding-block: var(--pg-space) 0; }
         : 'Recomputed live — and it differs from the list view, which is a bug worth reporting.';
   }
 
-  /* Flashcard flip is bound to a click on the .sem-fact <div>, with no role,
+  /* Flashcard flip is bound to a click on the sem-fact record, with no role,
      no tabindex and no key handler — so with the fallback tier alone the flip
      is mouse-only (WCAG 2.1.1). The gap is in src/fallback/facts.ts and the
      fix belongs there; this closes it for this page so the demo is not the
      one interaction a keyboard user cannot reach. */
   function makeCardsKeyboardOperable() {
-    Array.prototype.forEach.call(deck.querySelectorAll('.sem-fact'), function (card) {
+    Array.prototype.forEach.call(deck.querySelectorAll('sem-fact'), function (card) {
       card.setAttribute('tabindex', '0');
       card.setAttribute('role', 'button');
       card.setAttribute('aria-label', 'Flip card to show the conclusion');

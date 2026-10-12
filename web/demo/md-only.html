@@ -7,7 +7,7 @@
 <!-- sem:inline theme minimal-tech-light -->
 <!-- sem:inline vocabulary -->
 <style>
-  .sem-enhanced-document { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem; }
+  sem-enhanced-document { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem; }
 </style>
 <!-- ONLY the Markdown bundle. Proves sem-md stands alone: the element is
      marked, the root is not (spec/schema/sem-md.md), and the raw fence is
@@ -15,16 +15,16 @@
 <!-- sem:inline md -->
 </head>
 <body>
-<div class="sem-enhanced-document">
+<sem-enhanced-document>
   <h1>sem-md alone</h1>
-  <div class="sem-facts" id="deck">
-    <div class="sem-fact"><div class="sem-statement">S</div><div class="sem-conclusion">C</div><div class="sem-distractor" id="decoy">decoy stays visible: no script manages this deck</div></div>
-  </div>
-  <div class="sem-md" id="mo-table" data-label="Alone">
+  <sem-facts id="deck">
+    <sem-fact><statement>S</statement><conclusion>C</conclusion><sem-distractor id="decoy">decoy stays visible: no script manages this deck</sem-distractor></sem-fact>
+  </sem-facts>
+  <sem-md id="mo-table" data-label="Alone">
     | a | b |
     | - | - |
     | 1 | 2 |
-  </div>
-</div>
+  </sem-md>
+</sem-enhanced-document>
 </body>
 </html>

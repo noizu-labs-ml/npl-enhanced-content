@@ -219,14 +219,14 @@
   <!-- Class form on both pages: the reveal and views fallbacks (core) drive
        `.sem-reveal` / `.sem-views` only. Headings inside them are reached
        from the outline through the deep-link resolver. -->
-  <div class="sem-reveal" id="rv-keys" data-summary="Key rotation detail" collapsed>
+  <sem-reveal id="rv-keys" data-summary="Key rotation detail" collapsed>
     <h3 id="rv-h">Signing keys</h3>
     <p>Rotate the signing key on the refresh cadence; publish both keys during the overlap.</p>
-  </div>
-  <div class="sem-views" id="clients">
-    <div class="sem-view" data-name="Web" data-active><p>Browser clients keep the pair in an httpOnly cookie.</p></div>
-    <div class="sem-view" data-name="Native"><h3 id="vw-h">Native clients</h3><p>Native clients keep the pair in the platform keychain.</p></div>
-  </div>
+  </sem-reveal>
+  <sem-views id="clients">
+    <sem-view data-name="Web" data-active><p>Browser clients keep the pair in an httpOnly cookie.</p></sem-view>
+    <sem-view data-name="Native"><h3 id="vw-h">Native clients</h3><p>Native clients keep the pair in the platform keychain.</p></sem-view>
+  </sem-views>
 
 </sem-enhanced-document>
 </body>
