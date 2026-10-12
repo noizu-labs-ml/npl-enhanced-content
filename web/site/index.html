@@ -351,6 +351,54 @@ section { padding-block: var(--pg-space) 0; }
     scroll-behavior: auto !important;
   }
 }
+
+/* Spec modal. One shared <dialog> near the end of <body>; every link to the
+   conventions spec opens the built page (/spec/conventions.html) in its
+   iframe instead of navigating away. The dialog fills the viewport minus a
+   1rem margin on each side; the header row is fixed, the iframe flexes. */
+.spec-dialog {
+  width: calc(100vw - 2rem);
+  height: calc(100vh - 2rem);
+  height: calc(100dvh - 2rem);
+  max-width: none;
+  padding: 0;
+  border: 1px solid var(--sem-border);
+  border-radius: 0.5rem;
+  background: var(--sem-surface);
+  color: var(--sem-fg);
+}
+.spec-dialog[open] { display: flex; flex-direction: column; }
+.spec-dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+.spec-dialog-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--sem-border);
+}
+.spec-dialog-head strong { font-size: var(--pg-t-0); }
+.spec-dialog-actions { display: flex; align-items: center; gap: 1rem; white-space: nowrap; }
+.spec-dialog-actions a { font-size: var(--pg-t--1); }
+.spec-dialog-close {
+  font: inherit;
+  font-size: var(--pg-t-0);
+  line-height: 1;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--sem-border);
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--sem-fg);
+  cursor: pointer;
+}
+.spec-dialog-frame {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  border: 0;
+  background: var(--sem-surface);
+}
 </style>
 
 <!-- Behaviour. All three artifacts are inlined from dist/ at build time, so
@@ -1040,6 +1088,20 @@ section { padding-block: var(--pg-space) 0; }
   </div>
 </footer>
 
+<!-- Shared spec modal. Opened by the page script below whenever a link to the
+     conventions spec is clicked; the triggering links keep their real href,
+     so they still navigate with script off or from a context menu. -->
+<dialog id="spec-dialog" class="spec-dialog" aria-labelledby="spec-dialog-title">
+  <header class="spec-dialog-head">
+    <strong id="spec-dialog-title">SemText conventions</strong>
+    <span class="spec-dialog-actions">
+      <a href="../../spec/conventions.html" target="_blank" rel="noopener">Open in new tab</a>
+      <button type="button" class="spec-dialog-close" aria-label="Close">&#10005;</button>
+    </span>
+  </header>
+  <iframe class="spec-dialog-frame" src="../../spec/conventions.html" title="SemText conventions" sandbox="allow-scripts allow-same-origin"></iframe>
+</dialog>
+
 <script>
 /* ---------------------------------------------------------------------------
  * Page script. Two jobs, both specific to this landing page — the vocabulary
@@ -1126,6 +1188,51 @@ section { padding-block: var(--pg-space) 0; }
   /* Registered after the fallback's own listener (declared in <head>), so the
      first extraction sees a fully enhanced document. */
   document.addEventListener('DOMContentLoaded', extract);
+})();
+</script>
+
+<script>
+/* ---------------------------------------------------------------------------
+ * Spec modal wiring. The <dialog> above is the single shared modal for the
+ * page: any link to the conventions spec — the GitHub blob URLs in the hero
+ * and footer today, a local relative link tomorrow — opens the built page
+ * (../../spec/conventions.html, served at /spec/conventions.html) in its
+ * iframe via showModal(). The matched links keep their authored href, so
+ * they still work without script and in new tabs; the header's "Open in new
+ * tab" link points at the same built page. Escape closes natively; a click
+ * on the backdrop (outside the dialog box) and the close button close too.
+ *
+ * The iframe is sandboxed without taking scripts or same-origin away — the
+ * spec page runs the real SemText bundles, which need both — so the pair is
+ * a no-op today and a documented ceiling tomorrow.
+ * ------------------------------------------------------------------------ */
+(function () {
+  var dialog = document.getElementById('spec-dialog');
+  if (!dialog || typeof dialog.showModal !== 'function') return;
+  var closeButton = dialog.querySelector('.spec-dialog-close');
+
+  document.addEventListener('click', function (e) {
+    var link = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if (!link) return;
+    if (!/\/spec\/conventions\.(md|html)([?#].*)?$/.test(link.getAttribute('href'))) return;
+    e.preventDefault();
+    dialog.showModal();
+  });
+
+  closeButton.addEventListener('click', function () {
+    dialog.close();
+  });
+
+  /* A click that reaches the dialog element itself happened either on the
+     backdrop or in the dialog's own padding; only the backdrop (outside the
+     dialog box) closes. */
+  dialog.addEventListener('click', function (e) {
+    if (e.target !== dialog) return;
+    var r = dialog.getBoundingClientRect();
+    var inside = e.clientX >= r.left && e.clientX <= r.right &&
+                 e.clientY >= r.top && e.clientY <= r.bottom;
+    if (!inside) dialog.close();
+  });
 })();
 </script>
 </body>
