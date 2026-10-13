@@ -43,26 +43,11 @@
  */
 
 /* Components — alphabetical; one two-line pair each, nothing shared. */
-export { NplAgent } from './npl-agent.js';
-export { NplExample } from './npl-example.js';
-import './npl-agent.js';
-import './npl-example.js';
-export { NplFlag } from './npl-flag.js';
-export { NplFlags } from './npl-flags.js';
-export { NplHormones } from './npl-hormones.js';
-export { NplMindread } from './npl-mindread.js';
-export { NplPoa } from './npl-poa.js';
-export { NplRef } from './npl-ref.js';
-export { NplRubric } from './npl-rubric.js';
-import './npl-flag.js';
-import './npl-flags.js';
-import './npl-hormones.js';
-import './npl-mindread.js';
-import './npl-poa.js';
-import './npl-ref.js';
-import './npl-rubric.js';
 
 /* Namespace helpers (src/lit/npl/shared.ts). */
+
+export { NplAgent } from './npl-agent.js';
+import './npl-agent.js';
 export { NplArtifact } from './npl-artifact.js';
 import './npl-artifact.js';
 export { NplCot } from './npl-cot.js';
@@ -75,12 +60,28 @@ export { NplDirective } from './npl-directive.js';
 import './npl-directive.js';
 export { NplExample } from './npl-example.js';
 import './npl-example.js';
+export { NplFlag } from './npl-flag.js';
+import './npl-flag.js';
+export { NplFlags } from './npl-flags.js';
+import './npl-flags.js';
+export { NplHormones } from './npl-hormones.js';
+import './npl-hormones.js';
 export { NplIntent } from './npl-intent.js';
 import './npl-intent.js';
+export { NplMindread } from './npl-mindread.js';
+import './npl-mindread.js';
 export { NplMode } from './npl-mode.js';
 import './npl-mode.js';
 export { NplMood } from './npl-mood.js';
 import './npl-mood.js';
+export { NplPoa } from './npl-poa.js';
+import './npl-poa.js';
+export { NplRef } from './npl-ref.js';
+import './npl-ref.js';
+export { NplRubric } from './npl-rubric.js';
+import './npl-rubric.js';
+export { NplSection } from './npl-section.js';
+import './npl-section.js';
 export { NplThought } from './npl-thought.js';
 import './npl-thought.js';
 export { NplVos } from './npl-vos.js';
