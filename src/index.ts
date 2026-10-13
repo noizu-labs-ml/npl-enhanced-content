@@ -5,7 +5,7 @@
  *
  *   1. Defines every custom element (src/lit/*): sem-note, sem-facts,
  *      sem-details, sem-code, sem-references, sem-properties, sem-reader,
- *      sem-table, sem-source, sem-md.
+ *      sem-table, sem-source, sem-md, sem-chat.
  *   2. Re-exports the extraction contract (src/extract/*) and the shared
  *      foundation the npm surface documents — the former
  *      `SemTextExtract` / `SemTextMd` / `SemTextReading` /
@@ -76,7 +76,11 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
-/* agent-kit upsell stubs — interaction-only, fixture-fed, zero network */
+/* agent-kit upsell stubs — interaction-only, fixture-fed, zero network
+ *   sem-review-canvas: the agent-kit upsell stub (phase 1)
+ *   sem-chat: endpoint-driven chat transcript + composer */
+export { SemChat, consumeReply } from './lit/sem-chat.js';
+import './lit/sem-chat.js';
 export { SemReviewCanvas } from './lit/sem-review-canvas.js';
 import './lit/sem-review-canvas.js';
 
