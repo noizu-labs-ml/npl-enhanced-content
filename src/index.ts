@@ -77,6 +77,10 @@ import './lit/sem-source.js';
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
 
+/* NPL components — the npl-* namespace. The barrel owns the per-component
+ * lines; this import is the only touch src/index.ts ever needs. */
+export * from './lit/npl/index.js';
+
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */
 import {
