@@ -76,6 +76,15 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
+/* sem-shell — interactive shell over the virtual demo file system
+ * (src/shell/*). A tool element, not document vocabulary: it renders its
+ * own terminal chrome in light DOM and opens stored demo documents. */
+export { SemShell } from './shell/sem-shell.js';
+import './shell/sem-shell.js';
+/* sem-terminal — the reusable terminal core <sem-shell> is built on
+ * (src/terminal/*): plugins attribute, manifest loading, dispatch. */
+export { SemTerminal } from './terminal/sem-terminal.js';
+import './terminal/sem-terminal.js';
 
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */

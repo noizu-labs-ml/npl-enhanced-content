@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" data-sem-theme="minimal-tech-light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SemText · sem-shell (the demo file system, in a terminal)</title>
+<!-- sem:inline vocabulary -->
+<style>
+  body { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin: 0 0 .5rem; }
+  p  { margin: .6rem 0; }
+</style>
+<!-- sem:inline bundle -->
+</head>
+<body>
+<h1>sem-shell</h1>
+<p>An interactive shell over a small in-memory file system of SemText
+documents — the <code>&lt;sem-terminal&gt;</code> core configured with the
+bundled <code>semtext-demo</code> plugin (see
+<code>src/terminal/PLUGINS.md</code>). Try <code>ls -l</code>,
+<code>cat demo/welcome.html</code>,
+<code>semtext outline demo/token-rotation.html</code>,
+<code>open demo/welcome.html</code>. Arrows recall history; Ctrl+L clears;
+<code>help</code> lists everything. On boot the shell also demonstrates the
+CDN rule: a second plugin from an <code>https://</code> URL with no
+integrity hash is refused before any request.</p>
+
+<!-- The authored children ARE the zero-JS contract: a static transcript
+     with no input element. The upgrade replaces them (and the build's
+     .nojs.html variant ships exactly this as proof). -->
+<sem-shell aria-label="SemText shell">
+  <div class="sem-shell-frame">
+    <div class="sem-shell-transcript" role="log">
+      <div class="sem-shell-line sem-shell-cmd"><span class="sem-shell-ps1">$ </span>ls</div>
+      <div class="sem-shell-line">README.md</div>
+      <div class="sem-shell-line">demo/</div>
+      <div class="sem-shell-line sem-shell-cmd"><span class="sem-shell-ps1">$ </span>semtext outline demo/token-rotation.html</div>
+      <div class="sem-shell-line">h1 Token Rotation</div>
+      <div class="sem-shell-line">  sem-properties glossary</div>
+      <div class="sem-shell-line">  h2 Rotation</div>
+    </div>
+  </div>
+</sem-shell>
+</body>
+</html>
