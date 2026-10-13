@@ -33,6 +33,11 @@ body { margin: 0; }
    var(--sem-fg) to nothing and resets page text to UA black over the
    host's dark background. [data-sem-theme] covers html/body mounts too. */
 [data-sem-theme] { background: var(--sem-bg); color: var(--sem-fg); }
+/* Document mount paints the viewport body as well — the R/W2 colour
+   control's e2e contract asserts the body background in both modes.
+   Guarded to the html carrier so an embedded pane mount (theme on a
+   div) never leaks tokens onto the host document's body. */
+html[data-sem-theme] body { background: var(--sem-bg); color: var(--sem-fg); }
 :is(sem-enhanced-document, .sem-enhanced-document) { font-family: system-ui, sans-serif; line-height: 1.6; }
 
 /* Custom elements are inline by default; the vocabulary is block-level. */
