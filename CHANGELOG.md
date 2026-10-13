@@ -3,6 +3,7 @@
 Dated work log — newest first, one line per landed change.
 
 ## 2026-10-13
+- feat(integration): land the npl-preview integration branch — merges feat/lit-provider-picker, feat/lit-quota-meter, feat/data-viz-phase6, feat/viewer-m2, feat/elements-reference, feat/semtext-prompt, feat/semtext-cli-tui, feat/dataviz-reference, feat/element-descriptions, feat/lazy-opt-in (lit-sem-chat, semtext-lazy, js-shell, cli-harden, theme-contrast already contained). Wiring fixes: extension vendor artifacts now built by `npm run build`; data-visualizer demo marker `reading`→`bundle`; semtext.js budget 96→126 KB for the data-viz tiers; null-key guard in src/data/yaml.ts for tsc. Branch `feat/npl-everything` (squash of integration/npl-preview).
 
 - feat(cli): workspace path guard for semtext-agent — `--out` / edit `--in-place` targets and the edit `--content-file` read must resolve inside the working directory (symlinks followed, real target checked, refused with exit 1); `xslt --out` now actually writes to the given path; `write --in-place` removed from the help (it never worked) and rejected with a usage error; vitest-detection fix so a missing xslt-processor falls back to xsltproc instead of erroring (#feat/cli-harden).
 # Changelog — SemText
