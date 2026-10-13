@@ -16,24 +16,29 @@
  *   search  <file> <query> [--regex] [--attrs] [--context N]
  *   write   [--format md|semtext] [--id ID] [--label L] [--kind K]
  *                  [--tags T] [--audience A] [--class-form]
- *                  [--wrap auto|always|never] [--in-place | --out FILE]
+ *                  [--wrap auto|always|never] [--out FILE]
  *                  [infile|-]
  *   edit    <file> --id ID [--mode inner|outer] [--content-file F]
  *                  [--content TEXT | stdin] [--in-place | --out FILE]
  *   xslt    <file> <stylesheet> [--out FILE]
  *
  * Exit codes: 0 ok · 1 domain error (no such block, validation errors,
- * unreadable file) · 2 usage error.
+ * unreadable file, path refused) · 2 usage error.
  * write/edit always validate the result against spec/schema before it is
  * reported (and before --in-place writes it back).
+ *
+ * Path policy: every output path (--out, edit --in-place) and the
+ * edit --content-file read must resolve inside the working directory —
+ * symlinks are followed with realpath and the REAL target is checked, so
+ * a link pointing out of the tree is refused (exit 1).
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, realpathSync, lstatSync, readlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve, dirname, basename, sep } from 'node:path';
 import { validateSource, loadSchema, defaultSchemaPath } from '../src/validate/validate.js';
 
 const HELP = `semtext-agent — filter, search, outline, expand, write and edit SemText
@@ -47,7 +52,7 @@ Commands:
   search  <file> <query> [options]      full-text or attribute search with context
   write   [options] [infile|-]          Markdown or SemText fragment in, SemText XHTML out
   edit    <file> --id ID [options]      surgical replace of one block, by id
-  xslt    <file> <stylesheet>           run an XSLT stylesheet over the document
+  xslt    <file> <stylesheet>           run an XSLT stylesheet; --out FILE writes the result
 
 Criteria (filter): --type T --id ID --kind K --tag T --audience A
                    --attr NAME[=VALUE] --selector CSS
@@ -55,10 +60,14 @@ Search: --regex --attrs --context N
 Write:  --format md|semtext --id ID --label L --kind K --tags T --audience A
         --class-form --wrap auto|always|never
 Edit:   --mode inner|outer --content-file F | --content TEXT (else stdin)
-IO:     --in-place | --out FILE (write/edit default to stdout)
+        (--content-file must resolve inside the working directory)
+IO:     edit --in-place | --out FILE · write/xslt --out FILE (else stdout)
+        output paths must stay inside the working directory; symlinks are
+        followed and the real target must sit inside it too, or the path is
+        refused (exit 1)
 Global: --json compact machine output · -h this help
 
-Exit codes: 0 ok · 1 domain error · 2 usage error
+Exit codes: 0 ok · 1 domain error (incl. refused path) · 2 usage error
 Docs: README.md ("Agent toolkit") · spec/conventions.md §8`;
 
 class UsageError extends Error {}
@@ -198,7 +207,10 @@ function isModuleMissing(err) {
   return (
     err &&
     ((err.code && String(err.code).startsWith('ERR_MODULE')) ||
-      /Cannot find|not found|ERR_MODULE_NOT_FOUND/i.test(err.message || ''))
+      // "Could not resolve … Is it installed?" is the phrasing vite (and so
+      // vitest) uses for an unresolvable specifier — without it the pure-JS
+      // engine's absence is misreported as an XSLT failure.
+      /Cannot find|not found|could not resolve|is it installed|ERR_MODULE_NOT_FOUND/i.test(err.message || ''))
   );
 }
 
@@ -258,14 +270,82 @@ function parseArgs(argv) {
   return opts;
 }
 
+/* ------------------------------------------------------------------ *
+ * Workspace path guard — writes (--out, edit --in-place) and the
+ * --content-file read must resolve inside the working directory.
+ * Symlinks are FOLLOWED (allowed) but the real target is what gets
+ * checked: a link pointing out of the tree is refused. Targets that do
+ * not exist yet (a file about to be created, a dangling link) are
+ * resolved by hand so the same rule still applies.
+ * ------------------------------------------------------------------ */
+
+export function realpathAllowMissing(p) {
+  const abs = resolve(p);
+  try {
+    return realpathSync(abs);
+  } catch (e) {
+    if (e.code !== 'ENOENT') throw e;
+  }
+  let st = null;
+  try {
+    st = lstatSync(abs);
+  } catch (e) {
+    if (e.code !== 'ENOENT') throw e;
+  }
+  if (st && st.isSymbolicLink()) {
+    // Dangling symlink: follow it manually — its target may be missing too.
+    return realpathAllowMissing(resolve(dirname(abs), readlinkSync(abs)));
+  }
+  // A missing leaf: anchor on the nearest existing ancestor.
+  return join(realpathAllowMissing(dirname(abs)), basename(abs));
+}
+
+export function guardWorkspacePath(candidate, what = 'path') {
+  const root = realpathSync(process.cwd());
+  const abs = resolve(root, candidate);
+  let real;
+  try {
+    real = realpathAllowMissing(abs);
+  } catch (e) {
+    throw new DomainError(`${what} "${candidate}": cannot resolve — ${e.message}`);
+  }
+  if (real !== root && !real.startsWith(root + sep)) {
+    throw new DomainError(
+      `${what} "${candidate}": resolves outside the working directory (${real}) — refused`
+    );
+  }
+  return real;
+}
+
+function guardTargets(command, opts) {
+  const file = opts._[0];
+  if (command === 'write') {
+    if (opts.inPlace) {
+      throw new UsageError('write does not support --in-place — use --out FILE (or stdout)');
+    }
+    if (opts.out) guardWorkspacePath(opts.out, '--out');
+  }
+  if (command === 'edit') {
+    if (opts.out) guardWorkspacePath(opts.out, '--out');
+    if (opts.inPlace) {
+      if (!file || file === '-') throw new UsageError('--in-place needs a file path');
+      guardWorkspacePath(file, '--in-place target');
+    }
+    if (opts['content-file']) guardWorkspacePath(opts['content-file'], '--content-file');
+  }
+  if (command === 'xslt' && opts.out) guardWorkspacePath(opts.out, '--out');
+}
+
 function writeFileOutput(path, content, opts) {
   if (opts.out) {
-    writeFileSync(opts.out, content);
+    const real = guardWorkspacePath(opts.out, '--out');
+    writeFileSync(real, content);
     return { written: opts.out };
   }
   if (opts.inPlace) {
     if (!path || path === '-') throw new UsageError('--in-place needs a file path');
-    writeFileSync(path, content);
+    const real = guardWorkspacePath(path, '--in-place target');
+    writeFileSync(real, content);
     return { written: path };
   }
   return { written: null };
@@ -444,6 +524,14 @@ async function commandXslt(core, opts) {
   const xmlSource = '<?xml version="1.0" encoding="utf-8"?>\n' + core.serialize(rootEl);
   const stylesheetSource = readInput(stylesheet);
   const { output, engine } = await runXslt(xmlSource, stylesheetSource);
+  // --out was documented but ignored; it now writes the result to the
+  // given path under the working-directory rule (same as write/edit).
+  if (opts.out) {
+    const target = writeFileOutput(null, output.endsWith('\n') ? output : output + '\n', opts);
+    if (opts.json) return emit({ file, stylesheet, engine, written: target.written }, true);
+    process.stderr.write(`engine: ${engine}\nwrote ${target.written}\n`);
+    return;
+  }
   if (opts.json) return emit({ file, stylesheet, engine, output }, true);
   emit(output, false);
   process.stderr.write(`engine: ${engine}\n`);
@@ -467,9 +555,12 @@ export async function main(argv = process.argv.slice(2)) {
   }
   const [command] = opts._;
   opts._ = opts._.slice(1);
-  const core = loadCore();
-  await ensureHappyDom();
   try {
+    // Path hygiene first: refuse out-of-tree targets before any file is
+    // read, parsed or written (and before the core bundle is needed).
+    guardTargets(command, opts);
+    const core = loadCore();
+    await ensureHappyDom();
     switch (command) {
       case 'outline':
         commandOutline(core, opts);
