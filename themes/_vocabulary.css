@@ -26,7 +26,13 @@
    on `<html>` for rules whose host is deliberately unmarked.
    With no script, every distractor, view, conclusion and body renders. */
 
-body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
+body { margin: 0; }
+/* Paint the element that carries the theme, not <body>: themes may mount
+   on an embedded subtree (data-sem-theme on a pane div), where the tokens
+   are invisible at body scope — an unguarded body rule then resolves
+   var(--sem-fg) to nothing and resets page text to UA black over the
+   host's dark background. [data-sem-theme] covers html/body mounts too. */
+[data-sem-theme] { background: var(--sem-bg); color: var(--sem-fg); }
 :is(sem-enhanced-document, .sem-enhanced-document) { font-family: system-ui, sans-serif; line-height: 1.6; }
 
 /* Custom elements are inline by default; the vocabulary is block-level. */
