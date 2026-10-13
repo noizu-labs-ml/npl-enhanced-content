@@ -43,6 +43,8 @@
  */
 
 /* Components — alphabetical; one two-line pair each, nothing shared. */
+export { NplCot } from './npl-cot.js';
+import './npl-cot.js';
 export { NplExample } from './npl-example.js';
 import './npl-example.js';
 export { NplIntent } from './npl-intent.js';
