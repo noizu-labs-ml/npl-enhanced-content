@@ -1,8 +1,14 @@
 // @vitest-environment happy-dom
+// @vitest-environment-options {"settings":{"disableCSSFileLoading":true}}
 /**
  * Unit tests — viewer/jail-strip.mjs: the strip pass (design §4.2), the D2
  * consent host scan (§4.5) and unapproved-subresource dropping. happy-dom
  * provides DOMParser; the pass itself is engine-neutral.
+ *
+ * disableCSSFileLoading: the stripped fixture carries a stylesheet <link>
+ * and happy-dom's detached window defaults to http://localhost:3000/ —
+ * without the guard happy-dom fetches it, which fails on CI (no listener)
+ * and silently hits whatever dev server runs locally.
  */
 import { describe, expect, it } from 'vitest';
 
