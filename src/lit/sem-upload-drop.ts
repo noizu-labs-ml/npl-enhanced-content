@@ -22,7 +22,9 @@ type StepState = 'idle' | 'presign' | 'upload' | 'register' | 'done';
 export class SemUploadDrop extends LitElement {
   static properties = {
     accept: { type: String },
-    maxBytes: { type: Number },
+    // Lit lowercases property names for attributes but never dashes them —
+    // without the explicit name this would observe `maxbytes`.
+    maxBytes: { type: Number, attribute: 'max-bytes' },
   };
 
   declare accept: string;

@@ -167,18 +167,17 @@ describe('sem-media-gallery', () => {
   });
 
   describe('zero-JS fallback', () => {
-    it('preserves light-DOM children as fallback', async () => {
+    it('light-DOM children survive upgrade unmodified', async () => {
       gallery = document.createElement('sem-media-gallery') as HTMLElement;
       const img = document.createElement('img');
       img.src = 'fallback.jpg';
       img.alt = 'fallback';
       gallery.appendChild(img);
       await mount(gallery);
-      // The fallback wrapper should exist
-      const wrapper = gallery.querySelector('.sem-gallery-fallback');
-      expect(wrapper).not.toBeNull();
-      expect(wrapper!.querySelector('img')).not.toBeNull();
-      // Shadow DOM grid should still render from items (empty in this case)
+      // Light-DOM children remain intact (shadow DOM takes over visually)
+      expect(gallery.querySelector('img')).not.toBeNull();
+      expect(gallery.querySelector('img')!.src).toContain('fallback.jpg');
+      // Shadow DOM grid still renders
       expect(gallery.shadowRoot!.querySelector('.grid')).not.toBeNull();
     });
   });

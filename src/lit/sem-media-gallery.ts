@@ -1,9 +1,10 @@
 /**
  * sem-media-gallery — interactive media grid with lightbox (agent-kit demo stub).
  *
- * Data-driven from an `items` JSON attribute. Zero-JS: light-DOM children
- * (server-rendered `<img>` tags) serve as the fallback; the component hides
- * them on upgrade and renders its own shadow-DOM grid + lightbox.
+ * Data-driven from an `items` JSON attribute. Zero-JS: server-rendered light-DOM
+ * `<img>` children are visible while the element is undefined; once upgraded the
+ * shadow DOM (with no `<slot>`) takes over and the light DOM stops rendering
+ * naturally — no explicit hide mechanism needed.
  *
  * Listens for the bubbling `sem-media-added` event to append new items.
  */
@@ -29,7 +30,6 @@ export class SemMediaGallery extends LitElement {
 
   #parsed: MediaItem[] = [];
   #lightboxIndex: number = -1;
-  #fallbackWrapper: HTMLElement | null = null;
   #closeBound = this.#close.bind(this);
   #keyBound = this.#onKey.bind(this);
 
@@ -93,14 +93,10 @@ export class SemMediaGallery extends LitElement {
     }
     .lb-close { position: fixed; top: 1rem; right: 1rem; z-index: 1001; }
     .lb-counter { color: #a6adc8; font-size: 0.85rem; }
-    /* fallback-hide */
-    .sem-gallery-fallback { display: none; }
   `;
 
   connectedCallback(): void {
     super.connectedCallback();
-    // Wrap light-DOM children for zero-JS hiding
-    this.#wrapFallback();
     window.addEventListener('sem-media-added', this.#onMediaAdded as EventListener);
   }
 
@@ -217,17 +213,6 @@ export class SemMediaGallery extends LitElement {
     if (e.key === KEY_ESCAPE) { e.preventDefault(); this.#close(); }
     if (e.key === KEY_LEFT) { e.preventDefault(); this.#prev(); }
     if (e.key === KEY_RIGHT) { e.preventDefault(); this.#next(); }
-  }
-
-  #wrapFallback(): void {
-    // Collect existing light-DOM children (zero-JS fallback) into a hidden wrapper
-    const children = Array.from(this.childNodes);
-    if (children.length === 0) return;
-    const wrapper = document.createElement('div');
-    wrapper.className = 'sem-gallery-fallback';
-    for (const child of children) wrapper.appendChild(child);
-    this.appendChild(wrapper);
-    this.#fallbackWrapper = wrapper;
   }
 
   #onMediaAdded = (e: Event): void => {
