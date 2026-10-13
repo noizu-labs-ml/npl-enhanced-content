@@ -43,6 +43,8 @@
  */
 
 /* Components — alphabetical; one two-line pair each, nothing shared. */
+export { NplCritique } from './npl-critique.js';
+import './npl-critique.js';
 export { NplExample } from './npl-example.js';
 import './npl-example.js';
 
