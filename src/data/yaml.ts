@@ -90,6 +90,7 @@ function parseMapping(lines: YLine[], i: number, indent: number): [{ [key: strin
   const out: { [key: string]: YamlValue } = {};
   while (i < lines.length && lines[i].indent === indent) {
     const key = splitKey(lines[i].text);
+    if (key === null) throw new Error('yaml subset: expected "key:" mapping entry, got "' + lines[i].text + '"');
     const rest = lines[i].text.slice(key.length + 1).trim();
     if (rest === '') {
       if (i + 1 < lines.length && lines[i + 1].indent > indent) {
