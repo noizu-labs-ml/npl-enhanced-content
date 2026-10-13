@@ -2,21 +2,25 @@
  * sem-terminal — the terminal core: plugin registry, command dispatch.
  *
  * Knows nothing about SemText. Two generic builtins (`help`, `clear`);
- * everything else arrives through plugins. A plugin manifest is a JSON or
- * JS object with `name`, `version`, `commands` (name, usage, run), `files`
- * (virtual file-system entries, mounted at absolute paths such as /demo)
- * and an optional `load` descriptor (src URL + integrity) — the full
+ * everything else arrives through plugins — the bundled `posix-sh` plugin
+ * (src/terminal/plugins/posix/) is the POSIX-style command set, the bundled
+ * `semtext-demo` plugin carries the document commands. The full plugin
  * contract is src/terminal/PLUGINS.md.
  *
- * Dispatch is pipeline-shaped (`cat f | semtext outline`): stages run left
- * to right against a shared cwd, each stage's `out()` text becomes the next
- * stage's stdin, and errors are stderr lines — never thrown. The one side
- * effect a command may request (`open` a document in a window) is emitted
- * as DATA (`ShellAction`) for the element to perform; the core stays
- * DOM-free and unit-testable in plain Node.
+ * Dispatch is pipeline-shaped (`cat f | grep x > out.txt`): the input line
+ * is parsed by src/terminal/sh-parse.ts (quoting, $VAR/$? expansion, `~`,
+ * glob expansion, `|` stages, `>`/`>>` redirects, aliases), then stages run
+ * left to right against a shared ShellState; each stage's `out()` text
+ * becomes the next stage's `stdin`, every command sets an exit status
+ * (`$?`, echoed on a `status` transcript line), and errors are stderr
+ * lines — never thrown. The side effects a command may request are DATA
+ * (`ShellAction`: open a document in a window, open the flashcard TUI) for
+ * the element to perform; the core stays DOM-free and unit-testable in
+ * plain Node.
  */
 
 import { Vfs, type VfsNode } from './vfs.js';
+import { parseCommandLine } from './sh-parse.js';
 import {
   checkSourceAllowed,
   fetchText,
@@ -28,12 +32,23 @@ import {
   type LoadDescriptor,
   type MountedPlugin,
 } from './loader.js';
+import type { TuiAction } from './tui.js';
 
 export interface ShellState {
   cwd: string;
+  /** Environment variables ($VAR): HOME/PWD/SHELL start set; export/unset mutate. */
+  env: Record<string, string>;
+  /** Command aliases — the first word of a stage, expanded to leading words. */
+  aliases: Record<string, string>;
+  /** Executed input lines, oldest first (the `history` builtin reads this). */
+  history: string[];
+  /** Previous working directory (`cd -`), or null before the first cd. */
+  oldpwd: string | null;
+  /** Exit status of the last command ($?). Blank lines leave it untouched. */
+  lastStatus: number;
 }
 
-export type ShellLineKind = 'cmd' | 'stdout' | 'stderr';
+export type ShellLineKind = 'cmd' | 'stdout' | 'stderr' | 'status' | 'comment';
 
 export interface ShellLine {
   kind: ShellLineKind;
@@ -48,7 +63,7 @@ export interface WindowAction {
   contentType: string;
 }
 
-export type ShellAction = WindowAction;
+export type ShellAction = WindowAction | TuiAction;
 
 /** What a command run receives. `state` is shared across pipeline stages. */
 export interface CommandContext {
@@ -57,12 +72,21 @@ export interface CommandContext {
   stdin: string | null;
   vfs: Vfs;
   state: ShellState;
+  /**
+   * True when this stage's stdout goes to the terminal (last stage, not
+   * redirected) — the "is a tty" flag commands use to decide on color.
+   */
+  color: boolean;
+  /** Every registered command, for introspection commands like `which`. */
+  commands: ReadonlyMap<string, CommandSpec>;
   /** One output line (and a chunk of piped stdout). */
   out(text: string): void;
   /** One error line — errors are printed, never thrown. */
   err(text: string): void;
-  /** Request a side effect (currently: open content in a window). */
+  /** Request a side effect (window | tui). */
   emit(action: ShellAction): void;
+  /** Set the exit status; default is 1 when stderr was written, else 0. */
+  exit(code: number): void;
 }
 
 export interface CommandSpec {
@@ -129,7 +153,14 @@ const NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
  */
 export class TerminalCore {
   readonly vfs = new Vfs();
-  state: ShellState = { cwd: '/' };
+  state: ShellState = {
+    cwd: '/',
+    env: { HOME: '/', PWD: '/', SHELL: 'semtext-sh' },
+    aliases: {},
+    history: [],
+    oldpwd: null,
+    lastStatus: 0,
+  };
   readonly commands = new Map<string, CommandSpec>();
   readonly plugins: MountedPlugin[] = [];
   readonly loadErrors: LoadError[] = [];
@@ -262,47 +293,110 @@ export class TerminalCore {
   }
 
   /**
-   * Run one input line — `cmd args | cmd args` pipelines included. The
-   * first line is always the echo of what was typed; unknown commands and
-   * failing commands come back as stderr lines; actions accumulate for the
-   * element to perform. Never throws.
+   * Alias expansion: the first word of a stage may name an alias, whose
+   * (space-split) value becomes the stage's leading words. An alias never
+   * re-expands itself, and the chain stops after five hops.
+   */
+  #expandAliases(argv: string[]): string[] {
+    let words = argv;
+    const seen = new Set<string>();
+    for (let hop = 0; hop < 5; hop++) {
+      const alias = this.state.aliases[words[0]];
+      if (alias === undefined || seen.has(words[0])) break;
+      seen.add(words[0]);
+      const leading = alias.split(/\s+/).filter((w) => w !== '');
+      if (leading.length === 0) break;
+      words = [...leading, ...words.slice(1)];
+    }
+    return words;
+  }
+
+  /**
+   * Run one input line — `cmd args | cmd args > file` pipelines included.
+   * The first line is always the echo of what was typed; parse errors,
+   * unknown commands and failing commands come back as stderr lines; every
+   * executed command appends a `status` line with its exit status; actions
+   * accumulate for the element to perform. Never throws.
    */
   execLine(input: string): ExecResult {
     const lines: ShellLine[] = [{ kind: 'cmd', text: `${this.state.cwd} $ ${input}` }];
     const result: ExecResult = { lines, state: this.state, clear: false, actions: [] };
+    if (input.trim() !== '') this.state.history.push(input);
+    const parsed = parseCommandLine(input, this.state, this.vfs);
+    if (!parsed.ok) {
+      lines.push({ kind: 'stderr', text: `sh: ${parsed.error}` });
+      this.state.lastStatus = 2;
+      lines.push({ kind: 'status', text: `exit ${this.state.lastStatus}` });
+      return result;
+    }
+    let ran = false;
     let stdin: string | null = null;
-    for (const stage of input.split('|')) {
-      const argv = stage.trim().split(/\s+/).filter((a) => a !== '');
-      if (argv.length === 0) continue; // empty stage: stdin passes through
+    for (let i = 0; i < parsed.stages.length; i++) {
+      const stage = parsed.stages[i];
+      const argv = this.#expandAliases(stage.argv);
+      const redirect = stage.redirect;
+      if (argv.length === 0 && !redirect) continue; // empty stage: stdin passes through
       if (argv[0] === 'clear') {
         result.clear = true;
         continue;
       }
-      const spec = this.commands.get(argv[0]);
-      if (!spec) {
-        lines.push({ kind: 'stderr', text: `sh: command not found: ${argv[0]}` });
-        continue;
-      }
+      ran = true;
       let stdout = '';
+      const isTty = i === parsed.stages.length - 1 && redirect === null;
+      let explicitStatus: number | null = null;
+      let stderrLines = 0;
       const ctx: CommandContext = {
         args: argv.slice(1),
         stdin,
         vfs: this.vfs,
         state: this.state,
+        color: isTty,
+        commands: this.commands,
         out: (text) => {
-          lines.push({ kind: 'stdout', text });
           stdout += text + '\n';
+          if (isTty) lines.push({ kind: 'stdout', text }); // piped/redirected stages stay off the transcript
         },
-        err: (text) => lines.push({ kind: 'stderr', text }),
+        err: (text) => {
+          stderrLines++;
+          lines.push({ kind: 'stderr', text });
+        },
         emit: (action) => result.actions.push(action),
+        exit: (code) => {
+          explicitStatus = code;
+        },
       };
-      try {
-        spec.run(ctx);
-      } catch (cause) {
-        lines.push({ kind: 'stderr', text: `${argv[0]}: ${cause instanceof Error ? cause.message : String(cause)}` });
+      if (argv.length === 0) {
+        // `> file` with no command: truncate or create, like sh.
+        stdout = '';
+      } else {
+        const spec = this.commands.get(argv[0]);
+        if (!spec) {
+          lines.push({ kind: 'stderr', text: `sh: command not found: ${argv[0]}` });
+          this.state.lastStatus = 127;
+          continue;
+        }
+        try {
+          spec.run(ctx);
+        } catch (cause) {
+          stderrLines++;
+          lines.push({ kind: 'stderr', text: `${argv[0]}: ${cause instanceof Error ? cause.message : String(cause)}` });
+        }
       }
+      if (redirect !== null) {
+        const targetPath = this.vfs.resolve(this.state.cwd, redirect.target);
+        try {
+          const previous = redirect.mode === '>>' ? (this.vfs.read(targetPath) ?? '') : '';
+          this.vfs.mountFile(targetPath, previous + stdout);
+        } catch (cause) {
+          stderrLines++;
+          lines.push({ kind: 'stderr', text: `sh: ${redirect.target}: ${cause instanceof Error ? cause.message : String(cause)}` });
+        }
+      }
+      this.state.lastStatus = explicitStatus ?? (stderrLines > 0 ? 1 : 0);
       stdin = stdout;
     }
+    if (ran && !result.clear) lines.push({ kind: 'status', text: `exit ${this.state.lastStatus}` });
+    this.state.env.PWD = this.state.cwd;
     return result;
   }
 }

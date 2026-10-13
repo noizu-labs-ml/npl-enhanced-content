@@ -82,9 +82,32 @@ import './lit/sem-md.js';
 export { SemShell } from './shell/sem-shell.js';
 import './shell/sem-shell.js';
 /* sem-terminal — the reusable terminal core <sem-shell> is built on
- * (src/terminal/*): plugins attribute, manifest loading, dispatch. */
+ * (src/terminal/*): plugins attribute, manifest loading, dispatch, the
+ * POSIX plugin surface, scripted playback and the flashcard TUI. */
 export { SemTerminal } from './terminal/sem-terminal.js';
 import './terminal/sem-terminal.js';
+export type {
+  ShellState,
+  ShellLine,
+  ShellLineKind,
+  ShellAction,
+  WindowAction,
+  CommandContext,
+  CommandSpec,
+  PluginManifest,
+  PluginFileEntry,
+  MountResult,
+  ExecResult,
+} from './terminal/terminal-core.js';
+export type { PlaybackStep, PlaybackDriver, PlaybackHandle } from './terminal/playback.js';
+export { startPlayback, parseScriptAttribute } from './terminal/playback.js';
+export type { TuiCard, TuiState, TuiAction } from './terminal/tui.js';
+export { createTuiState, tuiMove, tuiSetFilter, tuiToggle } from './terminal/tui.js';
+export type { ShellStage, ShellRedirect, ParsedLine } from './terminal/sh-parse.js';
+export { parseCommandLine, globExpand } from './terminal/sh-parse.js';
+export { highlightAnsi, splitSgr, stripSgr } from './terminal/sh-highlight.js';
+export { posixPlugin } from './terminal/plugins/posix/plugin.js';
+export { demoPlugin } from './terminal/plugins/demo/plugin.js';
 
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */

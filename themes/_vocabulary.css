@@ -480,23 +480,55 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
   .sem-target { outline: none; }
 }
 
-/* sem-shell — interactive shell over the demo documents (light DOM: this
-   stylesheet is the only style channel). With the script absent the
+/* sem-shell / sem-terminal — the interactive shell (light DOM: this
+   stylesheet is the only style channel; every rule scopes to both the
+   reusable core and the demo element). With the script absent the
    authored static transcript keeps these classes and reads as a terminal
    excerpt; the prompt line only ever exists after the upgrade. */
-sem-shell { display: block; }
-sem-shell .sem-shell-frame { background: #101418; border: 1px solid var(--sem-border, #ccc); border-radius: 12px; color: #d6dde6;
+sem-terminal, sem-shell { display: block; }
+sem-terminal .sem-shell-frame, sem-shell .sem-shell-frame { background: #101418; border: 1px solid var(--sem-border, #ccc); border-radius: 12px; color: #d6dde6;
   font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding: .75rem 1rem; max-height: 24rem; overflow: auto; }
-sem-shell .sem-shell-transcript { white-space: pre-wrap; overflow-wrap: anywhere; }
-sem-shell .sem-shell-line:empty::before { content: "\00a0"; }
-sem-shell .sem-shell-cmd { color: #fff; }
-sem-shell .sem-shell-ps1 { color: #7ec8a2; }
-sem-shell .sem-shell-error { color: #ff8f7a; }
-sem-shell .sem-shell-prompt { display: flex; gap: .5rem; margin-top: .5rem; align-items: baseline; }
-sem-shell .sem-shell-input { flex: 1; min-width: 0; background: transparent; border: 0; border-top: 1px solid var(--sem-border, #ccc);
+sem-terminal .sem-shell-transcript, sem-shell .sem-shell-transcript { white-space: pre-wrap; overflow-wrap: anywhere; }
+sem-terminal .sem-shell-line:empty::before, sem-shell .sem-shell-line:empty::before { content: "\00a0"; }
+sem-terminal .sem-shell-cmd, sem-shell .sem-shell-cmd { color: #fff; }
+sem-terminal .sem-shell-ps1, sem-shell .sem-shell-ps1 { color: #7ec8a2; }
+sem-terminal .sem-shell-error, sem-shell .sem-shell-error { color: #ff8f7a; }
+sem-terminal .sem-shell-prompt, sem-shell .sem-shell-prompt { display: flex; gap: .5rem; margin-top: .5rem; align-items: baseline; }
+sem-terminal .sem-shell-input, sem-shell .sem-shell-input { flex: 1; min-width: 0; background: transparent; border: 0; border-top: 1px solid var(--sem-border, #ccc);
   color: inherit; font: inherit; padding: .35rem 0 .1rem; outline: none; }
-sem-shell .sem-shell-input:focus { border-top-color: #7ec8a2; }
+sem-terminal .sem-shell-input:focus, sem-shell .sem-shell-input:focus { border-top-color: #7ec8a2; }
+sem-terminal, sem-shell { position: relative; }
+sem-terminal .sem-shell-replay, sem-shell .sem-shell-replay { position: absolute; top: .55rem; right: .7rem; background: transparent; color: #7ec8a2;
+  border: 1px solid #2c3a37; border-radius: 6px; font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  padding: .25rem .55rem; cursor: pointer; opacity: .8; }
+sem-terminal .sem-shell-replay:hover, sem-shell .sem-shell-replay:hover { opacity: 1; border-color: #7ec8a2; }
+sem-terminal .sem-shell-status, sem-shell .sem-shell-status { color: #5b6b64; }
+sem-terminal .sem-shell-comment, sem-shell .sem-shell-comment { color: #9aa7b5; font-style: italic; }
+/* ANSI from commands (ls dir color, bat highlighting): fixed-code whitelist → spans */
+sem-terminal .sem-ansi-b, sem-shell .sem-ansi-b { font-weight: 600; }
+sem-terminal .sem-ansi-dim, sem-shell .sem-ansi-dim { opacity: .55; }
+sem-terminal .sem-ansi-c30, sem-shell .sem-ansi-c30 { color: #4b5563; }
+sem-terminal .sem-ansi-c31, sem-shell .sem-ansi-c31 { color: #ff8f7a; }
+sem-terminal .sem-ansi-c32, sem-shell .sem-ansi-c32 { color: #8fd6a0; }
+sem-terminal .sem-ansi-c33, sem-shell .sem-ansi-c33 { color: #e6c77a; }
+sem-terminal .sem-ansi-c34, sem-shell .sem-ansi-c34 { color: #7ab8e6; }
+sem-terminal .sem-ansi-c35, sem-shell .sem-ansi-c35 { color: #c79ae6; }
+sem-terminal .sem-ansi-c36, sem-shell .sem-ansi-c36 { color: #6fd3d3; }
+sem-terminal .sem-ansi-c37, sem-shell .sem-ansi-c37 { color: #d6dde6; }
+/* the read-only flashcard view (semtext tui) */
+sem-terminal .sem-tui, sem-shell .sem-tui { outline: none; margin-top: .5rem; display: flex; flex-direction: column; gap: .45rem; }
+sem-terminal .sem-tui-head, sem-shell .sem-tui-head { color: #7ec8a2; }
+sem-terminal .sem-tui-card, sem-shell .sem-tui-card { border: 1px solid #2c3a37; border-radius: 8px; padding: .5rem .7rem; background: #161b21; white-space: pre-wrap; }
+sem-terminal .sem-tui-front, sem-shell .sem-tui-front { color: #fff; font-weight: 600; }
+sem-terminal .sem-tui-back, sem-shell .sem-tui-back { color: #d6dde6; font-weight: 400; }
+sem-terminal .sem-tui-meta, sem-shell .sem-tui-meta { color: #5b6b64; }
+sem-terminal .sem-tui-empty, sem-shell .sem-tui-empty { font-weight: 400; color: #9aa7b5; }
+sem-terminal .sem-tui-filter, sem-shell .sem-tui-filter { background: transparent; border: 0; border-bottom: 1px solid #2c3a37; color: inherit;
+  font: inherit; padding: .25rem 0; outline: none; }
+sem-terminal .sem-tui-filter:focus, sem-shell .sem-tui-filter:focus { border-bottom-color: #7ec8a2; }
+sem-terminal .sem-tui-hint, sem-shell .sem-tui-hint { color: #5b6b64; }
 @media print {
-  sem-shell .sem-shell-frame { max-height: none; overflow: visible; background: none; border: 0; color: inherit; }
-  sem-shell .sem-shell-prompt { display: none; }
+  sem-terminal .sem-shell-frame, sem-shell .sem-shell-frame { max-height: none; overflow: visible; background: none; border: 0; color: inherit; }
+  sem-terminal .sem-shell-prompt, sem-shell .sem-shell-prompt { display: none; }
+  sem-terminal .sem-shell-replay, sem-shell .sem-shell-replay { display: none; }
 }

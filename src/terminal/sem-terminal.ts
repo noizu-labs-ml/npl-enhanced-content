@@ -1,6 +1,26 @@
 import { html, type TemplateResult } from 'lit';
 import { SemElement } from '../lit/base.js';
 import { TerminalCore, type ShellLine, type WindowAction } from './terminal-core.js';
+import {
+  parseScriptAttribute,
+  startPlayback,
+  type PlaybackDriver,
+  type PlaybackHandle,
+  type PlaybackStep,
+} from './playback.js';
+import {
+  createTuiState,
+  tuiCloseFilter,
+  tuiIsClose,
+  tuiMove,
+  tuiOpenFilter,
+  tuiPosition,
+  tuiSetFilter,
+  tuiToggle,
+  type TuiAction,
+  type TuiState,
+} from './tui.js';
+import { splitSgr } from './sh-highlight.js';
 
 /**
  * sem-terminal — the reusable terminal core: input, history, transcript,
@@ -17,10 +37,17 @@ import { TerminalCore, type ShellLine, type WindowAction } from './terminal-core
  *     failing prints a stderr line and lands in `core.loadErrors` without
  *     touching the others.
  *
+ * Scripted playback: the `script` attribute (a JSON array of steps) or the
+ * `playback` property (the array itself) makes the terminal demo itself on
+ * open — typing, keys, waits, notes. Escape hands the terminal back to the
+ * user; a replay button restarts the script. Skipped when neither is set.
+ * `prefers-reduced-motion` runs the whole script instantly.
+ *
  * Light DOM per PRD §4 rule 5 / SemElement: `themes/_vocabulary.css`
  * styles the `.sem-shell-*` classes; no shadow root, no `static styles`.
  * Transcript lines render through Lit text bindings only (auto-escaped) —
- * no HTML is ever built from user input.
+ * ANSI color from commands like `bat`/`ls` becomes styled spans via
+ * splitSgr(); no HTML is ever built from command output or user input.
  *
  * Zero-JS contract: whatever is authored inside the element is the static
  * transcript (a role="log" div with past lines, NO input element); the
@@ -32,6 +59,12 @@ export class SemTerminal extends SemElement {
     cwd: { type: String, state: true },
     lines: { type: Array, state: true },
     plugins: { type: String },
+    /** JSON array of playback steps; plays on open. Absent → no playback. */
+    script: { type: String },
+    /** The playback steps as an array — the property form of `script`. */
+    playback: { type: Array },
+    playing: { type: Boolean, state: true },
+    tui: { type: Object, state: true },
   };
 
   declare cwd: string;
@@ -41,6 +74,10 @@ export class SemTerminal extends SemElement {
    * URL fragment: `https://cdn/…/manifest.json#sha256-<64 hex>`.
    */
   declare plugins: string;
+  declare script: string;
+  declare playback: PlaybackStep[] | null;
+  declare playing: boolean;
+  declare tui: TuiState | null;
 
   readonly core = new TerminalCore();
 
@@ -48,12 +85,19 @@ export class SemTerminal extends SemElement {
   #historyIndex = -1;
   #draft = '';
   #booted = false;
+  #playbackHandle: PlaybackHandle | null = null;
+  #playbackStopped = false;
+  #hasScript = false;
 
   constructor() {
     super();
     this.cwd = this.core.state.cwd;
     this.lines = [];
     this.plugins = '';
+    this.script = '';
+    this.playback = null;
+    this.playing = false;
+    this.tui = null;
   }
 
   connectedCallback(): void {
@@ -64,7 +108,13 @@ export class SemTerminal extends SemElement {
       this.replaceChildren(); // the authored zero-JS transcript is replaced
       this.lines = [{ kind: 'stdout', text: 'sem-terminal — type help.' }];
       this.#loadPluginsAttribute();
+      this.#maybeStartPlayback();
     }
+  }
+
+  disconnectedCallback(): void {
+    this.#stopPlayback(false);
+    super.disconnectedCallback();
   }
 
   /** Load every declared manifest URL; failures are isolated + recorded. */
@@ -81,27 +131,186 @@ export class SemTerminal extends SemElement {
     }
   }
 
+  /* ---------------------------------------------------------------- *
+   * scripted playback
+   * ---------------------------------------------------------------- */
+
+  /** The steps to play: the property wins over the `script` attribute. */
+  #scriptSteps(): PlaybackStep[] | null {
+    if (this.playback && this.playback.length > 0) return this.playback;
+    return parseScriptAttribute(this.getAttribute('script'));
+  }
+
+  #maybeStartPlayback(): void {
+    const steps = this.#scriptSteps();
+    if (!steps) return;
+    this.#hasScript = true;
+    const view = this.ownerDocument?.defaultView ?? window;
+    // Let the plugin mount lines land before the typing begins.
+    view.setTimeout(() => this.#startPlayback(steps), 350);
+  }
+
+  #reducedMotion(): boolean {
+    const view = this.ownerDocument?.defaultView ?? window;
+    return typeof view.matchMedia === 'function' && view.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  #startPlayback(steps: PlaybackStep[]): void {
+    this.#teardownPlayback();
+    this.#playbackStopped = false;
+    const input = this.#inputEl();
+    if (input) {
+      input.value = '';
+      input.readOnly = true; // the script owns the keyboard until Escape
+    }
+    this.playing = true;
+    const view = this.ownerDocument?.defaultView ?? window;
+    this.#playbackHandle = startPlayback(steps, this.#driver(), {
+      reducedMotion: this.#reducedMotion(),
+      schedule: (fn, ms) => view.setTimeout(fn, ms),
+      onDone: () => {
+        this.playing = false; // the script finished on its own
+        this.#releaseInput(false);
+      },
+    });
+  }
+
+  /** Escape (or the element going away): the user takes over. */
+  #stopPlayback(announce: boolean): void {
+    const wasPlaying = this.playing;
+    this.#teardownPlayback();
+    this.#playbackStopped = true;
+    if (wasPlaying) this.#releaseInput(announce);
+  }
+
+  #teardownPlayback(): void {
+    this.#playbackHandle?.stop();
+    this.#playbackHandle = null;
+    this.playing = false;
+  }
+
+  #releaseInput(announce: boolean): void {
+    const input = this.#inputEl();
+    if (input) {
+      input.value = '';
+      input.readOnly = false;
+      input.focus();
+    }
+    if (announce) this.appendLines([{ kind: 'comment', text: 'playback stopped — the terminal is yours.' }]);
+  }
+
+  #driver(): PlaybackDriver {
+    return {
+      type: (text) => {
+        const input = this.#inputEl();
+        if (input) input.value += text;
+      },
+      run: () => this.#submitInput(),
+      pressKey: (key) => this.#playbackKey(key),
+      comment: (text) => this.appendLines([{ kind: 'comment', text }]),
+      open: () => this.tui !== null,
+      stopped: () => this.#playbackStopped,
+    };
+  }
+
+  /** Where a playback key lands: the TUI when open, else the input line. */
+  #playbackKey(key: string): void {
+    if (this.tui) {
+      this.#tuiKey(key);
+      return;
+    }
+    if (key === 'Enter') {
+      this.#submitInput();
+      return;
+    }
+    if (key === 'ArrowUp') this.#navigate(-1);
+    else if (key === 'ArrowDown') this.#navigate(1);
+  }
+
+  /** The replay button: stop where it is, start over. */
+  #restartPlayback(): void {
+    const steps = this.#scriptSteps();
+    if (!steps) return;
+    this.#startPlayback(steps);
+  }
+
+  /* ---------------------------------------------------------------- *
+   * render
+   * ---------------------------------------------------------------- */
+
   render(): TemplateResult {
     return html`
-      <div class="sem-shell-frame" @click=${this.#focusInput}>
+      <div class="sem-shell-frame" @click=${this.#focusInput} @keydown=${this.#onFrameKeydown}>
+        ${this.#hasScript
+          ? html`<button type="button" class="sem-shell-replay" aria-label="Replay the scripted demo" @click=${this.#restartPlayback}>
+              replay
+            </button>`
+          : null}
         <div class="sem-shell-transcript" role="log" aria-live="polite" aria-label="Shell transcript">
           ${this.lines.map((line) => this.#renderLine(line))}
         </div>
-        <form class="sem-shell-prompt" @submit=${this.#onSubmit}>
-          <label class="sem-shell-ps1" for="sem-shell-input">${this.cwd} $</label>
-          <input
-            id="sem-shell-input"
-            class="sem-shell-input"
-            type="text"
-            spellcheck="false"
-            autocomplete="off"
-            autocapitalize="off"
-            aria-label="Shell command"
-            @keydown=${this.#onKeydown}
-          />
-        </form>
+        ${this.tui ? this.#renderTui() : this.#renderPrompt()}
       </div>
     `;
+  }
+
+  #renderPrompt(): TemplateResult {
+    return html`
+      <form class="sem-shell-prompt" @submit=${this.#onSubmit}>
+        <label class="sem-shell-ps1" for="sem-shell-input">${this.cwd} $</label>
+        <input
+          id="sem-shell-input"
+          class="sem-shell-input"
+          type="text"
+          spellcheck="false"
+          autocomplete="off"
+          autocapitalize="off"
+          aria-label="Shell command"
+          @keydown=${this.#onKeydown}
+        />
+      </form>
+    `;
+  }
+
+  /** The flashcard view: boxed panels, keyboard-driven, read-only. */
+  #renderTui(): TemplateResult {
+    const state = this.tui!;
+    const card = state.cards[state.index] ?? null;
+    return html`
+      <div class="sem-tui" role="dialog" aria-label="SemText cards — read-only view" tabindex="0" @keydown=${this.#onTuiOverlayKeydown}>
+        <div class="sem-tui-head">
+          tui — ${state.title} · ${tuiPosition(state)}${state.filter !== '' ? ` · filter: ${state.filter}` : ''}
+        </div>
+        ${card === null
+          ? html`<div class="sem-tui-front sem-tui-empty">no cards match the filter</div>`
+          : html`
+              <div class="sem-tui-card sem-tui-front">${card.front}</div>
+              ${state.expanded
+                ? html`
+                    <div class="sem-tui-card sem-tui-back">${card.back}</div>
+                    ${card.meta !== '' ? html`<div class="sem-tui-meta">${card.meta}</div>` : null}
+                  `
+                : null}
+            `}
+        ${state.filtering
+          ? html`<input
+              class="sem-tui-filter"
+              placeholder="filter cards…"
+              aria-label="Filter cards"
+              .value=${state.filter}
+              @input=${this.#onTuiFilterInput}
+              @keydown=${this.#onTuiFilterKeydown}
+            />`
+          : null}
+        <div class="sem-tui-hint">&#8593;/k &#8595;/j move &middot; Enter expand &middot; / filter &middot; q close</div>
+      </div>
+    `;
+  }
+
+  #ansiClass(code: string): string {
+    if (code === '1') return 'sem-ansi-b';
+    if (code === '2') return 'sem-ansi-dim';
+    return `sem-ansi-c${code}`;
   }
 
   #renderLine(line: ShellLine): TemplateResult {
@@ -110,15 +319,34 @@ export class SemTerminal extends SemElement {
         ? 'sem-shell-line sem-shell-cmd'
         : line.kind === 'stderr'
           ? 'sem-shell-line sem-shell-error'
-          : 'sem-shell-line';
-    return html`<div class=${cls}>${line.text}</div>`;
+          : line.kind === 'status'
+            ? 'sem-shell-line sem-shell-status'
+            : line.kind === 'comment'
+              ? 'sem-shell-line sem-shell-comment'
+              : 'sem-shell-line';
+    const spans = splitSgr(line.text);
+    if (spans.length === 1 && spans[0]!.codes.length === 0) {
+      return html`<div class=${cls}>${line.text}</div>`;
+    }
+    return html`<div class=${cls}>
+      ${spans.map((span) =>
+        span.codes.length === 0
+          ? html`${span.text}`
+          : html`<span class=${span.codes.map((code) => this.#ansiClass(code)).join(' ')}>${span.text}</span>`,
+      )}
+    </div>`;
   }
 
   appendLines(newLines: ShellLine[]): void {
     this.lines = [...this.lines, ...newLines];
   }
 
+  /* ---------------------------------------------------------------- *
+   * input handling
+   * ---------------------------------------------------------------- */
+
   #focusInput(): void {
+    if (this.tui) return;
     this.#inputEl()?.focus();
   }
 
@@ -128,6 +356,10 @@ export class SemTerminal extends SemElement {
 
   #onSubmit(event: Event): void {
     event.preventDefault();
+    this.#submitInput();
+  }
+
+  #submitInput(): void {
     const input = this.#inputEl();
     if (!input) return;
     const value = input.value;
@@ -150,14 +382,16 @@ export class SemTerminal extends SemElement {
     }
     for (const action of result.actions) {
       if (action.kind === 'window') this.#openWindow(action);
+      else if (action.kind === 'tui') this.#openTui(action);
     }
   }
 
   /**
-   * The only side effect the core can request: content into a new window.
-   * The blob carries exactly the bytes the command emitted (a stored
-   * virtual file, verbatim — nothing built from user input);
+   * The only side effects the core can request. `window`: content into a
+   * new window — the blob carries exactly the bytes the command emitted (a
+   * stored virtual file, verbatim — nothing built from user input);
    * `noopener,noreferrer` cuts the window-opener channel both ways.
+   * `tui`: the read-only flashcard view over extracted records.
    */
   #openWindow(action: WindowAction): void {
     const view = this.ownerDocument?.defaultView ?? window;
@@ -167,6 +401,30 @@ export class SemTerminal extends SemElement {
       this.appendLines([{ kind: 'stderr', text: `open: ${action.filename}: the browser blocked the pop-up window` }]);
     }
     view.setTimeout(() => view.URL.revokeObjectURL(url), 60_000);
+  }
+
+  #openTui(action: TuiAction): void {
+    this.tui = createTuiState(action.cards, action.title);
+    void this.updateComplete.then(() => (this.querySelector('.sem-tui') as HTMLElement | null)?.focus());
+  }
+
+  #touchTui(): void {
+    if (this.tui) this.tui = { ...this.tui }; // new reference → Lit re-renders
+  }
+
+  /** Escape priority: filter row owns it; else close the TUI; else stop playback. */
+  #onFrameKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Escape') return;
+    if (this.tui?.filtering) return; // the filter input handles its own Escape
+    if (this.tui) {
+      event.preventDefault();
+      this.#closeTui(true);
+      return;
+    }
+    if (this.playing) {
+      event.preventDefault();
+      this.#stopPlayback(true);
+    }
   }
 
   #onKeydown(event: KeyboardEvent): void {
@@ -179,6 +437,69 @@ export class SemTerminal extends SemElement {
     } else if (event.key === 'l' && event.ctrlKey && !event.altKey && !event.metaKey) {
       event.preventDefault();
       this.lines = [];
+    }
+  }
+
+  /* ---------------------------------------------------------------- *
+   * the flashcard view
+   * ---------------------------------------------------------------- */
+
+  /** One TUI key, physical or from playback. Returns true when it closed. */
+  #tuiKey(key: string): boolean {
+    const state = this.tui;
+    if (!state) return false;
+    if (tuiIsClose(key)) {
+      this.#closeTui(false);
+      return true;
+    }
+    if (key === 'ArrowDown' || key === 'j') {
+      tuiMove(state, 1);
+      this.#touchTui();
+    } else if (key === 'ArrowUp' || key === 'k') {
+      tuiMove(state, -1);
+      this.#touchTui();
+    } else if (key === 'Enter') {
+      tuiToggle(state);
+      this.#touchTui();
+    } else if (key === '/') {
+      tuiOpenFilter(state);
+      this.#touchTui();
+      void this.updateComplete.then(() => (this.querySelector('.sem-tui-filter') as HTMLInputElement | null)?.focus());
+    }
+    return false;
+  }
+
+  #onTuiOverlayKeydown(event: KeyboardEvent): void {
+    const state = this.tui;
+    if (!state) return;
+    if ((event.target as HTMLElement | null)?.classList?.contains('sem-tui-filter')) return; // filter owns its keys
+    this.#tuiKey(event.key);
+    if (['ArrowDown', 'ArrowUp', 'Enter', '/', 'q', 'Escape'].includes(event.key)) event.preventDefault();
+  }
+
+  /** `userInitiated` (Escape) also stops a running script — `q` does not. */
+  #closeTui(userInitiated: boolean): void {
+    this.tui = null;
+    if (userInitiated && this.playing) this.#stopPlayback(true);
+    this.#inputEl()?.focus();
+  }
+
+  #onTuiFilterInput(event: Event): void {
+    const state = this.tui;
+    if (!state) return;
+    tuiSetFilter(state, (event.target as HTMLInputElement).value);
+    this.#touchTui();
+  }
+
+  #onTuiFilterKeydown(event: KeyboardEvent): void {
+    const state = this.tui;
+    if (!state) return;
+    if (event.key === 'Enter' || event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      tuiCloseFilter(state);
+      this.#touchTui();
+      (this.querySelector('.sem-tui') as HTMLElement | null)?.focus();
     }
   }
 

@@ -121,12 +121,22 @@ describe('<sem-shell> — the demo plugin', () => {
 
   it('ls and semtext run through the prompt', async () => {
     const el = await attach('sem-shell');
-    type(el, 'ls');
+    type(el, 'ls --color=never');
     type(el, 'semtext outline demo/welcome.html');
     await el.updateComplete;
     expect(el.lines.some((l) => l.kind === 'stdout' && l.text === 'demo/')).toBe(true);
     expect(el.lines.some((l) => l.kind === 'stdout' && l.text.startsWith('h1 Welcome'))).toBe(true);
     expect(el.cwd).toBe('/');
+  });
+
+  it('plain ls colorizes directories; color is off when piped', async () => {
+    const el = await attach('sem-shell');
+    type(el, 'ls');
+    type(el, 'ls | wc -l');
+    await el.updateComplete;
+    expect(el.lines.some((l) => l.kind === 'stdout' && l.text.includes('\x1b[01;34m'))).toBe(true);
+    // the piped stage saw plain text: wc counted 2 entries (demo/, README.md)
+    expect(el.lines.some((l) => l.kind === 'stdout' && /^ *2$/.test(l.text))).toBe(true);
   });
 });
 
@@ -150,6 +160,108 @@ describe('terminal mechanics', () => {
   });
 });
 
+describe('scripted playback + the flashcard view', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('the script attribute types on open, runs, and Escape hands over', async () => {
+    vi.useFakeTimers();
+    const el = document.createElement('sem-shell') as SemShell;
+    // The trailing wait keeps the script running while the test inspects it;
+    // the run step after the wait must never land once Escape stops playback.
+    el.setAttribute(
+      'script',
+      '[{"type":"type","text":"ls","delayMs":10},{"type":"key","key":"Enter"},{"type":"wait","ms":5000},{"type":"run"}]',
+    );
+    document.body.appendChild(el);
+    await el.updateComplete;
+    const input = inputOf(el);
+    expect(input.readOnly).toBe(false); // typing starts after the open delay
+    vi.advanceTimersByTime(350);
+    expect(el.playing).toBe(true);
+    expect(input.value).toBe('l'); // first char landed with the start
+    expect(input.readOnly).toBe(true); // the script owns the keyboard
+    vi.advanceTimersByTime(20); // the rest runs with zero gaps between steps
+    await el.updateComplete;
+    expect(el.lines.some((l) => l.kind === 'stdout' && l.text.includes('demo/'))).toBe(true);
+    expect(input.value).toBe(''); // consumed by the run
+    expect(el.playing).toBe(true); // the 5000ms wait is still pending
+    el.querySelector('.sem-shell-frame')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await el.updateComplete;
+    expect(el.playing).toBe(false);
+    expect(el.lines.some((l) => l.kind === 'comment' && l.text.includes('playback stopped'))).toBe(true);
+    const freed = inputOf(el);
+    expect(freed.readOnly).toBe(false);
+    vi.advanceTimersByTime(10_000); // the stopped script never resumes
+    await el.updateComplete;
+    expect(el.lines.some((l) => l.kind === 'cmd' && l.text.endsWith('$ '))).toBe(false);
+  });
+
+  it('a replay button restarts the script; no script, no button', async () => {
+    vi.useFakeTimers();
+    const el = document.createElement('sem-shell') as SemShell;
+    el.setAttribute('script', '[{"type":"comment","text":"hi"},{"type":"wait","ms":300}]');
+    document.body.appendChild(el);
+    await el.updateComplete;
+    const replay = el.querySelector('.sem-shell-replay') as HTMLButtonElement;
+    expect(replay).not.toBeNull();
+    vi.advanceTimersByTime(350);
+    expect(el.playing).toBe(true);
+    expect(el.lines.filter((l) => l.kind === 'comment' && l.text === 'hi')).toHaveLength(1);
+    replay.click();
+    await el.updateComplete;
+    expect(el.playing).toBe(true); // restarted, still a script
+    expect(el.lines.filter((l) => l.kind === 'comment' && l.text === 'hi')).toHaveLength(2);
+    vi.advanceTimersByTime(1000);
+    expect(el.playing).toBe(false); // and it finished again
+    const bare = await attach('sem-terminal');
+    expect(bare.querySelector('.sem-shell-replay')).toBeNull();
+  });
+
+  it('semtext tui opens the overlay; j, Enter, / and q drive it; Escape closes', async () => {
+    const el = await attach('sem-shell');
+    type(el, 'semtext tui demo/token-rotation.html');
+    await el.updateComplete;
+    const tui = el.querySelector('.sem-tui') as HTMLElement;
+    expect(tui).not.toBeNull();
+    expect(tui.getAttribute('role')).toBe('dialog');
+    expect(tui.textContent).toContain('Token Rotation');
+    expect(tui.textContent).toContain('card 1/');
+    const front = tui.querySelector('.sem-tui-front')!.textContent ?? '';
+    expect(front.length).toBeGreaterThan(0);
+    expect(tui.querySelector('.sem-tui-back')).toBeNull(); // collapsed
+    tui.dispatchEvent(new KeyboardEvent('keydown', { key: 'j' }));
+    await el.updateComplete;
+    expect(tui.textContent).toContain('card 2/');
+    tui.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+    await el.updateComplete;
+    expect(tui.querySelector('.sem-tui-back')).not.toBeNull();
+    tui.dispatchEvent(new KeyboardEvent('keydown', { key: 'q' }));
+    await el.updateComplete;
+    expect(el.querySelector('.sem-tui')).toBeNull();
+    expect(el.playing).toBe(false); // q closes the view without stopping a script
+  });
+
+  it('the TUI filter row narrows cards; its Escape stays in the row', async () => {
+    const el = await attach('sem-shell');
+    type(el, 'semtext tui demo/token-rotation.html');
+    await el.updateComplete;
+    const tui = el.querySelector('.sem-tui') as HTMLElement;
+    tui.dispatchEvent(new KeyboardEvent('keydown', { key: '/' }));
+    await el.updateComplete;
+    const filter = tui.querySelector('.sem-tui-filter') as HTMLInputElement;
+    expect(filter).not.toBeNull();
+    filter.value = 'PKCE';
+    filter.dispatchEvent(new Event('input', { bubbles: true }));
+    await el.updateComplete;
+    expect(tui.textContent).toContain('filter: PKCE');
+    filter.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await el.updateComplete;
+    expect(el.querySelector('.sem-tui-filter')).toBeNull(); // row closed, view kept
+    expect(tui.textContent).toContain('filter: PKCE');
+  });
+});
 describe('open', () => {
   it('non-HTML refused with a stderr line, no window', async () => {
     const el = await attach('sem-shell');

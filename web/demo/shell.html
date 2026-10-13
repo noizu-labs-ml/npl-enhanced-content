@@ -16,28 +16,58 @@
 <h1>sem-shell</h1>
 <p>An interactive shell over a small in-memory file system of SemText
 documents — the <code>&lt;sem-terminal&gt;</code> core configured with the
-bundled <code>semtext-demo</code> plugin (see
+bundled <code>posix-sh</code> and <code>semtext-demo</code> plugins (see
 <code>src/terminal/PLUGINS.md</code>). Try <code>ls -l</code>,
-<code>cat demo/welcome.html</code>,
-<code>semtext outline demo/token-rotation.html</code>,
-<code>open demo/welcome.html</code>. Arrows recall history; Ctrl+L clears;
-<code>help</code> lists everything. On boot the shell also demonstrates the
-CDN rule: a second plugin from an <code>https://</code> URL with no
-integrity hash is refused before any request.</p>
+<code>bat demo/welcome.html</code>,
+<code>semtext render demo/token-rotation.html</code>,
+<code>semtext tui demo/token-rotation.html</code>,
+<code>grep -rn Rotation demo/</code>,
+<code>open demo/welcome.html</code>. Pipes and redirects work
+(<code>cat demo/quiz.html | grep -c sem-fact</code>); so do
+<code>export</code>, <code>alias</code>, <code>history</code> and
+<code>$?</code>. Arrows recall history; Ctrl+L clears; <code>help</code>
+lists everything; <code>man ls</code> explains one command.</p>
+<p>On open the shell <em>demos itself</em>: the <code>script</code>
+attribute types a short tour. <strong>Escape stops the script and hands
+you the terminal</strong>; the <code>replay</code> button restarts it.
+With <code>prefers-reduced-motion</code> the whole tour runs instantly.
+With JavaScript off, the static transcript below is the whole story.</p>
 
 <!-- The authored children ARE the zero-JS contract: a static transcript
      with no input element. The upgrade replaces them (and the build's
      .nojs.html variant ships exactly this as proof). -->
-<sem-shell aria-label="SemText shell">
+<sem-shell aria-label="SemText shell" script='[
+ {"type":"comment","text":"A short tour — press Escape any time to take over."},
+ {"type":"type","text":"help","delayMs":35},{"type":"key","key":"Enter"},
+ {"type":"wait","ms":900},
+ {"type":"type","text":"ls -l"},{"type":"key","key":"Enter"},
+ {"type":"wait","ms":800},
+ {"type":"type","text":"cd demo"},{"type":"key","key":"Enter"},
+ {"type":"type","text":"pwd"},{"type":"key","key":"Enter"},
+ {"type":"wait","ms":600},
+ {"type":"comment","text":"What a machine reads — the text render:"},
+ {"type":"type","text":"semtext render token-rotation.html"},{"type":"key","key":"Enter"},
+ {"type":"wait","ms":1400},
+ {"type":"comment","text":"The same records as flashcards:"},
+ {"type":"type","text":"semtext tui token-rotation.html"},{"type":"key","key":"Enter"},
+ {"type":"wait","ms":900},
+ {"type":"key","key":"ArrowDown"},{"type":"key","key":"Enter"},{"type":"wait","ms":1100},
+ {"type":"key","key":"ArrowDown"},{"type":"key","key":"Enter"},{"type":"wait","ms":1100},
+ {"type":"key","key":"q"},
+ {"type":"wait","ms":500},
+ {"type":"comment","text":"Your turn — try grep -rn Rotation . or open welcome.html."},
+ {"type":"type","text":"grep -rn Rotation ."},{"type":"key","key":"Enter"}
+]'>
   <div class="sem-shell-frame">
     <div class="sem-shell-transcript" role="log">
-      <div class="sem-shell-line sem-shell-cmd"><span class="sem-shell-ps1">$ </span>ls</div>
-      <div class="sem-shell-line">README.md</div>
-      <div class="sem-shell-line">demo/</div>
       <div class="sem-shell-line sem-shell-cmd"><span class="sem-shell-ps1">$ </span>semtext outline demo/token-rotation.html</div>
       <div class="sem-shell-line">h1 Token Rotation</div>
       <div class="sem-shell-line">  sem-properties glossary</div>
       <div class="sem-shell-line">  h2 Rotation</div>
+      <div class="sem-shell-line sem-shell-cmd"><span class="sem-shell-ps1">$ </span>grep -rn PKCE demo/</div>
+      <div class="sem-shell-line">demo/token-rotation.html:10:      &lt;sem-property key="PKCE"&gt;Proof Key for Code Exchange…</div>
+      <div class="sem-shell-line sem-shell-cmd"><span class="sem-shell-ps1">$ </span>echo $?</div>
+      <div class="sem-shell-line">0</div>
     </div>
   </div>
 </sem-shell>

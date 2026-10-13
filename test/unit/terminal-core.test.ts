@@ -19,6 +19,15 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { TerminalCore } from '../../src/terminal/terminal-core.js';
 import { demoPlugin } from '../../src/terminal/plugins/demo/plugin.js';
+import { posixPlugin } from '../../src/terminal/plugins/posix/plugin.js';
+
+/** Demo + POSIX: the bundle <sem-shell> mounts. */
+function mountBundled(core: TerminalCore): void {
+  for (const plugin of [posixPlugin, demoPlugin]) {
+    const result = core.mountPlugin(plugin);
+    if (!result.ok) throw new Error(result.error ?? `${plugin.name} failed to mount`);
+  }
+}
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -35,8 +44,8 @@ describe('mountPlugin (JS-object manifest)', () => {
     const result = core.mountPlugin(demoPlugin);
     expect(result.ok).toBe(true);
     expect(result.plugin).toEqual({ name: 'semtext-demo', version: '0.1.0' });
-    expect(core.hasCommand('ls')).toBe(true);
     expect(core.hasCommand('semtext')).toBe(true);
+    expect(core.hasCommand('open')).toBe(true);
     expect(core.vfs.read('/demo/welcome.html')).toContain('<h1>Welcome</h1>');
     expect(core.plugins).toEqual([{ name: 'semtext-demo', version: '0.1.0' }]);
   });
@@ -44,7 +53,7 @@ describe('mountPlugin (JS-object manifest)', () => {
   it('a duplicate command fails the whole mount, nothing partial', () => {
     const core = new TerminalCore();
     core.mountPlugin(demoPlugin);
-    const clash = { name: 'clash', version: '1.0.0', commands: [{ name: 'ls', usage: 'ls', run: () => {} }], files: [{ path: '/clash.txt', content: 'x' }] };
+    const clash = { name: 'clash', version: '1.0.0', commands: [{ name: 'semtext', usage: 'semtext', run: () => {} }], files: [{ path: '/clash.txt', content: 'x' }] };
     const result = core.mountPlugin(clash);
     expect(result.ok).toBe(false);
     expect(result.error).toMatch(/already registered/);
@@ -56,7 +65,7 @@ describe('mountPlugin (JS-object manifest)', () => {
 describe('execLine (dispatch)', () => {
   it('stdin flows down a pipeline: cat file | semtext outline', () => {
     const core = new TerminalCore();
-    core.mountPlugin(demoPlugin);
+    mountBundled(core);
     const result = core.execLine('cat demo/welcome.html | semtext outline');
     const out = result.lines.filter((l) => l.kind === 'stdout').map((l) => l.text);
     expect(out.some((t) => t.startsWith('h1 Welcome'))).toBe(true);
@@ -72,10 +81,10 @@ describe('execLine (dispatch)', () => {
 
   it('help lists every registered command; unknown commands are stderr, not throws', () => {
     const core = new TerminalCore();
-    core.mountPlugin(demoPlugin);
+    mountBundled(core);
     const help = core.execLine('help');
     const text = help.lines.map((l) => l.text).join('\n');
-    expect(text).toContain('ls [-l] [path]');
+    expect(text).toContain('ls [-1aRh]');
     expect(text).toContain('semtext <sub>');
     expect(text).toContain('clear — wipe the transcript');
     const nope = core.execLine('nope');
@@ -84,7 +93,7 @@ describe('execLine (dispatch)', () => {
 
   it('cd mutates the shared state; clear flags without lines', () => {
     const core = new TerminalCore();
-    core.mountPlugin(demoPlugin);
+    mountBundled(core);
     core.execLine('cd demo');
     expect(core.execLine('pwd').lines[1].text).toBe('/demo');
     expect(core.execLine('clear').clear).toBe(true);
