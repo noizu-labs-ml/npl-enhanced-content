@@ -229,6 +229,7 @@
         <tr><td><code>sem-source</code></td><td>section flipping rendered ↔ authored markup</td><td><a href="#el-sem-source">§5</a></td></tr>
         <tr><td><code>sem-md</code></td><td>Markdown block, rendered in the browser</td><td><a href="#el-sem-md">§5</a></td></tr>
         <tr><td><code>sem-embed</code></td><td>embed another SemText document, or one block of it</td><td><a href="#el-sem-embed">§5</a></td></tr>
+        <tr><td><code>sem-view-more</code></td><td>marks an embedded section as an expandable summary view</td><td><a href="#el-sem-view-more">§5</a></td></tr>
         <tr><td><code>sem-references</code> / <code>sem-reference</code></td><td>numbered citable entries</td><td><a href="#el-sem-references">§5</a></td></tr>
         <tr><td><code>sem-table</code></td><td>sortable, filterable authored table</td><td><a href="#el-sem-table">§5</a></td></tr>
         <tr><td><code>sem-progress</code></td><td>completion meter</td><td><a href="#el-sem-progress">§5</a></td></tr>
@@ -484,6 +485,17 @@
     <li>Machine (§8): an embed is transparent — it mints no record, and a resolved embed must extract identically to the same content inlined by hand: <code>E(D) = E(D′)</code>, where D′ replaces every <code>&lt;sem-embed&gt;</code> with its selected content, deep equality including <code>sourceOrder</code>. Extraction is a total, pure function — no I/O (extraction §9) — so it can never resolve an embed itself: resolution happens before distribution, and an unresolved embed reaching a distributed artifact is a build error (❓ Q7).</li>
   </ul>
 
+  <h3 id="el-sem-view-more">sem-view-more — expandable summary view of an embedded section</h3>
+  <p>Normative: <a href="schema/view-more.sem.html">schema/view-more.sem.html</a>.</p>
+  <sem-code id="c-sem-view-more" lang="html"><pre><code>&lt;sem-view-more&gt;
+  &lt;sem-embed data-source="./non-summary-file.semtext.html" data-section="#Anchor Name"&gt;&lt;/sem-embed&gt;
+&lt;/sem-view-more&gt;</code></pre></sem-code>
+  <ul>
+    <li>A wrapper around a <code>sem-embed</code> that marks the embedded section as an expandable summary view. The embed carries the content reference — <code>data-source</code> names the referenced (non-summary) document, <code>data-section</code> the section within it — and the wrapper marks that section as a summary the reader can expand to the fuller content.</li>
+    <li>The element is known from this one landing-page usage and nothing else; its attribute set, content model beyond the embed child, tier behaviour and extraction are open questions recorded in <a href="schema/view-more.sem.html">schema/view-more.sem.html</a>, not settled here.</li>
+  </ul>
+  <sem-note id="n-view-more" variant="warning" kind="ambiguity"><strong>Unresolved:</strong> documented from a single usage. Whether the wrapper mints a record or is presentation-only chrome, what attributes it may take, how <code>data-section</code> relates to <code>sem-embed</code>'s specced <code>view</code>/<code>#fragment</code> selection, and why the usage writes data-* spellings on a tag-form element are all open — see <a href="schema/view-more.sem.html">schema/view-more.sem.html</a>.</sem-note>
+
   <h3 id="el-sem-references">sem-references / sem-reference — numbered citable entries</h3>
   <p>Normative: <a href="schema/sem-references.sem.html">schema/sem-references.sem.html</a>.</p>
   <sem-code id="c-sem-references" lang="html"><pre><code>&lt;p&gt;…per use&lt;a href="#r-rfc"&gt;[1]&lt;/a&gt;.&lt;/p&gt;
@@ -705,6 +717,7 @@
     <sem-reference id="r-sc-sem-reveal" role="listitem" href="schema/sem-reveal.sem.html" cite="sem-reveal">Schema — sem-reveal.</sem-reference>
     <sem-reference id="r-sc-sem-source" role="listitem" href="schema/sem-source.sem.html" cite="sem-source">Schema — sem-source.</sem-reference>
     <sem-reference id="r-sc-sem-table" role="listitem" href="schema/sem-table.sem.html" cite="sem-table">Schema — sem-table.</sem-reference>
+    <sem-reference id="r-sc-view-more" role="listitem" href="schema/view-more.sem.html" cite="view-more">Schema — sem-view-more.</sem-reference>
     <sem-reference id="r-sc-sem-views" role="listitem" href="schema/sem-views.sem.html" cite="sem-views">Schema — sem-views / sem-view.</sem-reference>
   </sem-references>
 

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" data-sem-theme="minimal-tech-light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schema — sem-view-more</title>
+  <link rel="stylesheet" href="../../themes/_vocabulary.css" />
+  <link rel="stylesheet" href="../../themes/minimal-tech-light.css" />
+</head>
+<body>
+<sem-enhanced-document role="main">
+
+  <sem-reader controls="outline,progress">
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#authoring">Authoring form</a></li>
+        <li><a href="#contract">Known contract</a></li>
+        <li><a href="#open">Open questions</a></li>
+      </ol>
+    </nav>
+  </sem-reader>
+
+  <h1 id="title" data-kind="title">Schema — sem-view-more</h1>
+
+  <sem-note variant="info">Contract per conventions.md v0.5. This document records the one known usage of the element — a wrapper around a <code>sem-embed</code> on the landing page — and nothing more. It is authored directly as SemText; it has no Markdown twin yet, like <code>embed.sem.html</code>. Where the usage does not settle a question, the question is flagged open below, not answered.</sem-note>
+
+  <h2 id="authoring">Authoring form</h2>
+
+  <sem-code lang="html"><pre><code>&lt;sem-view-more&gt;
+  &lt;sem-embed data-source="./non-summary-file.semtext.html" data-section="#Anchor Name"&gt;&lt;/sem-embed&gt;
+&lt;/sem-view-more&gt;</code></pre></sem-code>
+
+  <p>The element is a wrapper around a single <code>sem-embed</code>. The embed names the content: <code>data-source</code> is the referenced document (a non-summary file — the full version), <code>data-section</code> is the section within it (<code>#Anchor Name</code>). The wrapper marks that embedded section as an expandable summary view.</p>
+
+  <h2 id="contract">Known contract</h2>
+  <ul>
+    <li><code>sem-view-more</code> wraps a <code>sem-embed</code> and marks the embedded section as an expandable summary view: the embedded section stands for the fuller content of the referenced document, and the wrapper marks it as something the reader can expand beyond the summary presentation.</li>
+    <li>The wrapper is authored around the embed; the example gives it no attributes and no other content. Nothing beyond that is established.</li>
+    <li>Machine (§8, provisional): registered <code>record: false</code> in <a href="semtext.schema.json">semtext.schema.json</a> — a transparent wrapper on the <code>sem-source</code> precedent — strictly because the usage shows nothing the wrapper itself contributes; see the open question below. The embed child's own contract (resolution, sanitisation, the extraction invariant) is <a href="embed.sem.html">embed.sem.html</a>'s and is unchanged by the wrapper as far as the usage shows.</li>
+  </ul>
+
+  <h2 id="open">Open questions</h2>
+
+  <sem-note id="qvm1-spelling" variant="warning" kind="ambiguity"><strong>Open — attribute spelling:</strong> the known usage writes <code>data-source</code>/<code>data-section</code> — the v0.4 class-form data-* spellings — on a <code>sem-embed</code> <em>tag-form</em> element, where conventions §2 makes the bare spelling (<code>source</code>) canonical. Whether the canonical authoring form for this pairing is bare (<code>source</code>, <code>section</code>), data-*, or both accepted, is unresolved.</sem-note>
+
+  <sem-note id="qvm2-section" variant="warning" kind="ambiguity"><strong>Open — section selection:</strong> the specced <code>sem-embed</code> selection parameter is <code>view</code> — the <code>id</code> of one block — with a <code>#fragment</code> in <code>source</code> as sugar. The usage instead carries <code>data-section="#Anchor Name"</code>, a value with a space that cannot be an element <code>id</code> and looks like a heading anchor label. Whether <code>section</code> is an alias of <code>view</code>, a separate heading-anchored selector, or a legacy spelling of the fragment sugar, is unresolved.</sem-note>
+
+  <sem-note id="qvm3-wrapper" variant="warning" kind="ambiguity"><strong>Open — wrapper contract:</strong> the usage settles none of the wrapper's own semantics: whether <code>sem-view-more</code> accepts attributes (e.g. its own summary label), whether it may wrap anything besides a <code>sem-embed</code>, whether it requires exactly one embed child, how it behaves in each tier (CSS-only / fallback / upgraded, print), and whether it mints a record or is presentation-only chrome (the <code>record: false</code> registration above is the conservative default, not a decision). Each is unresolved.</sem-note>
+
+  <sem-references kind="bibliography" role="list">
+    <sem-reference id="r-embed" role="listitem" href="embed.sem.html" cite="embed.sem.html">Schema — sem-embed: the wrapped element's resolution, security and extraction contract.</sem-reference>
+    <sem-reference id="r-conventions" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/conventions.md" cite="conventions.md">Root spec — §2 attribute spellings, §8 the extraction invariant.</sem-reference>
+    <sem-reference id="r-schema-json" role="listitem" href="https://github.com/noizu-labs-ml/npl-enhanced-content/blob/develop/spec/schema/semtext.schema.json" cite="semtext.schema.json">Machine-readable schema.</sem-reference>
+  </sem-references>
+
+</sem-enhanced-document>
+</body>
+</html>

@@ -654,6 +654,36 @@
         }
       }
     },
+    "sem-embed": {
+      "source": "spec/schema/embed.sem.html",
+      "record": false,
+      "attributes": {
+        "source": {
+          "required": true
+        },
+        "view": {},
+        "depth": {
+          "type": "number",
+          "min": 1,
+          "max": 4,
+          "severityOnUnknown": "warning",
+          "note": "above the format maximum warns and clamps; below 1 or non-number warns and is treated as absent (embed.sem.html, Q8)"
+        },
+        "mode": {
+          "type": "token",
+          "values": [
+            "inline",
+            "card"
+          ],
+          "default": "inline"
+        }
+      }
+    },
+    "sem-view-more": {
+      "source": "spec/schema/view-more.sem.html",
+      "record": false,
+      "attributes": {}
+    },
     "sem-table": {
       "source": "spec/schema/sem-table.md",
       "record": true,
