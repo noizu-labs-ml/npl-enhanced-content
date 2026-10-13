@@ -76,6 +76,31 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
+/* sem-shell / sem-terminal — NOT in the core bundle: the interactive
+ * shell (src/shell/*) and the reusable terminal core (src/terminal/*:
+ * plugins attribute, manifest loading, dispatch, the POSIX plugin surface,
+ * scripted playback and the flashcard TUI) are demo/agent tooling, not
+ * document vocabulary. They ship as their own standalone bundle,
+ * dist/semtext-js-shell.js (IIFE global SemTextShell, entry src/js-shell.ts,
+ * mapped in dist/semtext-js-shell-manifest.json) so semtext.js never grows
+ * for them. Only the type surface is re-exported here — type-only exports
+ * are erased at build and cost the core bundle nothing. */
+export type {
+  ShellState,
+  ShellLine,
+  ShellLineKind,
+  ShellAction,
+  WindowAction,
+  CommandContext,
+  CommandSpec,
+  PluginManifest,
+  PluginFileEntry,
+  MountResult,
+  ExecResult,
+} from './terminal/terminal-core.js';
+export type { PlaybackStep, PlaybackDriver, PlaybackHandle } from './terminal/playback.js';
+export type { TuiCard, TuiState, TuiAction } from './terminal/tui.js';
+export type { ShellStage, ShellRedirect, ParsedLine } from './terminal/sh-parse.js';
 /* agent-kit upsell stubs — NOT in the core bundle any more: sem-chat,
  * sem-review-canvas, sem-media-gallery, sem-upload-drop and
  * sem-artifact-card each ship as their own lazy chunk, mapped in

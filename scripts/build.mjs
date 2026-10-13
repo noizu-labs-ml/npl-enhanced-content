@@ -98,6 +98,17 @@ const targets = [
     budgetKb: 24,
     required: false,
   },
+  {
+    // The interactive terminal (sem-shell + sem-terminal: POSIX plugin,
+    // semtext CLI, scripted playback, flashcard TUI) as its own standalone
+    // bundle. Kept OUT of the core entry on purpose — demo/agent tooling,
+    // not document vocabulary; semtext.js must not grow for it.
+    name: 'semtext-js-shell.js',
+    entry: 'src/js-shell.ts',
+    global: 'SemTextShell',
+    budgetKb: 96,
+    required: true,
+  },
 ];
 
 rmSync(resolve(root, 'dist'), { recursive: true, force: true });
@@ -135,6 +146,15 @@ for (const target of targets) {
   if (bytes > budget) overBudget = true;
   results.push({ name: target.name, bytes, gzip, budget, ok: bytes <= budget });
 }
+
+/* js-shell manifest — both terminal tags ship in the one standalone bundle
+ * (self-contained: the demo plugin's documents are `?raw`-inlined, so there
+ * are no runtime fetches and no chunks). Emitted next to the other
+ * manifests so a consumer can resolve either tag without hardcoding. */
+writeFileSync(
+  resolve(root, 'dist', 'semtext-js-shell-manifest.json'),
+  JSON.stringify({ 'sem-terminal': 'semtext-js-shell.js', 'sem-shell': 'semtext-js-shell.js' }, null, 2) + '\n',
+);
 
 /* ---------------------------------------------------------------------------
  * Lazy phase — semtext-lazy.js + chunks/, npl-lazy.js + npl-chunks/ (see

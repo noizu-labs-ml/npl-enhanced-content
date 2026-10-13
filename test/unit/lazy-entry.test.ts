@@ -18,6 +18,19 @@ import { describe, it, expect, beforeAll } from 'vitest';
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 4));
 
+// The chunk import fails asynchronously (the URL deliberately does not
+// exist); how long that takes is scheduler-dependent, so poll for the
+// observable outcome instead of assuming one 4ms tick is enough. A fixed
+// tick raced under a loaded worker pool and failed ~2 runs in 3.
+const until = async (probe: () => boolean, deadlineMs = 2_000) => {
+  const start = Date.now();
+  while (!probe()) {
+    if (Date.now() - start > deadlineMs) return false;
+    await tick();
+  }
+  return true;
+};
+
 describe('lazy entry wiring', () => {
   beforeAll(async () => {
     document.body.innerHTML =
@@ -26,9 +39,10 @@ describe('lazy entry wiring', () => {
     await tick();
   });
 
-  it('boots document-wide: an element under no sem-text wrapper is processed like a wrapped one', () => {
+  it('boots document-wide: an element under no sem-text wrapper is processed like a wrapped one', async () => {
     for (const id of ['loose', 'wrapped']) {
       const el = document.getElementById(id)!;
+      expect(await until(() => el.hasAttribute('data-sem-lazy-error'))).toBe(true);
       expect(el.getAttribute('data-sem-lazy-error')).toBe('sem-note');
       expect(el.querySelector('[role="alert"]')?.textContent).toContain('sem-note');
     }
@@ -36,7 +50,6 @@ describe('lazy entry wiring', () => {
 
   it('watches the document: an element inserted anywhere later is processed too', async () => {
     document.body.insertAdjacentHTML('beforeend', '<sem-note id="late">n</sem-note>');
-    await tick();
-    expect(document.getElementById('late')!.hasAttribute('data-sem-lazy-error')).toBe(true);
+    expect(await until(() => document.getElementById('late')!.hasAttribute('data-sem-lazy-error'))).toBe(true);
   });
 });
