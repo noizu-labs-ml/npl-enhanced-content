@@ -498,6 +498,7 @@ npl-artifact, .npl-artifact { display: block; }
 npl-cot, .npl-cot { display: block; }
 npl-critique, .npl-critique { display: block; }
 npl-declaration, .npl-declaration { display: block; }
+npl-directive, .npl-directive { display: block; }
 npl-example, .npl-example { display: block; }
 npl-intent, .npl-intent { display: block; }
 npl-intent-assumption, .npl-intent-assumption { display: block; }

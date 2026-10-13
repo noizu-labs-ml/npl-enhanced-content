@@ -43,26 +43,29 @@
  */
 
 /* Components — alphabetical; one two-line pair each, nothing shared. */
+
+/* Namespace helpers (src/lit/npl/shared.ts). */
 export { NplArtifact } from './npl-artifact.js';
-export { NplCot } from './npl-cot.js';
-export { NplCritique } from './npl-critique.js';
-export { NplDeclaration } from './npl-declaration.js';
 import './npl-artifact.js';
+export { NplCot } from './npl-cot.js';
 import './npl-cot.js';
+export { NplCritique } from './npl-critique.js';
 import './npl-critique.js';
+export { NplDeclaration } from './npl-declaration.js';
 import './npl-declaration.js';
+export { NplDirective } from './npl-directive.js';
+import './npl-directive.js';
 export { NplExample } from './npl-example.js';
 import './npl-example.js';
 export { NplIntent } from './npl-intent.js';
-export { NplMode } from './npl-mode.js';
-export { NplMood } from './npl-mood.js';
-export { NplThought } from './npl-thought.js';
-export { NplVos } from './npl-vos.js';
 import './npl-intent.js';
+export { NplMode } from './npl-mode.js';
 import './npl-mode.js';
+export { NplMood } from './npl-mood.js';
 import './npl-mood.js';
+export { NplThought } from './npl-thought.js';
 import './npl-thought.js';
+export { NplVos } from './npl-vos.js';
 import './npl-vos.js';
 
-/* Namespace helpers (src/lit/npl/shared.ts). */
 export { defineNpl, nplParam, nplEmit } from './shared.js';
