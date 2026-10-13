@@ -76,6 +76,14 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
+/* Media gallery + upload (agent-kit demo stubs) */
+export { SemMediaGallery } from './lit/sem-media-gallery.js';
+import type { MediaItem } from './lit/sem-media-gallery.js';
+import './lit/sem-media-gallery.js';
+export { SemUploadDrop } from './lit/sem-upload-drop.js';
+import type { MediaAddedDetail } from './lit/sem-upload-drop.js';
+import './lit/sem-upload-drop.js';
+export type { MediaItem, MediaAddedDetail };
 
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */
