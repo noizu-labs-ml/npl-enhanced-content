@@ -47,8 +47,10 @@ export { NplExample } from './npl-example.js';
 import './npl-example.js';
 export { NplMode } from './npl-mode.js';
 export { NplMood } from './npl-mood.js';
+export { NplThought } from './npl-thought.js';
 import './npl-mode.js';
 import './npl-mood.js';
+import './npl-thought.js';
 
 /* Namespace helpers (src/lit/npl/shared.ts). */
 export { defineNpl, nplParam, nplEmit } from './shared.js';
