@@ -479,3 +479,22 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
   :is(sem-property, .sem-property), :is(sem-event, .sem-event), :is(sem-reference, .sem-reference) { break-inside: avoid; page-break-inside: avoid; }
   .sem-target { outline: none; }
 }
+
+/* ============================================================
+   npl-* — NPL components (src/lit/npl/; recipe: that barrel's header).
+
+   The same box contract the sem-* enumeration above gives every sem-*
+   tag: custom elements are inline by default, the vocabulary is
+   block-level, so each tag gets its box before any definition —
+   `:not(:defined)` pre-upgrade, and for any element that never defines
+   one, alike. The class-namespace alias follows conventions Appendix A
+   (`:is(npl-x, .npl-x)`, one rule per authoring form).
+
+   ONE LINE PER TAG, ALPHABETICAL. A new component inserts its own line
+   here — nothing shared is ever edited, so parallel component branches
+   merge clean. Do NOT convert this into one comma list.
+   ============================================================ */
+npl-example, .npl-example { display: block; }
+npl-flag, .npl-flag { display: block; }
+npl-flags, .npl-flags { display: block; }
+
