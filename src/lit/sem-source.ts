@@ -1,14 +1,15 @@
 import { SemElement } from './base.js';
 import { enhanceSourceElement } from '../reading/source.js';
+import { snapshotSourceElement } from '../fallback/source.js';
 
 /**
  * sem-source — thin Lit wrapper over src/reading/source.ts.
  *
- * Waits for the parse to finish rather than for a child: the fallback
- * core's snapshot pass (registered first, run on DOMContentLoaded) must
- * have captured the authored markup before the chrome is built. Same
- * idempotent enhance the reading bundle runs; chrome present means
- * nothing is added.
+ * Takes its own snapshot immediately before building the chrome
+ (`snapshotSourceElement`, the same pass the core handler runs): the
+ component may upgrade and enhance before the bundle's DOMContentLoaded
+ scan, so it cannot rely on the scan having snapshotted first. Snapshot
+ is idempotent; chrome present means nothing is added.
  */
 export class SemSource extends SemElement {
   #wired = false;
@@ -17,9 +18,9 @@ export class SemSource extends SemElement {
     if (this.#wired) return;
     this.#wired = true;
     const go = (): void => {
+      snapshotSourceElement(this);
       enhanceSourceElement(this);
       this.setAttribute('data-sem-upgraded', '');
-      this.removeAttribute('data-sem-fallback');
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go, { once: true });
     else go();

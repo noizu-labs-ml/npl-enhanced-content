@@ -2,7 +2,7 @@
 
 **Repo:** https://github.com/noizu-labs-ml/npl-enhanced-content
 
-SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. Rendered by Lit web components over a zero-JS fallback tier. Zero React.
+SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. One Lit bundle (`dist/semtext.js`) + its stylesheet + themes; with JavaScript off the document degrades to plain prose. Zero React.
 
 ```html
 <sem-enhanced-document>
@@ -27,7 +27,7 @@ The vocabulary is **custom elements with bare attributes** (`view-as`, `status`,
 The NPL ecosystem's rich-content spec plus its JavaScript artifacts (`package` name: `semtext`):
 
 - **`spec/`** — normative format specs: conventions (`.md`/`.html`), extraction rules, and `spec/schema/` (Tier-0 schemas).
-- **`src/`** — three classic-IIFE artifacts, each installing a global and exporting nothing (consume as `<script src>`/CDN or side-effect ESM import): `SemText` (`semtext/lit`, registers the Lit custom elements), `SemTextFallback` (`semtext/fallback`, zero-JS tier), `SemTextExtract` (`semtext/extract`). `themes/*` ships as raw theme CSS.
+- **`src/`** — one classic-IIFE artifact, `dist/semtext.js` (`semtext/lit`, global `SemText`): the Lit custom elements, the vanilla handlers, and extraction (`SemText.extractRecords` / `SemText.extractText`), all exporting nothing — consume as `<script src>`/CDN or side-effect ESM import. `dist/semtext.css` + `themes/*` ship as raw CSS.
 - **`web/`** — demo + site; **`test/`** — Cypress e2e + support; **`docs/`** — PROJ-ARCH/LAYOUT/SCHEMA docs with `.summary.md` digests.
 
 There is deliberately no `.` export — ROADMAP debt D9: dropping it removes the false promise of an importable root rather than papering over it.
@@ -49,8 +49,8 @@ npm run serve           # vite preview on :4173
 
 ## How It Works
 
-- Author XHTML using the SemText conventions/spec; the `lit` artifact registers custom elements that progressively enhance it in the browser; the `fallback` artifact provides the zero-JS rendering tier; the `extract` artifact pulls the plain-text/structural reduction.
-- Top-level directories are domains: `spec/`, `src/` (`lit/`, `fallback/`, `extract/`, `shared/`), `themes/` (kept top-level as a subpath export + CDN asset), `web/`, `test/`, `scripts/`, `docs/`.
+- Author XHTML using the SemText conventions/spec; the one bundle (`semtext/lit` → `dist/semtext.js`) registers custom elements and runs the vanilla handlers that progressively enhance it in the browser, and pulls the plain-text/structural reduction via `SemText.extractRecords` / `SemText.extractText`. With the script absent, the document reads as plain prose.
+- Top-level directories are domains: `spec/`, `src/` (`lit/`, `fallback/`, `reading/`, `md/`, `extract/`, `shared/`), `themes/` (kept top-level as a subpath export + CDN asset), `web/`, `test/`, `scripts/`, `docs/`.
 - Builds enforce a size budget (`build:strict`); theme CSS doubles as a CDN asset.
 
 ## Docs

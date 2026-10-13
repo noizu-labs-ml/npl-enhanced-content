@@ -67,18 +67,27 @@ degradation claim honest while the bigger waves wait.
 
 ## Size budgets (raw minified, enforced by `npm run build:strict`)
 
-Current, after tag-form canonical (PR #30):
+Current, after the Lit-only bundle (spec v0.6): one artifact, one budget. The
+per-tier budgets below it are the retired five-artifact history, kept for the
+guardrail discipline they document.
 
 | Artifact | Budget | Measured |
 |---|---|---|
-| `semtext-fallback.js` | **14 KB** | 13.0 |
-| `semtext-reading.js` | **19.5 KB** | 19.4 — at the line; the next reading-bundle feature must raise it deliberately |
-| `semtext.js` (Lit) | **56 KB** | 49.5 |
-| `semtext-extract.js` | **12 KB** | 9.7 |
-| `semtext-md.js` | **8.5 KB** | 8.0 |
+| `semtext.js` (one bundle) | **96 KB** | 70.0 raw / 22.5 gzipped |
 
-The fallback budget is a guardrail, not an aspiration: any future bump goes through this
-section and `scripts/build.mjs` together.
+Retired artifacts (spec v0.5, tag-form canonical, PR #30) — their handlers now
+share the single bundle budget:
+
+| Artifact | Budget | Measured |
+|---|---|---|
+| `semtext-fallback.js` | 14 KB | 13.0 |
+| `semtext-reading.js` | 19.5 KB | 19.4 — at the line |
+| `semtext.js` (Lit only) | 56 KB | 49.5 |
+| `semtext-extract.js` | 12 KB | 9.7 |
+| `semtext-md.js` | 8.5 KB | 8.0 |
+
+The bundle budget is a guardrail, not an aspiration: any future bump goes through
+this section and `scripts/build.mjs` together.
 
 ## History (recorded decisions — preserved)
 

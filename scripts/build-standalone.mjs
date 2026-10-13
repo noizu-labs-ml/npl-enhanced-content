@@ -20,24 +20,21 @@
  * Markers (HTML comments, so a source page stays valid HTML on its own):
  *
  *   <!-- sem:inline bundle -->                     dist/semtext.js
- *   <!-- sem:inline fallback -->                   dist/semtext-fallback.js
- *   <!-- sem:inline reading -->                    dist/semtext-reading.js
- *   <!-- sem:inline extract -->                    dist/semtext-extract.js
- *   <!-- sem:inline md -->                         dist/semtext-md.js
- *       (order-independent w.r.t. `reading`: either script enhances the
- *        raw fence, and the md bundle re-checks on every scan)
  *   <!-- sem:inline theme <name> -->               themes/<name>.css
- *   <!-- sem:inline vocabulary -->                 themes/_vocabulary.css
+ *   <!-- sem:inline vocabulary -->                 dist/semtext.css (the built
+ *                                                   vocabulary — identical to
+ *                                                   themes/_vocabulary.css;
+ *                                                   inlining the artifact
+ *                                                   keeps "what ships is what
+ *                                                   demos show" true)
  *   <!-- sem:inline size <script> -->              "N.N KB (N.N KB gzipped)"
  *   <!-- sem:inline size-mg <script> -->            "N.N KB minified, N.N KB gzipped"
  *   <!-- sem:inline size-kb <script> -->            "N.N"  (bare minified KB)
  *   <!-- sem:inline size-gzkb <script> -->          "N.N"  (bare gzipped KB)
- *                                                   all measured from the
- *                                                   built dist/semtext-<script>.js
- *                                                   (or dist/semtext.js for
- *                                                   "bundle") — never
+ *                                                   all measured from
+ *                                                   dist/semtext.js — never
  *                                                   hardcode a size in copy.
- *   <!-- sem:inline spec-version -->                "v0.5" — the draft spec
+ *   <!-- sem:inline spec-version -->                "v0.6" — the draft spec
  *                                                   revision, from package.json
  *                                                   `specVersion`. Demo titles
  *                                                   and copy self-label from
@@ -104,20 +101,12 @@ function expand(kind, arg) {
   switch (kind) {
     case 'bundle':
       return `<script>\n${readOrDie(resolve(root, 'dist/semtext.js'), 'bundle')}\n</script>`;
-    case 'fallback':
-      return `<script id="sem-fallback">\n${readOrDie(resolve(root, 'dist/semtext-fallback.js'), 'fallback')}\n</script>`;
-    case 'reading':
-      return `<script id="sem-reading">\n${readOrDie(resolve(root, 'dist/semtext-reading.js'), 'reading')}\n</script>`;
-    case 'extract':
-      return `<script id="sem-extract">\n${readOrDie(resolve(root, 'dist/semtext-extract.js'), 'extract')}\n</script>`;
-    case 'md':
-      return `<script id="sem-md">\n${readOrDie(resolve(root, 'dist/semtext-md.js'), 'md')}\n</script>`;
     case 'theme': {
       if (!arg) throw new Error('marker "theme" requires a theme name');
       return `<style data-sem-theme-source="${arg}">\n${readOrDie(resolve(root, 'themes', `${arg}.css`), 'theme')}\n</style>`;
     }
     case 'vocabulary':
-      return `<style data-sem-vocabulary>\n${readOrDie(resolve(root, 'themes/_vocabulary.css'), 'vocabulary')}\n</style>`;
+      return `<style data-sem-vocabulary>\n${readOrDie(resolve(root, 'dist/semtext.css'), 'vocabulary')}\n</style>`;
     case 'size':
       return sizeParts(arg, 'size').text;
     case 'size-mg':
@@ -138,15 +127,12 @@ function expand(kind, arg) {
 }
 
 /** Path (relative to repo root) of the built script a `sem:inline size` /
- *  `sem:inline size-mg` marker's argument names. Keep in sync with the
- *  `expand()` script cases above — this is the single source of truth other
- *  copy should measure against instead of hardcoding a number. */
+ *  `sem:inline size-mg` marker's argument names. One bundle since v0.6:
+ *  every size marker measures `bundle`. Keep in sync with the `expand()`
+ *  cases above — this is the single source of truth other copy should
+ *  measure against instead of hardcoding a number. */
 const SIZE_SOURCES = {
   bundle: 'dist/semtext.js',
-  fallback: 'dist/semtext-fallback.js',
-  reading: 'dist/semtext-reading.js',
-  extract: 'dist/semtext-extract.js',
-  md: 'dist/semtext-md.js',
 };
 
 /** Measure a built script's real size (and gzip size) so page copy states
@@ -262,8 +248,12 @@ if (specPages.length) {
   const themesOutDir = resolve(root, 'dist', 'themes');
   mkdirSync(specOutDir, { recursive: true });
   mkdirSync(themesOutDir, { recursive: true });
+  // Named themes ship under their `semtext-theme-` prefix (dist/themes/, as
+  // built by scripts/build.mjs); the vocabulary is dist/semtext.css, already
+  // emitted, and is not duplicated here.
   for (const css of readdirSync(resolve(root, 'themes')).filter((f) => f.endsWith('.css'))) {
-    copyFileSync(resolve(root, 'themes', css), resolve(themesOutDir, css));
+    if (css === '_vocabulary.css') continue;
+    copyFileSync(resolve(root, 'themes', css), resolve(themesOutDir, `semtext-theme-${css}`));
   }
   for (const css of readdirSync(specSrcDir).filter((f) => f.endsWith('.css'))) {
     copyFileSync(resolve(specSrcDir, css), resolve(specOutDir, css));
@@ -288,9 +278,11 @@ if (specPages.length) {
     // Every relative linked asset must exist (scripts/standalone-lib.mjs
     // decides what counts), for the same reason a missing marker source is
     // a hard error above: a spec page that loads no behaviour would
-    // silently stop proving anything.
+    // silently stop proving anything. Pages reference themes by their
+    // shipped `semtext-theme-` name; the source file carries no prefix.
     for (const { ref, rel } of specAssetRefs(src)) {
-      if (!existsSync(resolve(root, rel))) throw new Error(`spec/${file} links ${ref}, which does not exist`);
+      const check = rel.replace(/^(themes\/)semtext-theme-(.+\.css)$/, 'themes/$2');
+      if (!existsSync(resolve(root, check))) throw new Error(`spec/${file} links ${ref}, which does not exist`);
     }
     const built = rewriteSpecPage(src);
     const name = basename(file, '.html');

@@ -1,44 +1,54 @@
 /**
- * scripts/build.mjs — five artifacts, one command.
+ * scripts/build.mjs — the one bundle, one command (spec v0.6).
  *
  * `vite build` with `build.lib.formats: ['iife']` supports exactly one entry,
- * and this package ships five independent classic scripts:
+ * and the package ships exactly one script:
  *
- *   dist/semtext.js           Lit custom elements          (global SemText)
- *   dist/semtext-fallback.js  vanilla fallback tier        (global SemTextFallback)
- *   dist/semtext-reading.js   prose-reading behaviours     (global SemTextReading)
- *   dist/semtext-extract.js   record extraction            (global SemTextExtract)
- *   dist/semtext-md.js        sem-md Markdown renderer     (global SemTextMd)
+ *   dist/semtext.js   Lit custom elements + the vanilla handlers (core,
+ *                     reading, Markdown) + extraction   (global SemText)
  *
- * They are separate on purpose. The fallback tier must run in a document that
- * never loads Lit, so it cannot share a bundle with it.
+ * plus its stylesheets, copied verbatim from themes/ (no build step — the
+ * theme files are the shipped artifacts):
  *
- * Each target declares a size budget; the build prints measured size against
+ *   dist/semtext.css                    from themes/_vocabulary.css
+ *   dist/themes/semtext-theme-<n>.css   from themes/<n>.css
+ *
+ * The former per-tier scripts (semtext-fallback.js, semtext-reading.js,
+ * semtext-extract.js, semtext-md.js) are retired: everything lives in the
+ * one IIFE, and the handlers run for elements no component defines.
+ *
+ * The target declares a size budget; the build prints measured size against
  * it and fails only if `--strict-budget` is passed, so a budget overrun is
- * always visible but never silently blocks local work. The budget table is
+ * always visible but never silently blocks local work. The budget history is
  * recorded in ROADMAP.md ("R — Reading experience"); change both together.
  */
 
-import { build } from 'vite';
-import { existsSync, rmSync, statSync, readFileSync } from 'node:fs';
+import { existsSync, rmSync, statSync, readFileSync, mkdirSync, readdirSync, copyFileSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
+// Pin NODE_ENV before vite is even imported: ambient NODE_ENV=test (a vitest
+// run that self-builds via dockerfile.test.mjs) otherwise selects Lit's
+// "development" export condition and inflates the artifact ~12 KB — the
+// budget would then measure a bundle we never ship.
+process.env.NODE_ENV = 'production';
+const { build } = await import('vite');
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const strict = process.argv.includes('--strict-budget');
 
-/** budgetKb is measured against the minified (not gzipped) artifact. */
 const targets = [
-  { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 56, required: true },
-  // 13 → 14 KB (2026-09-22, tag form canonical, measured 13.0): every core
-  // handler selects both authoring forms (`:is(sem-x, .sem-x)`), the
-  // bare→data-* attribute mirror, the tag-form note body wrap. Recorded in
-  // ROADMAP "Tag-form canonical decisions".
-  { name: 'semtext-fallback.js', entry: 'src/fallback/index.ts', global: 'SemTextFallback', budgetKb: 14, required: true },
-  { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 19.5, required: true },
-  { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 12, required: false },
-  { name: 'semtext-md.js',       entry: 'src/md/index.ts',       global: 'SemTextMd',       budgetKb: 8.5,  required: true },
+  {
+    name: 'semtext.js',
+    entry: 'src/index.ts',
+    global: 'SemText',
+    // Raised from the five-artifact total (fallback 14 + reading 19.5 +
+    // semtext.js 56 + extract 12 + md 8.5): the single bundle pays shared
+    // module overhead once. History per retired artifact in ROADMAP.md.
+    budgetKb: 96,
+    required: true,
+  },
 ];
 
 rmSync(resolve(root, 'dist'), { recursive: true, force: true });
@@ -77,6 +87,24 @@ for (const target of targets) {
   results.push({ name: target.name, bytes, gzip, budget, ok: bytes <= budget });
 }
 
+/* Stylesheets: the theme sources ARE the shipped artifacts. The vocabulary
+ * ships as the bundle's stylesheet (dist/semtext.css); named themes keep
+ * their `semtext-theme-` prefix so a consumer's `./themes/*` import and a
+ * CDN path name the same file. */
+const themesDir = resolve(root, 'themes');
+const distThemesDir = resolve(root, 'dist', 'themes');
+mkdirSync(distThemesDir, { recursive: true });
+const cssCopies = [];
+for (const css of readdirSync(themesDir).filter((f) => f.endsWith('.css')).sort()) {
+  if (css === '_vocabulary.css') {
+    copyFileSync(resolve(themesDir, css), resolve(root, 'dist', 'semtext.css'));
+    cssCopies.push({ from: `themes/${css}`, to: 'dist/semtext.css' });
+  } else {
+    copyFileSync(resolve(themesDir, css), resolve(distThemesDir, `semtext-theme-${css}`));
+    cssCopies.push({ from: `themes/${css}`, to: `dist/themes/semtext-theme-${css}` });
+  }
+}
+
 console.log('\n  artifact              size     gzip    budget');
 console.log('  ------------------------------------------------');
 for (const r of results) {
@@ -85,6 +113,7 @@ for (const r of results) {
     `  ${r.name.padEnd(20)}${kb(r.bytes)}${kb(r.gzip)}${kb(r.budget)}  ${r.ok ? '✓' : '✗ OVER'}`,
   );
 }
+for (const c of cssCopies) console.log(`  ${c.from.padEnd(20)}      → ${c.to}`);
 console.log('');
 
 if (overBudget && strict) {

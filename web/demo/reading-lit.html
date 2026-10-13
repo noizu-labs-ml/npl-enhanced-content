@@ -17,14 +17,9 @@
   p  { margin: .6rem 0; }
 </style>
 
-<!-- All three scripts on one page: the fallback core, the reading bundle
-     and the Lit bundle. Elements the Lit bundle upgraded are skipped by the
-     reading bundle's scan; the wrapper enhances them itself. -->
-<!-- sem:inline fallback -->
-<!-- sem:inline reading -->
-<!-- sem:inline md -->
-<!-- Lit 3 bundle: thin wrappers that claim the upgrade marker and call the
-     same enhance functions the reading bundle uses. -->
+<!-- The one bundle: Lit elements claim their own upgrade; the vanilla
+     handlers cover every element no component defines and every class-alias
+     spelling. One script, one marker (data-sem-upgraded). -->
 <!-- sem:inline bundle -->
 </head>
 

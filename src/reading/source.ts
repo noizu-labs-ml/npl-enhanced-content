@@ -39,9 +39,8 @@ function clean(nodes: DocumentFragment): string {
   const tpl = document.createElement('template');
   tpl.content.appendChild(nodes.cloneNode(true));
   const root = tpl.content;
-  root.querySelectorAll('[data-sem-upgraded], [data-sem-fallback]').forEach((e) => {
+  root.querySelectorAll('[data-sem-upgraded]').forEach((e) => {
     e.removeAttribute('data-sem-upgraded');
-    e.removeAttribute('data-sem-fallback');
   });
   const keep: string[] = [];
   // Sentinel: a C0 control (U+0001–U+001F) absent from the text; bounded
@@ -122,7 +121,7 @@ export function enhanceSourceElement(el: Element): void {
     fence.appendChild(code);
     el.appendChild(fence);
     enhanceCodeElement(code);
-    code.setAttribute('data-sem-fallback', '');
+    code.setAttribute('data-sem-upgraded', '');
   };
   const mode = (m: string): void => {
     if (m == 'source') build();

@@ -33,19 +33,17 @@
   h2 { @apply text-lg font-semibold mt-8 mb-2; }
 </style>
 
-<!-- sem-fallback: vanilla interactivity, no Lit and no external resources.
-     Source lives in src/fallback/**; the built IIFE (dist/semtext-fallback.js)
-     is substituted here by scripts/build-standalone.mjs. -->
-<!-- sem:inline fallback -->
-<!-- Reading bundle: sem-source chrome + fence (and the sem-code it renders). -->
-<!-- sem:inline reading -->
+<!-- The one bundle: Lit elements + vanilla handlers + extraction (spec v0.6).
+     Source lives in src/**; the built IIFE (dist/semtext.js) is substituted
+     here by scripts/build-standalone.mjs. -->
+<!-- sem:inline bundle -->
 </head>
 
 <body>
 <div class="sem-enhanced-document">
 
   <h1>Auth Patterns — Sample SemText Document</h1>
-  <p>Demonstrates the <!-- sem:inline spec-version --> class-based vocabulary: inline CSS + Tailwind refinement + vanilla fallback handler. Open this file directly in any browser. Every section below sits in a <code>sem-source</code> wrapper: <em>Source</em> shows the section's markup as parsed, before any enhancement.</p>
+  <p>Demonstrates the <!-- sem:inline spec-version --> class-based vocabulary: inline CSS + Tailwind refinement + the one bundle. Open this file directly in any browser. Every section below sits in a <code>sem-source</code> wrapper: <em>Source</em> shows the section's markup as parsed, before any enhancement.</p>
 
   <div class="sem-agent">
     <div class="sem-agent-name">Auth Guide</div>

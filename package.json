@@ -2,16 +2,12 @@
   "name": "semtext",
   "version": "0.1.0",
   "//specVersion": "Draft revision of spec/conventions.{html,md} that the demo pages and landing copy self-label. Bump it WITH the spec, not with releases — `version` is the package, `specVersion` is the format draft.",
-  "specVersion": "0.5",
-  "description": "SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. Rendered by Lit web components over a zero-JS fallback tier. Zero React.",
+  "specVersion": "0.6",
+  "description": "SemText — XHTML-first semantic markup: one document that reads as a styled interactive page, a structural record for LLMs, and plain text in a terminal. One Lit bundle (dist/semtext.js + its stylesheet + themes); degrades to plain prose with JavaScript off. Zero React.",
   "type": "module",
-  "//exports": "Five subpaths, one per shipped artifact, plus raw theme CSS. Each artifact is a classic IIFE script that installs a global (SemText, SemTextFallback, SemTextReading, SemTextExtract, SemTextMd) and exports NOTHING — so consume a subpath either as a <script src> tag / CDN asset, or as a side-effect ESM import (`import 'semtext/lit'`, which registers the custom elements). Named imports are not available from any subpath. There is deliberately no '.' export: ROADMAP debt D9 was 'type: module' advertising an ESM package whose root mapped to a non-importable script. Dropping '.' removes the false promise rather than papering over it.",
+  "//exports": "One script, two subpaths. `./lit` is the bundle — a classic IIFE that installs the global `SemText` (all custom elements, the vanilla handlers, extraction as SemText.extractRecords/SemText.extractText) and exports NOTHING — consume it as a <script src> tag / CDN asset, or as a side-effect ESM import (`import 'semtext/lit'`, which registers the custom elements and runs the handlers). Named imports are not available from it. `./themes/*` is raw CSS; the built vocabulary ships as dist/semtext.css inside `files`. The former ./fallback, ./reading, ./extract and ./md subpaths are retired with their artifacts — everything they installed is a name on the one global. There is deliberately no '.' export: ROADMAP debt D9 was 'type: module' advertising an ESM package whose root mapped to a non-importable script. Dropping '.' removes the false promise rather than papering over it.",
   "exports": {
     "./lit": "./dist/semtext.js",
-    "./fallback": "./dist/semtext-fallback.js",
-    "./reading": "./dist/semtext-reading.js",
-    "./extract": "./dist/semtext-extract.js",
-    "./md": "./dist/semtext-md.js",
     "./themes/*": "./themes/*"
   },
   "files": ["dist", "themes", "bin", "src/validate", "spec/schema"],
@@ -37,7 +33,7 @@
   "peerDependenciesMeta": {
     "happy-dom": {
       "optional": true,
-      "//": "Only bin/semtext-validate + src/validate import happy-dom at runtime; the semtext/lit|fallback|reading|extract|md artifacts never do. Library consumers can skip it; CLI users get an actionable error without it."
+      "//": "Only bin/semtext-validate + src/validate import happy-dom at runtime; the semtext/lit bundle and dist/semtext.js never do. Library consumers can skip it; CLI users get an actionable error without it."
     }
   },
   "devDependencies": {

@@ -14,14 +14,16 @@
    renders `attr(<name>)` is guarded with `:not([data-<name>])` so `data-*`
    wins when both are present (conventions §2), while a value selector
    (`:is([data-status="done"], [status="done"])`) needs no guard — both
-   spellings of one value yield one declaration. Rules that only apply once a tier is driving
-   the element key on the `data-*` spelling alone, which the fallback core
-   mirrors from the bare attribute before any handler runs.
+   spellings of one value yield one declaration. Rules that only apply once
+   the script is driving the element key on the `data-*` spelling alone,
+   which the core handler mirrors from the bare attribute before any other
+   handler runs. */
 
-   HIDE RULES ARE GATED (D12). Nothing in this file hides content unless a
-   tier marker says a script is driving it: `[data-sem-fallback]` (vanilla
-   handler) or `[data-sem-upgraded]` (Lit), on the element that owns the
-   behavior — or on `<html>` for rules whose host is deliberately unmarked.
+   HIDE RULES ARE GATED (D12). Nothing in this file hides content unless
+   the marker `[data-sem-upgraded]` says the script is driving it — on the
+   element that owns the behavior (claimed by the Lit component at
+   connect, stamped by the vanilla handler when it wires the element), or
+   on `<html>` for rules whose host is deliberately unmarked.
    With no script, every distractor, view, conclusion and body renders. */
 
 body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
@@ -77,7 +79,7 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
 :is(sem-note, .sem-note):is([data-variant], [variant])::before { content: attr(data-variant) " · ";
   font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
   color: var(--sem-muted); display: block; }
-:is(sem-note, .sem-note):is([data-sem-fallback], [data-sem-upgraded])[collapsed] > .sem-note-body { display: none; }
+:is(sem-note, .sem-note)[data-sem-upgraded][collapsed] > .sem-note-body { display: none; }
 :is(sem-note, .sem-note)[collapsed] .sem-note-summary { cursor: pointer; color: var(--sem-accent); }
 /* view-as="margin": floated aside on wide viewports, inline callout
    otherwise. Floats INSIDE the container by default; a document whose
@@ -102,18 +104,18 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
 :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { margin: .5rem 0 0; color: var(--sem-muted); }
 /* distractors are quiz decoys: hidden once a script drives the document,
    labelled and readable when none does (D12) */
-:root:is([data-sem-fallback], [data-sem-upgraded]) :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor) { display: none; }
-:root:not([data-sem-fallback], [data-sem-upgraded]) :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor) {
+:root[data-sem-upgraded] :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor) { display: none; }
+:root:not([data-sem-upgraded]) :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor) {
   margin: .5rem 0 0; color: var(--sem-muted); font-size: .875rem; }
-:root:not([data-sem-fallback], [data-sem-upgraded]) :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor)::before {
+:root:not([data-sem-upgraded]) :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor)::before {
   content: "distractor · "; font-variant-caps: all-small-caps; letter-spacing: .05em; }
 /* quiz + flashcards (hide rules gated on the tier marker — JS-off stays readable) */
-:is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="quiz"] :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { display: none; }
-:is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="flashcards"] :is(sem-fact, .sem-fact) { display: none; cursor: pointer;
+:is(sem-facts, .sem-facts)[data-sem-upgraded][data-view-as="quiz"] :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { display: none; }
+:is(sem-facts, .sem-facts)[data-sem-upgraded][data-view-as="flashcards"] :is(sem-fact, .sem-fact) { display: none; cursor: pointer;
   min-height: 8rem; position: relative; }
-:is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="flashcards"] :is(sem-fact, .sem-fact).sem-current { display: block; }
-:is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="flashcards"] :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { visibility: hidden; }
-:is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="flashcards"] :is(sem-fact, .sem-fact).sem-flipped :is(conclusion, .sem-conclusion) { visibility: visible; }
+:is(sem-facts, .sem-facts)[data-sem-upgraded][data-view-as="flashcards"] :is(sem-fact, .sem-fact).sem-current { display: block; }
+:is(sem-facts, .sem-facts)[data-sem-upgraded][data-view-as="flashcards"] :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { visibility: hidden; }
+:is(sem-facts, .sem-facts)[data-sem-upgraded][data-view-as="flashcards"] :is(sem-fact, .sem-fact).sem-flipped :is(conclusion, .sem-conclusion) { visibility: visible; }
 .sem-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
 .sem-quiz-options button { font: inherit; text-align: left; border: 1px solid var(--sem-border);
   background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
@@ -226,12 +228,12 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
    was generated, so the source itself reads as pre-wrapped text. */
 :is(sem-md, .sem-md) { margin: 1.25rem 0; border: 1px solid var(--sem-border); border-radius: 12px;
   background: var(--sem-surface); overflow: hidden; }
-:is(sem-md, .sem-md):not([data-sem-fallback], [data-sem-upgraded]) { white-space: pre-wrap; overflow-wrap: anywhere;
+:is(sem-md, .sem-md):not([data-sem-upgraded]) { white-space: pre-wrap; overflow-wrap: anywhere;
   padding: .9rem 1rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875rem; line-height: 1.5; }
-:is(sem-md, .sem-md):not([data-sem-fallback], [data-sem-upgraded]):is([data-label], [label])::before {
+:is(sem-md, .sem-md):not([data-sem-upgraded]):is([data-label], [label])::before {
   content: attr(data-label); display: block; margin: -.9rem -1rem .6rem; padding: .4rem 1rem; font-size: .75rem;
   font-family: system-ui, sans-serif; color: var(--sem-muted); border-bottom: 1px solid var(--sem-border); white-space: normal; }
-:is(sem-md, .sem-md):not([data-sem-fallback], [data-sem-upgraded])[label]:not([data-label])::before { content: attr(label); }
+:is(sem-md, .sem-md):not([data-sem-upgraded])[label]:not([data-label])::before { content: attr(label); }
 .sem-md-chrome { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: .4rem .75rem;
   border-bottom: 1px solid var(--sem-border); font-size: .75rem; color: var(--sem-muted); }
 .sem-md-label { font-weight: 600; color: var(--sem-fg); }
@@ -255,8 +257,8 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 .sem-md-body img { max-width: 100%; height: auto; }
 .sem-md-raw > :is(sem-code, .sem-code) { margin: 0; border: 0; border-radius: 0; }
 /* the two views (hide rules gated on the tier marker; JS-off neither exists) */
-:is(sem-md, .sem-md):is([data-sem-fallback], [data-sem-upgraded]):not([data-view-as="raw"]) > .sem-md-raw { display: none; }
-:is(sem-md, .sem-md):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="raw"] > .sem-md-body { display: none; }
+:is(sem-md, .sem-md)[data-sem-upgraded]:not([data-view-as="raw"]) > .sem-md-raw { display: none; }
+:is(sem-md, .sem-md)[data-sem-upgraded][data-view-as="raw"] > .sem-md-body { display: none; }
 
 /* references — CSS-counter numbering in every tier; previews and
    backlinks come from the reading bundle */
@@ -296,13 +298,13 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
   border-radius: 0 0 12px 12px; padding: 1rem; background: var(--sem-surface); }
 /* one view at a time only while a script owns the tabs (D12); otherwise
    every view is stacked under its name */
-:is(sem-views, .sem-views):is([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view) { display: none; }
-:is(sem-views, .sem-views):is([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view)[data-active] { display: block; }
-:is(sem-views, .sem-views):not([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view) { border-top: 1px solid var(--sem-border);
+:is(sem-views, .sem-views)[data-sem-upgraded] :is(sem-view, .sem-view) { display: none; }
+:is(sem-views, .sem-views)[data-sem-upgraded] :is(sem-view, .sem-view)[data-active] { display: block; }
+:is(sem-views, .sem-views):not([data-sem-upgraded]) :is(sem-view, .sem-view) { border-top: 1px solid var(--sem-border);
   border-radius: 12px; margin: .5rem 0; }
-:is(sem-views, .sem-views):not([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view)::before { content: attr(data-name);
+:is(sem-views, .sem-views):not([data-sem-upgraded]) :is(sem-view, .sem-view)::before { content: attr(data-name);
   display: block; font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); margin-bottom: .25rem; }
-:is(sem-views, .sem-views):not([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view)[name]:not([data-name])::before { content: attr(name); }
+:is(sem-views, .sem-views):not([data-sem-upgraded]) :is(sem-view, .sem-view)[name]:not([data-name])::before { content: attr(name); }
 
 /* reveal */
 :is(sem-reveal, .sem-reveal) { margin: 1rem 0; border: 1px solid var(--sem-border);
@@ -317,7 +319,7 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
    question; the ::before caption above is the JS-off rendering of the same
    string and would duplicate it. Gated on the tier marker like every other
    rule that depends on a script having run (D12). */
-:is(sem-reveal, .sem-reveal):is([data-sem-fallback], [data-sem-upgraded])[data-summary]::before { content: none; }
+:is(sem-reveal, .sem-reveal)[data-sem-upgraded][data-summary]::before { content: none; }
 :is(sem-reveal, .sem-reveal) summary { padding: .6rem .9rem; cursor: pointer; font-weight: 600; }
 :is(sem-reveal, .sem-reveal) summary::marker { color: var(--sem-muted); }
 
@@ -327,13 +329,13 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
    (spec/schema/sem-progress.md); no fake bar. An empty element with no
    tier marker otherwise rendered nothing at all. Plain attr() only: the
    fallback-argument form is not yet universal. */
-:is(sem-progress, .sem-progress):not([data-sem-fallback], [data-sem-upgraded]):is([data-value], [value])::before {
+:is(sem-progress, .sem-progress):not([data-sem-upgraded]):is([data-value], [value])::before {
   content: "progress :: " attr(data-value); }
-:is(sem-progress, .sem-progress):not([data-sem-fallback], [data-sem-upgraded])[value]:not([data-value])::before {
+:is(sem-progress, .sem-progress):not([data-sem-upgraded])[value]:not([data-value])::before {
   content: "progress :: " attr(value); }
-:is(sem-progress, .sem-progress):not([data-sem-fallback], [data-sem-upgraded])[data-label][data-value]::before {
+:is(sem-progress, .sem-progress):not([data-sem-upgraded])[data-label][data-value]::before {
   content: attr(data-label) " :: " attr(data-value); }
-:is(sem-progress, .sem-progress):not([data-sem-fallback], [data-sem-upgraded])[label][value]:not([data-value])::before {
+:is(sem-progress, .sem-progress):not([data-sem-upgraded])[label][value]:not([data-value])::before {
   content: attr(label) " :: " attr(value); }
 /* status pairs with the value (schema: done ⇔ 1); same catalog as sem-step */
 :is(sem-progress, .sem-progress):is([data-status="done"], [status="done"])::after { content: " ✓"; color: var(--sem-correct); }
@@ -345,12 +347,12 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 
 /* reader — one chrome per document (R/W2, spec/schema/sem-reader.md).
    Sticky bar; the outline drops below it as a panel. The sticky rule is
-   gated on the tier marker (:is([data-sem-fallback], [data-sem-upgraded]))
-   a script sets when it wires the element, same as every other hide rule
-   (D12). With no script running neither marker is present, so the element
+   gated on the [data-sem-upgraded] marker
+   the script sets when it wires the element, same as every other hide rule
+   (D12). With no script running the marker is absent, so the element
    never matches this selector: it holds only an authored nav (or nothing)
    and stays static — there is no chrome to pin. */
-:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) { position: sticky; top: 0; z-index: 40; }
+:is(sem-reader, .sem-reader)[data-sem-upgraded] { position: sticky; top: 0; z-index: 40; }
 .sem-reader-chrome { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem;
   padding: .45rem .75rem .55rem; background: var(--sem-surface); border-bottom: 1px solid var(--sem-border);
   font-family: system-ui, sans-serif; font-size: .8rem; color: var(--sem-muted); }
@@ -367,7 +369,7 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 .sem-reader-progress-fill { display: block; height: 100%; width: 0; background: var(--sem-accent);
   transition: width .12s linear; }
 :is(sem-reader, .sem-reader) > nav[aria-label="Contents"] { font-family: system-ui, sans-serif; font-size: .875rem; }
-:is(sem-reader, .sem-reader)[data-sem-fallback] > nav[aria-label="Contents"],
+:is(sem-reader, .sem-reader)[data-sem-upgraded] > nav[aria-label="Contents"],
 :is(sem-reader, .sem-reader)[data-sem-upgraded] > nav[aria-label="Contents"] {
   position: absolute; left: 0; right: 0; top: 100%; max-height: min(60vh, 24rem); overflow: auto;
   padding: .6rem 1rem; background: var(--sem-surface); border-bottom: 1px solid var(--sem-border);
@@ -382,8 +384,8 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 /* Once a script pins the bar, in-document targets (outline links, deep
    links, citations, glossary terms) stop short of it instead of landing
    underneath; --sem-reader-offset = the bar's height plus a little air. */
-:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) ~ * :is(h1, h2, h3, h4, h5, h6, [id]),
-:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) ~ [id] {
+:is(sem-reader, .sem-reader)[data-sem-upgraded] ~ * :is(h1, h2, h3, h4, h5, h6, [id]),
+:is(sem-reader, .sem-reader)[data-sem-upgraded] ~ [id] {
   scroll-margin-top: var(--sem-reader-offset, 4.5rem); }
 
 /* reader-driven document state on <html> (session facts, never extracted) */
@@ -415,8 +417,8 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 .sem-source-fence { display: none; }
 .sem-source-fence > :is(sem-code, .sem-code) { margin-top: 0; }
 @media screen {
-  :is(sem-source, .sem-source):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="source"] > .sem-source-fence { display: block; }
-  :is(sem-source, .sem-source):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="source"] > :not(.sem-source-chrome, .sem-source-fence) { display: none; }
+  :is(sem-source, .sem-source)[data-sem-upgraded][data-view-as="source"] > .sem-source-fence { display: block; }
+  :is(sem-source, .sem-source)[data-sem-upgraded][data-view-as="source"] > :not(.sem-source-chrome, .sem-source-fence) { display: none; }
 }
 
 /* table — authored <table> is the contract (R/W2, spec/schema/sem-table.md);
