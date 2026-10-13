@@ -71,9 +71,14 @@ Current, after the Lit-only bundle (spec v0.6): one artifact, one budget. The
 per-tier budgets below it are the retired five-artifact history, kept for the
 guardrail discipline they document.
 
-| Artifact | Budget | Measured |
+| Artifact | Budget | Measured (2026-10-13) |
 |---|---|---|
-| `semtext.js` (one bundle) | **96 KB** | 70.0 raw / 22.5 gzipped |
+| `semtext.js` (one bundle) | **126 KB** | 124.1 raw / 39.4 gzipped |
+| `npl.js` | **48 KB** | 46.2 raw / 14.5 gzipped |
+| `semtext-agent.js` | **24 KB** | 20.3 raw / 7.3 gzipped |
+| `semtext-js-shell.js` | **96 KB** | 74.8 raw / 26.2 gzipped |
+| `semtext-lazy.js` (loader) | **8 KB** | 3.0 raw / 1.4 gzipped |
+| `npl-lazy.js` (loader) | **8 KB** | 3.0 raw / 1.4 gzipped |
 
 Retired artifacts (spec v0.5, tag-form canonical, PR #30) — their handlers now
 share the single bundle budget:
@@ -88,14 +93,6 @@ share the single bundle budget:
 
 The bundle budget is a guardrail, not an aspiration: any future bump goes through
 this section and `scripts/build.mjs` together.
-| `semtext-fallback.js` | **14 KB** | 13.0 |
-| `semtext-reading.js` | **61 KB** | 59.5 |
-| `semtext.js` (Lit) | **91 KB** | 89.7 |
-| `semtext-extract.js` | **12 KB** | 9.7 |
-| `semtext-md.js` | **8.5 KB** | 8.0 |
-
-The fallback budget is a guardrail, not an aspiration: any future bump goes through this
-section and `scripts/build.mjs` together.
 
 Data-visualizer phase 1 (2026-10-13, spec/data-visualizer.md) raised the reading budget
 19.5 → 27 KB (measured 25.6) and the Lit budget 56 → 63 KB (measured 55.8): both bundles

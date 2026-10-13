@@ -16,7 +16,11 @@ this is the contract tier) and **the one bundle** (dist/semtext.js: Lit
 custom elements, the vanilla handlers for everything no component
 defines, and extraction, in a single classic IIFE installing the global
 `SemText`). Your job as a host is to link the CSS, load the one script
-deferred, and do nothing that breaks the zero-JS tier.
+deferred, and do nothing that breaks the zero-JS tier. Optional companions
+ship alongside the bundle for the `npl-*` namespace (`npl.js`), opt-in lazy
+mounts (`semtext-lazy.js`, `npl-lazy.js`) and the CLI (`semtext-agent.js`) —
+none of them are needed for the standard vocabulary; see
+`docs/arch/bundles.md`.
 
 ## Getting the artifacts
 
@@ -41,13 +45,16 @@ available from it, and there is deliberately no `.` root export.
 
 ## The artifacts
 
-One script, three stylesheets. Sizes are measured from the current
+The one runtime bundle, plus stylesheets. Sizes are measured from the current
 `develop` build (raw minified / gzipped; CI enforces the script budget
-via `build:strict`):
+via `build:strict`). Companions exist (`npl.js` for `npl-*` elements,
+`semtext-lazy.js` / `npl-lazy.js` chunk loaders, `semtext-agent.js` CLI,
+`semtext-js-shell.js` JS shell) — see `docs/arch/bundles.md` — but a page
+that only wants the `sem-*` vocabulary needs exactly this table:
 
 | File | Size | Installs | Drives | Load it when |
 |---|---|---|---|---|
-| `dist/semtext.js` | see `npm run build` | global `SemText` | Everything scripted: the Lit custom elements (`sem-note`, `sem-facts`, `sem-details`, `sem-properties`, `sem-code`, `sem-references`, `sem-reader`, `sem-table`, `sem-source`, `sem-md`), the vanilla handlers (views, reveals, highlight occlusion, quiz checking, audience gating, deep links, the `sem-source` snapshot), and extraction (`SemText.extractRecords` / `SemText.extractText`) | **Any page that wants interactivity or extraction.** There is no smaller script |
+| `dist/semtext.js` | see `npm run build` | global `SemText` | Everything scripted: the Lit custom elements (`sem-note`, `sem-facts`, `sem-details`, `sem-properties`, `sem-code`, `sem-references`, `sem-reader`, `sem-table`, `sem-source`, `sem-md`, `sem-data-visualizer`, `sem-data-source`, `sem-quota-meter` and the provider/mode chrome), the vanilla handlers (views, reveals, highlight occlusion, quiz checking, audience gating, deep links, the `sem-source` snapshot), and extraction (`SemText.extractRecords` / `SemText.extractText`) | **Any page that wants interactivity or extraction.** There is no smaller script for that surface |
 | `dist/semtext.css` | — | — | the required vocabulary layer | **Always** |
 | `dist/themes/semtext-theme-<name>.css` | — | — | one theme on top of the vocabulary | **Always** (one theme of your choice) |
 

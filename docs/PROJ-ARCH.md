@@ -53,8 +53,9 @@ guarantee: defined over the authored projection, enforced by
 
 ## Element Vocabulary Model
 
-Tag form canonical (v0.5 re-baseline; class form = Appendix A alias), 16
-per-element schemas under `spec/schema/`. Styling is script-gated: selectors
+Tag form canonical (v0.5 re-baseline; class form = Appendix A alias), 41
+per-element schemas under `spec/schema/` (20 `sem-*` + 21 `npl-*`, including
+the four `sem-data-*` visualizer schemas). Styling is script-gated: selectors
 use the dual spelling `:is(sem-x, .sem-x)`, and the script stamps one
 `data-sem-upgraded` marker (element and `<html>`); every hide rule keys on
 it, so with no script nothing is hidden and the document reads as plain

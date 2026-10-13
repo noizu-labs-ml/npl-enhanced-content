@@ -2,7 +2,7 @@
 
 ```
 semtext/
-├── spec/                # Normative specs: conventions.md/.html, extraction.md, schema/sem-*.md (15)
+├── spec/                # Normative specs: conventions.md/.html, extraction.md, schema/sem-*.md (20) + schema/npl/*.md (21)
 ├── src/
 │   ├── lit/               # Lit 3 light-DOM elements + SemElement base  → dist/semtext.js
 │   ├── fallback/          # Vanilla core handlers, no Lit dependency    → into dist/semtext.js
