@@ -27,7 +27,7 @@
     "semtext-agent": "bin/semtext-agent.mjs"
   },
   "scripts": {
-    "build": "node scripts/build.mjs && node scripts/build-standalone.mjs",
+    "build": "node scripts/build.mjs && node scripts/build-standalone.mjs && node scripts/build-extension.mjs",
     "build:strict": "node scripts/build.mjs --strict-budget && node scripts/build-standalone.mjs",
     "test": "cypress run --e2e",
     "test:open": "cypress open --e2e",
