@@ -43,6 +43,8 @@
  */
 
 /* Components — alphabetical; one two-line pair each, nothing shared. */
+export { NplAgent } from './npl-agent.js';
+import './npl-agent.js';
 export { NplExample } from './npl-example.js';
 import './npl-example.js';
 
