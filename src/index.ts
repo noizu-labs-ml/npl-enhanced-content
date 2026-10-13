@@ -76,22 +76,10 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
-/* agent-kit upsell stubs — interaction-only, fixture-fed, zero network
- *   sem-chat: endpoint-driven chat transcript + composer
- *   sem-review-canvas: the agent-kit upsell stub (phase 1) */
-export { SemChat, consumeReply } from './lit/sem-chat.js';
-import './lit/sem-chat.js';
-export { SemReviewCanvas } from './lit/sem-review-canvas.js';
-import './lit/sem-review-canvas.js';
-
-/* Media gallery + upload (agent-kit demo stubs) */
-export { SemMediaGallery } from './lit/sem-media-gallery.js';
-import type { MediaItem } from './lit/sem-media-gallery.js';
-import './lit/sem-media-gallery.js';
-export { SemUploadDrop } from './lit/sem-upload-drop.js';
-import type { MediaAddedDetail } from './lit/sem-upload-drop.js';
-import './lit/sem-upload-drop.js';
-export type { MediaItem, MediaAddedDetail };
+/* agent-kit upsell stubs — NOT in the core bundle any more: sem-chat,
+ * sem-review-canvas, sem-media-gallery, sem-upload-drop and
+ * sem-artifact-card each ship as their own lazy chunk, mapped in
+ * dist/semtext-manifest.json and loaded on demand by semtext-lazy.js. */
 
 /* The npl-* namespace does NOT live here: it ships as its own bundle
  * (dist/npl.js, entry src/npl.ts) and its own lazy loader

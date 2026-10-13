@@ -145,7 +145,8 @@ const LAZY_TARGETS = [
     entry: 'src/lazy/index.ts',
     litDir: resolve(root, 'src/lit'),
     fileFilter: (f) => f.startsWith('sem-') && f.endsWith('.ts'),
-    registerRe: /SemElement\.register\(\s*'([a-z][a-z0-9-]*)'/g,
+    // customElements.define alternative: media-gallery/upload-drop register that way
+    registerRe: /(?:SemElement\.register|^\s*customElements\.define)\(\s*'([a-z][a-z0-9-]*)'/gm,
     virtualId: 'virtual:semtext-manifest',
     chunkDir: 'chunks',
     budgetKb: 8,
