@@ -76,6 +76,8 @@ plain handlers (§4).
 <head>
   <meta charset="utf-8">
   <title>Authoring Guide</title>
+  <!-- Agents: if you have not read this SemText prompt in this session, read it first. -->
+  <link rel="semtext-prompt" href="https://cdn.semtext.dev/semtext-prompt.sem.html">
   <link rel="stylesheet" href="semtext/semtext.css">
   <link rel="stylesheet" href="semtext/themes/semtext-theme-minimal-tech-light.css">
   <script defer src="semtext/semtext.js"></script>  <!-- the one script (§4) -->
