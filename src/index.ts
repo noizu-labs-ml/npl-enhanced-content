@@ -113,6 +113,10 @@ export type { ShellStage, ShellRedirect, ParsedLine } from './terminal/sh-parse.
 /* agent-kit upsell stubs — interaction-only, fixture-fed, zero network */
 export { SemArtifactCard } from './lit/sem-artifact-card.js';
 import './lit/sem-artifact-card.js';
+/* App chrome — provider selection (ids + labels only; no keys, no URLs) */
+export { SemProviderPicker, PROVIDERS, DEFAULT_PROVIDER_ID } from './lit/sem-provider-picker.js';
+export type { ProviderId } from './lit/sem-provider-picker.js';
+import './lit/sem-provider-picker.js';
 
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */
