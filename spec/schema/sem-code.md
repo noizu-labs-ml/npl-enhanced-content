@@ -1,6 +1,6 @@
 # Schema — `sem-code`
 
-Contract per conventions.md v0.5. BDD source of truth for
+Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-code.cy.js`. Changes here precede spec changes precede code.
 
 ## Scope semantics
@@ -41,7 +41,9 @@ first, then bare `<name>`.
 
 ## Rendered form
 
-### Fallback (reading bundle, `dist/semtext-reading.js`)
+### Enhanced (reading handler, `src/reading/code.ts`; the Lit
+component `SemCode` claims `data-sem-upgraded` at connect and runs the
+same function once its `<pre>` child exists)
 
 - `.sem-code-chrome` is inserted as the element's **first child**: filename
   (`.sem-code-filename`), language badge (`.sem-code-lang`), then the
@@ -61,15 +63,9 @@ first, then bare `<name>`.
   `aria-pressed`.
 - The `<pre>` receives `tabindex="0"` when it overflows horizontally, so a
   keyboard reader can scroll it.
-- The element carries `data-sem-fallback` once wired.
-
-### Upgraded (Lit `SemCode`)
-
-- Thin wrapper: on connect, claims `data-sem-upgraded` and clears
-  `data-sem-fallback`; once its `<pre>` child exists it calls the same
-  enhance function the bundle uses. The function is idempotent — chrome
-  already present means nothing is added twice — so a document that runs
-  both scripts, in either order, renders one chrome.
+- The element carries `data-sem-upgraded` once wired (the enhance
+  function is idempotent — chrome already present means nothing is added
+  twice).
 
 ### JS-off
 

@@ -7,7 +7,7 @@
  * (`&sem-audience=…`) survives a tab switch. Format and the `sem-navigate`
  * CustomEvent payload are asserted by test/e2e/sem-views.cy.js.
  *
- * Marks the container `data-sem-fallback`: the inactive-view hide rule is
+ * Marks the container `data-sem-upgraded`: the inactive-view hide rule is
  * gated on that marker (D12), so with no script every view renders stacked.
  *
  * `sem-activate` dispatched on a view (by fallback/target for a deep link
@@ -24,7 +24,7 @@ export function enhanceViews(scope: ParentNode): void {
   scope.querySelectorAll<HTMLElement>(sel('views') + '[id]').forEach((root) => {
     const views = Array.from(root.querySelectorAll<HTMLElement>(VIEW));
     if (!views.length) return;
-    root.setAttribute('data-sem-fallback', '');
+    root.setAttribute('data-sem-upgraded', '');
     if (!root.querySelector(VIEW + '[data-active]')) views[0].setAttribute('data-active', '');
     let active = Math.max(0, views.findIndex((v) => v.hasAttribute('data-active')));
 

@@ -1,6 +1,6 @@
 /* SemText — vocabulary base
    Theme-independent structure: layout, spacing, the component rules, and the
-   fallback-tier hide/show gating. Reads --sem-* custom properties but
+   hide/show gating. Reads --sem-* custom properties but
    declares none — pair with a theme file such as themes/minimal-tech-light.css
    for values.
 
@@ -14,24 +14,38 @@
    renders `attr(<name>)` is guarded with `:not([data-<name>])` so `data-*`
    wins when both are present (conventions §2), while a value selector
    (`:is([data-status="done"], [status="done"])`) needs no guard — both
-   spellings of one value yield one declaration. Rules that only apply once a tier is driving
-   the element key on the `data-*` spelling alone, which the fallback core
-   mirrors from the bare attribute before any handler runs.
+   spellings of one value yield one declaration. Rules that only apply once
+   the script is driving the element key on the `data-*` spelling alone,
+   which the core handler mirrors from the bare attribute before any other
+   handler runs.
 
-   HIDE RULES ARE GATED (D12). Nothing in this file hides content unless a
-   tier marker says a script is driving it: `[data-sem-fallback]` (vanilla
-   handler) or `[data-sem-upgraded]` (Lit), on the element that owns the
-   behavior — or on `<html>` for rules whose host is deliberately unmarked.
+   HIDE RULES ARE GATED (D12). Nothing in this file hides content unless
+   the marker `[data-sem-upgraded]` says the script is driving it — on the
+   element that owns the behavior (claimed by the Lit component at
+   connect, stamped by the vanilla handler when it wires the element), or
+   on `<html>` for rules whose host is deliberately unmarked.
    With no script, every distractor, view, conclusion and body renders. */
 
-body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
+body { margin: 0; }
+/* Paint the element that carries the theme, not <body>: themes may mount
+   on an embedded subtree (data-sem-theme on a pane div), where the tokens
+   are invisible at body scope — an unguarded body rule then resolves
+   var(--sem-fg) to nothing and resets page text to UA black over the
+   host's dark background. [data-sem-theme] covers html/body mounts too. */
+[data-sem-theme] { background: var(--sem-bg); color: var(--sem-fg); }
+/* Document mount paints the viewport body as well — the R/W2 colour
+   control's e2e contract asserts the body background in both modes.
+   Guarded to the html carrier so an embedded pane mount (theme on a
+   div) never leaks tokens onto the host document's body. */
+html[data-sem-theme] body { background: var(--sem-bg); color: var(--sem-fg); }
 :is(sem-enhanced-document, .sem-enhanced-document) { font-family: system-ui, sans-serif; line-height: 1.6; }
 
 /* Custom elements are inline by default; the vocabulary is block-level. */
 sem-enhanced-document, sem-agent, sem-audiences, sem-note, sem-facts, sem-fact,
 sem-details, sem-detail, sem-procedure, sem-step, sem-properties, sem-property,
-sem-views, sem-view, sem-reveal, sem-progress,
+sem-views, sem-view, sem-reveal, sem-progress, sem-quota-meter,
 sem-chronology, sem-event, sem-code, sem-references, sem-reference, sem-reader, sem-table, sem-source, sem-md,
+sem-data-visualizer, sem-data-source,
 sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, sem-distractor) { display: block; }
 /* The audience fallback hides with the native attribute; keep it winning
    over the block rule above for element forms. */
@@ -77,7 +91,7 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
 :is(sem-note, .sem-note):is([data-variant], [variant])::before { content: attr(data-variant) " · ";
   font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
   color: var(--sem-muted); display: block; }
-:is(sem-note, .sem-note):is([data-sem-fallback], [data-sem-upgraded])[collapsed] > .sem-note-body { display: none; }
+:is(sem-note, .sem-note)[data-sem-upgraded][collapsed] > .sem-note-body { display: none; }
 :is(sem-note, .sem-note)[collapsed] .sem-note-summary { cursor: pointer; color: var(--sem-accent); }
 /* view-as="margin": floated aside on wide viewports, inline callout
    otherwise. Floats INSIDE the container by default; a document whose
@@ -102,18 +116,18 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
 :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { margin: .5rem 0 0; color: var(--sem-muted); }
 /* distractors are quiz decoys: hidden once a script drives the document,
    labelled and readable when none does (D12) */
-:root:is([data-sem-fallback], [data-sem-upgraded]) :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor) { display: none; }
-:root:not([data-sem-fallback], [data-sem-upgraded]) :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor) {
+:root[data-sem-upgraded] :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor) { display: none; }
+:root:not([data-sem-upgraded]) :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor) {
   margin: .5rem 0 0; color: var(--sem-muted); font-size: .875rem; }
-:root:not([data-sem-fallback], [data-sem-upgraded]) :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor)::before {
+:root:not([data-sem-upgraded]) :is(sem-fact, .sem-fact) :is(sem-distractor, .sem-distractor)::before {
   content: "distractor · "; font-variant-caps: all-small-caps; letter-spacing: .05em; }
 /* quiz + flashcards (hide rules gated on the tier marker — JS-off stays readable) */
-:is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="quiz"] :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { display: none; }
-:is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="flashcards"] :is(sem-fact, .sem-fact) { display: none; cursor: pointer;
+:is(sem-facts, .sem-facts)[data-sem-upgraded][data-view-as="quiz"] :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { display: none; }
+:is(sem-facts, .sem-facts)[data-sem-upgraded][data-view-as="flashcards"] :is(sem-fact, .sem-fact) { display: none; cursor: pointer;
   min-height: 8rem; position: relative; }
-:is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="flashcards"] :is(sem-fact, .sem-fact).sem-current { display: block; }
-:is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="flashcards"] :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { visibility: hidden; }
-:is(sem-facts, .sem-facts):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="flashcards"] :is(sem-fact, .sem-fact).sem-flipped :is(conclusion, .sem-conclusion) { visibility: visible; }
+:is(sem-facts, .sem-facts)[data-sem-upgraded][data-view-as="flashcards"] :is(sem-fact, .sem-fact).sem-current { display: block; }
+:is(sem-facts, .sem-facts)[data-sem-upgraded][data-view-as="flashcards"] :is(sem-fact, .sem-fact) :is(conclusion, .sem-conclusion) { visibility: hidden; }
+:is(sem-facts, .sem-facts)[data-sem-upgraded][data-view-as="flashcards"] :is(sem-fact, .sem-fact).sem-flipped :is(conclusion, .sem-conclusion) { visibility: visible; }
 .sem-quiz-options { display: grid; gap: .5rem; margin-top: .75rem; }
 .sem-quiz-options button { font: inherit; text-align: left; border: 1px solid var(--sem-border);
   background: var(--sem-surface); color: var(--sem-fg); border-radius: 8px;
@@ -226,12 +240,12 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
    was generated, so the source itself reads as pre-wrapped text. */
 :is(sem-md, .sem-md) { margin: 1.25rem 0; border: 1px solid var(--sem-border); border-radius: 12px;
   background: var(--sem-surface); overflow: hidden; }
-:is(sem-md, .sem-md):not([data-sem-fallback], [data-sem-upgraded]) { white-space: pre-wrap; overflow-wrap: anywhere;
+:is(sem-md, .sem-md):not([data-sem-upgraded]) { white-space: pre-wrap; overflow-wrap: anywhere;
   padding: .9rem 1rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875rem; line-height: 1.5; }
-:is(sem-md, .sem-md):not([data-sem-fallback], [data-sem-upgraded]):is([data-label], [label])::before {
+:is(sem-md, .sem-md):not([data-sem-upgraded]):is([data-label], [label])::before {
   content: attr(data-label); display: block; margin: -.9rem -1rem .6rem; padding: .4rem 1rem; font-size: .75rem;
   font-family: system-ui, sans-serif; color: var(--sem-muted); border-bottom: 1px solid var(--sem-border); white-space: normal; }
-:is(sem-md, .sem-md):not([data-sem-fallback], [data-sem-upgraded])[label]:not([data-label])::before { content: attr(label); }
+:is(sem-md, .sem-md):not([data-sem-upgraded])[label]:not([data-label])::before { content: attr(label); }
 .sem-md-chrome { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; padding: .4rem .75rem;
   border-bottom: 1px solid var(--sem-border); font-size: .75rem; color: var(--sem-muted); }
 .sem-md-label { font-weight: 600; color: var(--sem-fg); }
@@ -255,8 +269,8 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 .sem-md-body img { max-width: 100%; height: auto; }
 .sem-md-raw > :is(sem-code, .sem-code) { margin: 0; border: 0; border-radius: 0; }
 /* the two views (hide rules gated on the tier marker; JS-off neither exists) */
-:is(sem-md, .sem-md):is([data-sem-fallback], [data-sem-upgraded]):not([data-view-as="raw"]) > .sem-md-raw { display: none; }
-:is(sem-md, .sem-md):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="raw"] > .sem-md-body { display: none; }
+:is(sem-md, .sem-md)[data-sem-upgraded]:not([data-view-as="raw"]) > .sem-md-raw { display: none; }
+:is(sem-md, .sem-md)[data-sem-upgraded][data-view-as="raw"] > .sem-md-body { display: none; }
 
 /* references — CSS-counter numbering in every tier; previews and
    backlinks come from the reading bundle */
@@ -284,6 +298,55 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 .sem-popover[hidden] { display: none; }
 .sem-popover-term { display: block; font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); }
 
+/* review canvas — agent-kit upsell stub (src/lit/sem-review-canvas.ts).
+   Pins anchor by percentage via --sem-review-x/--sem-review-y in both the
+   interactive tier and the authored zero-JS fallback. */
+:is(sem-review-canvas, .sem-review-canvas) { display: block; margin: 1.5rem 0; }
+.sem-review-stage { position: relative; margin: 0; }
+.sem-review-stage .sem-review-shot-img { display: block; width: 100%; height: auto;
+  border: 1px solid var(--sem-border); border-radius: 10px; }
+.sem-review-pin { position: absolute; left: var(--sem-review-x); top: var(--sem-review-y);
+  transform: translate(-50%, -50%); width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  border: 2px solid var(--sem-surface, #fff); background: var(--sem-accent); color: #fff;
+  font: inherit; font-size: .75rem; font-weight: 600; line-height: 1;
+  cursor: pointer; padding: 0; }
+.sem-review-pin[data-resolved] { background: var(--sem-note-tip, #2e8b57); }
+.sem-review-pin:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+.sem-review-pop { position: absolute; left: var(--sem-review-x); top: var(--sem-review-y);
+  transform: translate(min(0px, calc(-100% + 1.75rem)), .9rem); max-width: 16rem;
+  padding: .5rem .7rem; border: 1px solid var(--sem-border); border-radius: 8px;
+  background: var(--sem-surface, #fff); color: var(--sem-fg);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .12); font-size: .8125rem; z-index: 5; }
+.sem-review-pop-author { display: block; font-variant-caps: all-small-caps; letter-spacing: .05em;
+  color: var(--sem-muted); }
+.sem-review-pop-body { margin: .25rem 0 0; }
+.sem-review-draft { position: absolute; left: var(--sem-review-x); top: var(--sem-review-y);
+  transform: translate(min(0px, calc(-100% + 1.75rem)), .9rem); display: flex; gap: .3rem; z-index: 6; }
+.sem-review-draft-input { font: inherit; font-size: .8125rem; padding: .3rem .5rem;
+  border: 1px solid var(--sem-border); border-radius: 6px; background: var(--sem-surface, #fff);
+  color: var(--sem-fg); min-width: 12rem; }
+.sem-review-draft-add { font: inherit; font-size: .8125rem; padding: .3rem .6rem;
+  border: 1px solid var(--sem-accent); border-radius: 6px; background: var(--sem-accent);
+  color: #fff; cursor: pointer; }
+.sem-review-verdict { display: flex; flex-wrap: wrap; gap: .75rem; margin: .75rem 0 0;
+  padding: .5rem .75rem; border: 1px solid var(--sem-border); border-radius: 8px; }
+.sem-review-verdict legend { font-variant-caps: all-small-caps; letter-spacing: .05em;
+  color: var(--sem-muted); padding: 0 .35rem; }
+.sem-review-verdict label { display: inline-flex; gap: .35rem; align-items: center; font-size: .875rem; }
+.sem-review-verdict-label { margin: .5rem 0 0; font-size: .875rem; color: var(--sem-muted); }
+.sem-review-verdict-label[data-verdict="approve"] { color: var(--sem-note-tip, #2e8b57); }
+.sem-review-verdict-label[data-verdict="changes"] { color: var(--sem-note-danger, #b23a3a); }
+.sem-review-verdict-label[data-verdict="comment"] { color: var(--sem-accent); }
+/* zero-JS fallback: screenshot with inert pins, comments listed beside it;
+   hidden once the interactive tier takes over (gated on the tier marker) */
+.sem-review-fallback { display: grid; grid-template-columns: minmax(0, 3fr) minmax(12rem, 1fr); gap: 1rem; align-items: start; }
+.sem-review-fallback .sem-review-stage { margin: 0; }
+.sem-review-comments { margin: 0; padding-left: 1.1rem; font-size: .8125rem; }
+.sem-review-comment { margin: .35rem 0; }
+.sem-review-comment-resolved { color: var(--sem-muted); text-decoration: line-through; }
+:is(sem-review-canvas, .sem-review-canvas)[data-sem-upgraded] .sem-review-fallback { display: none; }
+@media (max-width: 40rem) { .sem-review-fallback { grid-template-columns: 1fr; } }
+
 /* views */
 :is(sem-views, .sem-views) { margin: 1.5rem 0; }
 .sem-views-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--sem-border); }
@@ -296,13 +359,13 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
   border-radius: 0 0 12px 12px; padding: 1rem; background: var(--sem-surface); }
 /* one view at a time only while a script owns the tabs (D12); otherwise
    every view is stacked under its name */
-:is(sem-views, .sem-views):is([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view) { display: none; }
-:is(sem-views, .sem-views):is([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view)[data-active] { display: block; }
-:is(sem-views, .sem-views):not([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view) { border-top: 1px solid var(--sem-border);
+:is(sem-views, .sem-views)[data-sem-upgraded] :is(sem-view, .sem-view) { display: none; }
+:is(sem-views, .sem-views)[data-sem-upgraded] :is(sem-view, .sem-view)[data-active] { display: block; }
+:is(sem-views, .sem-views):not([data-sem-upgraded]) :is(sem-view, .sem-view) { border-top: 1px solid var(--sem-border);
   border-radius: 12px; margin: .5rem 0; }
-:is(sem-views, .sem-views):not([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view)::before { content: attr(data-name);
+:is(sem-views, .sem-views):not([data-sem-upgraded]) :is(sem-view, .sem-view)::before { content: attr(data-name);
   display: block; font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); margin-bottom: .25rem; }
-:is(sem-views, .sem-views):not([data-sem-fallback], [data-sem-upgraded]) :is(sem-view, .sem-view)[name]:not([data-name])::before { content: attr(name); }
+:is(sem-views, .sem-views):not([data-sem-upgraded]) :is(sem-view, .sem-view)[name]:not([data-name])::before { content: attr(name); }
 
 /* reveal */
 :is(sem-reveal, .sem-reveal) { margin: 1rem 0; border: 1px solid var(--sem-border);
@@ -317,7 +380,7 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
    question; the ::before caption above is the JS-off rendering of the same
    string and would duplicate it. Gated on the tier marker like every other
    rule that depends on a script having run (D12). */
-:is(sem-reveal, .sem-reveal):is([data-sem-fallback], [data-sem-upgraded])[data-summary]::before { content: none; }
+:is(sem-reveal, .sem-reveal)[data-sem-upgraded][data-summary]::before { content: none; }
 :is(sem-reveal, .sem-reveal) summary { padding: .6rem .9rem; cursor: pointer; font-weight: 600; }
 :is(sem-reveal, .sem-reveal) summary::marker { color: var(--sem-muted); }
 
@@ -327,13 +390,13 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
    (spec/schema/sem-progress.md); no fake bar. An empty element with no
    tier marker otherwise rendered nothing at all. Plain attr() only: the
    fallback-argument form is not yet universal. */
-:is(sem-progress, .sem-progress):not([data-sem-fallback], [data-sem-upgraded]):is([data-value], [value])::before {
+:is(sem-progress, .sem-progress):not([data-sem-upgraded]):is([data-value], [value])::before {
   content: "progress :: " attr(data-value); }
-:is(sem-progress, .sem-progress):not([data-sem-fallback], [data-sem-upgraded])[value]:not([data-value])::before {
+:is(sem-progress, .sem-progress):not([data-sem-upgraded])[value]:not([data-value])::before {
   content: "progress :: " attr(value); }
-:is(sem-progress, .sem-progress):not([data-sem-fallback], [data-sem-upgraded])[data-label][data-value]::before {
+:is(sem-progress, .sem-progress):not([data-sem-upgraded])[data-label][data-value]::before {
   content: attr(data-label) " :: " attr(data-value); }
-:is(sem-progress, .sem-progress):not([data-sem-fallback], [data-sem-upgraded])[label][value]:not([data-value])::before {
+:is(sem-progress, .sem-progress):not([data-sem-upgraded])[label][value]:not([data-value])::before {
   content: attr(label) " :: " attr(value); }
 /* status pairs with the value (schema: done ⇔ 1); same catalog as sem-step */
 :is(sem-progress, .sem-progress):is([data-status="done"], [status="done"])::after { content: " ✓"; color: var(--sem-correct); }
@@ -343,14 +406,34 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 :is(sem-progress, .sem-progress) .sem-progress-fill { display: block; height: 100%;
   background: var(--sem-accent); border-radius: 999px; }
 
+/* quota meter — rolling usage window (e.g. a provider's 5-hour cap).
+   Colour tiers are a data-level the Lit element owns (ok → warn at 75%,
+   hot at 90%); each level reads a --sem-quota-meter-* token that falls
+   back to a theme token, so a theme overrides without touching this file. */
+:is(sem-quota-meter, .sem-quota-meter) { margin: 1rem 0; color: var(--sem-muted); font-size: .875rem; }
+/* JS-off: text-only meter from the bare attributes, like sem-progress. */
+:is(sem-quota-meter, .sem-quota-meter):not([data-sem-upgraded])[label][used][limit]::before {
+  content: attr(label) " :: " attr(used) " of " attr(limit); }
+:is(sem-quota-meter, .sem-quota-meter) .sem-quota-meter-label { font-weight: 600; color: var(--sem-fg); margin-right: .5rem; }
+:is(sem-quota-meter, .sem-quota-meter) .sem-quota-meter-track { display: block; height: .5rem;
+  background: color-mix(in srgb, var(--sem-border) 60%, transparent);
+  border-radius: 999px; overflow: hidden; margin-top: .25rem; }
+:is(sem-quota-meter, .sem-quota-meter) .sem-quota-meter-fill { display: block; height: 100%;
+  background: var(--sem-quota-meter-ok, var(--sem-accent)); border-radius: 999px; transition: width .3s; }
+:is(sem-quota-meter, .sem-quota-meter)[data-level="warn"] .sem-quota-meter-fill {
+  background: var(--sem-quota-meter-warn, var(--sem-note-warning)); }
+:is(sem-quota-meter, .sem-quota-meter)[data-level="hot"] .sem-quota-meter-fill {
+  background: var(--sem-quota-meter-hot, var(--sem-note-danger)); }
+:is(sem-quota-meter, .sem-quota-meter) .sem-quota-meter-reset { display: block; margin-top: .25rem; color: var(--sem-muted); }
+
 /* reader — one chrome per document (R/W2, spec/schema/sem-reader.md).
    Sticky bar; the outline drops below it as a panel. The sticky rule is
-   gated on the tier marker (:is([data-sem-fallback], [data-sem-upgraded]))
-   a script sets when it wires the element, same as every other hide rule
-   (D12). With no script running neither marker is present, so the element
+   gated on the [data-sem-upgraded] marker
+   the script sets when it wires the element, same as every other hide rule
+   (D12). With no script running the marker is absent, so the element
    never matches this selector: it holds only an authored nav (or nothing)
    and stays static — there is no chrome to pin. */
-:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) { position: sticky; top: 0; z-index: 40; }
+:is(sem-reader, .sem-reader)[data-sem-upgraded] { position: sticky; top: 0; z-index: 40; }
 .sem-reader-chrome { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem;
   padding: .45rem .75rem .55rem; background: var(--sem-surface); border-bottom: 1px solid var(--sem-border);
   font-family: system-ui, sans-serif; font-size: .8rem; color: var(--sem-muted); }
@@ -367,7 +450,7 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 .sem-reader-progress-fill { display: block; height: 100%; width: 0; background: var(--sem-accent);
   transition: width .12s linear; }
 :is(sem-reader, .sem-reader) > nav[aria-label="Contents"] { font-family: system-ui, sans-serif; font-size: .875rem; }
-:is(sem-reader, .sem-reader)[data-sem-fallback] > nav[aria-label="Contents"],
+:is(sem-reader, .sem-reader)[data-sem-upgraded] > nav[aria-label="Contents"],
 :is(sem-reader, .sem-reader)[data-sem-upgraded] > nav[aria-label="Contents"] {
   position: absolute; left: 0; right: 0; top: 100%; max-height: min(60vh, 24rem); overflow: auto;
   padding: .6rem 1rem; background: var(--sem-surface); border-bottom: 1px solid var(--sem-border);
@@ -382,8 +465,8 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 /* Once a script pins the bar, in-document targets (outline links, deep
    links, citations, glossary terms) stop short of it instead of landing
    underneath; --sem-reader-offset = the bar's height plus a little air. */
-:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) ~ * :is(h1, h2, h3, h4, h5, h6, [id]),
-:is(sem-reader, .sem-reader):is([data-sem-fallback], [data-sem-upgraded]) ~ [id] {
+:is(sem-reader, .sem-reader)[data-sem-upgraded] ~ * :is(h1, h2, h3, h4, h5, h6, [id]),
+:is(sem-reader, .sem-reader)[data-sem-upgraded] ~ [id] {
   scroll-margin-top: var(--sem-reader-offset, 4.5rem); }
 
 /* reader-driven document state on <html> (session facts, never extracted) */
@@ -415,8 +498,8 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 .sem-source-fence { display: none; }
 .sem-source-fence > :is(sem-code, .sem-code) { margin-top: 0; }
 @media screen {
-  :is(sem-source, .sem-source):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="source"] > .sem-source-fence { display: block; }
-  :is(sem-source, .sem-source):is([data-sem-fallback], [data-sem-upgraded])[data-view-as="source"] > :not(.sem-source-chrome, .sem-source-fence) { display: none; }
+  :is(sem-source, .sem-source)[data-sem-upgraded][data-view-as="source"] > .sem-source-fence { display: block; }
+  :is(sem-source, .sem-source)[data-sem-upgraded][data-view-as="source"] > :not(.sem-source-chrome, .sem-source-fence) { display: none; }
 }
 
 /* table — authored <table> is the contract (R/W2, spec/schema/sem-table.md);
@@ -448,13 +531,114 @@ th[aria-sort="ascending"] .sem-table-sort::after { content: "↑"; opacity: 1; c
 th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; color: var(--sem-accent); }
 .sem-table-sort:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; border-radius: 4px; }
 
+/* artifact card — agent-kit upsell stub (src/lit/sem-artifact-card.ts).
+   Typed artifact body (markdown / json / diff / code) plus a version
+   timeline; the authored fallback shows the active version only. */
+:is(sem-artifact-card, .sem-artifact-card) { display: block; margin: 1.5rem 0; }
+:is(.sem-artifact-ui, .sem-artifact-fallback) { border: 1px solid var(--sem-border);
+  border-radius: 10px; padding: .9rem 1rem; }
+.sem-artifact-head { display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; margin: 0 0 .6rem; }
+.sem-artifact-type { font-variant-caps: all-small-caps; letter-spacing: .05em;
+  color: var(--sem-accent); font-weight: 600; }
+.sem-artifact-lang { font-size: .75rem; padding: .1rem .5rem; border: 1px solid var(--sem-border);
+  border-radius: 999px; color: var(--sem-muted); }
+.sem-artifact-version { margin-left: auto; font-size: .8125rem; color: var(--sem-muted); }
+.sem-artifact-body :is(h2, h3, h4) { margin: .9rem 0 .3rem; }
+.sem-artifact-body p { margin: .4rem 0; }
+.sem-artifact-body :is(ul, ol) { margin: .4rem 0; padding-left: 1.3rem; }
+.sem-artifact-pre { margin: 0; padding: .7rem .8rem; overflow-x: auto; font-size: .8125rem;
+  line-height: 1.45; border: 1px solid var(--sem-border); border-radius: 8px; background: var(--sem-surface, #fff); }
+.sem-artifact-diff-add { display: block; color: var(--sem-note-tip, #2e8b57); }
+.sem-artifact-diff-del { display: block; color: var(--sem-note-danger, #b23a3a); }
+.sem-artifact-diff-hunk { display: block; color: var(--sem-accent); }
+.sem-artifact-diff-hunk-meta, .sem-artifact-diff-ctx { display: block; color: inherit; }
+.sem-artifact-timeline { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: .7rem 0 0; }
+.sem-artifact-timeline-label { font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); }
+.sem-artifact-scrub { flex: 1 1 10rem; accent-color: var(--sem-accent); }
+.sem-artifact-count { font-size: .8125rem; color: var(--sem-muted); font-variant-numeric: tabular-nums; }
+.sem-artifact-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .6rem 0 0; }
+.sem-artifact-actions button { font: inherit; font-size: .8125rem; padding: .3rem .7rem;
+  border: 1px solid var(--sem-border); border-radius: 6px; background: var(--sem-surface, #fff);
+  color: var(--sem-fg); cursor: pointer; }
+.sem-artifact-actions .sem-artifact-fork { border-color: var(--sem-accent);
+  background: var(--sem-accent); color: #fff; }
+.sem-artifact-status { font-size: .8125rem; color: var(--sem-muted); min-height: 1em; }
+.sem-artifact-empty { color: var(--sem-muted); }
+/* zero-JS fallback: active version only, no controls; hidden once the
+   interactive tier takes over (gated on the tier marker) */
+:is(sem-artifact-card, .sem-artifact-card)[data-sem-upgraded] .sem-artifact-fallback { display: none; }
+
+/* data visualizer — native table rendered from an inline data source
+   (spec/data-visualizer.md, phase 1); mirrors the sem-table base */
+:is(sem-data-visualizer, .sem-data-visualizer) { margin: 1.25rem 0; }
+:is(sem-data-source, .sem-data-source) { margin: .5rem 0; overflow-x: auto; border: 1px solid var(--sem-border);
+  border-radius: 12px; background: var(--sem-surface); }
+:is(sem-data-source, .sem-data-source) table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: .9rem; }
+:is(sem-data-source, .sem-data-source) caption { text-align: left; padding: .6rem .9rem 0; font-weight: 600; caption-side: top; }
+:is(sem-data-source, .sem-data-source) th, :is(sem-data-source, .sem-data-source) td { padding: .45rem .9rem;
+  text-align: left; border-bottom: 1px solid var(--sem-border); vertical-align: top; }
+:is(sem-data-source, .sem-data-source) th { font-variant-caps: all-small-caps; letter-spacing: .05em;
+  color: var(--sem-muted); background: var(--sem-surface); }
+:is(sem-data-source, .sem-data-source) tbody tr:last-child :is(th, td) { border-bottom: 0; }
+:is(sem-data-source, .sem-data-source) .sem-data-schema { display: none; }
+.sem-data-error { margin: 0; padding: .6rem .9rem; font-size: .85rem; color: var(--sem-note-danger, currentColor); }
+.sem-data-sort { all: unset; font: inherit; cursor: pointer; display: inline-block; padding-right: 1.1em; position: relative; }
+.sem-data-sort::after { content: "↕"; position: absolute; right: 0; opacity: .5; }
+th[aria-sort="ascending"] .sem-data-sort::after { content: "↑"; opacity: 1; color: var(--sem-accent); }
+th[aria-sort="descending"] .sem-data-sort::after { content: "↓"; opacity: 1; color: var(--sem-accent); }
+.sem-data-sort:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; border-radius: 4px; }
+
+/* data visualizer — async loads + query/view chrome (phases 4–5) */
+.sem-data-pending { margin: 0; padding: .6rem .9rem; font-size: .85rem; color: var(--sem-muted); }
+.sem-data-views { display: flex; gap: .4rem; padding: .5rem .9rem 0; flex-wrap: wrap; }
+.sem-data-view { all: unset; font: inherit; font-size: .8rem; cursor: pointer; padding: .15rem .7rem;
+  border: 1px solid var(--sem-border); border-radius: 999px; color: var(--sem-muted); }
+.sem-data-view[aria-pressed="true"] { background: var(--sem-accent); border-color: var(--sem-accent); color: var(--sem-surface); }
+.sem-data-view:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+
+/* phase 6 — tools row + full-page modal viewer (spec/data-visualizer.md §10) */
+.sem-data-tools { display: flex; align-items: center; justify-content: flex-end; gap: .4rem;
+  padding: .3rem .9rem 0; flex-wrap: wrap; }
+.sem-data-expand, .sem-data-copy { all: unset; font: inherit; font-size: .8rem; cursor: pointer;
+  padding: .15rem .7rem; border: 1px solid var(--sem-border); border-radius: 999px; color: var(--sem-muted); }
+.sem-data-expand:focus-visible, .sem-data-copy:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+.sem-data-copy-status { font-size: .8rem; color: var(--sem-muted); }
+.sem-data-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center;
+  justify-content: center; padding: 1.5rem; background: rgb(0 0 0 / .45); }
+.sem-data-modal-panel { background: var(--sem-surface); color: inherit; box-sizing: border-box;
+  border: 1px solid var(--sem-border); border-radius: 16px; width: min(64rem, 100%); max-height: 100%;
+  overflow: auto; padding: 1rem; }
+.sem-data-modal-close { all: unset; font: inherit; font-size: .8rem; cursor: pointer; margin-bottom: .5rem;
+  padding: .15rem .9rem; border: 1px solid var(--sem-border); border-radius: 999px; }
+.sem-data-modal-close:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+:is(sem-data-join, .sem-data-join) { margin: .25rem 0; }
+:is(sem-data-query, .sem-data-query) { display: block; margin: .5rem 0; }
+.sem-data-query-chrome { margin: .5rem 0; display: block; }
+.sem-data-query-label { display: block; font-variant-caps: all-small-caps; letter-spacing: .05em;
+  font-size: .85rem; color: var(--sem-muted); margin-bottom: .3rem; }
+.sem-data-query-input { display: block; width: 100%; box-sizing: border-box; font: .85rem/1.5 ui-monospace, monospace;
+  padding: .55rem .8rem; border: 1px solid var(--sem-border); border-radius: 10px;
+  background: var(--sem-surface); color: inherit; resize: vertical; }
+.sem-data-query-input:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 1px; }
+.sem-data-query-controls { display: flex; align-items: center; gap: .75rem; margin: .4rem 0 .6rem; }
+.sem-data-query-run { all: unset; font: inherit; font-size: .85rem; cursor: pointer; padding: .25rem 1rem;
+  border: 1px solid var(--sem-border); border-radius: 999px; }
+.sem-data-query-run:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+.sem-data-query-status { font-size: .8rem; color: var(--sem-muted); }
+.sem-data-query-error { margin: 0; padding: .6rem .9rem; font-size: .85rem; color: var(--sem-note-danger, currentColor); }
+.sem-data-query-results table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: .9rem;
+  border: 1px solid var(--sem-border); border-radius: 12px; overflow: hidden; }
+.sem-data-query-results :is(th, td) { padding: .45rem .9rem; text-align: left; border-bottom: 1px solid var(--sem-border); }
+.sem-data-query-results th { font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); }
+.sem-data-query-results tbody tr:last-child :is(th, td) { border-bottom: 0; }
+
 /* print — everything a reader could open, none of the chrome. Reveal
    <details> are opened by fallback/target on `beforeprint`; CSS cannot. */
 @media print {
   .sem-facts-chrome, .sem-quiz-options, .sem-views-tabs, .sem-note-summary,
   .sem-code-chrome, .sem-popover, .sem-references-backlinks, .sem-references-link,
   sem-reader, .sem-reader, .sem-table-chrome, .sem-source-chrome, .sem-source-fence,
-  .sem-md-chrome, .sem-md-raw { display: none !important; }
+  .sem-md-chrome, .sem-md-raw, .sem-data-tools, .sem-data-modal { display: none !important; }
   .sem-md-body { display: block !important; }
   :is(sem-table, .sem-table) { overflow: visible; }
   :is(sem-table, .sem-table) tbody tr[hidden] { display: table-row !important; }
@@ -476,4 +660,100 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
   :is(sem-fact, .sem-fact), :is(sem-step, .sem-step), :is(sem-note, .sem-note), :is(sem-detail, .sem-detail),
   :is(sem-property, .sem-property), :is(sem-event, .sem-event), :is(sem-reference, .sem-reference) { break-inside: avoid; page-break-inside: avoid; }
   .sem-target { outline: none; }
+}
+
+/* ============================================================
+   npl-* — NPL components (src/lit/npl/; recipe: that barrel's header).
+
+   The same box contract the sem-* enumeration above gives every sem-*
+   tag: custom elements are inline by default, the vocabulary is
+   block-level, so each tag gets its box before any definition —
+   `:not(:defined)` pre-upgrade, and for any element that never defines
+   one, alike. The class-namespace alias follows conventions Appendix A
+   (`:is(npl-x, .npl-x)`, one rule per authoring form).
+
+   ONE LINE PER TAG, ALPHABETICAL. A new component inserts its own line
+   here — nothing shared is ever edited, so parallel component branches
+   merge clean. Do NOT convert this into one comma list.
+   ============================================================ */
+npl-agent, .npl-agent { display: block; }
+npl-artifact, .npl-artifact { display: block; }
+npl-cot, .npl-cot { display: block; }
+npl-critique, .npl-critique { display: block; }
+npl-declaration, .npl-declaration { display: block; }
+npl-directive, .npl-directive { display: block; }
+npl-example, .npl-example { display: block; }
+npl-flag, .npl-flag { display: block; }
+npl-flags, .npl-flags { display: block; }
+npl-hormones, .npl-hormones { display: block; }
+npl-intent, .npl-intent { display: block; }
+npl-intent-assumption, .npl-intent-assumption { display: block; }
+npl-intent-assumptions, .npl-intent-assumptions { display: block; }
+npl-intent-outcomes, .npl-intent-outcomes { display: block; }
+npl-intent-overview, .npl-intent-overview { display: block; }
+npl-intent-scope, .npl-intent-scope { display: block; }
+npl-mindread, .npl-mindread { display: block; }
+npl-mode, .npl-mode { display: block; }
+npl-mood, .npl-mood { display: block; }
+npl-poa, .npl-poa { display: block; }
+npl-ref, .npl-ref { display: block; }
+npl-rubric, .npl-rubric { display: block; }
+npl-section, .npl-section { display: block; }
+npl-mode, .npl-mode { display: block; }
+npl-mood, .npl-mood { display: block; }
+npl-thought, .npl-thought { display: block; }
+npl-vos, .npl-vos { display: block; }
+
+
+/* sem-shell / sem-terminal — the interactive shell (light DOM: this
+   stylesheet is the only style channel; every rule scopes to both the
+   reusable core and the demo element). With the script absent the
+   authored static transcript keeps these classes and reads as a terminal
+   excerpt; the prompt line only ever exists after the upgrade. */
+sem-terminal, sem-shell { display: block; }
+sem-terminal .sem-shell-frame, sem-shell .sem-shell-frame { background: #101418; border: 1px solid var(--sem-border, #ccc); border-radius: 12px; color: #d6dde6;
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding: .75rem 1rem; max-height: 24rem; overflow: auto; }
+sem-terminal .sem-shell-transcript, sem-shell .sem-shell-transcript { white-space: pre-wrap; overflow-wrap: anywhere; }
+sem-terminal .sem-shell-line:empty::before, sem-shell .sem-shell-line:empty::before { content: "\00a0"; }
+sem-terminal .sem-shell-cmd, sem-shell .sem-shell-cmd { color: #fff; }
+sem-terminal .sem-shell-ps1, sem-shell .sem-shell-ps1 { color: #7ec8a2; }
+sem-terminal .sem-shell-error, sem-shell .sem-shell-error { color: #ff8f7a; }
+sem-terminal .sem-shell-prompt, sem-shell .sem-shell-prompt { display: flex; gap: .5rem; margin-top: .5rem; align-items: baseline; }
+sem-terminal .sem-shell-input, sem-shell .sem-shell-input { flex: 1; min-width: 0; background: transparent; border: 0; border-top: 1px solid var(--sem-border, #ccc);
+  color: inherit; font: inherit; padding: .35rem 0 .1rem; outline: none; }
+sem-terminal .sem-shell-input:focus, sem-shell .sem-shell-input:focus { border-top-color: #7ec8a2; }
+sem-terminal, sem-shell { position: relative; }
+sem-terminal .sem-shell-replay, sem-shell .sem-shell-replay { position: absolute; top: .55rem; right: .7rem; background: transparent; color: #7ec8a2;
+  border: 1px solid #2c3a37; border-radius: 6px; font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  padding: .25rem .55rem; cursor: pointer; opacity: .8; }
+sem-terminal .sem-shell-replay:hover, sem-shell .sem-shell-replay:hover { opacity: 1; border-color: #7ec8a2; }
+sem-terminal .sem-shell-status, sem-shell .sem-shell-status { color: #5b6b64; }
+sem-terminal .sem-shell-comment, sem-shell .sem-shell-comment { color: #9aa7b5; font-style: italic; }
+/* ANSI from commands (ls dir color, bat highlighting): fixed-code whitelist → spans */
+sem-terminal .sem-ansi-b, sem-shell .sem-ansi-b { font-weight: 600; }
+sem-terminal .sem-ansi-dim, sem-shell .sem-ansi-dim { opacity: .55; }
+sem-terminal .sem-ansi-c30, sem-shell .sem-ansi-c30 { color: #4b5563; }
+sem-terminal .sem-ansi-c31, sem-shell .sem-ansi-c31 { color: #ff8f7a; }
+sem-terminal .sem-ansi-c32, sem-shell .sem-ansi-c32 { color: #8fd6a0; }
+sem-terminal .sem-ansi-c33, sem-shell .sem-ansi-c33 { color: #e6c77a; }
+sem-terminal .sem-ansi-c34, sem-shell .sem-ansi-c34 { color: #7ab8e6; }
+sem-terminal .sem-ansi-c35, sem-shell .sem-ansi-c35 { color: #c79ae6; }
+sem-terminal .sem-ansi-c36, sem-shell .sem-ansi-c36 { color: #6fd3d3; }
+sem-terminal .sem-ansi-c37, sem-shell .sem-ansi-c37 { color: #d6dde6; }
+/* the read-only flashcard view (semtext tui) */
+sem-terminal .sem-tui, sem-shell .sem-tui { outline: none; margin-top: .5rem; display: flex; flex-direction: column; gap: .45rem; }
+sem-terminal .sem-tui-head, sem-shell .sem-tui-head { color: #7ec8a2; }
+sem-terminal .sem-tui-card, sem-shell .sem-tui-card { border: 1px solid #2c3a37; border-radius: 8px; padding: .5rem .7rem; background: #161b21; white-space: pre-wrap; }
+sem-terminal .sem-tui-front, sem-shell .sem-tui-front { color: #fff; font-weight: 600; }
+sem-terminal .sem-tui-back, sem-shell .sem-tui-back { color: #d6dde6; font-weight: 400; }
+sem-terminal .sem-tui-meta, sem-shell .sem-tui-meta { color: #5b6b64; }
+sem-terminal .sem-tui-empty, sem-shell .sem-tui-empty { font-weight: 400; color: #9aa7b5; }
+sem-terminal .sem-tui-filter, sem-shell .sem-tui-filter { background: transparent; border: 0; border-bottom: 1px solid #2c3a37; color: inherit;
+  font: inherit; padding: .25rem 0; outline: none; }
+sem-terminal .sem-tui-filter:focus, sem-shell .sem-tui-filter:focus { border-bottom-color: #7ec8a2; }
+sem-terminal .sem-tui-hint, sem-shell .sem-tui-hint { color: #5b6b64; }
+@media print {
+  sem-terminal .sem-shell-frame, sem-shell .sem-shell-frame { max-height: none; overflow: visible; background: none; border: 0; color: inherit; }
+  sem-terminal .sem-shell-prompt, sem-shell .sem-shell-prompt { display: none; }
+  sem-terminal .sem-shell-replay, sem-shell .sem-shell-replay { display: none; }
 }

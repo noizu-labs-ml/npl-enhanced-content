@@ -1,6 +1,6 @@
 # Schema — `sem-chronology` / `sem-event`
 
-Contract per conventions.md v0.5. BDD source of truth for
+Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-chronology.cy.js`. Changes here precede spec changes
 precede code.
 
@@ -17,7 +17,7 @@ list and never changes what an event means.
 ```html
 <sem-chronology kind="release-history" view-as="timeline" role="list">
   <sem-event role="listitem" when="2026-03-02" status="done">
-    <time datetime="2026-03-02">2 Mar 2026</time> v0.1 tagged — fallback tier ships.
+    <time datetime="2026-03-02">2 Mar 2026</time> v0.1 tagged — Lit bundle ships.
   </sem-event>
   <sem-event role="listitem" when="2026-06" until="2026-08" status="current">
     <time datetime="2026-06">Jun–Aug 2026</time> Reading-experience waves.
