@@ -17,6 +17,12 @@ import { isVocabularyTag, collectTags, collectVocabularyElements } from '../../s
 import { chunkFor, createLoader, reportFailure, type Manifest } from '../../src/lazy/loader.js';
 
 describe('scan — the vocabulary tag scan', () => {
+  it('scans the whole document — the sem-text wrapper is optional', () => {
+    document.body.innerHTML =
+      '<sem-note>loose</sem-note><section><npl-card>card</npl-card><em>not vocabulary</em></section>';
+    expect(collectTags(document.body)).toEqual(new Set(['sem-note', 'npl-card']));
+  });
+
   it('finds sem-* and npl-* elements under a root, root included', () => {
     document.body.innerHTML = `
       <sem-text>
@@ -128,43 +134,50 @@ describe('loader — failures', () => {
   });
 });
 
-describe('loader — the MutationObserver path', () => {
-  /** Mirrors src/lazy/index.ts's adopt(): hydrate now, watch for later. */
-  function adopt(loader: ReturnType<typeof createLoader>, root: Element): void {
-    void loader.hydrate(root);
+describe('loader — the MutationObserver path (document-wide)', () => {
+  /** Mirrors src/lazy/index.ts's watcher: one document-level observer, and
+   *  every added element hydrates (itself plus its subtree). */
+  function watch(loader: ReturnType<typeof createLoader>): void {
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
-          if (!(node instanceof Element)) continue;
-          if (node.localName === 'sem-text') adopt(loader, node);
-          else void loader.hydrate(node);
+          if (node instanceof Element) void loader.hydrate(node);
         }
       }
     });
-    observer.observe(root, { childList: true, subtree: true });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
   }
 
   const manifest: Manifest = { 'sem-note': 'chunks/sem-note.js', 'sem-facts': 'chunks/sem-facts.js' };
   const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-  it('hydrates an element inserted after boot', async () => {
-    document.body.innerHTML = '<sem-text><p>prose</p></sem-text>';
+  it('hydrates an element inserted anywhere — no sem-text wrapper required', async () => {
+    document.body.innerHTML = '<div id="host"></div>';
     const importer = vi.fn(() => Promise.resolve({}));
-    adopt(createLoader(manifest, importer), document.querySelector('sem-text')!);
-    document.querySelector('sem-text')!.insertAdjacentHTML('beforeend', '<sem-note>late</sem-note>');
+    watch(createLoader(manifest, importer));
+    document.getElementById('host')!.insertAdjacentHTML('beforeend', '<sem-note>loose</sem-note>');
     await tick();
     expect(importer).toHaveBeenCalledWith('chunks/sem-note.js');
   });
 
-  it('adopts an inserted <sem-text> as a tracked root of its own', async () => {
-    document.body.innerHTML = '<sem-text><p>first</p></sem-text>';
+  it('hydrates the vocabulary inside a non-vocabulary wrapper added later', async () => {
+    document.body.innerHTML = '<div id="host"></div>';
     const importer = vi.fn(() => Promise.resolve({}));
-    adopt(createLoader(manifest, importer), document.querySelector('sem-text')!);
-    document.body.querySelector('sem-text')!.insertAdjacentHTML(
+    watch(createLoader(manifest, importer));
+    document.body.insertAdjacentHTML(
       'beforeend',
-      '<sem-text><sem-facts><sem-fact><statement>s</statement></sem-fact></sem-facts></sem-text>',
+      '<section><sem-facts><sem-fact><statement>s</statement></sem-fact></sem-facts></section>',
     );
     await tick();
     expect(importer).toHaveBeenCalledWith('chunks/sem-facts.js');
+  });
+
+  it('still adopts an inserted <sem-text> subtree — the wrapper stays optional, not forbidden', async () => {
+    document.body.innerHTML = '<div id="host"></div>';
+    const importer = vi.fn(() => Promise.resolve({}));
+    watch(createLoader(manifest, importer));
+    document.getElementById('host')!.insertAdjacentHTML('beforeend', '<sem-text><sem-note>kept</sem-note></sem-text>');
+    await tick();
+    expect(importer).toHaveBeenCalledWith('chunks/sem-note.js');
   });
 });

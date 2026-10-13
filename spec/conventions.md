@@ -575,6 +575,18 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
 4. Hard rules: no ES-module scripts; no runtime fetch in portable docs;
    `semtext.js` is the only script a document carries. A document without
    it shows authored text only — not styled, not interactive (§4).
+5. **Hosted lazy** — served pages only. A page served over HTTP(S) may
+   load `semtext-lazy.js` + `chunks/` instead of the full bundle: the
+   loader scans the document for `sem-*` / `npl-*` tags (a `<sem-text>`
+   wrapper is welcome, not required) and imports only the component
+   chunks those tags need — components not on the page never download,
+   and a failed chunk degrades only its own elements to authored prose
+   with a `role="alert"` note. The hard rules in (4) govern **portable**
+   documents and are unchanged: forms 1–3 still carry no ES-module
+   scripts, and `semtext.js` remains the only script they carry. The
+   trade is the point: the lazy surface cannot be saved to disk and
+   reopened from `file://` — dynamic import needs a server — so a
+   document that must survive offline carries the full bundle (§2).
 
 ## 8. Machine-readability contract
 

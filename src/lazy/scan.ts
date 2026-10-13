@@ -1,13 +1,14 @@
 /**
  * lazy/scan — find the SemText vocabulary in a DOM subtree.
  *
- * The lazy loader's one assumption about a page: `<sem-text>` marks a
- * document, and any element whose tag starts with `sem-` or `npl-` under
- * one may be a component. Which of those tags actually have a component is
- * the manifest's job (generated at build time from the component list, see
- * scripts/build.mjs) — the scan stays tag-shaped so it needs no component
- * knowledge: an `npl-*` element from a sibling package is picked up here
- * and simply matches nothing until its chunk ships.
+ * The loader scans the WHOLE document: any element whose tag starts with
+ * `sem-` or `npl-` may be a component, wherever it sits — the `<sem-text>`
+ * wrapper is an authoring convenience, not the scan boundary. Which of
+ * those tags actually have a component is the manifest's job (generated at
+ * build time from the component list, see scripts/build.mjs) — the scan
+ * stays tag-shaped so it needs no component knowledge: an `npl-*` element
+ * from a sibling package is picked up here and simply matches nothing
+ * until its chunk ships.
  *
  * Class-form aliases (`.sem-note` etc.) are deliberately out of scope:
  * they are not tags, so they cannot trigger a download. Documents authored

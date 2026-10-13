@@ -20,9 +20,11 @@
  * Beside the full bundle (and never instead of it — see the surface
  * contract in its banner), the LAZY phase below emits:
  *
- *   dist/semtext-lazy.js        scans <sem-text> roots for sem-* / npl-*
- *                               tags and imports only the component chunks
- *                               those tags need (ES modules; needs a server)
+ *   dist/semtext-lazy.js        scans the document for sem-* / npl-*
+ *                               tags (the <sem-text> wrapper is optional)
+ *                               and imports only the component chunks
+ *                               those tags need (ES modules; needs a
+ *                               server)
  *   dist/chunks/<tag>.js        one entry chunk per component (from the
  *                               register calls in src/lit/sem-*.ts) plus the
  *                               shared chunks rollup factors out
@@ -114,12 +116,14 @@ for (const target of targets) {
 const LAZY_BANNER = `/*
  * semtext-lazy.js — SemText, on demand (spec v0.6).
  *
- * Pair with semtext.css and wrap a document in <sem-text>…</sem-text>: this
- * script scans each wrapper for sem-* / npl-* tags and imports only the
- * component chunks the build-time manifest maps those tags to — components
- * not on the page never download. Elements sit in the :not(:defined) base
- * box until their chunk arrives; a failed chunk leaves a role="alert" note
- * on its elements and never blocks the other chunks.
+ * Pair with semtext.css: this script scans the whole document for sem-* /
+ * npl-* tags (a <sem-text> wrapper is welcome but not required) and
+ * imports only the component chunks the build-time manifest maps those
+ * tags to — components not on the page never download. Elements sit in
+ * the :not(:defined) base box until their chunk arrives; a failed chunk
+ * leaves a role="alert" note on its elements and never blocks the other
+ * chunks. Class-form aliases (.sem-note etc.) are not tags and never
+ * trigger a load.
  *
  * Surface contract: dynamic import needs a server — this script does not
  * work from file://. For saved single-file documents use semtext.js, the
