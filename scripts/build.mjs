@@ -281,8 +281,11 @@ for (const lazy of LAZY_TARGETS) {
  * on its elements and never blocks the other chunks. Class-form aliases
  * are not tags and never trigger a load.
  *
- * Surface contract: dynamic import needs a server — this script does not
- * work from file://. For saved single-file documents use ${lazy.fullBundle},
+ * Surface contract: embed with <script type="module" src="…"> — the
+ * loader resolves its chunks against import.meta.url, which only exists
+ * in a module context; a classic script fails to parse. Dynamic import
+ * also needs a server — this script does not work from file://. For
+ * saved single-file documents use ${lazy.fullBundle},
  * the full bundle, which has no runtime imports.
  */
 `;
