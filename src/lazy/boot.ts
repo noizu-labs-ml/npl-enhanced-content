@@ -41,8 +41,10 @@ export function bootLazyLoader(manifest: Manifest, options: LazyBootOptions): La
 /** Chunks resolve relative to the built script that imports this module —
  *  `import.meta.url` is each bundle's own URL at runtime. `@vite-ignore`
  *  keeps Rollup from trying to bundle the dynamic specifier: these chunks
- *  are already built, next to the script. */
-function defaultImportChunk(chunkPath: string): Promise<unknown> {
+ *  are already built, next to the script. Exported so an entry that skips
+ *  the document-wide boot (window.__semLazyOff) can still build a loader
+ *  whose dynamic imports resolve exactly like the booted one's. */
+export function defaultImportChunk(chunkPath: string): Promise<unknown> {
   return import(/* @vite-ignore */ new URL(chunkPath, import.meta.url).href);
 }
 
