@@ -51,10 +51,12 @@ export { NplFlag } from './npl-flag.js';
 export { NplFlags } from './npl-flags.js';
 export { NplHormones } from './npl-hormones.js';
 export { NplRef } from './npl-ref.js';
+export { NplRubric } from './npl-rubric.js';
 import './npl-flag.js';
 import './npl-flags.js';
 import './npl-hormones.js';
 import './npl-ref.js';
+import './npl-rubric.js';
 
 /* Namespace helpers (src/lit/npl/shared.ts). */
 export { NplArtifact } from './npl-artifact.js';
