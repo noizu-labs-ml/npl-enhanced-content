@@ -117,6 +117,9 @@ import './lit/sem-artifact-card.js';
 export { SemProviderPicker, PROVIDERS, DEFAULT_PROVIDER_ID } from './lit/sem-provider-picker.js';
 export type { ProviderId } from './lit/sem-provider-picker.js';
 import './lit/sem-provider-picker.js';
+/* sem-quota-meter — rolling usage window (provider caps); pure display */
+export { SemQuotaMeter } from './lit/sem-quota-meter.js';
+import './lit/sem-quota-meter.js';
 
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */
