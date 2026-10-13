@@ -85,6 +85,8 @@ export interface FilterOpts {
   attr?: string;
   /** CSS selector run against the parsed document. */
   selector?: string;
+  /** Case-insensitive substring over the record's normalised text. */
+  text?: string;
 }
 
 export interface SearchOpts {
@@ -593,9 +595,11 @@ export function filterBlocks(root: Element, opts: FilterOpts = {}): BlockRef[] {
     }
   }
   const want = opts.type ? normalizeType(opts.type) : null;
+  const needle = opts.text ? opts.text.toLowerCase() : null;
   return refs.filter((r) => {
     const rec = r.record as SemRecord;
     if (want && rec.type !== want) return false;
+    if (needle !== null && !rec.text.toLowerCase().includes(needle)) return false;
     if (opts.id && rec.id !== opts.id && r.id !== opts.id) return false;
     if (opts.kind && rec.kind !== opts.kind) return false;
     if (opts.tag && !rec.tags.includes(opts.tag)) return false;

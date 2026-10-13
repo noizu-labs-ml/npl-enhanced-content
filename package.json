@@ -23,6 +23,7 @@
     "spec/schema"
   ],
   "bin": {
+    "semtext": "bin/semtext.mjs",
     "semtext-validate": "bin/semtext-validate.mjs",
     "semtext-agent": "bin/semtext-agent.mjs"
   },
