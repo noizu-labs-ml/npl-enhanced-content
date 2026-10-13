@@ -48,7 +48,7 @@ describe('fallback core on the tag form', () => {
 
   it('wires a quiz deck: chrome, options from conclusions and distractors', () => {
     const deck = document.getElementById('deck')!;
-    expect(deck.hasAttribute('data-sem-fallback')).toBe(true);
+    expect(deck.hasAttribute('data-sem-upgraded')).toBe(true);
     expect(deck.querySelector(':scope > .sem-facts-chrome')).not.toBeNull();
     const f1 = document.getElementById('f1')!;
     expect(f1.classList.contains('sem-current')).toBe(true);
@@ -65,7 +65,7 @@ describe('fallback core on the tag form', () => {
 
   it('wraps a collapsed note body and adds the summary teaser', () => {
     const n = document.getElementById('n')!;
-    expect(n.hasAttribute('data-sem-fallback')).toBe(true);
+    expect(n.hasAttribute('data-sem-upgraded')).toBe(true);
     expect(n.querySelector(':scope > .sem-note-body strong')!.textContent).toBe('before');
     expect(n.querySelector(':scope > .sem-note-summary')!.textContent).toMatch(/^Shuffle before each review\./);
   });
@@ -94,6 +94,6 @@ describe('fallback core on the tag form', () => {
   it('leaves a Lit-upgraded element to the Lit tier', () => {
     const lit = document.getElementById('lit')!;
     expect(lit.querySelector('.sem-facts-chrome')).toBeNull();
-    expect(lit.hasAttribute('data-sem-fallback')).toBe(false);
+    expect(lit.hasAttribute('data-sem-upgraded')).toBe(true); // claimed, untouched by the core scan
   });
 });

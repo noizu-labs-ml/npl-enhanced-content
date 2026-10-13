@@ -1,6 +1,6 @@
 # Schema — `sem-references` / `sem-reference`
 
-Contract per conventions.md v0.5. BDD source of truth for
+Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-references.cy.js`. Changes here precede spec changes
 precede code.
 
@@ -52,7 +52,9 @@ Parameters are read as `data-<name>` first, then bare `<name>`.
 - `kind="bibliography"` uses a hanging indent; `kind="footnotes"` a
   compact list.
 
-### Fallback (reading bundle)
+### Enhanced (reading handler, `src/reading/references.ts`; the Lit
+component `SemReferences` claims `data-sem-upgraded` at connect and runs
+the same function once its `sem-reference` children exist)
 
 - Every citing anchor gets the runtime class `.sem-references-ref` and a
   hover / focus **preview popover** (`src/shared/popover.ts`) showing the
@@ -62,13 +64,8 @@ Parameters are read as `data-<name>` first, then bare `<name>`.
   that anchor (which is given an id when it has none).
 - A reference with `data-href` gets `.sem-references-link`, an external
   link to it, appended.
-- The container carries `data-sem-fallback` once wired.
-
-### Upgraded (Lit `SemReferences`)
-
-- Thin wrapper: claims `data-sem-upgraded`, clears `data-sem-fallback`,
-  then calls the bundle's enhance function once its `sem-reference`
-  children exist. Idempotent per anchor and per reference.
+- The container carries `data-sem-upgraded` once wired (idempotent per
+  anchor and per reference).
 
 ### JS-off
 

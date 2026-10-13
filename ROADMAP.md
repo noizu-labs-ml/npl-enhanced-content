@@ -67,18 +67,60 @@ degradation claim honest while the bigger waves wait.
 
 ## Size budgets (raw minified, enforced by `npm run build:strict`)
 
-Current, after tag-form canonical (PR #30):
+Current, after the Lit-only bundle (spec v0.6): one artifact, one budget. The
+per-tier budgets below it are the retired five-artifact history, kept for the
+guardrail discipline they document.
+
+| Artifact | Budget | Measured (2026-10-13) |
+|---|---|---|
+| `semtext.js` (one bundle) | **126 KB** | 124.1 raw / 39.4 gzipped |
+| `npl.js` | **48 KB** | 46.2 raw / 14.5 gzipped |
+| `semtext-agent.js` | **24 KB** | 20.3 raw / 7.3 gzipped |
+| `semtext-js-shell.js` | **96 KB** | 74.8 raw / 26.2 gzipped |
+| `semtext-lazy.js` (loader) | **8 KB** | 3.0 raw / 1.4 gzipped |
+| `npl-lazy.js` (loader) | **8 KB** | 3.0 raw / 1.4 gzipped |
+
+Retired artifacts (spec v0.5, tag-form canonical, PR #30) — their handlers now
+share the single bundle budget:
 
 | Artifact | Budget | Measured |
 |---|---|---|
-| `semtext-fallback.js` | **14 KB** | 13.0 |
-| `semtext-reading.js` | **19.5 KB** | 19.4 — at the line; the next reading-bundle feature must raise it deliberately |
-| `semtext.js` (Lit) | **56 KB** | 49.5 |
-| `semtext-extract.js` | **12 KB** | 9.7 |
-| `semtext-md.js` | **8.5 KB** | 8.0 |
+| `semtext-fallback.js` | 14 KB | 13.0 |
+| `semtext-reading.js` | 19.5 KB | 19.4 — at the line |
+| `semtext.js` (Lit only) | 56 KB | 49.5 |
+| `semtext-extract.js` | 12 KB | 9.7 |
+| `semtext-md.js` | 8.5 KB | 8.0 |
 
-The fallback budget is a guardrail, not an aspiration: any future bump goes through this
-section and `scripts/build.mjs` together.
+The bundle budget is a guardrail, not an aspiration: any future bump goes through
+this section and `scripts/build.mjs` together.
+
+Data-visualizer phase 1 (2026-10-13, spec/data-visualizer.md) raised the reading budget
+19.5 → 27 KB (measured 25.6) and the Lit budget 56 → 63 KB (measured 55.8): both bundles
+now carry the shared data-source module (`src/data/table.ts` + `src/reading/data.ts`).
+
+Data-visualizer phase 2 (2026-10-13) raised reading 27 → 36 KB (measured 35.3) and Lit
+63 → 66 KB (measured 65.5): inline csv/yaml/json parsers + sql shape declarations
+(`src/data/{csv,yaml,json,sql}.ts`).
+
+Data-visualizer phase 3 (2026-10-13) raised reading 36 → 40 KB (measured 39.7) and Lit
+66 → 70 KB (measured 69.9): declared structures — the data-columns overlay and the
+OpenAPI-style yaml-schema flattener (`src/data/structure.ts`).
+
+Data-visualizer phase 4 (2026-10-13) raised reading 40 → 43 KB (measured 42.4) and Lit
+70 → 73 KB (measured 72.5): the source loader tier — URL policy, format sniffing,
+fetch + cache (`src/data/load.ts`, `src/reading/data-load.ts`).
+
+Data-visualizer phase 5 (2026-10-13) raised reading 43 → 55 KB (measured 54.1) and Lit
+73 → 85 KB (measured 84.2): the query engine and chrome — the §8 SQL subset
+parser/executor, sem-data-join materialization, the editable query textarea and
+view buttons (`src/data/query.ts`, `src/reading/data-query.ts`,
+`src/reading/data-tableview.ts`).
+
+Data-visualizer phase 6 (2026-10-13) raised reading 55 → 61 KB (measured 59.5) and Lit
+85 → 91 KB (measured 89.7): the full-page modal viewer and the deep links —
+the Expand/Copy-link chrome, dialog teleport/focus trap, hash parse/apply
+(`src/reading/data-modal.ts`, `src/data/deeplink.ts`, spec §10).
+
 
 ## History (recorded decisions — preserved)
 

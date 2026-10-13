@@ -10,17 +10,18 @@
 //   Scenario: quiz — wrong pick marked, counts as answered
 //   Scenario: D1 — .sem-progress element and facts meter coexist
 //   Scenario: JS-off — all conclusions visible in every view
-//   Scenario: Lit upgrade — <sem-facts> owns behavior, no fallback marker
+//   Scenario: Lit element form — <sem-facts> owns behavior, same marker
 
 describe('sem-facts', () => {
   describe('v0.4 class baseline (web/demo/index.html)', () => {
     beforeEach(() => cy.visit('/demo/index.html'));
 
-    it('list view (default): all facts visible, no chrome, no fallback marker', () => {
+    it('list view (default): all facts visible, no chrome, claimed by the runtime', () => {
       cy.get('#facts-list .sem-fact').should('have.length', 2);
       cy.get('#facts-list .sem-fact .sem-conclusion').should('be.visible');
       cy.get('#facts-list .sem-facts-chrome').should('not.exist');
-      cy.get('#facts-list').should('not.have.attr', 'data-sem-fallback');
+      // list view stays unclaimed — only flashcards/quiz decks get chrome
+      cy.get('#facts-list').should('not.have.attr', 'data-sem-upgraded');
     });
 
     it('flashcards: one card at a time, flip reveals conclusion', () => {
@@ -70,27 +71,24 @@ describe('sem-facts', () => {
     });
 
     it('JS-off: every view degrades to readable list, no occlusion', () => {
-      cy.visit('/demo/index.html', {
-        onBeforeLoad(win) { win.__semJsOff = true; }
-      });
+      cy.visit('/demo/index.nojs.html');
       cy.get('.sem-facts[data-view-as="flashcards"] .sem-fact .sem-conclusion')
         .should('be.visible');
       cy.get('.sem-facts[data-view-as="quiz"] .sem-fact .sem-conclusion')
         .should('be.visible');
       cy.get('.sem-facts .sem-facts-chrome').should('not.exist');
-      cy.get('.sem-facts[data-sem-fallback]').should('not.exist');
+      cy.get('.sem-facts[data-sem-upgraded]').should('not.exist');
     });
   });
 
   describe('Lit upgrade (web/demo/standalone-lit.html)', () => {
     beforeEach(() => cy.visit('/demo/standalone-lit.html'));
 
-    it('registers and upgrades sem-facts (Lit ran, no fallback marker)', () => {
+    it('registers and upgrades sem-facts (component claims the one marker)', () => {
       cy.window().then((win) => {
         expect(win.customElements.get('sem-facts')).to.exist;
       });
       cy.get('main sem-facts').should('have.attr', 'data-sem-upgraded');
-      cy.get('main sem-facts').should('not.have.attr', 'data-sem-fallback');
     });
 
     it('flashcards: one current card, flip reveals conclusion', () => {

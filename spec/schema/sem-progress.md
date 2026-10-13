@@ -1,8 +1,17 @@
 # Schema — `sem-progress`
 
-Contract per conventions.md v0.5. BDD source of truth for
+Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-progress.cy.js`. Changes here precede spec changes
 precede code.
+
+## Scope semantics
+
+A completion meter — one scalar completion assertion. `value` is
+required, canonical unit 0..1: out-of-range values clamp for rendering
+while the raw attribute stays untouched; `label` is optional (default
+`progress`). The Lit component builds a meter (track + fill +
+`label :: N%`); JS-off the value reads as text via CSS `attr()` — no
+fake bar. `status="done"` ⇔ value 1 by convention.
 
 ## Authoring form
 
@@ -23,12 +32,12 @@ Class-form alias (conventions Appendix A): `div.sem-progress[data-value][data-la
 
 ## Rendered form
 
-- Fallback JS builds a meter: track bar + fill width `value*100%` +
-  text `label :: 62%` (percentage, rounded).
+- The Lit component (`SemProgress`) builds a meter: track bar + fill width
+  `value*100%` + text `label :: 62%` (percentage, rounded).
 - JS-off: **text-only via CSS** — `content: attr(label) " :: "
   attr(value)` (either spelling) rendered in the element (no fake bar,
   no lie).
-- Lit milestone may animate fill transitions; static for now.
+- Fill transitions may animate in a later milestone; static for now.
 
 ## Events
 

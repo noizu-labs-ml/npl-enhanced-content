@@ -1,6 +1,6 @@
 # Schema — `sem-table`
 
-Contract per conventions.md v0.5. BDD source of truth for
+Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-table.cy.js`. Changes here precede spec changes precede code.
 
 ## Scope semantics
@@ -51,14 +51,15 @@ parameter — it is `data-*` in both forms.
 
 ## Rendered form
 
-### Fallback (reading bundle, `dist/semtext-reading.js`)
+### Enhanced (reading handler, `src/reading/table.ts`; the Lit
+component `SemTable` claims `data-sem-upgraded` at connect and runs the
+same function once its `<table>` exists)
 
 - Every `<tbody>` row is stamped `data-sem-source-index` (0-based document
   order across every `<tbody>`) **once, at enhancement**, and never
   rewritten. This is the
   authored order; sorting moves rows, the stamp does not move with the
-  meaning. The Lit tier stamps identically, and a row already stamped is
-  left alone.
+  meaning. A row already stamped is left alone.
 - `.sem-table-chrome` is inserted as the element's first child, before the
   table: the filter input when enabled (`input[type="search"]
   .sem-table-filter[aria-label="Filter rows"]`) and always a
@@ -80,13 +81,7 @@ parameter — it is `data-*` in both forms.
   query: `<m> rows`), updated ~200 ms after typing settles. Filter and
   sort compose in one sentence: `2 of 4 rows, sorted by Lifetime,
   ascending`.
-- The element carries `data-sem-fallback` once wired.
-
-### Upgraded (Lit `SemTable`)
-
-- Thin wrapper: claims `data-sem-upgraded`, clears `data-sem-fallback`,
-  and once its `<table>` exists calls the same enhance function the
-  bundle uses. Idempotent on the chrome's presence.
+- The element carries `data-sem-upgraded` once wired.
 
 ### JS-off
 

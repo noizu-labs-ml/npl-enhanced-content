@@ -1,7 +1,7 @@
 // BDD spec — sem-table · source: spec/schema/sem-table.md
 //
-// Feature: an authored <table> a reader can sort and filter — fallback
-//          (reading bundle) and Lit tiers behave identically; JS-off it is
+// Feature: an authored <table> a reader can sort and filter — one bundle,
+//          identical over the class alias and the element form; JS-off it is
 //          a plain table whose sticky header and column are CSS
 //   Scenario: chrome first, status region, rows stamped with the source index once
 //   Scenario: sort — header buttons, aria-sort cycle, numeric via data-value, stable
@@ -9,7 +9,7 @@
 //   Scenario: default controls = sort only
 //   Scenario: sticky header and comparison first column are CSS
 //   Scenario: sort + filter never change extraction (spec/extraction.md §5 exception)
-//   Scenario: upgraded tier — one chrome, same behaviour, handoff markers
+//   Scenario: element form — one chrome, same behaviour, claimed marker
 //   Scenario: JS-off — no chrome, no buttons, no stamps, sticky still holds
 
 import { extractRecords } from '../../src/extract/records';
@@ -23,9 +23,8 @@ const firstCells = ($rows) => Array.from($rows, (r) => r.cells[0].textContent.tr
 function assertTable(url, marker) {
   beforeEach(() => cy.visit(url));
 
-  it('carries the tier marker for this page', () => {
-    cy.get('#t-tokens').should('have.attr', marker.present);
-    cy.get('#t-tokens').should('not.have.attr', marker.absent);
+  it('carries the upgrade marker for this page', () => {
+    cy.get('#t-tokens').should('have.attr', marker);
   });
 
   it('renders one chrome before the table with a status region; rows stamped once', () => {
@@ -164,16 +163,16 @@ function assertTable(url, marker) {
 }
 
 describe('sem-table', () => {
-  describe('fallback tier — /demo/reading.html', () => {
-    assertTable('/demo/reading.html', { present: 'data-sem-fallback', absent: 'data-sem-upgraded' });
+  describe('class form — /demo/reading.html', () => {
+    assertTable('/demo/reading.html', 'data-sem-upgraded');
   });
 
-  describe('upgraded tier — /demo/reading-lit.html', () => {
+  describe('element form — /demo/reading-lit.html', () => {
     it('registers the custom element', () => {
       cy.visit('/demo/reading-lit.html');
       cy.window().then((win) => expect(win.customElements.get('sem-table')).to.exist);
     });
-    assertTable('/demo/reading-lit.html', { present: 'data-sem-upgraded', absent: 'data-sem-fallback' });
+    assertTable('/demo/reading-lit.html', 'data-sem-upgraded');
   });
 
   describe('JS-off', () => {
