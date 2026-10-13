@@ -76,6 +76,9 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
+/* agent-kit upsell stubs — interaction-only, fixture-fed, zero network */
+export { SemReviewCanvas } from './lit/sem-review-canvas.js';
+import './lit/sem-review-canvas.js';
 
 /* The npl-* namespace does NOT live here: it ships as its own bundle
  * (dist/npl.js, entry src/npl.ts) and its own lazy loader
