@@ -45,9 +45,11 @@
 /* Components — alphabetical; one two-line pair each, nothing shared. */
 export { NplExample } from './npl-example.js';
 import './npl-example.js';
+export { NplIntent } from './npl-intent.js';
 export { NplMode } from './npl-mode.js';
 export { NplMood } from './npl-mood.js';
 export { NplThought } from './npl-thought.js';
+import './npl-intent.js';
 import './npl-mode.js';
 import './npl-mood.js';
 import './npl-thought.js';
