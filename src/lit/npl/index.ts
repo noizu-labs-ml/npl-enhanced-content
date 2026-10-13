@@ -43,6 +43,8 @@
  */
 
 /* Components — alphabetical; one two-line pair each, nothing shared. */
+export { NplDeclaration } from './npl-declaration.js';
+import './npl-declaration.js';
 export { NplExample } from './npl-example.js';
 import './npl-example.js';
 
