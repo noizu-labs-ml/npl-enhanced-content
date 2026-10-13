@@ -503,6 +503,7 @@ npl-directive, .npl-directive { display: block; }
 npl-example, .npl-example { display: block; }
 npl-flag, .npl-flag { display: block; }
 npl-flags, .npl-flags { display: block; }
+npl-hormones, .npl-hormones { display: block; }
 npl-intent, .npl-intent { display: block; }
 npl-intent-assumption, .npl-intent-assumption { display: block; }
 npl-intent-assumptions, .npl-intent-assumptions { display: block; }

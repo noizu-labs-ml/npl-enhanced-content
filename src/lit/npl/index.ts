@@ -48,9 +48,11 @@ export { NplExample } from './npl-example.js';
 import './npl-agent.js';
 import './npl-example.js';
 export { NplFlag } from './npl-flag.js';
-import './npl-flag.js';
 export { NplFlags } from './npl-flags.js';
+export { NplHormones } from './npl-hormones.js';
+import './npl-flag.js';
 import './npl-flags.js';
+import './npl-hormones.js';
 
 /* Namespace helpers (src/lit/npl/shared.ts). */
 export { NplArtifact } from './npl-artifact.js';
