@@ -32,6 +32,7 @@
     "test:open": "cypress open --e2e",
     "test:unit": "vitest run",
     "test:unit:cover": "vitest run --coverage",
+    "test:extension": "node test/e2e/extension-raw-banner.mjs",
     "validate": "node bin/semtext-validate.mjs \"web/**/*.html\" \"spec/*.html\"",
     "serve": "vite preview --outDir dist --port 4173 --strictPort"
   },
