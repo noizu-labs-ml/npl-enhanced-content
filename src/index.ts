@@ -76,15 +76,6 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
-/* Media gallery + upload (agent-kit demo stubs) */
-export { SemMediaGallery } from './lit/sem-media-gallery.js';
-import type { MediaItem } from './lit/sem-media-gallery.js';
-import './lit/sem-media-gallery.js';
-export { SemUploadDrop } from './lit/sem-upload-drop.js';
-import type { MediaAddedDetail } from './lit/sem-upload-drop.js';
-import './lit/sem-upload-drop.js';
-export type { MediaItem, MediaAddedDetail };
-
 /* agent-kit upsell stubs — interaction-only, fixture-fed, zero network
  *   sem-chat: endpoint-driven chat transcript + composer
  *   sem-review-canvas: the agent-kit upsell stub (phase 1) */
