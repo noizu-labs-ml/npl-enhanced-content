@@ -86,6 +86,18 @@ const targets = [
     budgetKb: 48,
     required: true,
   },
+  {
+    // Agent toolkit (filter/search/outline/expand/write/edit). Consumed by
+    // bin/semtext-agent.mjs and `semtext/agent`; required: false so the
+    // CLI-only dependency never blocks the browser artifacts' budget.
+    // Budget 24 KB = the extractor bundle (12) plus the toolkit itself
+    // (measured 20.2 at introduction, 2026-10).
+    name: 'semtext-agent.js',
+    entry: 'src/agent/index.ts',
+    global: 'SemTextAgent',
+    budgetKb: 24,
+    required: false,
+  },
 ];
 
 rmSync(resolve(root, 'dist'), { recursive: true, force: true });

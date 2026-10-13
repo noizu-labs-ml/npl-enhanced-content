@@ -53,6 +53,62 @@ npm run serve           # vite preview on :4173
 - Top-level directories are domains: `spec/`, `src/` (`lit/`, `fallback/`, `reading/`, `md/`, `extract/`, `shared/`), `themes/` (kept top-level as a subpath export + CDN asset), `web/`, `test/`, `scripts/`, `docs/`.
 - Builds enforce a size budget (`build:strict`); theme CSS doubles as a CDN asset.
 
+## Agent toolkit (`semtext-agent`)
+
+Machine tooling over the extraction contract (§8 of `spec/conventions.md`):
+agents read and edit the **authored XHTML** — never a markdown lossy copy —
+through one CLI that is also an importable module (`dist/semtext-agent.js`,
+global `SemTextAgent`; `./agent` subpath export). Every command accepts
+`--json`; compact human text is the default. Requires `npm run build` first.
+`write` and `edit` always validate against `spec/schema/semtext.schema.json`
+and refuse to write on errors.
+
+```bash
+node bin/semtext-agent.mjs <command> <file> [args] [--json]
+```
+
+| command | purpose | example |
+|---|---|---|
+| `outline <file> [--depth N]` | one stable id per block, nested, no bodies | `semtext-agent outline web/demo/index.html --depth 2` |
+| `expand <file> <id> [--format xhtml]` | lazy expansion of one block by id | `semtext-agent expand web/demo/index.html x-sec-procedure-status-runbook` |
+| `filter <file>` | select blocks by type/id/kind/tag/attr/audience/selector (AND) | `semtext-agent filter web/demo/index.html --kind runbook --audience operator` |
+| `search <file> <query> [--regex] [--attrs]` | full-text or attribute search, ids + short context | `semtext-agent search web/demo/index.html PKCE` |
+| `write` | markdown (or SemText fragment) in → validated SemText XHTML out | `echo 'note' \| semtext-agent write --format md --id n-new` |
+| `edit <file> --id <id> --content X [--mode outer]` | surgical single-block replacement; bytes outside untouched | `semtext-agent edit page.html --id n-tip --content 'New text' --in-place` |
+| `xslt <file> <stylesheet>` | XSLT transform of the serialized document | `semtext-agent xslt page.html facts.xsl` |
+
+Details agents should know:
+
+- **ids** — authored `id`s are used verbatim; blocks without one get a
+  deterministic minted id (`x-<type>-<slug>`) in both `outline` and `edit`.
+- **audience** — `filter --audience <profile>` resolves `sem-profile`
+  `implies` chains and `!negations`; unqualified content is always visible.
+- **fragments** — `write` output is validated in its embedding context
+  (wrapped in `<sem-enhanced-document>` when the fragment carries no root).
+- **edit** — replaces one block's inner HTML (`--mode inner`, default) or the
+  whole element (`--mode outer`) by scanning the source; everything outside
+  the block is byte-identical. Add `--in-place` to write back, `--out FILE`
+  otherwise.
+- **xslt** — prefers the pure-JS `xslt-processor` (optional peer dep),
+  falls back to the `xsltproc` binary. The class form (`div class="sem-fact"`)
+  and the tag form (`<sem-fact>`) are both real elements after
+  serialization; select with `//*[contains(concat(' ',normalize-space(@class),' '),' sem-fact ')]`
+  or `//sem-fact` accordingly.
+
+Importable core (no DOM environment needed until you pass one). The bundle is
+an IIFE, so in Node evaluate it and take the global it defines (in a browser,
+a plain `<script src>` is enough):
+
+```js
+import { readFileSync } from 'node:fs';
+const SemTextAgent = new Function(
+  readFileSync('./dist/semtext-agent.js', 'utf8') + ';return SemTextAgent;',
+)();
+const doc = new Window().document; // parse your file…
+SemTextAgent.outline(doc.body, 2);      // → OutlineNode[] (compact; no bodies)
+SemTextAgent.expand(doc.body, 'f-jwt'); // → text for one block
+```
+
 ## Docs
 
 `docs/PROJ-ARCH.md`, `docs/PROJ-LAYOUT.md`, `docs/PROJ-SCHEMA.md` (digests alongside); normative specs in `spec/`.

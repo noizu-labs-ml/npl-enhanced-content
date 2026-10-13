@@ -642,13 +642,27 @@ function rootElement(root: Document | Element): Element | null {
 }
 
 /**
- * Extract the canonical record array from a document or a root element,
- * in document order. Pure: the DOM is not modified.
+ * One extracted record paired with the element that minted it.
+ *
+ * `SemRecord` is deliberately address-free (spec/extraction.md): tools that
+ * need the source element — agent outline/expand, editor splicing — use
+ * `extractRecordPairs`, which carries the element alongside the exact same
+ * records in the exact same order. The record shape itself never grows an
+ * element reference.
  */
-export function extractRecords(root: Document | Element): SemRecord[] {
+export interface RecordPair {
+  el: Element;
+  record: SemRecord;
+}
+
+/**
+ * Extract records paired with their minting elements, in document order.
+ * Same purity guarantee as `extractRecords`: the DOM is not modified.
+ */
+export function extractRecordPairs(root: Document | Element): RecordPair[] {
   const start = rootElement(root);
-  const out: SemRecord[] = [];
-  if (!start) return out;
+  const pairs: RecordPair[] = [];
+  if (!start) return pairs;
 
   function visit(el: Element, parentIndex: number | null): void {
     if (isChrome(el)) return;
@@ -667,9 +681,9 @@ export function extractRecords(root: Document | Element): SemRecord[] {
         parent: parentIndex,
         fields: payload.fields,
         text: payload.text,
-        sourceOrder: out.length
+        sourceOrder: pairs.length
       };
-      out.push(record);
+      pairs.push({ el: el, record: record });
       index = record.sourceOrder;
     }
 
@@ -684,7 +698,17 @@ export function extractRecords(root: Document | Element): SemRecord[] {
     const kids = start.children;
     for (let i = 0; i < kids.length; i++) visit(kids[i], null);
   }
-  return out;
+  return pairs;
+}
+
+/**
+ * Extract the canonical record array from a document or a root element,
+ * in document order. Pure: the DOM is not modified.
+ */
+export function extractRecords(root: Document | Element): SemRecord[] {
+  return extractRecordPairs(root).map(function (p) {
+    return p.record;
+  });
 }
 
 /* ------------------------------------------------------------------ *
@@ -695,8 +719,12 @@ function depthOf(records: SemRecord[], record: SemRecord): number {
   let d = 0;
   let p = record.parent;
   while (p !== null && d < 32) {
+    // A parent outside the given array (a subset render, one standalone
+    // record) simply stops the walk: depth is best-effort there.
+    const up = records[p];
+    if (!up) break;
     d++;
-    p = records[p].parent;
+    p = up.parent;
   }
   return d;
 }
