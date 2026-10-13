@@ -49,10 +49,12 @@ export { NplIntent } from './npl-intent.js';
 export { NplMode } from './npl-mode.js';
 export { NplMood } from './npl-mood.js';
 export { NplThought } from './npl-thought.js';
+export { NplVos } from './npl-vos.js';
 import './npl-intent.js';
 import './npl-mode.js';
 import './npl-mood.js';
 import './npl-thought.js';
+import './npl-vos.js';
 
 /* Namespace helpers (src/lit/npl/shared.ts). */
 export { defineNpl, nplParam, nplEmit } from './shared.js';
