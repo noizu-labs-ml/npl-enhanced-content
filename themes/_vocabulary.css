@@ -496,4 +496,5 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
    ============================================================ */
 npl-example, .npl-example { display: block; }
 npl-mode, .npl-mode { display: block; }
+npl-mood, .npl-mood { display: block; }
 
