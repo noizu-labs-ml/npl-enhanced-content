@@ -45,6 +45,8 @@
 /* Components — alphabetical; one two-line pair each, nothing shared. */
 export { NplExample } from './npl-example.js';
 import './npl-example.js';
+export { NplHormones } from './npl-hormones.js';
+import './npl-hormones.js';
 
 /* Namespace helpers (src/lit/npl/shared.ts). */
 export { defineNpl, nplParam, nplEmit } from './shared.js';
