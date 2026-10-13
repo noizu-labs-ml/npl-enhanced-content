@@ -76,6 +76,9 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
+/* agent-kit upsell stubs — interaction-only, fixture-fed, zero network */
+export { SemReviewCanvas } from './lit/sem-review-canvas.js';
+import './lit/sem-review-canvas.js';
 
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */

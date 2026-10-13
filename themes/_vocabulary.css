@@ -286,6 +286,55 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
 .sem-popover[hidden] { display: none; }
 .sem-popover-term { display: block; font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); }
 
+/* review canvas — agent-kit upsell stub (src/lit/sem-review-canvas.ts).
+   Pins anchor by percentage via --sem-review-x/--sem-review-y in both the
+   interactive tier and the authored zero-JS fallback. */
+:is(sem-review-canvas, .sem-review-canvas) { display: block; margin: 1.5rem 0; }
+.sem-review-stage { position: relative; margin: 0; }
+.sem-review-stage .sem-review-shot-img { display: block; width: 100%; height: auto;
+  border: 1px solid var(--sem-border); border-radius: 10px; }
+.sem-review-pin { position: absolute; left: var(--sem-review-x); top: var(--sem-review-y);
+  transform: translate(-50%, -50%); width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  border: 2px solid var(--sem-surface, #fff); background: var(--sem-accent); color: #fff;
+  font: inherit; font-size: .75rem; font-weight: 600; line-height: 1;
+  cursor: pointer; padding: 0; }
+.sem-review-pin[data-resolved] { background: var(--sem-note-tip, #2e8b57); }
+.sem-review-pin:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+.sem-review-pop { position: absolute; left: var(--sem-review-x); top: var(--sem-review-y);
+  transform: translate(min(0px, calc(-100% + 1.75rem)), .9rem); max-width: 16rem;
+  padding: .5rem .7rem; border: 1px solid var(--sem-border); border-radius: 8px;
+  background: var(--sem-surface, #fff); color: var(--sem-fg);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .12); font-size: .8125rem; z-index: 5; }
+.sem-review-pop-author { display: block; font-variant-caps: all-small-caps; letter-spacing: .05em;
+  color: var(--sem-muted); }
+.sem-review-pop-body { margin: .25rem 0 0; }
+.sem-review-draft { position: absolute; left: var(--sem-review-x); top: var(--sem-review-y);
+  transform: translate(min(0px, calc(-100% + 1.75rem)), .9rem); display: flex; gap: .3rem; z-index: 6; }
+.sem-review-draft-input { font: inherit; font-size: .8125rem; padding: .3rem .5rem;
+  border: 1px solid var(--sem-border); border-radius: 6px; background: var(--sem-surface, #fff);
+  color: var(--sem-fg); min-width: 12rem; }
+.sem-review-draft-add { font: inherit; font-size: .8125rem; padding: .3rem .6rem;
+  border: 1px solid var(--sem-accent); border-radius: 6px; background: var(--sem-accent);
+  color: #fff; cursor: pointer; }
+.sem-review-verdict { display: flex; flex-wrap: wrap; gap: .75rem; margin: .75rem 0 0;
+  padding: .5rem .75rem; border: 1px solid var(--sem-border); border-radius: 8px; }
+.sem-review-verdict legend { font-variant-caps: all-small-caps; letter-spacing: .05em;
+  color: var(--sem-muted); padding: 0 .35rem; }
+.sem-review-verdict label { display: inline-flex; gap: .35rem; align-items: center; font-size: .875rem; }
+.sem-review-verdict-label { margin: .5rem 0 0; font-size: .875rem; color: var(--sem-muted); }
+.sem-review-verdict-label[data-verdict="approve"] { color: var(--sem-note-tip, #2e8b57); }
+.sem-review-verdict-label[data-verdict="changes"] { color: var(--sem-note-danger, #b23a3a); }
+.sem-review-verdict-label[data-verdict="comment"] { color: var(--sem-accent); }
+/* zero-JS fallback: screenshot with inert pins, comments listed beside it;
+   hidden once the interactive tier takes over (gated on the tier marker) */
+.sem-review-fallback { display: grid; grid-template-columns: minmax(0, 3fr) minmax(12rem, 1fr); gap: 1rem; align-items: start; }
+.sem-review-fallback .sem-review-stage { margin: 0; }
+.sem-review-comments { margin: 0; padding-left: 1.1rem; font-size: .8125rem; }
+.sem-review-comment { margin: .35rem 0; }
+.sem-review-comment-resolved { color: var(--sem-muted); text-decoration: line-through; }
+:is(sem-review-canvas, .sem-review-canvas)[data-sem-upgraded] .sem-review-fallback { display: none; }
+@media (max-width: 40rem) { .sem-review-fallback { grid-template-columns: 1fr; } }
+
 /* views */
 :is(sem-views, .sem-views) { margin: 1.5rem 0; }
 .sem-views-tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--sem-border); }
