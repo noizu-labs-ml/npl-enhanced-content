@@ -694,6 +694,8 @@ npl-poa, .npl-poa { display: block; }
 npl-ref, .npl-ref { display: block; }
 npl-rubric, .npl-rubric { display: block; }
 npl-section, .npl-section { display: block; }
+npl-mode, .npl-mode { display: block; }
+npl-mood, .npl-mood { display: block; }
 npl-thought, .npl-thought { display: block; }
 npl-vos, .npl-vos { display: block; }
 
