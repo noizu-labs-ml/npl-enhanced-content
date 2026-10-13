@@ -76,6 +76,10 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
+/* App chrome — provider selection (ids + labels only; no keys, no URLs) */
+export { SemProviderPicker, PROVIDERS, DEFAULT_PROVIDER_ID } from './lit/sem-provider-picker.js';
+export type { ProviderId } from './lit/sem-provider-picker.js';
+import './lit/sem-provider-picker.js';
 
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */
