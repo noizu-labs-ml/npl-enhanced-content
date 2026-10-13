@@ -20,7 +20,7 @@
  * testable with a fake importer.
  */
 
-import { collectVocabularyElements } from './scan.js';
+import { collectVocabularyElements, VOCABULARY_TAG } from './scan.js';
 
 /** tag → chunk path, relative to the built script's directory (dist/). */
 export type Manifest = Record<string, string>;
@@ -38,7 +38,11 @@ export function chunkFor(tag: string, manifest: Manifest): string | null {
   return Object.prototype.hasOwnProperty.call(manifest, tag) ? manifest[tag] : null;
 }
 
-export function createLoader(manifest: Manifest, importChunk: ImportChunk): LazyLoader {
+/** `pattern` narrows the scan to one namespace prefix — semtext-lazy runs
+ *  `/^sem-/`, npl-lazy runs `/^npl-/` — so two loaders on one page never
+ *  reach for the same element. The manifest is the second, authoritative
+ *  filter: a scanned tag with no manifest entry is left as authored prose. */
+export function createLoader(manifest: Manifest, importChunk: ImportChunk, pattern: RegExp = VOCABULARY_TAG): LazyLoader {
   /** chunk path → in-flight or settled import. The rejected promise stays
    *  cached on purpose: see guarantee 2. */
   const loaded = new Map<string, Promise<unknown>>();
@@ -56,7 +60,7 @@ export function createLoader(manifest: Manifest, importChunk: ImportChunk): Lazy
 
   async function hydrate(root: Element): Promise<void> {
     const groups = new Map<string, { chunk: string; els: Element[] }>();
-    for (const el of collectVocabularyElements(root)) {
+    for (const el of collectVocabularyElements(root, pattern)) {
       const chunk = chunkFor(el.localName, manifest);
       if (!chunk) continue; // unknown vocabulary
       const group = groups.get(el.localName);

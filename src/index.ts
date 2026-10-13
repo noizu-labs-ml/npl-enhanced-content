@@ -77,9 +77,9 @@ import './lit/sem-source.js';
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
 
-/* NPL components — the npl-* namespace. The barrel owns the per-component
- * lines; this import is the only touch src/index.ts ever needs. */
-export * from './lit/npl/index.js';
+/* The npl-* namespace does NOT live here: it ships as its own bundle
+ * (dist/npl.js, entry src/npl.ts) and its own lazy loader
+ * (dist/npl-lazy.js). Core keeps only the sem-* components. */
 
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */
