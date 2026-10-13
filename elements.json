@@ -5,6 +5,10 @@
     "spec/schema/sem-audiences.md",
     "spec/schema/sem-chronology.md",
     "spec/schema/sem-code.md",
+    "spec/schema/sem-data-join.md",
+    "spec/schema/sem-data-query.md",
+    "spec/schema/sem-data-source.md",
+    "spec/schema/sem-data-visualizer.md",
     "spec/schema/sem-details.md",
     "spec/schema/sem-facts.md",
     "spec/schema/sem-md.md",
@@ -30,7 +34,7 @@
     "spec/schema/npl/npl-thought.md",
     "spec/schema/npl/npl-vos.md"
   ],
-  "tagCount": 36,
+  "tagCount": 40,
   "tags": [
     {
       "name": "npl-artifact",
@@ -771,6 +775,285 @@
         }
       ],
       "example": "<sem-code id=\"c-rotate\" lang=\"ts\" filename=\"src/rotate.ts\" mark=\"2,4-5\" controls=\"copy,wrap\">\n<pre><code>export function rotate(pair: Pair): Pair {\n  const next = mint();\n  retire(pair.refresh);\n  return next;\n}</code></pre>\n</sem-code>"
+    },
+    {
+      "name": "sem-data-join",
+      "family": "sem",
+      "source": "spec/schema/sem-data-join.md",
+      "summary": "A declaration, not a rendered dataset: it materializes one extra bucket — the **inner join** of two named buckets on a single named key column — that queries can address by `name`.",
+      "description": "A declaration, not a rendered dataset: it materializes one extra bucket — the **inner join** of two named buckets on a single named key column — that queries can address by `name`. Placed directly inside a `sem-data-visualizer`; zero-JS it is invisible (there is nothing to read). Outer joins, multiple keys and non-equality joins are out of scope.",
+      "attributes": [
+        {
+          "name": "data-name",
+          "required": true,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "(alias `name`): required — bucket key of the join result; colliding with a source name is an authoring error."
+        },
+        {
+          "name": "data-left",
+          "required": true,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "(alias `left`): required — the left-hand bucket to join, by `data-name` reference."
+        },
+        {
+          "name": "data-right",
+          "required": true,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "(alias `right`): required — the other bucket to join, by `data-name` reference."
+        },
+        {
+          "name": "data-on",
+          "required": true,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "(alias `on`): required — the named key column; must exist (case-insensitive) in both buckets."
+        },
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [],
+      "example": "<sem-data-join name=\"user-orders\" left=\"Users\" right=\"Orders\" on=\"user-id\">\n</sem-data-join>"
+    },
+    {
+      "name": "sem-data-query",
+      "family": "sem",
+      "source": "spec/schema/sem-data-query.md",
+      "summary": "The editable default query: a direct declaration whose text body is one query in the read-only SQL subset (`SELECT … FROM <bucket> [WHERE] [ORDER BY] [LIMIT]`).",
+      "description": "The editable default query: a direct declaration whose text body is one query in the read-only SQL subset (`SELECT … FROM <bucket> [WHERE] [ORDER BY] [LIMIT]`). Placed directly inside a `sem-data-visualizer`; no JOIN in the grammar (joins are declarative via `sem-data-join`), no aggregates, no write path. Zero-JS the query text shows as ordinary text (it *is* the document's record of the default query).",
+      "attributes": [
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [],
+      "example": "<sem-data-query>SELECT name, port FROM services WHERE ready = true ORDER BY port LIMIT 5</sem-data-query>"
+    },
+    {
+      "name": "sem-data-source",
+      "family": "sem",
+      "source": "spec/schema/sem-data-source.md",
+      "summary": "One named data bucket inside a `sem-data-visualizer`.",
+      "description": "One named data bucket inside a `sem-data-visualizer`. Its payload is either the element's inline text body or the resource named by `source` (an empty body plus `source` is the file/API form; a non-empty inline body together with `source` is an authoring error, rendered as a clear error, never silently resolved). Formats: inline Markdown table, CSV (RFC 4180), a YAML subset, JSON, a SQL result-shape declaration, or a file/API load; zero-JS the authored text reads as pre-wrapped text.",
+      "attributes": [
+        {
+          "name": "data-name",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "free text — human label rendered as the table `caption`, and the bucket key every query, join and cross-source view reference resolves (exact, then case-insensitive, then normalized: lowercase, non-alphanumeric runs collapsed to `-`, edge `-` trimmed)."
+        },
+        {
+          "name": "data-format",
+          "required": false,
+          "type": "",
+          "allowedValues": [
+            "table",
+            "csv",
+            "yaml",
+            "json",
+            "sql"
+          ],
+          "default": "table",
+          "description": "(optional): one of `table`, `csv`, `yaml`, `json`, `sql` — payload syntax of the body or of the fetched resource; Unknown format is a clear inline error, never a silent blank."
+        },
+        {
+          "name": "data-type",
+          "required": false,
+          "type": "",
+          "allowedValues": [
+            "rows",
+            "yaml-schema"
+          ],
+          "default": "",
+          "description": "(optional): one of `rows`, `yaml-schema` — structure declaration; (absent ⇒ the tier infers). rows ⇒ simple row/column definition via the per-column declaration attribute; yaml-schema ⇒ the payload is an OpenAPI-style YAML document whose nested objects flatten to dotted column paths."
+        },
+        {
+          "name": "data-columns",
+          "required": false,
+          "type": "string",
+          "allowedValues": [],
+          "default": null,
+          "description": "(optional): string — with `data-type=\"rows\"`, the per-column declaration, a comma list of `name[:type][?]` (`?` = nullable; types `string`, `number`, `integer`, `boolean`, `date`, `null`). Declared types override inference per column; inference fills any column the declaration omits."
+        },
+        {
+          "name": "source",
+          "required": false,
+          "type": "string",
+          "allowedValues": [],
+          "default": null,
+          "description": "(optional): string — URL of a relative/same-origin file or an absolute `http(s)` file/API endpoint; inline payload and `source` are mutually exclusive. `file://` is refused when the document itself is `file://`."
+        },
+        {
+          "name": "data-views",
+          "required": false,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "(optional): named views as `name=colspec; name=colspec` — `colspec` is `*` or a comma list of column names, matched case-insensitively; malformed segments are skipped (a typo hides a view, it never breaks the document)."
+        },
+        {
+          "name": "data-view",
+          "required": false,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "(optional): view name — the default view. Resolution: `data-view` name ⇒ first declared view ⇒ implicit `all=*`."
+        },
+        {
+          "name": "data-header",
+          "required": false,
+          "type": "",
+          "allowedValues": [
+            "true",
+            "false"
+          ],
+          "default": "true",
+          "description": "(optional): one of `true`, `false`; — csv only: `false` ⇒ the first row is data and headers synthesize `col-<n>`."
+        },
+        {
+          "name": "data-path",
+          "required": false,
+          "type": "string",
+          "allowedValues": [],
+          "default": null,
+          "description": "(optional): string — `json`/API only: dot/bracket path into a nested response (`data.items`, `rows[2].entries`) that flattens to the row array."
+        },
+        {
+          "name": "data-cache",
+          "required": false,
+          "type": "",
+          "allowedValues": [
+            "no"
+          ],
+          "default": "",
+          "description": "(optional): one of `no`; — `no` ⇒ skip the in-memory fetch cache (one fetch per URL per page load by default)."
+        },
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [],
+      "example": "<sem-data-source data-name=\"Token lifetimes\" data-format=\"table\"\n                 data-views=\"core=token,max-uses; all=*\" data-view=\"all\">\n  | Token | Max uses | Lifetime | Rotates | Since      |\n  | :---- | -------: | :------- | :------ | :--------- |\n  | access | 200     | 15 min   | true    | 2026-01-05 |\n  | id     | 1000    | 1 hour   | false   | 2026-02-14 |\n</sem-data-source>"
+    },
+    {
+      "name": "sem-data-visualizer",
+      "family": "sem",
+      "source": "spec/schema/sem-data-visualizer.md",
+      "summary": "The container for data-visualizer state: it wraps one or more `sem-data-source` children (plus optional `sem-data-join` and `sem-data-query` declaration children).",
+      "description": "The container for data-visualizer state: it wraps one or more `sem-data-source` children (plus optional `sem-data-join` and `sem-data-query` declaration children). It mints no records of its own — it is the unit of tier scanning, of the modal viewer, and of shared view/query state. Zero-JS it shows its source children unenhanced (the authored text reads as pre-wrapped text).",
+      "attributes": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "required for the modal deep link (`#dv=<visualizer-id>`); a container with no id and no single named source mints no copy-link button."
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [
+        {
+          "name": "sem-data-source",
+          "note": "Children: one or more `<sem-data-source>` (each a named data bucket); optional `<sem-data-join>` and `<sem-data-query>` declaration children (phase 5)."
+        },
+        {
+          "name": "sem-data-join",
+          "note": "Children: one or more `<sem-data-source>` (each a named data bucket); optional `<sem-data-join>` and `<sem-data-query>` declaration children (phase 5)."
+        },
+        {
+          "name": "sem-data-query",
+          "note": "Children: one or more `<sem-data-source>` (each a named data bucket); optional `<sem-data-join>` and `<sem-data-query>` declaration children (phase 5)."
+        }
+      ],
+      "example": "<sem-data-visualizer id=\"dv-tokens\">\n  <sem-data-source data-name=\"Token lifetimes\" data-format=\"table\"\n                   data-views=\"core=token,max-uses; all=*\" data-view=\"all\">\n    | Token | Max uses | Lifetime | Rotates | Since      |\n    | :---- | -------: | :------- | :------ | :--------- |\n    | access | 200     | 15 min   | true    | 2026-01-05 |\n    | id     | 1000    | 1 hour   | false   | 2026-02-14 |\n  </sem-data-source>\n</sem-data-visualizer>"
     },
     {
       "name": "sem-detail",
