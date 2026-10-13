@@ -123,7 +123,12 @@ const CHROME_CLASSES = [
   // (the sem-code inside it included) are never content
   'sem-md-chrome',
   'sem-md-body',
-  'sem-md-raw'
+  'sem-md-raw',
+  // sem-chronology (R/W1): the Controls menu chrome the Lit tier wires in —
+  // skipped whole, like every generated chrome block
+  'sem-chronology-chrome',
+  'sem-chronology-menu',
+  'sem-chronology-status'
 ];
 
 /** Highlight / cloze markers, in every authoring and runtime form. */

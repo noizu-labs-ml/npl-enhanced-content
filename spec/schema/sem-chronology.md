@@ -56,9 +56,31 @@ Parameters are read as `data-<name>` first, then bare `<name>`.
   and no `<time>` is authored.
 - Neither tier marks the element; nothing is hidden in any tier.
 
+### Controls (Lit tier)
+
+Where the bundle runs (`data-sem-upgraded`), the element wires a
+`.sem-chronology-chrome` — a `Controls` toggle button plus a `role="menu"`
+with three groups — over the unchanged zero-JS markup. Controls are view
+state only: they never rewrite the authored events. Sort re-orders the
+authored elements (the original order is kept and restorable); filter
+toggles `hidden` on non-matching events (free text on entry text, plus a
+`from`/`to` date range on `when`/`until` — interval intersection, events
+with no parseable date never match a bounded range); search highlights
+matches with unwrap-able `mark.sem-search-hit` elements and steps through
+the hits with Previous/Next (wrapping). "Document order" (default) and
+"Reset all" restore the DOM exactly as authored. With JavaScript off the
+chrome does not exist in the DOM — zero-JS output is unchanged. The chrome
+is skipped whole by extraction (like every generated chrome class) and
+hidden in print.
+
 ## Events
 
-None.
+- **`sem-chronology-change`** (bubbles, composed) — dispatched on every
+  control-state change (sort selection, filter/range edit, query edit,
+  reset). `detail: { sort, filter, from, to, query }` with `sort` one of
+  `document | oldest | newest` and the rest the current control strings
+  (`''` when unset). Stepping between search hits is not a state change
+  and does not dispatch.
 
 ## A11y contract
 
@@ -66,6 +88,12 @@ None.
 - `<time datetime>` gives AT and machines the same date the reader sees.
 - Status conveyed by marker colour **and** the `status` attribute;
   colour is never the only signal (`::after` glyph as in `sem-step`).
+- Controls menu (Lit tier): the toggle carries `aria-haspopup="menu"` and
+  `aria-expanded`; the menu is keyboard-operable with roving tabindex —
+  `Escape` closes and returns focus to the toggle, ArrowUp/ArrowDown move
+  between items (wrapping), Enter/Space activate. Result counts are
+  announced through an `aria-live="polite"` region ("3 of 12 entries";
+  search steps announce "2 of 5 matches").
 
 ## Machine contract
 

@@ -1,25 +1,28 @@
 // BDD spec — sem-chronology / sem-event · source: spec/schema/sem-chronology.md
 //
 // Feature: an ordered, dated event list renders as a CSS-only timeline in
-//          both authoring forms, with no script claim and no marker
-//   Scenario: authored roles, DOM order, no upgrade marker (class form)
+//          both authoring forms; the custom element upgrades where the
+//          bundle runs and wires the Controls menu (sort/filter/search),
+//          while the class form stays zero-JS
+//   Scenario: authored roles, DOM order (both forms)
+//   Scenario: class form stays zero-JS — no marker, no controls
 //   Scenario: date label — <time> child wins, else attr(data-when)
 //   Scenario: status glyph beside colour
 //   Scenario: view-as="list" drops the rail, keeps every event
-//   Scenario: element form renders identically without a custom element
-//   Scenario: JS-off — everything visible, no marker, same labels
+//   Scenario: element form upgrades — the Controls chrome is present
+//   Scenario: JS-off — everything visible, no chrome, same labels
 
 const cs = (el, pseudo) => el.ownerDocument.defaultView.getComputedStyle(el, pseudo);
 
 function assertChronology(root) {
-  it('authored roles and DOM order; no upgrade marker', () => {
+  it('authored roles and DOM order', () => {
     cy.get(root + '#history').should('have.attr', 'role', 'list');
-    cy.get(root + '#history').should('not.have.attr', 'data-sem-upgraded');
-    cy.get(root + '#history > *').should('have.length', 3).each(($e) => {
-      cy.wrap($e).should('have.attr', 'role', 'listitem');
+    // the Controls chrome is a child too on the upgraded element form; the
+    // authored events carry the role in both authoring forms
+    cy.get(root + '#history > [role="listitem"]').should('have.length', 3).each(($e) => {
       cy.wrap($e).should('be.visible');
     });
-    cy.get(root + '#history > *').first().should('have.id', 'e-v01');
+    cy.get(root + '#history > [role="listitem"]').first().should('have.id', 'e-v01');
   });
 
   it('date label: <time> child when authored, attr(data-when) otherwise', () => {
@@ -40,7 +43,7 @@ function assertChronology(root) {
   });
 
   it('view-as="list" keeps every event visible', () => {
-    cy.get(root + '#milestones > *').should('have.length', 2).each(($e) => {
+    cy.get(root + '#milestones > [role="listitem"]').should('have.length', 2).each(($e) => {
       cy.wrap($e).should('be.visible');
     });
     cy.get('#milestones').then(($c) => {
@@ -56,15 +59,24 @@ function assertChronology(root) {
 describe('sem-chronology', () => {
   describe('class form — /demo/reading.html', () => {
     beforeEach(() => cy.visit('/demo/reading.html'));
+    it('stays zero-JS — no upgrade marker, no controls chrome', () => {
+      cy.get('#history').should('not.have.attr', 'data-sem-upgraded');
+      cy.get('#history .sem-chronology-chrome').should('not.exist');
+    });
     assertChronology('.sem-chronology');
   });
 
-  describe('element form — /demo/reading-lit.html (CSS-only, no custom element)', () => {
+  describe('element form — /demo/reading-lit.html (Lit upgrade)', () => {
     beforeEach(() => cy.visit('/demo/reading-lit.html'));
-    it('defines no custom element for a CSS-only family', () => {
+    it('defines the custom element — marker and Controls chrome present', () => {
       cy.window().then((win) => {
-        expect(win.customElements.get('sem-chronology')).to.equal(undefined);
+        expect(win.customElements.get('sem-chronology')).to.not.equal(undefined);
       });
+      cy.get('sem-chronology#history').should('have.attr', 'data-sem-upgraded');
+      cy.get('sem-chronology#history .sem-chronology-chrome').should('exist');
+      cy.get('sem-chronology#history .sem-chronology-toggle').should(
+        'have.attr', 'aria-haspopup', 'menu',
+      );
     });
     assertChronology('sem-chronology');
   });

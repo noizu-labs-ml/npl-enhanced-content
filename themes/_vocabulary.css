@@ -98,6 +98,34 @@ sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, 
 .sem-facts-chrome button { font: inherit; border: 1px solid var(--sem-border); background: var(--sem-surface);
   color: var(--sem-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
 .sem-facts-meter { color: var(--sem-muted); font-size: .875rem; }
+
+/* chronology — the timeline above is the zero-JS tier; everything below is
+   the Controls chrome only the Lit tier wires in (spec/schema/
+   sem-chronology.md). With no script none of this exists in the DOM. */
+.sem-chronology-chrome { margin: 0 0 .75rem; }
+.sem-chronology-toggle, .sem-chronology-menu button { font: inherit;
+  border: 1px solid var(--sem-border); background: var(--sem-surface);
+  color: var(--sem-fg); border-radius: 8px; padding: .25rem .75rem; cursor: pointer; }
+.sem-chronology-toggle:focus-visible, .sem-chronology-menu button:focus-visible {
+  outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+.sem-chronology-menu { margin: .25rem 0 0; padding: .5rem;
+  border: 1px solid var(--sem-border); border-radius: 8px; background: var(--sem-surface);
+  display: flex; flex-direction: column; gap: .5rem; max-width: 26rem; }
+.sem-chronology-menu[hidden] { display: none; }
+.sem-menu-group { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.sem-menu-label { font-variant-caps: all-small-caps; letter-spacing: .05em;
+  color: var(--sem-muted); min-width: 3.5rem; }
+.sem-menu-sep { border-top: 1px solid var(--sem-border); }
+.sem-menu-daterange { display: inline-flex; gap: .25rem; align-items: center;
+  color: var(--sem-muted); }
+.sem-chronology-menu input { font: inherit; border: 1px solid var(--sem-border);
+  border-radius: 6px; padding: .15rem .4rem; background: var(--sem-surface);
+  color: var(--sem-fg); }
+.sem-chronology-status { margin: .25rem 0 0; color: var(--sem-muted); font-size: .875rem; }
+mark.sem-search-hit { background: var(--sem-accent); color: inherit;
+  padding: 0 .1em; border-radius: 2px; }
+:is(sem-event, .sem-event)[data-sem-current-hit] { outline: 2px solid var(--sem-accent);
+  outline-offset: 2px; }
 :is(sem-fact, .sem-fact) { border: 1px solid var(--sem-border); border-radius: 12px;
   padding: 1rem; margin: .75rem 0; background: var(--sem-surface); }
 :is(sem-fact, .sem-fact) :is(statement, .sem-statement) { font-weight: 600; }
@@ -456,7 +484,7 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
   .sem-facts-chrome, .sem-quiz-options, .sem-views-tabs, .sem-note-summary,
   .sem-code-chrome, .sem-popover, .sem-references-backlinks, .sem-references-link,
   sem-reader, .sem-reader, .sem-table-chrome, .sem-source-chrome, .sem-source-fence,
-  .sem-md-chrome, .sem-md-raw { display: none !important; }
+  .sem-md-chrome, .sem-md-raw, .sem-chronology-chrome { display: none !important; }
   .sem-md-body { display: block !important; }
   :is(sem-table, .sem-table) { overflow: visible; }
   :is(sem-table, .sem-table) tbody tr[hidden] { display: table-row !important; }
