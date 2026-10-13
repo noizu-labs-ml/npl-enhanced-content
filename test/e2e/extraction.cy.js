@@ -65,12 +65,9 @@ const EXPECTED_TYPES = [
   'sem-note'
 ];
 
-const visitJsOff = () =>
-  cy.visit('/demo/index.html', {
-    onBeforeLoad(win) {
-      win.__semJsOff = true;
-    }
-  });
+// The built scripts-stripped artifact is the genuine JS-off surface; the
+// former __semJsOff kill-switch hook is retired with the multi-bundle days.
+const visitJsOff = () => cy.visit('/demo/index.nojs.html');
 
 /**
  * Visit with the fallback active but every container's view-as rewritten

@@ -143,7 +143,7 @@ Global attributes (any `sem-*` element), spelled **bare**:
 | `controls` | comma flags: `shuffle`, `filter`, `retry`, `picker` | which controls render |
 | `collapsed` | boolean | pre-collapse state |
 | `audience` | profile spec: `a`, `a, b`, `!a` (profiles from `sem-audiences`) | who the datum is for — **`spec/schema/sem-audiences.md`**; carried verbatim by extraction, never suppresses a record |
-| `id` | doc-unique | stable anchor, cite target — a `#id` or `#container/child` hash reaches it through any closed reveal, collapsed note, inactive view or non-current card (fallback `target`) |
+| `id` | doc-unique | stable anchor, cite target — a `#id` or `#container/child` hash reaches it through any closed reveal, collapsed note, inactive view or non-current card (deep-link resolver) |
 | `data-*` | free | extension point; also the **alias spelling** of every parameter above (Appendix A) |
 
 Element-specific parameters (`variant`, `key`, `name`, `summary`, `value`,
@@ -667,7 +667,7 @@ repo exports it, or NPL MCP consumes a schema file we publish?
 | Q2 | `sem-properties` pure `<dl>` v1 | **resolved (this branch)** — pure `<dl>`, chrome only if a consumer demands it |
 | Q3 | tabs-family name: `sem-views` vs `sem-perspectives` | **resolved (this branch)** — `sem-views` |
 | Q4 | NPL MCP alignment ownership | we publish the schema file; MCP consumes |
-| Q5 | ~~fallback handler scope: baseline interactivity only vs full quiz logic~~ | **resolved v1 (full logic); superseded (Lit-only surface, 2026-10): the vanilla handlers and the Lit components ship as one `semtext.js` bundle — there is no separate fallback artifact** |
+| Q5 | fallback handler scope: baseline interactivity only vs full quiz logic | **resolved, superseded (2026-10)** — the vanilla fallback is retired; one Lit bundle carries everything (spec v0.6) |
 | Q6 | class-form alias lifetime: keep indefinitely, or retire once every reference document is tag-form | keep — it costs one `:is()` per rule and lets HTML generators that cannot emit custom elements participate |
 
 ## Appendix A — Class-form alias (v0.4 compatibility)

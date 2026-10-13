@@ -544,7 +544,7 @@ section { padding-block: var(--pg-space) 0; }
   sem-fact (#f-no-build kind=rule): Authoring needs no build step :: Two stylesheets and one script tag in a plain HTML file.
     distractors: A bundler compiles the vocabulary down to HTML.</pre>
           <p class="pg-status" id="try-invariance" aria-live="polite">
-            Output of <code>SemTextExtract.extractText()</code> over the deck
+            Output of <code>SemText.extractText()</code> over the deck
             above, authored into the page so it is here with scripts off too.
           </p>
         </div>
@@ -961,7 +961,7 @@ section { padding-block: var(--pg-space) 0; }
         <div class="sem-note-body">
           There is no React in the dependency tree and there is not going to be
           one. Lit 3 is the only runtime dependency, and it is optional — the
-          fallback tier has none.
+          vanilla handlers have none.
         </div>
       </sem-note>
 
@@ -1023,7 +1023,7 @@ section { padding-block: var(--pg-space) 0; }
  *   1. The view-as toggle. `enhanceFacts` reads data-view-as once and wires
  *      chrome into the deck, so switching views means restoring the authored
  *      markup and re-running the handler. The pristine markup is captured
- *      here, during parse, before the fallback's DOMContentLoaded handler has
+ *      here, during parse, before the bundle's DOMContentLoaded init has
  *      touched anything.
  *
  *   2. Re-running extraction after each switch, against the LIVE deck —
@@ -1048,8 +1048,8 @@ section { padding-block: var(--pg-space) 0; }
   var baseline = null;
 
   function extract() {
-    if (!window.SemTextExtract || !records) return;
-    var text = window.SemTextExtract.extractText(deck);
+    if (!window.SemText || !records) return;
+    var text = window.SemText.extractText(deck);
     records.textContent = text;
     if (baseline === null) {
       baseline = text;
@@ -1062,8 +1062,8 @@ section { padding-block: var(--pg-space) 0; }
   }
 
   /* Flashcard flip is bound to a click on the .sem-fact <div>, with no role,
-     no tabindex and no key handler — so with the fallback tier alone the flip
-     is mouse-only (WCAG 2.1.1). The gap is in src/fallback/facts.ts and the
+     no tabindex and no key handler — so with the vanilla handler alone the
+     flip is mouse-only (WCAG 2.1.1). The gap is in src/fallback/facts.ts and the
      fix belongs there; this closes it for this page so the demo is not the
      one interaction a keyboard user cannot reach. */
   function makeCardsKeyboardOperable() {
@@ -1081,9 +1081,9 @@ section { padding-block: var(--pg-space) 0; }
 
   function setView(mode) {
     deck.innerHTML = pristine;
-    deck.removeAttribute('data-sem-fallback');
+    deck.removeAttribute('data-sem-upgraded');
     deck.setAttribute('data-view-as', mode);
-    if (window.SemTextFallback) window.SemTextFallback.enhanceFacts(scope);
+    if (window.SemText) window.SemText.enhanceFacts(scope);
     if (mode === 'flashcards') makeCardsKeyboardOperable();
     if (current) current.textContent = mode;
     Array.prototype.forEach.call(toggle.querySelectorAll('button'), function (b) {
@@ -1098,8 +1098,8 @@ section { padding-block: var(--pg-space) 0; }
     setView(button.getAttribute('data-view'));
   });
 
-  /* Registered after the fallback's own listener (declared in <head>), so the
-     first extraction sees a fully enhanced document. */
+  /* Registered during parse; the bundle's deferred init re-runs the handlers
+     at DOMContentLoaded, after this first extraction of the authored deck. */
   document.addEventListener('DOMContentLoaded', extract);
 })();
 </script>

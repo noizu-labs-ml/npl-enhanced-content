@@ -1,6 +1,6 @@
 /* SemText — vocabulary base
    Theme-independent structure: layout, spacing, the component rules, and the
-   fallback-tier hide/show gating. Reads --sem-* custom properties but
+   hide/show gating. Reads --sem-* custom properties but
    declares none — pair with a theme file such as themes/minimal-tech-light.css
    for values.
 
@@ -17,7 +17,7 @@
    spellings of one value yield one declaration. Rules that only apply once
    the script is driving the element key on the `data-*` spelling alone,
    which the core handler mirrors from the bare attribute before any other
-   handler runs. */
+   handler runs.
 
    HIDE RULES ARE GATED (D12). Nothing in this file hides content unless
    the marker `[data-sem-upgraded]` says the script is driving it — on the

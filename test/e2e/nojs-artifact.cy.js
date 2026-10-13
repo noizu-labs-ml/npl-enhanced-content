@@ -1,15 +1,16 @@
 /**
  * The scripts-stripped artifact — genuine JS-off degradation.
  *
- * `window.__semJsOff` only proves the fallback handler no-ops when asked; the
- * script is still in the page, so it can never show that the CSS alone leaves
- * a document readable. `scripts/build-standalone.mjs` emits
+ * A kill-switch flag only proves the handlers no-op when asked; the script
+ * is still in the page, so it can never show that the CSS alone leaves a
+ * document readable. `scripts/build-standalone.mjs` emits
  * `dist/demo/<name>.nojs.html` with every <script> element removed, and this
  * spec asserts against that file.
  *
  * D12 (repaid): the `.sem-distractor` and inactive `.sem-view` hide rules in
- * themes/_vocabulary.css are gated on a tier marker, so with no script in the
- * page both render — distractors labelled, views stacked under their names.
+ * the vocabulary are gated on the one upgrade marker, so with no script in
+ * the page both render — distractors labelled, views stacked under their
+ * names.
  */
 describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
   describe('class vocabulary — index.nojs.html', () => {
@@ -21,8 +22,7 @@ describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
       cy.request('/demo/index.nojs.html').its('body').should('not.match', /<script/i);
     });
 
-    it('carries neither tier handoff marker', () => {
-      cy.get('[data-sem-fallback]').should('not.exist');
+    it('carries no upgrade marker', () => {
       cy.get('[data-sem-upgraded]').should('not.exist');
     });
 
@@ -93,10 +93,10 @@ describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
       cy.get('#p-clamp .sem-progress-track').should('not.exist');
     });
 
-    // status is tier-independent by design (conventions §4 rule 1: no
+    // status is runtime-independent by design (conventions §4 rule 1: no
     // script ever reads it — its consumers are no-script CSS rules, same
     // catalog as sem-step), so the done checkmark renders with either
-    // attribute spelling and needs no tier marker.
+    // attribute spelling and needs no upgrade marker.
     it('sem-progress status="done" renders the sem-step checkmark in either spelling', () => {
       cy.document().then((doc) => {
         const data = doc.createElement('div');

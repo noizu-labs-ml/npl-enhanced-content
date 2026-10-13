@@ -198,9 +198,10 @@ console.log('');
 /* ---------------------------------------------------------------------------
  * Marketing site — web/site/ → dist/site/
  *
- * Plain copy, not a standalone assembly: the site pages carry no `sem:inline`
- * markers today. Marker expansion is applied anyway so a future page can opt
- * in without another build path. Absent web/site/, this section is a no-op.
+ * Marker expansion applies (the landing page labels artifact sizes and the
+ * build SHA through `sem:inline` markers), and each page also emits a
+ * `.nojs.html` variant — scripts stripped — for the JS-off assertions in
+ * test/e2e/site.cy.js. Absent web/site/, this section is a no-op.
  * ------------------------------------------------------------------------ */
 
 const siteSrcDir = resolve(root, 'web', 'site');
@@ -210,8 +211,8 @@ if (existsSync(siteSrcDir)) {
 
   const sitePages = readdirSync(siteSrcDir).filter((f) => f.endsWith('.html')).sort();
 
-  console.log('  site page                     inlined   size');
-  console.log('  ---------------------------------------------------------');
+  console.log('  site page                     inlined   size     nojs');
+  console.log('  -------------------------------------------------------------------');
   for (const file of sitePages) {
     const src = readFileSync(resolve(siteSrcDir, file), 'utf8');
     let count = 0;
@@ -220,9 +221,11 @@ if (existsSync(siteSrcDir)) {
       return expand(kind, arg);
     });
     const page = resolve(siteOutDir, file);
+    const nojs = resolve(siteOutDir, file.replace(/\.html$/, '.nojs.html'));
     writeFileSync(page, built);
+    writeFileSync(nojs, stripScripts(built, `web/site/${file}`));
     const kb = (p) => (statSync(p).size / 1024).toFixed(1).padStart(6) + ' KB';
-    console.log(`  ${file.padEnd(30)}${String(count).padStart(5)}  ${kb(page)}`);
+    console.log(`  ${file.padEnd(30)}${String(count).padStart(5)}  ${kb(page)}${kb(nojs)}`);
   }
   console.log('');
 }
