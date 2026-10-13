@@ -4,6 +4,18 @@ Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-properties.cy.js`. Changes here precede spec changes
 precede code.
 
+## Scope semantics
+
+A definition/properties block: a closed set of key/value assertions.
+Each `sem-property` is one pair — `key` is the term (required, free
+text), the property text is the value. Renders a `<dl>`-equivalent grid,
+zero-JS: the key column renders via CSS `attr(key)`, and each property
+authored as `role="definition"` + `aria-label` = the key lets AT
+announce the pair without JS. Compact `term :: value` sugar is
+display-only — `key` is canonical. Pure definition list, no
+copy/search chrome; `view-as="glossary"` turns the block into a
+glossary (term anchors get hover/focus preview popovers).
+
 ## Authoring form
 
 ```html
