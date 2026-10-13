@@ -1,8 +1,19 @@
 # Schema — `sem-reveal`
 
-Contract per conventions.md v0.5. BDD source of truth for
+Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-reveal.cy.js`. Changes here precede spec changes
 precede code.
+
+## Scope semantics
+
+A Q→A disclosure, `<details>`-backed — the non-assertive counterpart to
+the `sem-fact` Q/A shape (a reveal is exposition, not an assertion).
+`summary` labels the closed state; when absent the first body line (max
+60 chars) derives it, by the one rule in `src/shared/summary.ts` that
+render and extraction share. `collapsed` starts hidden; without it the
+reveal starts open. The Lit component wraps the element in native
+`<details>/<summary>` — click/keyboard toggling is native; JS-off the
+content is fully visible (summary as a small-caps heading).
 
 ## Authoring form
 
@@ -14,7 +25,7 @@ precede code.
 
 Class-form alias (conventions Appendix A): `div.sem-reveal[data-summary]`, same `collapsed` attribute.
 
-- `summary`: optional label. **Fallback: first line of body (max
+- `summary`: optional label. **Default: first line of body (max
   60 chars) acts as summary when absent.**
 - `collapsed`: boolean attr — starts hidden (the `sem-note[collapsed]`
   convention carries over). Without it the reveal starts **open**.
@@ -22,9 +33,10 @@ Class-form alias (conventions Appendix A): `div.sem-reveal[data-summary]`, same 
 
 ## Rendered form
 
-- Fallback JS wraps the element in a native `<details>`/`<summary>` —
-  summary text from `summary` or first-line derivation; `open`
-  preset unless `collapsed`. Click/keyboard toggling is then native.
+- The Lit component (`SemReveal`) wraps the element in a native
+  `<details>`/`<summary>` — summary text from `summary` or first-line
+  derivation; `open` preset unless `collapsed`. Click/keyboard toggling
+  is then native.
 - JS-off: **content fully visible**; `summary`, when present,
   renders as a small-caps heading via CSS `::before` (either spelling).
   JS-off + no `summary`: plain prose, nothing hidden.
@@ -38,7 +50,7 @@ None (native `<details>` `toggle` event is the upgrade-time signal).
 
 ## A11y contract
 
-- Native `<details>`/`<summary>` after fallback wrap — keyboard
+- Native `<details>`/`<summary>` after the component wraps it — keyboard
   operable, `aria-expanded` implied by the platform.
 - JS-off: nothing is hidden, so no disclosure hazard.
 

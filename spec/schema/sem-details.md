@@ -1,8 +1,19 @@
 # Schema — `sem-details` / `sem-detail` / `highlight`
 
-Contract per conventions.md v0.5. BDD source of truth for
+Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-details.cy.js`. Changes here precede spec changes
 precede code.
+
+## Scope semantics
+
+Prose with occludable content. Recall-oriented prose, distinct from
+`sem-reveal` (block disclosure) and `sem-views` (perspective switching):
+same prose, a different interaction model per view. Each `sem-detail` is
+one prose passage; a `<highlight>` child marks a recall target
+(`[[cloze]]` sugar maps to `<highlight>`) — `<em>` in plain view,
+occluded and revealed per item in the `quiz` view (self-check model).
+`view-as` is display-only sugar (`plain` default, `quiz`): the prose is
+identical under both.
 
 ## Scope decision (recorded)
 
@@ -50,24 +61,20 @@ Class-form alias (conventions Appendix A): `div.sem-details[data-view-as]` › `
 ## Rendered form
 
 - `plain` (default): highlights render emphasized (`:is(highlight, .sem-highlight)` —
-  accent-tinted, non-italic-safe inline emphasis). No JS needed, no
-  fallback marker.
-- `quiz`: fallback JS replaces each highlight with an occluded
-  span (`.sem-occluded`): text masked (background chip, transparent
+  accent-tinted, non-italic-safe inline emphasis). No JS needed, no marker.
+- `quiz`: the Lit component (`SemDetails`) replaces each highlight with an
+  occluded span (`.sem-occluded`): text masked (background chip, transparent
   color), `role="button"`, `tabindex="0"`, `aria-label="reveal"`.
-  Container gets `data-sem-fallback`; hide/mask rules key off it.
+  Container claims `data-sem-upgraded`; hide/mask rules key off it.
 - Reveal: click or Enter/Space on the occluded span → becomes
   `.sem-highlight .sem-revealed` (readable, accent-tinted), loses
   `role`/`tabindex`. Reveals are per-item and irreversible (self-check
   model).
-- Lit upgrade (`<sem-details>` element) supersedes: sets
-  `data-sem-upgraded`, removes `data-sem-fallback`, performs the same
-  occlusion imperatively in light DOM.
 
 ## JS-off behavior
 
 - Both views fully readable: highlights stay visible emphasized. No
-  occlusion, no hidden content, no fallback marker.
+  occlusion, no hidden content, no marker.
 
 ## Events
 

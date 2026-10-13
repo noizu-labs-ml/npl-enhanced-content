@@ -1,6 +1,6 @@
 # Schema — `sem-facts` / `sem-fact`
 
-Contract per conventions.md v0.5. BDD source of truth for
+Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-facts.cy.js`. Changes here precede spec changes
 precede code.
 
@@ -43,8 +43,8 @@ Class-form alias (conventions Appendix A): `div.sem-facts[data-view-as]` › `di
 ### `list` (default)
 
 - All facts rendered, statement + conclusion visible, document order.
-- **No chrome, no `data-sem-fallback`** — nothing interactive, so the
-  fallback handler is a no-op and the Lit element keeps the plain layout.
+- **No chrome, no marker** — nothing interactive, so the
+  list view keeps the plain layout.
 
 ### `flashcards` (deck semantics)
 
@@ -70,12 +70,9 @@ Class-form alias (conventions Appendix A): `div.sem-facts[data-view-as]` › `di
 
 ## Rendered form
 
-- Fallback JS (vanilla, inline) implements flashcards/quiz behavior and
-  sets `data-sem-fallback` on the container (hide rules key off it).
-- List view (and empty containers) get no marker and no chrome.
-- Lit upgrade (`<sem-facts>` element) supersedes: sets
-  `data-sem-upgraded`, removes `data-sem-fallback`, owns the same
-  chrome/behavior imperatively in light DOM. Both tiers are BDD-asserted.
+- The Lit component `SemFacts` implements flashcards/quiz behavior and
+  claims `data-sem-upgraded` on the container (hide rules key off it).
+- List view (and empty containers) get no chrome.
 
 ## JS-off behavior
 
@@ -84,8 +81,9 @@ Class-form alias (conventions Appendix A): `div.sem-facts[data-view-as]` › `di
 
 ## Events
 
-- Tier-1 (future): `sem-navigate {index}`, `sem-flip {face}`,
-  `sem-complete {correct,total,ms}`. Not part of this contract yet.
+- `sem-navigate {index}`, `sem-flip {face}`,
+  `sem-complete {correct,total,ms}` — Tier-1 (future). Not part of this
+  contract yet.
 
 ## A11y contract
 
@@ -93,7 +91,7 @@ Class-form alias (conventions Appendix A): `div.sem-facts[data-view-as]` › `di
 - The position meter is text (`2/3 · score 1/1`) — readable, no ARIA
   meter role (it is not a scalar value).
 - JS-off: nothing hidden, so no hidden-content AT hazard. Quiz/flashcard
-  hide rules are gated on `data-sem-fallback`/`data-sem-upgraded`.
+  hide rules are gated on `data-sem-upgraded`.
 
 ## Machine contract
 

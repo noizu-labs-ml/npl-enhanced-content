@@ -4,7 +4,7 @@ import { SemElement } from './base.js';
  * sem-note — Lit upgrade of the callout (tag form or class alias).
  * Light DOM per PRD §4 rule 5: content stays searchable/copyable;
  * Lit owns behavior (collapsed toggle, variant reaction), not markup.
- * Handoff contract (data-sem-upgraded / data-sem-fallback) comes from SemElement.
+ * Handoff contract (data-sem-upgraded) comes from SemElement.
  */
 export class SemNote extends SemElement {
   static properties = {
