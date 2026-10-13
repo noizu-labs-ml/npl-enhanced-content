@@ -279,7 +279,7 @@ function parseArgs(argv) {
  * resolved by hand so the same rule still applies.
  * ------------------------------------------------------------------ */
 
-export function realpathAllowMissing(p) {
+export function realpathAllowMissing(p, seen = new Set()) {
   const abs = resolve(p);
   try {
     return realpathSync(abs);
@@ -293,11 +293,13 @@ export function realpathAllowMissing(p) {
     if (e.code !== 'ENOENT') throw e;
   }
   if (st && st.isSymbolicLink()) {
+    if (seen.has(abs)) throw new Error(`symlink cycle at ${abs}`);
+    seen.add(abs);
     // Dangling symlink: follow it manually — its target may be missing too.
-    return realpathAllowMissing(resolve(dirname(abs), readlinkSync(abs)));
+    return realpathAllowMissing(resolve(dirname(abs), readlinkSync(abs)), seen);
   }
   // A missing leaf: anchor on the nearest existing ancestor.
-  return join(realpathAllowMissing(dirname(abs)), basename(abs));
+  return join(realpathAllowMissing(dirname(abs), seen), basename(abs));
 }
 
 export function guardWorkspacePath(candidate, what = 'path') {

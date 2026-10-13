@@ -37,8 +37,16 @@ COPY --from=builder /app/dist/demo/ /usr/share/nginx/html/demo/
 # doesn't silently fall through nginx's SPA `try_files` to the landing page.
 COPY --from=builder /app/dist/spec/ /usr/share/nginx/html/spec/
 COPY --from=builder /app/dist/themes/ /usr/share/nginx/html/themes/
-COPY --from=builder /app/dist/semtext.js /usr/share/nginx/html/
-COPY --from=builder /app/dist/semtext.css /usr/share/nginx/html/
+# dist root artifacts: the core bundle + css AND the namespace/lazy/CLI
+# bundles and their manifests this integration ships (npl.js, npl-lazy.js,
+# semtext-lazy.js, semtext-js-shell.js, semtext-agent.js, semtext-manifest.json,
+# npl-manifest.json, semtext-js-shell-manifest.json) plus their code-split
+# chunk dirs — served pages reference them relatively and would 404 otherwise.
+COPY --from=builder /app/dist/*.js /usr/share/nginx/html/
+COPY --from=builder /app/dist/*.css /usr/share/nginx/html/
+COPY --from=builder /app/dist/*.json /usr/share/nginx/html/
+COPY --from=builder /app/dist/chunks/ /usr/share/nginx/html/chunks/
+COPY --from=builder /app/dist/npl-chunks/ /usr/share/nginx/html/npl-chunks/
 
 # Runtime GA4 injection. The built landing page carries an inert marker
 # comment; the entrypoint hook rewrites the served copy from this pristine

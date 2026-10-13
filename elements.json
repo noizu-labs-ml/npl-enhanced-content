@@ -24,18 +24,94 @@
     "spec/schema/sem-views.md",
     "spec/schema/npl/cot.md",
     "spec/schema/npl/intent.md",
+    "spec/schema/npl/npl-agent.md",
     "spec/schema/npl/npl-artifact.md",
     "spec/schema/npl/npl-critique.md",
     "spec/schema/npl/npl-declaration.md",
     "spec/schema/npl/npl-directive.md",
     "spec/schema/npl/npl-example.md",
+    "spec/schema/npl/npl-flag.md",
+    "spec/schema/npl/npl-flags.md",
+    "spec/schema/npl/npl-hormones.md",
+    "spec/schema/npl/npl-mindread.md",
     "spec/schema/npl/npl-mode.md",
     "spec/schema/npl/npl-mood.md",
+    "spec/schema/npl/npl-poa.md",
+    "spec/schema/npl/npl-ref.md",
+    "spec/schema/npl/npl-rubric.md",
+    "spec/schema/npl/npl-section.md",
     "spec/schema/npl/npl-thought.md",
     "spec/schema/npl/npl-vos.md"
   ],
-  "tagCount": 40,
+  "tagCount": 49,
   "tags": [
+    {
+      "name": "npl-agent",
+      "family": "npl",
+      "source": "spec/schema/npl/npl-agent.md",
+      "summary": "",
+      "description": "",
+      "attributes": [
+        {
+          "name": "name",
+          "required": true,
+          "type": "string",
+          "allowedValues": [],
+          "default": null,
+          "description": "`string` — required. The agent's identifier, the `⌜<agent-name>` field of the source form."
+        },
+        {
+          "name": "type",
+          "required": true,
+          "type": "string",
+          "allowedValues": [],
+          "default": null,
+          "description": "`string` — required. The agent's archetype (e.g. `scout`, `coder`)."
+        },
+        {
+          "name": "version",
+          "required": true,
+          "type": "string",
+          "allowedValues": [],
+          "default": null,
+          "description": "`string` — required. The NPL contract version, the `NPL@{version}` field of the source form."
+        },
+        {
+          "name": "extends",
+          "required": false,
+          "type": "string",
+          "allowedValues": [],
+          "default": null,
+          "description": "`string` — optional. The parent agent this definition extends; the header omits it when not authored."
+        },
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [],
+      "example": "<npl-agent name=\"scout\" type=\"scout\" version=\"0.3\" extends=\"base-agent\">\nLong-form description and behavioural spec prose.\n</npl-agent>"
+    },
     {
       "name": "npl-artifact",
       "family": "npl",
@@ -338,6 +414,184 @@
       "example": "<npl-example label=\"hello\">authored children survive beside the label</npl-example>"
     },
     {
+      "name": "npl-flag",
+      "family": "npl",
+      "source": "spec/schema/npl/npl-flag.md",
+      "summary": "Child of `npl-flags` (`npl-flags.md`); usable standalone.",
+      "description": "Child of `npl-flags` (`npl-flags.md`); usable standalone. Mirrors the sem-* prose contracts in `spec/schema/*.md`: prose is normative — changes here precede spec changes precede code, and this file is the BDD source of truth for `test/unit/npl-flag.test.ts`.",
+      "attributes": [
+        {
+          "name": "name",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "`<string>` — no default. Flag identifier; its wording implies the numeric range checked on `value` (below)."
+        },
+        {
+          "name": "value",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "`<string>` — no default. Rendered verbatim; validated only when the name implies a numeric range. Name-implied ranges (case-insensitive substring of the name): - `freq` → `[0.0, 1.0]` — frequency flags - `factor` → `[-10, 10]` — hormone factors - `threshold` → numeric, unbounded Any other name (pump switches, meta, …) is free-form — never validated. An out-of-range or non-numeric value is NOT an error: the flag renders with the `npl-flag-invalid` warning class on its value span."
+        },
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [
+        {
+          "name": "npl-flags",
+          "note": ""
+        }
+      ],
+      "example": "<npl-flag name=\"calm_factor\" value=\"0.5\"></npl-flag>"
+    },
+    {
+      "name": "npl-flags",
+      "family": "npl",
+      "source": "spec/schema/npl/npl-flags.md",
+      "summary": "Container for `npl-flag` children (`npl-flag.md`) plus optional note text.",
+      "description": "Container for `npl-flag` children (`npl-flag.md`) plus optional note text. Mirrors the sem-* prose contracts in `spec/schema/*.md`: prose is normative — changes here precede spec changes precede code, and this file is the BDD source of truth for `test/unit/npl-flags.test.ts`.",
+      "attributes": [
+        {
+          "name": "preset",
+          "required": null,
+          "type": "",
+          "allowedValues": [
+            "npl-flags-preset-invalid"
+          ],
+          "default": null,
+          "description": "`<string>` — no default (omit it entirely for no badge). One of `minimal | full | production | creative | tireless` (the NPL flag source spells these `preset:<name>`; the attribute accepts the bare word or the prefixed spelling, normalized for display). An unknown preset is NOT an error: it warns through the author-facing channel and renders with the `npl-flags-preset-invalid` warning class."
+        },
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [
+        {
+          "name": "npl-flag",
+          "note": ""
+        }
+      ],
+      "example": "<npl-flags preset=\"production\">\n  <npl-flag name=\"calm_factor\" value=\"0.5\"></npl-flag>\n  tuning notes…\n</npl-flags>"
+    },
+    {
+      "name": "npl-hormones",
+      "family": "npl",
+      "source": "spec/schema/npl/npl-hormones.md",
+      "summary": "Source block: the NPL synthetic-hormones pump (NoizuPromptLingo `conventions/pumps.yaml`, `synthetic-hormones`) — seven biochemical-analog hormones (Momentum MTM, Tension TNS, Curiosity CRS, Confidenc",
+      "description": "Source block: the NPL synthetic-hormones pump (NoizuPromptLingo `conventions/pumps.yaml`, `synthetic-hormones`) — seven biochemical-analog hormones (Momentum MTM, Tension TNS, Curiosity CRS, Confidence CNF, Affinity AFN, Fatigue FTG, Restlessness RST) drawn as bars with delta arrows and threshold alerts. Display-only: no events, no network, no timers.",
+      "attributes": [
+        {
+          "name": "variant",
+          "required": null,
+          "type": "string",
+          "allowedValues": [],
+          "default": "panel",
+          "description": "`string` — `panel` renders one row per `h` plus the `state` and `triggered` lines; `bars` renders only the rows (the compact form); `alert` renders only the `alert` elements. Any other value falls back to `panel`."
+        },
+        {
+          "name": "state",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "child element — compound state description, rendered in the `panel` variant as the state line."
+        },
+        {
+          "name": "triggered",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "child element — threshold behaviors activated, or `none`. A row is highlighted (`data-fired`) when this block names the hormone: by symbol (word match, so `RST` does not hit \"first\"), by name, or by its `trigger` text; `none` highlights nothing."
+        },
+        {
+          "name": "alert",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "child elements — `hormone`, `value`, `threshold`, `behavior` attributes, body text as content. Rendered only by the `alert` variant."
+        },
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [
+        {
+          "name": "h",
+          "note": "`<h>` (one per hormone, inside `panel`): `name` (`string`), `symbol` (`string`), `value` (`number`, range [-10, 10] — out-of-range values are clamped into range and the row is marked `data-clamped`, the raw text mirrored to `data-value`), `delta` (`number`; the sign drives the arrow: positive up `↑`, negative down `↓`, zero or absent flat `→`), `trigger` (`string`)."
+        }
+      ],
+      "example": "<npl-hormones variant=\"panel\">\n  <panel>\n    <h name=\"Momentum\"     symbol=\"MTM\" value=\"6\"   delta=\"+2\" trigger=\"Tests passed first try\"></h>\n    <h name=\"Restlessness\" symbol=\"RST\" value=\"8.5\" delta=\"-1\" trigger=\"Strategy failed\"></h>\n  </panel>\n  <state>Productive tension</state>\n  <triggered>RST threshold crossed</triggered>\n  <alert hormone=\"RST\" value=\"8.5\" threshold=\"7\" behavior=\"strategy-switch\">\n    Restlessness threshold crossed. Initiating plan-of-action.\n  </alert>\n</npl-hormones>"
+    },
+    {
       "name": "npl-intent",
       "family": "npl",
       "source": "spec/schema/npl/intent.md",
@@ -367,6 +621,74 @@
         }
       ],
       "example": "<npl-intent id=\"launch\" kind=\"initiative\">\n  <npl-intent-overview>Ship the fleet dashboard to stage.</npl-intent-overview>\n  <npl-intent-scope>Metrics only; no alerting yet.</npl-intent-scope>\n  <npl-intent-outcomes>\n    <ul><li>One pane per service</li></ul>\n  </npl-intent-outcomes>\n  <npl-intent-assumptions>\n    <npl-intent-assumption confidence=\"high\">SigNoz keeps serving uptime queries.</npl-intent-assumption>\n    <npl-intent-assumption data-confidence=\"medium\">The chart repo stays ArgoCD-watched.</npl-intent-assumption>\n  </npl-intent-assumptions>\n</npl-intent>"
+    },
+    {
+      "name": "npl-mindread",
+      "family": "npl",
+      "source": "spec/schema/npl/npl-mindread.md",
+      "summary": "Theory-of-mind reading of the other party — the display upgrade of the NPL `<npl-mindread>` block (NoizuPromptLingo `npl/npl-full.md` §3.6 Social Cognition).",
+      "description": "Theory-of-mind reading of the other party — the display upgrade of the NPL `<npl-mindread>` block (NoizuPromptLingo `npl/npl-full.md` §3.6 Social Cognition). Source block: ```html <npl-mindread> <subject>{who — user, collaborator, agent name}</subject> <signals> <signal type=\"tone|pattern|omission|context|contradiction|expertise\">{observed evidence}</signal> </signals> <inferred> <motive>{goal behind the stated request}</motive> <mood>{emotional state}</mood> <cognitive>{how they're thinking}</cognitive> <unspoken>{what they need but haven't articulated}</unspoken> </inferred> <adaptation>{concrete behavioral change}</adaptation> </npl-mindread> ``` Contract per conventions.md v0.6 and the namespace recipe in `src/lit/npl/index.ts`. Display-only: no events, no interactivity.",
+      "attributes": [
+        {
+          "name": "confidence",
+          "required": false,
+          "type": "number",
+          "allowedValues": [],
+          "default": "<absent>",
+          "description": "`number` — optional, — a theory-of-mind reading is a guess until corrected; authored `0..1`. Out-of-range values are **clamped** into `[0,1]` (a non-numeric authoring clamps to `0`), and the host is **marked**: `data-confidence` carries the clamped value, `data-confidence-out-of-range` the verbatim authored value, and the meter gains a `npl-mindread-confidence-out` note."
+        }
+      ],
+      "children": [
+        {
+          "name": "subject",
+          "note": ""
+        },
+        {
+          "name": "signals",
+          "note": ""
+        },
+        {
+          "name": "signal",
+          "note": ""
+        },
+        {
+          "name": "type",
+          "note": ""
+        },
+        {
+          "name": "inferred",
+          "note": ""
+        },
+        {
+          "name": "motive",
+          "note": ""
+        },
+        {
+          "name": "mood",
+          "note": ""
+        },
+        {
+          "name": "cognitive",
+          "note": ""
+        },
+        {
+          "name": "unspoken",
+          "note": ""
+        },
+        {
+          "name": "adaptation",
+          "note": ""
+        },
+        {
+          "name": "npl-mindread-signal-unknown",
+          "note": ""
+        },
+        {
+          "name": "warn",
+          "note": ""
+        }
+      ],
+      "example": "<npl-mindread confidence=\"0.7\">\n  <subject>User</subject>\n  <signals><signal type=\"tone\">Terse fragments — formality dropped.</signal></signals>\n  <inferred>\n    <motive>Quick resolution over thoroughness.</motive>\n    <mood>😤 Pressured, time-crunched</mood>\n    <cognitive>Execution mode — solutions, not options.</cognitive>\n    <unspoken>Reassurance that it'll be ready.</unspoken>\n  </inferred>\n  <adaptation>Working solution first; edge cases deferred. Short replies.</adaptation>\n</npl-mindread>"
     },
     {
       "name": "npl-mode",
@@ -471,6 +793,224 @@
         }
       ],
       "example": "<npl-mood mood=\"🙂 wistful\">\n  <div class=\"npl-mood-tone\">restrained, unhurried</div>\n  <div class=\"npl-mood-context\">draft reply to a cold opener</div>\n  <div class=\"npl-mood-approach\">ask one concrete question</div>\n</npl-mood>"
+    },
+    {
+      "name": "npl-poa",
+      "family": "npl",
+      "source": "spec/schema/npl/npl-poa.md",
+      "summary": "The NPL plan-of-action block: a decision tree with weighted reasoning.",
+      "description": "The NPL plan-of-action block: a decision tree with weighted reasoning. Source is the NPL `poa` block — a ```mermaid fence for the decision tree, a `<reasoning>` element with the weighted paths, and a `<selected>` element naming the chosen option. Display-only: the component never loads mermaid or any runtime library, so the tree degrades to its own source, which reads as a plain code block.",
+      "attributes": [
+        {
+          "name": "direction",
+          "required": null,
+          "type": "string",
+          "allowedValues": [
+            "string",
+            "lr",
+            "td",
+            "data-direction",
+            "data-"
+          ],
+          "default": "lr",
+          "description": "`string` — One of `lr` | `td`; declares the intended flow and mirrors to `data-direction` (dual-form contract, `data-` wins, mirror deferred past parse via afterParse). The fence's own `graph LR`/`graph TD` line remains the renderer's source of truth — authored source is never rewritten. Anything other than `lr`/`td` falls back to `lr` with an author-facing warning."
+        },
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [],
+      "example": "<npl-poa direction=\"lr\">\n  <pre><code class=\"language-mermaid\">graph LR\n  A{Decision} -->|\"90%\"| B[Path B]\n  A -->|\"40%\"| C[Path C]</code></pre>\n  <reasoning>\n    A --[90%]--> B: why this path is weighted high\n    A --[40%]--> C: why this is less preferred\n  </reasoning>\n  <selected>Path B — 90% weight; lowest migration cost.</selected>\n</npl-poa>"
+    },
+    {
+      "name": "npl-ref",
+      "family": "npl",
+      "source": "spec/schema/npl/npl-ref.md",
+      "summary": "Display-only rendering of an NPL ref block: post-hoc reflection over a finished turn (assessment, improvements, validation, eval, fine-tune).",
+      "description": "Display-only rendering of an NPL ref block: post-hoc reflection over a finished turn (assessment, improvements, validation, eval, fine-tune).",
+      "attributes": [
+        {
+          "name": "variant",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": "full",
+          "description": "`full|compact` — `full` renders each section as a labelled block; `compact` renders one emoji line per section. Any other value resolves to `full`, and the resolved variant mirrors to `data-variant` (deferred past parse via afterParse, like sem-note, so a sem-source snapshot never sees runtime writes). The variant is read at upgrade; it is display-only and not switched after wiring."
+        },
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [
+        {
+          "name": "assessment",
+          "note": ""
+        },
+        {
+          "name": "improvements",
+          "note": ""
+        },
+        {
+          "name": "validation",
+          "note": ""
+        },
+        {
+          "name": "eval",
+          "note": ""
+        },
+        {
+          "name": "fine-tune",
+          "note": ""
+        }
+      ],
+      "example": "<npl-ref variant=\"full\">\n  <assessment>the approach held; one gap in the eval loop</assessment>\n  <improvements>add a regression harness before the next run</improvements>\n  <validation>checked against three traces</validation>\n  <eval>quality 0.82 vs 0.71 baseline</eval>\n  <fine-tune>retrain on the two rejected traces</fine-tune>\n</npl-ref>"
+    },
+    {
+      "name": "npl-rubric",
+      "family": "npl",
+      "source": "spec/schema/npl/npl-rubric.md",
+      "summary": "Display-only weighted scoring rubric (`src/lit/npl/npl-rubric.ts`).",
+      "description": "Display-only weighted scoring rubric (`src/lit/npl/npl-rubric.ts`). Source: NPL rubric blocks.",
+      "attributes": [
+        {
+          "name": "title",
+          "required": null,
+          "type": "string",
+          "allowedValues": [],
+          "default": "",
+          "description": "(empty). Rendered as the table caption and mirrored to `data-title` (dual-form contract; the mirror is deferred past parse via afterParse so a sem-source snapshot never sees runtime writes)."
+        },
+        {
+          "name": "npl-overall-score",
+          "required": false,
+          "type": "number",
+          "allowedValues": [],
+          "default": null,
+          "description": "(optional, one) — `value`: number — default: the element's trimmed text (`value` wins when both are present). States the overall score; when absent or non-numeric the component computes the weighted average — sum(weight · score) ÷ sum(weight) over the criteria with a numeric weight AND score (all-zero weights ⇒ no figure)."
+        },
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [],
+      "example": "<npl-rubric title=\"Code review\">\n  <npl-criterion name=\"Correctness\" weight=\"3\" score=\"4\"></npl-criterion>\n  <npl-criterion name=\"Style\" weight=\"1\" score=\"5\"></npl-criterion>\n  <npl-overall-score value=\"4.2\"></npl-overall-score>\n</npl-rubric>"
+    },
+    {
+      "name": "npl-section",
+      "family": "npl",
+      "source": "spec/schema/npl/npl-section.md",
+      "summary": "Generic typed section for NPL prompt-section blocks (`src/lit/npl/npl-section.ts`): display-only chrome over untouched authored content — a labelled header for known types, a warning box for unknown o",
+      "description": "Generic typed section for NPL prompt-section blocks (`src/lit/npl/npl-section.ts`): display-only chrome over untouched authored content — a labelled header for known types, a warning box for unknown ones. Light DOM per the namespace recipe; content stays searchable/copyable.",
+      "attributes": [
+        {
+          "name": "type",
+          "required": true,
+          "type": "string",
+          "allowedValues": [
+            "alg",
+            "alg-pseudo",
+            "diagram",
+            "example",
+            "format",
+            "logic",
+            "note",
+            "syntax",
+            "template",
+            "npl-section-warning"
+          ],
+          "default": null,
+          "description": "required. One of the known section types: `alg`, `alg-pseudo`, `diagram`, `example`, `format`, `logic`, `note`, `syntax`, `template`. A missing or unknown value is never fatal: the section renders with the `npl-section-warning` class, its content plain, plus one author-facing warning per offending value."
+        },
+        {
+          "name": "id",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "kind",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        },
+        {
+          "name": "tags",
+          "required": null,
+          "type": "",
+          "allowedValues": [],
+          "default": null,
+          "description": "per the global attribute catalog (conventions.md §2)"
+        }
+      ],
+      "children": [],
+      "example": "<npl-section type=\"example\">body HTML</npl-section>"
     },
     {
       "name": "npl-thought",
@@ -1764,5 +2304,13 @@
       "example": "<sem-views id=\"deploy\">\n  <sem-view name=\"Helm\" active role=\"tabpanel\">content…</sem-view>\n  <sem-view name=\"ArgoCD\" role=\"tabpanel\">content…</sem-view>\n</sem-views>"
     }
   ],
-  "gaps": []
+  "gaps": [
+    {
+      "tag": "npl-agent",
+      "missing": [
+        "summary",
+        "description"
+      ]
+    }
+  ]
 }
