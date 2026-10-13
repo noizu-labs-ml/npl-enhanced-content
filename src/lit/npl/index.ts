@@ -50,11 +50,13 @@ import './npl-example.js';
 export { NplFlag } from './npl-flag.js';
 export { NplFlags } from './npl-flags.js';
 export { NplHormones } from './npl-hormones.js';
+export { NplMindread } from './npl-mindread.js';
 export { NplRef } from './npl-ref.js';
 export { NplRubric } from './npl-rubric.js';
 import './npl-flag.js';
 import './npl-flags.js';
 import './npl-hormones.js';
+import './npl-mindread.js';
 import './npl-ref.js';
 import './npl-rubric.js';
 
