@@ -1,6 +1,6 @@
 # Schema — `sem-note`
 
-Contract per conventions.md v0.5. BDD source of truth for
+Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-note.cy.js`. Changes here precede spec changes precede code.
 
 ## Authoring form
@@ -26,17 +26,18 @@ that hides a collapsed body wraps it in `.sem-note-body` first.
   change.
 - `id`, `kind`, `tags` per global attribute catalog.
 - `[hint | reveal]` notation: this element hosts the first definition of the
-  agent-instruction notation (conventions.md §3) — parse in v1 only if the
-  fallback handler ships it for free; otherwise defer.
+  agent-instruction notation (conventions.md §3) — parse in v1 only if a
+  handler ships it for free; otherwise defer.
 
 ## Rendered form
 
-- Upgraded: `<sem-note>` itself (Lit `SemNote` — minimal: variant icon,
+- Enhanced: `<sem-note>` itself (Lit `SemNote` — minimal: variant icon,
   collapsed behavior). No shadow root; light DOM, content searchable.
-- Pre-upgrade / JS-off: `:is(sem-note, .sem-note)` base in
+- JS-off: `:is(sem-note, .sem-note)` base in
   `themes/_vocabulary.css` — accent border + variant label via attribute
   selectors, both authoring forms from one rule (D10). The collapsed-body
-  hide rule is gated on a tier marker, so JS-off the body is readable.
+  hide rule is gated on the `data-sem-upgraded` marker, so JS-off the body
+  is readable.
 - `view-as="margin"`: `float: right` at `min-width: 64rem`, right margin
   `--sem-margin-offset` (0 by default, negative to reach a gutter); inline
   otherwise and under `@media print`.

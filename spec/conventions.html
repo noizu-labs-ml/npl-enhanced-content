@@ -13,8 +13,8 @@
   Appendix A. Where the two files diverge, the .md wins.
 
   No inline CSS, no inline JS: the theme and vocabulary stylesheets are
-  linked, spec.css carries the document layout, and the shipped bundles
-  are loaded from dist/ by src attribute. Served from the repo root the
+  linked, spec.css carries the document layout, and the one script is
+  loaded from dist/ by src attribute. Served from the repo root the
   ../ paths reach themes/ and dist/; scripts/build-standalone.mjs copies
   this page to dist/spec/ with the paths rewritten, plus a .nojs.html
   variant with every script element removed.
@@ -23,18 +23,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SemText — Format Spec &amp; Conventions v0.5</title>
-<meta name="description" content="SemText format specification and conventions, draft v0.5: the custom-element vocabulary, document skeleton, attribute catalog, notation, fallback and degradation rules, element entries, themes, distribution forms, the machine-readability contract and the class-form compatibility alias.">
+<title>SemText — Format Spec &amp; Conventions v0.6</title>
+<meta name="description" content="SemText format specification and conventions, draft v0.6: the custom-element vocabulary, document skeleton, attribute catalog, notation, the script and degradation rules, element entries, themes, distribution forms, the machine-readability contract and the class-form compatibility alias.">
 
 <link rel="stylesheet" href="../themes/minimal-tech-light.css">
 <link rel="stylesheet" href="../themes/_vocabulary.css">
 <link rel="stylesheet" href="spec.css">
 
-<script src="../dist/semtext-fallback.js"></script>
-<script src="../dist/semtext-reading.js"></script>
-<script src="../dist/semtext-md.js"></script>
-<script src="../dist/semtext.js"></script>
-<script src="../dist/semtext-extract.js"></script>
+<script defer src="../dist/semtext.js"></script>
 </head>
 
 <body>
@@ -43,15 +39,15 @@
   <sem-reader id="rd" controls="outline,progress,focus,type,color,print,audience" outline-depth="4"></sem-reader>
 
   <h1>SemText — Format Spec &amp; Conventions</h1>
-  <p>DRAFT v0.5 · tag form canonical · this page is written in the format it specifies. Normative source: <a href="#r-conventions-md">spec/conventions.md</a><a href="#r-conventions-md" id="cite-md">[1]</a>; where the two diverge, the Markdown wins.</p>
+  <p>DRAFT v0.6 · tag form canonical · this page is written in the format it specifies. Normative source: <a href="#r-conventions-md">spec/conventions.md</a><a href="#r-conventions-md" id="cite-md">[1]</a>; where the two diverge, the Markdown wins.</p>
 
-  <p>SemText is an XHTML vocabulary of <strong>custom elements</strong>: <code>&lt;sem-enhanced-document&gt;</code>, <code>&lt;sem-note variant="tip"&gt;</code>, <code>&lt;sem-facts view-as="quiz"&gt;</code>, <code>&lt;sem-fact&gt;</code> with <code>&lt;statement&gt;</code> and <code>&lt;conclusion&gt;</code>, <code>&lt;sem-step status="done"&gt;</code>, <code>&lt;sem-property key="…"&gt;</code>. Element names say what content <em>is</em>; <strong>attributes are attributes</strong> (<code>view-as</code>, <code>status</code>, <code>key</code>, <code>kind</code>, <code>tags</code>, <code>controls</code>), never <code>data-*</code>. That is the form every example in this spec, the schemas and the reference documents use, and the form every tier — theme CSS, the vanilla fallback core, the reading and Markdown bundles, the Lit upgrade, extraction and the JS-off artifact — accepts as its first-class input.</p>
+  <p>SemText is an XHTML vocabulary of <strong>custom elements</strong>: <code>&lt;sem-enhanced-document&gt;</code>, <code>&lt;sem-note variant="tip"&gt;</code>, <code>&lt;sem-facts view-as="quiz"&gt;</code>, <code>&lt;sem-fact&gt;</code> with <code>&lt;statement&gt;</code> and <code>&lt;conclusion&gt;</code>, <code>&lt;sem-step status="done"&gt;</code>, <code>&lt;sem-property key="…"&gt;</code>. Element names say what content <em>is</em>; <strong>attributes are attributes</strong> (<code>view-as</code>, <code>status</code>, <code>key</code>, <code>kind</code>, <code>tags</code>, <code>controls</code>), never <code>data-*</code>. That is the form every example in this spec, the schemas and the reference documents use, and the form every consumer — theme CSS, the one script, extraction and the JS-off artifact — accepts as its first-class input.</p>
 
-  <p>The v0.4 baseline rendered the same vocabulary as <strong>classes on plain elements</strong> with <code>data-*</code> parameters. That spelling is retained as a <strong>compatibility alias</strong>: the mechanical mapping is in <a href="#appendix-a--class-form-alias-v04-compatibility">Appendix A</a>, every tier keeps accepting it, and a document may mix the two forms. New documents and new tooling write the tag form.</p>
+  <p>The v0.4 baseline rendered the same vocabulary as <strong>classes on plain elements</strong> with <code>data-*</code> parameters. That spelling is retained as a <strong>compatibility alias</strong>: the mechanical mapping is in <a href="#appendix-a--class-form-alias-v04-compatibility">Appendix A</a>, the script and the CSS keep accepting it, and a document may mix the two forms. New documents and new tooling write the tag form.</p>
 
   <sem-note id="n-dogfood" variant="tip">Every vocabulary element on this page is live and written as a tag. Each entry in <a href="#5-element-entries">§5</a> sits inside a <code>sem-source</code> wrapper: press <em>Source</em> to see the markup exactly as it was written here — bare attributes, no <code>data-*</code>, no classes.</sem-note>
 
-  <p>CSS and script layering, in both distribution forms (<a href="#7-distribution-forms">§7</a>): (1) the theme file — <code>--sem-*</code> tokens on <code>[data-sem-theme]</code> — and <code>themes/_vocabulary.css</code> — the component base, offline-safe; (2) the <code>sem-fallback</code> vanilla handler and, where the document needs them, the reading and Markdown bundles — interactivity; (3) <code>semtext.js</code> — the optional Lit upgrade. The <strong>single-file</strong> form inlines all of it in <code>&lt;head&gt;</code> (the build's <code>sem:inline</code> markers); the <strong>folder</strong> form links the same files by relative path. Neither form carries page-local CSS or JS beyond a small layout layer. <strong>❓</strong> = open questions (<a href="#10-open-questions">§10</a>).</p>
+  <p>CSS and script layering, in both distribution forms (<a href="#7-distribution-forms">§7</a>): (1) the base stylesheet <code>semtext.css</code> (the vocabulary, offline-safe) and the theme file — <code>--sem-*</code> tokens on <code>[data-sem-theme]</code>; (2) <code>semtext.js</code> — the one script, a Lit 3 bundle that also carries the vanilla handlers for the elements no component defines, the reading and Markdown renderers, and extraction. The <strong>single-file</strong> form inlines all of it in <code>&lt;head&gt;</code> (the build's <code>sem:inline</code> markers); the <strong>folder</strong> form links the same files by relative path. Neither form carries page-local CSS or JS beyond a small layout layer. A document without the script shows its authored text — not styled, not interactive (<a href="#4-the-script--degradation-rules">§4</a>). <strong>❓</strong> = open questions (<a href="#10-open-questions">§10</a>).</p>
 
   <sem-note id="n-folder-form" variant="info">This page ships the <strong>folder</strong> form: two theme stylesheets, one layout stylesheet and the bundles linked from <code>&lt;head&gt;</code>, no inline CSS or JS. Its scripts-stripped twin, <code>conventions.nojs.html</code>, is the JS-off proof.</sem-note>
 
@@ -60,7 +56,7 @@
 
   <sem-views id="consumers" role="region" aria-label="The three consumers of a SemText document">
     <sem-view name="Human / browser" active role="tabpanel">
-      <p>Double-click, styled, interactive. The theme CSS renders the vocabulary directly; the fallback handler adds the behaviour.</p>
+      <p>Double-click, styled, interactive. The theme CSS renders the vocabulary; the script adds the behaviour.</p>
     </sem-view>
     <sem-view name="LLM / non-visual" role="tabpanel">
       <p>The same XHTML read structurally; attributes qualify every datum; the same XML vocabulary NPL's MCP server already speaks.</p>
@@ -70,7 +66,7 @@
     </sem-view>
   </sem-views>
 
-  <p>A SemText element is a <strong>custom element</strong> in the <code>sem-</code> namespace. Custom elements are valid HTML whether or not a script ever defines them: the browser parses <code>&lt;sem-fact&gt;</code> as an unknown element, the vocabulary CSS gives it a block box (<code>sem-*:not(:defined)</code> base, <a href="#6-theme-conventions">§6</a>), and the fallback core drives it without <code>customElements.define</code>. The Lit bundle, when present, defines the interactive ones and upgrades them in place (<a href="#4-fallback-handler--degradation-rules">§4</a> rule 2).</p>
+  <p>A SemText element is a <strong>custom element</strong> in the <code>sem-</code> namespace. Custom elements are valid HTML whether or not a script ever defines them: the browser parses <code>&lt;sem-fact&gt;</code> as an unknown element, the vocabulary CSS gives it a block box (<code>sem-*:not(:defined)</code> base, <a href="#6-theme-conventions">§6</a>), and <code>semtext.js</code> — when it runs — defines the interactive ones and upgrades them in place (<a href="#4-the-script--degradation-rules">§4</a> rule 2). Without it the document is plain text in flow.</p>
 
   <h2 id="1-document-skeleton">1. Document skeleton</h2>
 
@@ -80,10 +76,9 @@
 &lt;head&gt;
   &lt;meta charset="utf-8"&gt;
   &lt;title&gt;Authoring Guide&lt;/title&gt;
-  &lt;link rel="stylesheet" href="semtext/themes/_vocabulary.css"&gt;
-  &lt;link rel="stylesheet" href="semtext/themes/minimal-tech-light.css"&gt;
-  &lt;script id="sem-fallback"&gt;/* always-embedded vanilla handler (§4) */&lt;/script&gt;
-  &lt;script defer src="semtext/semtext.js"&gt;&lt;/script&gt;  &lt;!-- Lit upgrade, optional --&gt;
+  &lt;link rel="stylesheet" href="semtext/semtext.css"&gt;
+  &lt;link rel="stylesheet" href="semtext/themes/semtext-theme-minimal-tech-light.css"&gt;
+  &lt;script defer src="semtext/semtext.js"&gt;&lt;/script&gt;  &lt;!-- the one script (§4) --&gt;
 &lt;/head&gt;
 &lt;body&gt;
 &lt;sem-enhanced-document&gt;
@@ -116,7 +111,7 @@
   </sem-code>
 
   <ul>
-    <li><code>&lt;sem-enhanced-document&gt;</code> is the required root wrapper (fallback handler scopes to it; Lit components register against it). It may carry a landmark role (<code>role="main"</code>) — it is the document. The alias form may put the <code>sem-enhanced-document</code> class on a <code>&lt;main&gt;</code> element for the native landmark; the tag form trades that for one element that is the same in every consumer, and states the landmark with <code>role</code>.</li>
+    <li><code>&lt;sem-enhanced-document&gt;</code> is the required root wrapper (the script scopes to it). It may carry a landmark role (<code>role="main"</code>) — it is the document. The alias form may put the <code>sem-enhanced-document</code> class on a <code>&lt;main&gt;</code> element for the native landmark; the tag form trades that for one element that is the same in every consumer, and states the landmark with <code>role</code>.</li>
     <li><code>&lt;sem-reader&gt;</code>, when used, is the wrapper's first child (one per document; <a href="#e-reader">§5</a>).</li>
     <li>Metadata children (<code>agent</code>, and future <code>org</code>, <code>context</code>, <code>audience</code>) are <strong>bare semantic tags</strong> — machine-facing, unstyled.</li>
     <li>Record <strong>parts</strong> are bare semantic children too: <code>&lt;statement&gt;</code>, <code>&lt;conclusion&gt;</code>, <code>&lt;sem-distractor&gt;</code> inside <code>sem-fact</code>; <code>&lt;highlight&gt;</code> inside any prose element; <code>&lt;name&gt;</code>, <code>&lt;bio&gt;</code>, <code>&lt;instructions&gt;</code> inside <code>agent</code>.</li>
@@ -138,19 +133,19 @@
     | `controls` | comma flags: `shuffle`, `filter`, `retry`, `picker` | which controls render |
     | `collapsed` | boolean | pre-collapse state |
     | `audience` | profile spec: `a`, `a, b`, `!a` (profiles from `sem-audiences`) | who the datum is for — **`spec/schema/sem-audiences.md`**; carried verbatim by extraction, never suppresses a record |
-    | `id` | doc-unique | stable anchor, cite target — a `#id` or `#container/child` hash reaches it through any closed reveal, collapsed note, inactive view or non-current card (fallback `target`) |
+    | `id` | doc-unique | stable anchor, cite target — a `#id` or `#container/child` hash reaches it through any closed reveal, collapsed note, inactive view or non-current card (deep-link resolver) |
     | `data-*` | free | extension point; also the **alias spelling** of every parameter above (Appendix A) |
   </sem-md>
 
   <p>Element-specific parameters (<code>variant</code>, <code>key</code>, <code>name</code>, <code>summary</code>, <code>value</code>, <code>label</code>, <code>when</code>, <code>until</code>, <code>lang</code>, <code>filename</code>, <code>mark</code>, <code>wrap</code>, <code>href</code>, <code>cite</code>, <code>implies</code>, <code>sticky</code>, <code>outline-depth</code>) follow the same rule: bare on the element, documented per schema.</p>
 
-  <p><strong>Scope of the bare spelling.</strong> Bare attributes are canonical on <code>sem-*</code> custom elements and their bare part children (<code>&lt;statement&gt;</code>, <code>&lt;highlight&gt;</code>, <code>&lt;agent&gt;</code> › <code>&lt;name&gt;</code>), where any attribute name is valid. On a <strong>standard HTML element</strong> (<code>&lt;h2&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;a&gt;</code>, <code>&lt;td&gt;</code>) a global qualifier keeps the <code>data-*</code> spelling — <code>&lt;h2 data-kind="section" data-tags="auth"&gt;</code>, <code>&lt;p data-audience="operator"&gt;</code>, <code>&lt;td data-value="900"&gt;</code> — because HTML5 allows no other custom attribute there and <a href="#8-machine-readability-contract">§8</a> promises tool-parseable documents. Every tier reads both spellings on either kind of element.</p>
+  <p><strong>Scope of the bare spelling.</strong> Bare attributes are canonical on <code>sem-*</code> custom elements and their bare part children (<code>&lt;statement&gt;</code>, <code>&lt;highlight&gt;</code>, <code>&lt;agent&gt;</code> › <code>&lt;name&gt;</code>), where any attribute name is valid. On a <strong>standard HTML element</strong> (<code>&lt;h2&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;a&gt;</code>, <code>&lt;td&gt;</code>) a global qualifier keeps the <code>data-*</code> spelling — <code>&lt;h2 data-kind="section" data-tags="auth"&gt;</code>, <code>&lt;p data-audience="operator"&gt;</code>, <code>&lt;td data-value="900"&gt;</code> — because HTML5 allows no other custom attribute there and <a href="#8-machine-readability-contract">§8</a> promises tool-parseable documents. The script reads both spellings on either kind of element.</p>
 
-  <p><code>view-as</code> is the core inversion: <code>&lt;sem-fact&gt;</code> is a fact in every view; <code>view-as</code> only selects rendering. Unknown <code>view-as</code> ⇒ falls back to <code>list</code>/plain + fallback-handler warning. CSS-only modes exist too: <code>sem-note view-as="margin"</code> (right-gutter aside on wide viewports), <code>sem-chronology view-as="timeline|list"</code>. <code>sem-properties view-as="glossary"</code> adds term previews from the reading bundle.</p>
+  <p><code>view-as</code> is the core inversion: <code>&lt;sem-fact&gt;</code> is a fact in every view; <code>view-as</code> only selects rendering. Unknown <code>view-as</code> ⇒ falls back to <code>list</code>/plain + a console warning. CSS-only modes exist too: <code>sem-note view-as="margin"</code> (right-gutter aside on wide viewports), <code>sem-chronology view-as="timeline|list"</code>. <code>sem-properties view-as="glossary"</code> adds term previews from the script.</p>
 
   <sem-properties id="p-catalog-rules" kind="rules">
-    <sem-property id="p-alias-spelling" key="Alias spelling" role="definition" aria-label="Alias spelling"><code>data-&lt;name&gt;</code> is accepted everywhere <code>&lt;name&gt;</code> is, and wins when both are present (extraction §3.6; the fallback core copies each bare parameter to its <code>data-*</code> twin before any handler runs, <a href="#4-fallback-handler--degradation-rules">§4</a> rule 1). Writing both spellings on one element is an <strong>authoring error</strong> — the precedence exists so extraction stays stable and the mirror is a no-op, not so an author can mean two things; a <code>sem-source</code> fence always shows the markup as authored, so a mixed element would display a parameter the tiers do not use.</sem-property>
-    <sem-property id="p-runtime-state" key="Runtime state" role="definition" aria-label="Runtime state">State the tiers write is always <code>data-*</code> — <code>data-active</code> on the shown view, <code>data-view-as</code> rewritten by a <code>sem-source</code> / <code>sem-md</code> toggle, <code>data-sem-fallback</code> / <code>data-sem-upgraded</code> tier markers — so an authored bare attribute is never overwritten and a <code>sem-source</code> fence still shows the markup as written.</sem-property>
+    <sem-property id="p-alias-spelling" key="Alias spelling" role="definition" aria-label="Alias spelling"><code>data-&lt;name&gt;</code> is accepted everywhere <code>&lt;name&gt;</code> is, and wins when both are present (extraction §3.6; the script copies each bare parameter to its <code>data-*</code> twin before any handler runs, <a href="#4-the-script--degradation-rules">§4</a> rule 1). Writing both spellings on one element is an <strong>authoring error</strong> — the precedence exists so extraction stays stable and the mirror is a no-op, not so an author can mean two things; a <code>sem-source</code> fence always shows the markup as authored, so a mixed element would display a parameter the script does not use.</sem-property>
+    <sem-property id="p-runtime-state" key="Runtime state" role="definition" aria-label="Runtime state">State the script writes is always <code>data-*</code> — <code>data-active</code> on the shown view, <code>data-view-as</code> rewritten by a <code>sem-source</code> / <code>sem-md</code> toggle, the <code>data-sem-upgraded</code> marker — so an authored bare attribute is never overwritten and a <code>sem-source</code> fence still shows the markup as written.</sem-property>
     <sem-property id="p-hash-state" key="Hash state" role="definition" aria-label="Hash state">The hash is <code>&amp;</code>-joined segments (<code>src/shared/state.ts</code>): bare <code>id</code> / <code>container/child</code> deep links, and <code>name=value</code> parameters (<code>sem-audience=&lt;profile&gt;</code>). Every writer edits its own segment only, so <code>#deploy/argocd&amp;sem-audience=operator</code> survives a tab switch.</sem-property>
     <sem-property id="p-class-namespace" key="Class namespace" role="definition" aria-label="Class namespace">Each element owns exactly the class namespace <code>.sem-&lt;element&gt;</code> and <code>.sem-&lt;element&gt;-*</code>: the alias form's identity class and the element's generated chrome (<code>.sem-facts-chrome</code>, <code>.sem-note-summary</code>, <code>.sem-code-line</code>). No other element may reuse that bare class name for its own chrome. <code>.sem-progress</code> names only the progress element — a facts-chrome label needing similar styling is <code>.sem-facts-meter</code>, never <code>.sem-progress</code> borrowed from another element.</sem-property>
   </sem-properties>
@@ -171,14 +166,14 @@
 
   <p><code>&lt;statement&gt;</code>/<code>&lt;conclusion&gt;</code> children always win over <code>::</code> compact form when both present; authors pick one per fact.</p>
 
-  <h2 id="4-fallback-handler--degradation-rules">4. Fallback handler &amp; degradation rules</h2>
+  <h2 id="4-the-script--degradation-rules">4. The script &amp; degradation rules</h2>
 
-  <sem-procedure id="degradation-rules" kind="rules" role="list" aria-label="Fallback handler and degradation rules">
-    <sem-step id="rule-4-1" role="listitem"><code>&lt;script id="sem-fallback"&gt;</code> is embedded inline in every portable doc (<code>dist/semtext-fallback.js</code>, ≤14 KB raw): <code>view-as</code> switching, reveal toggles, <code>&lt;highlight&gt;</code> occlusion, basic quiz checking, audience gating, deep-link resolution, print disclosure. <strong>Zero external resources required for full baseline interactivity.</strong> Every handler selects both authoring forms from one selector (<code>:is(sem-x, .sem-x)</code>, the child parts <code>:is(conclusion, .sem-conclusion)</code>) and skips elements the Lit tier has already upgraded. Its first handler snapshots every <code>sem-source</code> wrapper's markup (a DOM clone in an inert <code>template.sem-source-raw</code> child) before any other handler runs; the reading bundle renders that copy. Its second mirrors each bare tag-form parameter (<code>view-as</code>, <code>variant</code>, <code>name</code>, <code>active</code>, <code>summary</code>, <code>value</code>, <code>label</code>, <code>key</code>) to its <code>data-*</code> twin when the twin is absent, so the gated CSS rules and every later handler read one spelling. The list is exactly the parameters a core handler or a gated CSS rule reads; <code>controls</code>, <code>sticky</code>, <code>lang</code>, <code>filename</code>, <code>mark</code>, <code>wrap</code>, <code>outline-depth</code>, <code>href</code>, <code>cite</code>, <code>implies</code>, <code>when</code>, <code>until</code>, <code>status</code>, <code>kind</code> and <code>tags</code> are read in both spellings by the bundle or CSS rule that consumes them and need no mirror. <code>status</code> in particular is never read by a script: its only consumers are the no-script CSS rules of <code>sem-step</code>, <code>sem-event</code> and <code>sem-progress</code>, each written <code>:is([data-status="x"], [status="x"])</code>, which select on a <em>value</em> rather than render an <code>attr()</code> — both spellings of the same value produce the same declaration, so no <code>:not([data-status])</code> guard is needed and the alias precedence of <a href="#2-attribute-catalog">§2</a> cannot be observed unless an element carries two different values, which is the authoring error §2 already names. Prose-reading behaviours (sem-code chrome, reference / glossary previews, backlinks, and from R/W2 the <code>sem-reader</code> chrome and <code>sem-table</code> sort / filter) ship in a second vanilla script, <code>dist/semtext-reading.js</code> (≤19.5 KB raw, marker <code>&lt;!-- sem:inline reading --&gt;</code>), under the same rules; it marks what it wired with <code>data-sem-fallback</code> and skips elements a Lit wrapper already upgraded. Documents without those elements need not carry it. The <code>sem-md</code> renderer is a third vanilla script, <code>dist/semtext-md.js</code> (≤8.5 KB raw, marker <code>&lt;!-- sem:inline md --&gt;</code>, global <code>SemTextMd</code>), under the same rules; a document with no Markdown need not carry it.</sem-step>
-    <sem-step id="rule-4-2" role="listitem"><code>semtext/semtext.js</code> (Lit 3, IIFE) defines the interactive elements (<code>sem-note</code>, <code>sem-facts</code>, <code>sem-details</code>, <code>sem-properties</code>, <code>sem-code</code>, <code>sem-references</code>, <code>sem-reader</code>, <code>sem-table</code>, <code>sem-source</code>, <code>sem-md</code>) and upgrades them in place when reachable; component implementations supersede fallback behaviors. Handoff contract: fallback sets <code>data-sem-fallback</code> on elements it enhanced; components remove it on upgrade and set <code>data-sem-upgraded</code>. Both tiers also stamp their marker on <code>&lt;html&gt;</code> once they have run, for hide rules whose host element is deliberately unmarked (a list-view deck's distractors). The zero-JS elements (<code>sem-procedure</code>, <code>sem-chronology</code>, <code>sem-audiences</code>) and the fallback-only ones (<code>sem-views</code>, <code>sem-reveal</code>, <code>sem-progress</code>) define no custom element: they are <code>:not(:defined)</code> in every tier, by design. BDD asserts both tiers + the handoff.</sem-step>
+  <sem-procedure id="degradation-rules" kind="rules" role="list" aria-label="The script and degradation rules">
+    <sem-step id="rule-4-1" role="listitem"><strong>One script, always.</strong> <code>semtext/semtext.js</code> — a Lit 3 IIFE, global <code>SemText</code> — is the format's only script. It defines the interactive custom elements, runs the vanilla handlers for the elements no component defines (<code>sem-views</code>, <code>sem-reveal</code>, <code>sem-progress</code>, audience gating, deep-link resolution, print disclosure, the alias mirror, the <code>sem-source</code> snapshot pass), the prose-reading renderers (sem-code chrome, reference / glossary previews, backlinks, the <code>sem-reader</code> chrome, <code>sem-table</code> sort / filter), the Markdown renderer, and extraction — <code>SemText.extractRecords</code> / <code>SemText.extractText</code> work on the same page that renders, so a document needs no second program to be read by a machine. Every handler selects both authoring forms from one selector (<code>:is(sem-x, .sem-x)</code>, the child parts <code>:is(conclusion, .sem-conclusion)</code>) and skips elements the components have already upgraded. The core's first handler snapshots every <code>sem-source</code> wrapper's markup (a DOM clone in an inert <code>template.sem-source-raw</code> child) before any other handler runs; the reading renderers build the fence from that copy. A core handler mirrors each bare tag-form parameter (<code>view-as</code>, <code>variant</code>, <code>name</code>, <code>active</code>, <code>summary</code>, <code>value</code>, <code>label</code>, <code>key</code>) to its <code>data-*</code> twin when the twin is absent, so the gated CSS rules and every later handler read one spelling. The list is exactly the parameters a core handler or a gated CSS rule reads; <code>controls</code>, <code>sticky</code>, <code>lang</code>, <code>filename</code>, <code>mark</code>, <code>wrap</code>, <code>outline-depth</code>, <code>href</code>, <code>cite</code>, <code>implies</code>, <code>when</code>, <code>until</code>, <code>status</code>, <code>kind</code> and <code>tags</code> are read in both spellings by the handler or CSS rule that consumes them and need no mirror. <code>status</code> in particular is never read by a script: its only consumers are the no-script CSS rules of <code>sem-step</code>, <code>sem-event</code> and <code>sem-progress</code>, each written <code>:is([data-status="x"], [status="x"])</code>, which select on a <em>value</em> rather than render an <code>attr()</code> — both spellings of the same value produce the same declaration, so no <code>:not([data-status])</code> guard is needed and the alias precedence of <a href="#2-attribute-catalog">§2</a> cannot be observed unless an element carries two different values, which is the authoring error §2 already names.</sem-step>
+    <sem-step id="rule-4-2" role="listitem"><strong>One runtime, one marker.</strong> Components claim <code>data-sem-upgraded</code> at parse time (anti-flash gating needs it); the vanilla handlers — which stamp the same marker on the elements they wire — skip elements already claimed, and a component implementation supersedes the same-named vanilla behaviour. <code>semtext.js</code> stamps <code>html</code> with <code>data-sem-upgraded</code> once it has run, for hide rules whose host element is deliberately unmarked (a list-view deck's distractors). The zero-JS elements (<code>sem-procedure</code>, <code>sem-chronology</code>, <code>sem-audiences</code>) and the handler-only ones (<code>sem-views</code>, <code>sem-reveal</code>, <code>sem-progress</code>) define no custom element: they are <code>:not(:defined)</code> in every document, by design. The former two-script handoff (<code>data-sem-fallback</code>, cleared on upgrade) is gone with the merged bundle — one runtime, one marker.</sem-step>
     <sem-step id="rule-4-3" role="listitem">Theme CSS styles <strong>both authoring forms from one rule</strong> — <code>:is(sem-x, .sem-x)</code> throughout <code>themes/_vocabulary.css</code> (D10). Rules that must hold with <strong>no script</strong> read the bare and the <code>data-*</code> spelling (<code>[status="done"]</code>, <code>[data-status="done"]</code>; <code>attr(name)</code>, <code>attr(data-name)</code>), and a bare-spelling rule is guarded with <code>:not([data-&lt;name&gt;])</code> so <code>data-*</code> still wins when both are present (<a href="#2-attribute-catalog">§2</a>). Rules that only apply once a tier is driving the element key on the <code>data-*</code> spelling alone, which rule 1 guarantees is present. A tag-form document is therefore presentable before and without any script, with no layout shift on upgrade where feasible.</sem-step>
-    <sem-step id="rule-4-4" role="listitem"><strong>Every hide rule is gated</strong> on <code>:is([data-sem-fallback], [data-sem-upgraded])</code> (D12). With no script in the page nothing is hidden: distractors render labelled, views stack under their names, collapsed bodies and every conclusion show, audience-qualified content is all visible. <code>dist/demo/*.nojs.html</code> and <code>dist/spec/*.nojs.html</code> are the artifacts that prove it.</sem-step>
-    <sem-step id="rule-4-5" role="listitem">Content lives in light DOM (searchable, copyable); shadow DOM carries interactive chrome only. Generated chrome is classed (<code>.sem-facts-chrome</code>, <code>.sem-views-tabs</code>, <code>.sem-note-summary</code>) so extraction can skip it; a collapsed note's body is the element's own content, wrapped in <code>.sem-note-body</code> by the tier that hides it.</sem-step>
+    <sem-step id="rule-4-4" role="listitem"><strong>Every hide rule is gated</strong> on <code>[data-sem-upgraded]</code> (D12). With no script in the page nothing is hidden and nothing is styled or interactive: distractors render labelled, views stack under their names, collapsed bodies and every conclusion show, audience-qualified content is all visible — a document without JavaScript shows its authored text, in flow, and is not styled or interactive. <code>dist/demo/*.nojs.html</code> and <code>dist/spec/*.nojs.html</code> are the artifacts that prove it: script-free pages that assert the text is present and unstyled.</sem-step>
+    <sem-step id="rule-4-5" role="listitem">Content lives in light DOM (searchable, copyable); shadow DOM carries interactive chrome only. Generated chrome is classed (<code>.sem-facts-chrome</code>, <code>.sem-views-tabs</code>, <code>.sem-note-summary</code>) so extraction can skip it; a collapsed note's body is the element's own content, wrapped in <code>.sem-note-body</code> by the code that hides it.</sem-step>
     <sem-step id="rule-4-6" role="listitem">Cross-cutting, also in the vocabulary CSS: <code>@media print</code> shows everything a reader could open and no chrome (<code>beforeprint</code> opens reveal disclosures; CSS cannot); <code>prefers-reduced-motion</code> drops transitions and smooth scrolling.</sem-step>
   </sem-procedure>
 
@@ -195,7 +190,7 @@
   <p><strong>Normative: <a href="#r-sem-note">spec/schema/sem-note.md</a>.</strong></p>
   <sem-code id="c-note" lang="html"><pre><code>&lt;sem-note variant="warning"&gt;Rotation is &lt;strong&gt;per session&lt;/strong&gt;.&lt;/sem-note&gt;
 &lt;sem-note variant="tip" collapsed&gt;Shuffle flashcards before each review session.&lt;/sem-note&gt;</code></pre></sem-code>
-  <p><code>variant="info|warning|tip|danger"</code>; the body is the element's content; <code>collapsed</code> ⇒ ten-word teaser, click to expand (the tier wraps the body in <code>.sem-note-body</code> to hide it); <code>view-as="margin"</code> ⇒ CSS-only right-gutter aside on wide viewports, inline otherwise. Light DOM, <code>role="note"</code>.</p>
+  <p><code>variant="info|warning|tip|danger"</code>; the body is the element's content; <code>collapsed</code> ⇒ ten-word teaser, click to expand (the component wraps the body in <code>.sem-note-body</code> to hide it); <code>view-as="margin"</code> ⇒ CSS-only right-gutter aside on wide viewports, inline otherwise. Light DOM, <code>role="note"</code>.</p>
   <sem-source id="s-note" label="Live: sem-note">
     <sem-note id="x-note" variant="warning">Rotation is <strong>per session</strong>.</sem-note>
     <sem-note id="x-note-collapsed" variant="tip" collapsed>Shuffle flashcards before each review session for better recall; the deck remembers nothing between sessions.</sem-note>
@@ -203,7 +198,7 @@
 
   <!-- sem-audiences ------------------------------------------------------ -->
   <h4 id="e-audiences">sem-audiences / sem-profile — reader profiles</h4>
-  <p>Metadata, mints nothing. <strong>Normative: <a href="#r-sem-audiences">spec/schema/sem-audiences.md</a>.</strong> Active profile = hash <code>sem-audience</code> param, else <code>audience</code> on the root wrapper / <code>data-audience</code> on <code>&lt;html&gt;</code>. Fallback sets native <code>hidden</code> on non-matching elements; JS-off everything shows; fail-open on unknown tokens.</p>
+  <p>Metadata, mints nothing. <strong>Normative: <a href="#r-sem-audiences">spec/schema/sem-audiences.md</a>.</strong> Active profile = hash <code>sem-audience</code> param, else <code>audience</code> on the root wrapper / <code>data-audience</code> on <code>&lt;html&gt;</code>. The script sets native <code>hidden</code> on non-matching elements; JS-off everything shows; fail-open on unknown tokens.</p>
   <sem-code id="c-audiences" lang="html"><pre><code>&lt;sem-audiences&gt;
   &lt;sem-profile id="reader" label="Reader"&gt;&lt;/sem-profile&gt;
   &lt;sem-profile id="operator" label="Operator" implies="reader"&gt;&lt;/sem-profile&gt;
@@ -245,8 +240,8 @@
         <conclusion><code>sem-fact</code> is a fact in list, flashcard and quiz views — <code>view-as</code> only changes rendering.</conclusion>
       </sem-fact>
       <sem-fact id="x-f2" kind="rule">
-        <statement>What guarantees interactivity with zero external resources?</statement>
-        <conclusion>The inline <code>sem-fallback</code> handler.</conclusion>
+        <statement>What guarantees interactivity?</statement>
+        <conclusion>The one <code>semtext.js</code> script.</conclusion>
         <sem-distractor>The Tailwind CDN script.</sem-distractor>
       </sem-fact>
     </sem-facts>
@@ -307,7 +302,7 @@
   &lt;sem-view name="Helm" active role="tabpanel"&gt;content…&lt;/sem-view&gt;
   &lt;sem-view name="ArgoCD" role="tabpanel"&gt;content…&lt;/sem-view&gt;
 &lt;/sem-views&gt;</code></pre></sem-code>
-  <p><code>name</code> unique per container; <code>active</code> marks initial view (first wins if absent; the tier keeps the shown view in <code>data-active</code>); fallback builds the tab bar (<code>.sem-views-tabs</code>, <code>role="tab"</code> buttons), arrow-key roving focus; deep-link <code>#deploy/argocd</code>; fires <code>sem-navigate {id, name, index}</code>. JS-off: all views stacked, <code>name</code>-headed. <strong>Q3 resolved v1: <code>sem-views</code>.</strong></p>
+  <p><code>name</code> unique per container; <code>active</code> marks initial view (first wins if absent; the component keeps the shown view in <code>data-active</code>); it builds the tab bar (<code>.sem-views-tabs</code>, <code>role="tab"</code> buttons), arrow-key roving focus; deep-link <code>#deploy/argocd</code>; fires <code>sem-navigate {id, name, index}</code>. JS-off: all views stacked, <code>name</code>-headed. <strong>Q3 resolved v1: <code>sem-views</code>.</strong></p>
   <sem-source id="s-views" label="Live: sem-views">
     <sem-views id="x-deploy">
       <sem-view id="x-helm" name="Helm" active role="tabpanel">Helm renders the chart; the image tag is bumped by CI.</sem-view>
@@ -321,7 +316,7 @@
   <sem-code id="c-reveal" lang="html"><pre><code>&lt;sem-reveal summary="Why not localStorage?" collapsed&gt;
   Tokens in localStorage are readable by any script on the page…
 &lt;/sem-reveal&gt;</code></pre></sem-code>
-  <p><code>summary</code> optional — first body line (≤60 chars) derives it, by the one rule in <code>src/shared/summary.ts</code> that render and extraction share; <code>collapsed</code> starts hidden, otherwise open. Fallback wraps in native <code>&lt;details&gt;/&lt;summary&gt;</code>; JS-off: fully visible (summary as small-caps heading). Non-assertive counterpart to <code>sem-fact</code> Q/A shape.</p>
+  <p><code>summary</code> optional — first body line (≤60 chars) derives it, by the one rule in <code>src/shared/summary.ts</code> that render and extraction share; <code>collapsed</code> starts hidden, otherwise open. The component wraps it in native <code>&lt;details&gt;/&lt;summary&gt;</code>; JS-off: fully visible (summary as small-caps heading). Non-assertive counterpart to <code>sem-fact</code> Q/A shape.</p>
   <sem-source id="s-reveal" label="Live: sem-reveal">
     <sem-reveal id="x-reveal" summary="Why a separate element from sem-note[collapsed]?" collapsed>
       A note is an annotation (variant tone); a reveal is exposition (Q→A). Same mechanism, different semantics — machines distinguish them.
@@ -338,7 +333,7 @@
   <p><code>when</code>/<code>until</code> canonical; <code>&lt;time&gt;</code> child is the visible label (else CSS renders <code>when</code>); <code>status</code> optional, same vocabulary as <code>sem-step</code>; <code>view-as="timeline|list"</code>. DOM order = chronological order; ordinals positional. <strong>Zero-JS element.</strong></p>
   <sem-source id="s-chronology" label="Live: sem-chronology">
     <sem-chronology id="x-chronology" kind="release-history" view-as="timeline" role="list">
-      <sem-event id="x-e1" role="listitem" when="2026-03-02" status="done"><time datetime="2026-03-02">2 Mar 2026</time> v0.1 tagged — fallback tier ships.</sem-event>
+      <sem-event id="x-e1" role="listitem" when="2026-03-02" status="done"><time datetime="2026-03-02">2 Mar 2026</time> v0.1 tagged — Lit bundle ships.</sem-event>
       <sem-event id="x-e2" role="listitem" when="2026-09" status="current"><time datetime="2026-09">Sep 2026</time> Reading-experience waves land one PR at a time; the tag form becomes canonical.</sem-event>
     </sem-chronology>
   </sem-source>
@@ -378,7 +373,7 @@
   | access  | 15 min   | no      |
   | refresh | 30 days  | yes     |
 &lt;/sem-md&gt;</code></pre></sem-code>
-  <p>The element's text is Markdown (GFM tables, headings, lists, emphasis, links, code, quotes, rules; raw HTML renders as text). The Markdown bundle adds <code>.sem-md-chrome</code> (label, <code>Markdown</code> toggle with <code>aria-pressed</code>, copy, status region), renders into <code>.sem-md-body</code> (real <code>&lt;table&gt;</code> with <code>th[scope="col"]</code>, alignment row honoured) and keeps the normalised source in a <code>sem-code</code> fence (<code>.sem-md-raw</code>); <code>view-as="rendered|raw"</code> picks the initial mode and the toggle rewrites <code>data-view-as</code>. JS-off: the source reads as pre-wrapped text. Extraction keeps <code>source</code> <strong>normalised</strong> (dedented), never the rendering. Every table on this page — <a href="#2-attribute-catalog">§2</a>, <a href="#3-npl-notation-inside-tags">§3</a>, <a href="#10-open-questions">§10</a>, <a href="#appendix-a--class-form-alias-v04-compatibility">Appendix A</a> — is this element, with rows identical to the Markdown source.</p>
+  <p>The element's text is Markdown (GFM tables, headings, lists, emphasis, links, code, quotes, rules; raw HTML renders as text). The script adds <code>.sem-md-chrome</code> (label, <code>Markdown</code> toggle with <code>aria-pressed</code>, copy, status region), renders into <code>.sem-md-body</code> (real <code>&lt;table&gt;</code> with <code>th[scope="col"]</code>, alignment row honoured) and keeps the normalised source in a <code>sem-code</code> fence (<code>.sem-md-raw</code>); <code>view-as="rendered|raw"</code> picks the initial mode and the toggle rewrites <code>data-view-as</code>. JS-off: the source reads as pre-wrapped text. Extraction keeps <code>source</code> <strong>normalised</strong> (dedented), never the rendering. Every table on this page — <a href="#2-attribute-catalog">§2</a>, <a href="#3-npl-notation-inside-tags">§3</a>, <a href="#10-open-questions">§10</a>, <a href="#appendix-a--class-form-alias-v04-compatibility">Appendix A</a> — is this element, with rows identical to the Markdown source.</p>
   <sem-source id="s-md" label="Live: sem-md">
     <sem-md id="x-md" kind="lifetimes" label="Token lifetimes" controls="toggle,copy">
       | Token   | Lifetime | Rotates |
@@ -395,7 +390,7 @@
 &lt;sem-references kind="bibliography" role="list"&gt;
   &lt;sem-reference id="r-rfc" role="listitem" href="https://…" cite="RFC 6749"&gt;…&lt;/sem-reference&gt;
 &lt;/sem-references&gt;</code></pre></sem-code>
-  <p>CSS-counter numbering in every tier; reading bundle adds hover / focus previews on citing anchors (<code>.sem-references-ref</code>, popover <code>role="tooltip"</code>, <code>Esc</code> closes), backlinks (<code>aria-label="Back to citation N"</code>) and an external link. Citations mint nothing; print shows <code>(href)</code> inside the block only. The live example is this page's own reference list in <a href="#references">References</a>.</p>
+  <p>CSS-counter numbering in every tier; the script adds hover / focus previews on citing anchors (<code>.sem-references-ref</code>, popover <code>role="tooltip"</code>, <code>Esc</code> closes), backlinks (<code>aria-label="Back to citation N"</code>) and an external link. Citations mint nothing; print shows <code>(href)</code> inside the block only. The live example is this page's own reference list in <a href="#references">References</a>.</p>
 
   <!-- sem-reader --------------------------------------------------------- -->
   <h4 id="e-reader">sem-reader — reading chrome: outline, progress, focus, type, colour, print, audience</h4>
@@ -412,7 +407,7 @@
   &lt;table&gt;&lt;caption&gt;…&lt;/caption&gt;&lt;thead&gt;&lt;tr&gt;&lt;th scope="col"&gt;…&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
   &lt;tbody&gt;&lt;tr&gt;&lt;td data-value="900"&gt;15 min&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
 &lt;/sem-table&gt;</code></pre></sem-code>
-  <p>The <code>&lt;table&gt;</code> is the contract (no JSON payload). Reading bundle stamps every body row <code>data-sem-source-index</code> once, wraps headers in <code>button.sem-table-sort</code> (<code>aria-sort</code> cycle), filters with native <code>hidden</code>, announces via <code>.sem-table-status</code>. Extraction returns <code>{caption, columns[], rows[][]}</code> in <strong>authored</strong> order from the stamp — the recorded §5 exception. <code>sticky</code> header and <code>kind="comparison"</code> first column are CSS in every tier. (<code>td[data-value]</code> is a sort key on a plain HTML cell, not a vocabulary parameter — it stays <code>data-*</code>.)</p>
+  <p>The <code>&lt;table&gt;</code> is the contract (no JSON payload). The script stamps every body row <code>data-sem-source-index</code> once, wraps headers in <code>button.sem-table-sort</code> (<code>aria-sort</code> cycle), filters with native <code>hidden</code>, announces via <code>.sem-table-status</code>. Extraction returns <code>{caption, columns[], rows[][]}</code> in <strong>authored</strong> order from the stamp — the recorded §5 exception. <code>sticky</code> header and <code>kind="comparison"</code> first column are CSS in every tier. (<code>td[data-value]</code> is a sort key on a plain HTML cell, not a vocabulary parameter — it stays <code>data-*</code>.)</p>
   <sem-source id="s-table" label="Live: sem-table">
     <sem-table id="x-table" kind="lifetimes" controls="sort,filter" sticky>
       <table>
@@ -432,7 +427,7 @@
   <p><strong>Normative: <a href="#r-sem-progress">spec/schema/sem-progress.md</a>.</strong></p>
   <sem-code id="c-progress" lang="html"><pre><code>&lt;sem-progress value="0.62" label="coverage"
      role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.62"&gt;&lt;/sem-progress&gt;</code></pre></sem-code>
-  <p><code>value</code> canonical 0..1 (render clamps, attr untouched); <code>label</code> default <code>progress</code>; fallback renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code> — no fake bar; the caption is gated on the tier marker (<code>data-sem-fallback</code> / <code>data-sem-upgraded</code> on the element), so it never duplicates the fallback text. <code>status="done"</code> ⇔ 1 by convention.</p>
+  <p><code>value</code> canonical 0..1 (render clamps, attr untouched); <code>label</code> default <code>progress</code>; the component renders track + fill + <code>label :: N%</code>; JS-off: text-only via CSS <code>attr()</code> — no fake bar; the caption is gated on the <code>data-sem-upgraded</code> marker, so it never duplicates the text-only form. <code>status="done"</code> ⇔ 1 by convention.</p>
   <sem-source id="s-progress" label="Live: sem-progress">
     <sem-progress id="x-progress" value="0.7" label="Tier-0 spec coverage" role="meter" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0.7"></sem-progress>
   </sem-source>
@@ -461,7 +456,7 @@
 
   <h2 id="6-theme-conventions">6. Theme conventions</h2>
   <ul>
-    <li><code>data-sem-theme="&lt;slug&gt;"</code> on <code>&lt;html&gt;</code>; one theme per doc; themes compiled from TRP-format YAML → <code>semtext/themes/&lt;slug&gt;.css</code>; <code>--sem-*</code> tokens; the vocabulary base gives every <code>sem-*</code> element its box before any definition (<code>sem-*:not(:defined)</code> and the never-defined zero-JS elements alike — custom elements are inline by default, the vocabulary is block-level).</li>
+    <li><code>data-sem-theme="&lt;slug&gt;"</code> on <code>&lt;html&gt;</code>; one theme per doc; themes compiled from TRP-format YAML → <code>semtext/themes/semtext-theme-&lt;slug&gt;.css</code>; <code>--sem-*</code> tokens; the vocabulary base gives every <code>sem-*</code> element its box before any definition (<code>sem-*:not(:defined)</code> and the never-defined zero-JS elements alike — custom elements are inline by default, the vocabulary is block-level).</li>
     <li>Shadow components read tokens via fallback indirection — zero-JS theme flips.</li>
     <li>Ship 4 TRP ports: <code>minimal-tech-light</code> (default), <code>nocturne-console</code>, <code>organic-warm</code>, <code>editorial-settings</code>; auto light/dark via <code>prefers-color-scheme</code>, <code>data-color-mode</code> forces.</li>
   </ul>
@@ -469,10 +464,10 @@
   <h2 id="7-distribution-forms">7. Distribution forms</h2>
   <sem-properties id="p-distribution" kind="distribution-forms">
     <sem-property id="p-folder" key="1. Folder" role="definition" aria-label="Folder"><code>doc.html</code> + relative <code>semtext/</code> (IIFE <code>semtext.js</code> + <code>themes/</code>).</sem-property>
-    <sem-property id="p-single-file" key="2. Single-file" role="definition" aria-label="Single-file">fallback + CSS + Lit bundle + data all inlined; one file shares anywhere.</sem-property>
+    <sem-property id="p-single-file" key="2. Single-file" role="definition" aria-label="Single-file">script + CSS + data all inlined; one file shares anywhere.</sem-property>
     <sem-property id="p-mhtml" key="3. MHTML" role="definition" aria-label="MHTML">multi-page bundle.</sem-property>
   </sem-properties>
-  <sem-note id="n-hard-rules" variant="danger">Hard rules: no ES-module scripts; no runtime fetch in portable docs; the fallback handler is always embedded regardless of form.</sem-note>
+  <sem-note id="n-hard-rules" variant="danger">Hard rules: no ES-module scripts; no runtime fetch in portable docs; <code>semtext.js</code> is linked (or inlined) in full regardless of form — there is no smaller script to fall back to.</sem-note>
 
   <h2 id="8-machine-readability-contract">8. Machine-readability contract</h2>
   <ul>
@@ -483,7 +478,7 @@
   </ul>
 
   <h3 id="the-extraction-invariant-normative">The extraction invariant (normative)</h3>
-  <p>For any document <code>D</code>, where <code>E</code> is extraction, <code>R(D)</code> is <code>D</code> after the fallback handler or the Lit upgrade has run, and <code>I(D)</code> is <code>D</code> after any sequence of user interactions the vocabulary supports (tab switches, card flips, reveals, table sorts and filters, audience profile switches, <code>sem-source</code> / <code>sem-md</code> view toggles, reader chrome changes):</p>
+  <p>For any document <code>D</code>, where <code>E</code> is extraction, <code>R(D)</code> is <code>D</code> after <code>semtext.js</code> has run, and <code>I(D)</code> is <code>D</code> after any sequence of user interactions the vocabulary supports (tab switches, card flips, reveals, table sorts and filters, audience profile switches, <code>sem-source</code> / <code>sem-md</code> view toggles, reader chrome changes):</p>
   <p><code>E(D) = E(R(D)) = E(I(R(D)))</code></p>
   <p>Equality is deep equality of the record array, including <code>sourceOrder</code>, and the same guarantee covers every <code>view-as</code> mode. This is the format's central promise: the machine consumer does not get a degraded reading of what the human consumer saw. The full formal statement — the three refusal rules that make it hold (extraction never looks at generated chrome, runtime state, or presentation attributes: <code>data-view-as</code>, <code>data-active</code>, <code>collapsed</code>) and the one recorded exception (<code>sem-table</code> row reordering, made safe by the <code>data-sem-source-index</code> stamp) — is normative and lives in <a href="#r-extraction">spec/extraction.md</a> §5; this section does not weaken or restate it.</p>
 
@@ -516,12 +511,12 @@
     | Q2 | `sem-properties` pure `&lt;dl&gt;` v1 | **resolved (this branch)** — pure `&lt;dl&gt;`, chrome only if a consumer demands it |
     | Q3 | tabs-family name: `sem-views` vs `sem-perspectives` | **resolved (this branch)** — `sem-views` |
     | Q4 | NPL MCP alignment ownership | we publish the schema file; MCP consumes |
-    | Q5 | fallback handler scope: baseline interactivity only vs full quiz logic | full logic v1 — it's small and makes single-file form Lit-free |
+    | Q5 | fallback handler scope: baseline interactivity only vs full quiz logic | **resolved, superseded (2026-10)** — the vanilla fallback is retired; one Lit bundle carries everything (spec v0.6) |
     | Q6 | class-form alias lifetime: keep indefinitely, or retire once every reference document is tag-form | keep — it costs one `:is()` per rule and lets HTML generators that cannot emit custom elements participate |
   </sem-md>
 
   <h2 id="appendix-a--class-form-alias-v04-compatibility">Appendix A — Class-form alias (v0.4 compatibility)</h2>
-  <p>The v0.4 baseline spelled the vocabulary as <strong>classes on plain elements</strong> with <code>data-*</code> parameters. Every tier still accepts that spelling and a document may mix forms; it is an alias, not a second vocabulary. The mapping is mechanical: identity = a <code>sem-&lt;element&gt;</code> class on a <code>div</code> (or <code>span</code> for inline parts), every bare parameter = <code>data-&lt;parameter&gt;</code>, every bare child part = a <code>div</code>/<code>span</code> classed <code>.sem-&lt;part&gt;</code>.</p>
+  <p>The v0.4 baseline spelled the vocabulary as <strong>classes on plain elements</strong> with <code>data-*</code> parameters. The script and the CSS still accept that spelling and a document may mix forms; it is an alias, not a second vocabulary. The mapping is mechanical: identity = a <code>sem-&lt;element&gt;</code> class on a <code>div</code> (or <code>span</code> for inline parts), every bare parameter = <code>data-&lt;parameter&gt;</code>, every bare child part = a <code>div</code>/<code>span</code> classed <code>.sem-&lt;part&gt;</code>.</p>
 
   <sem-code id="c-alias" lang="html" filename="alias.html" controls="copy,wrap"><pre><code>&lt;!-- canonical --&gt;
 &lt;sem-note variant="warning"&gt;Rotation is &lt;strong&gt;per session&lt;/strong&gt;.&lt;/sem-note&gt;
@@ -558,7 +553,7 @@
     | `&lt;sem-table controls sticky&gt;` › `&lt;table&gt;` | `div.sem-table[data-controls][data-sticky]` › authored `&lt;table&gt;` (`&lt;th scope="col"&gt;`, `td[data-value]` sort keys) |
   </sem-md>
 
-  <p>Rules the alias inherits unchanged: a <code>data-*</code> parameter wins over a bare one on the same element (<a href="#2-attribute-catalog">§2</a>); the hide rules, tier markers and events are identical (<a href="#4-fallback-handler--degradation-rules">§4</a>); extraction yields the <strong>same records</strong> from either form (<a href="#r-extraction">spec/extraction.md</a>, the cross-form equality test in <code>test/e2e/sem-source.cy.js</code>). Reference class-form documents: <code>web/demo/index.html</code>, <code>web/demo/reading.html</code>.</p>
+  <p>Rules the alias inherits unchanged: a <code>data-*</code> parameter wins over a bare one on the same element (<a href="#2-attribute-catalog">§2</a>); the hide rules, the marker and events are identical (<a href="#4-the-script--degradation-rules">§4</a>); extraction yields the <strong>same records</strong> from either form (<a href="#r-extraction">spec/extraction.md</a>, the cross-form equality test in <code>test/e2e/sem-source.cy.js</code>). Reference class-form documents: <code>web/demo/index.html</code>, <code>web/demo/reading.html</code>.</p>
 
   <h2 id="references">References</h2>
   <sem-references id="refs" kind="bibliography" role="list">

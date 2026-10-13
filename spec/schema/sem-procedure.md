@@ -1,6 +1,6 @@
 # Schema — `sem-procedure` / `sem-step`
 
-Contract per conventions.md v0.5. BDD source of truth for
+Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-procedure.cy.js`. Changes here precede spec changes
 precede code.
 
