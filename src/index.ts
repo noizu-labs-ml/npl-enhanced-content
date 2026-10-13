@@ -106,6 +106,10 @@ export type { MediaItem, MediaAddedDetail };
  * (dist/npl.js, entry src/npl.ts) and its own lazy loader
  * (dist/npl-lazy.js). Core keeps only the sem-* components. */
 
+/* agent-kit upsell stubs — interaction-only, fixture-fed, zero network */
+export { SemArtifactCard } from './lit/sem-artifact-card.js';
+import './lit/sem-artifact-card.js';
+
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */
 import {
