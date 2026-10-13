@@ -73,7 +73,11 @@ const targets = [
     // Raised from the five-artifact total (fallback 14 + reading 19.5 +
     // semtext.js 56 + extract 12 + md 8.5): the single bundle pays shared
     // module overhead once. History per retired artifact in ROADMAP.md.
-    budgetKb: 96,
+    // 96 → 126 KB (2026-10-13, data-visualizer phases 1–6 join the single
+    // bundle with the reading merge: payload parsers, sql/query engine,
+    // source loader, modal viewer + deep links — measured 124.1). Recorded
+    // in ROADMAP "Size budgets".
+    budgetKb: 126,
     required: true,
   },
   {

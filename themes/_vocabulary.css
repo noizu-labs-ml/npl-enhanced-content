@@ -40,6 +40,7 @@ sem-enhanced-document, sem-agent, sem-audiences, sem-note, sem-facts, sem-fact,
 sem-details, sem-detail, sem-procedure, sem-step, sem-properties, sem-property,
 sem-views, sem-view, sem-reveal, sem-progress, sem-quota-meter,
 sem-chronology, sem-event, sem-code, sem-references, sem-reference, sem-reader, sem-table, sem-source, sem-md,
+sem-data-visualizer, sem-data-source,
 sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, sem-distractor) { display: block; }
 /* The audience fallback hides with the native attribute; keep it winning
    over the block rule above for element forms. */
@@ -562,6 +563,69 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
    interactive tier takes over (gated on the tier marker) */
 :is(sem-artifact-card, .sem-artifact-card)[data-sem-upgraded] .sem-artifact-fallback { display: none; }
 
+/* data visualizer — native table rendered from an inline data source
+   (spec/data-visualizer.md, phase 1); mirrors the sem-table base */
+:is(sem-data-visualizer, .sem-data-visualizer) { margin: 1.25rem 0; }
+:is(sem-data-source, .sem-data-source) { margin: .5rem 0; overflow-x: auto; border: 1px solid var(--sem-border);
+  border-radius: 12px; background: var(--sem-surface); }
+:is(sem-data-source, .sem-data-source) table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: .9rem; }
+:is(sem-data-source, .sem-data-source) caption { text-align: left; padding: .6rem .9rem 0; font-weight: 600; caption-side: top; }
+:is(sem-data-source, .sem-data-source) th, :is(sem-data-source, .sem-data-source) td { padding: .45rem .9rem;
+  text-align: left; border-bottom: 1px solid var(--sem-border); vertical-align: top; }
+:is(sem-data-source, .sem-data-source) th { font-variant-caps: all-small-caps; letter-spacing: .05em;
+  color: var(--sem-muted); background: var(--sem-surface); }
+:is(sem-data-source, .sem-data-source) tbody tr:last-child :is(th, td) { border-bottom: 0; }
+:is(sem-data-source, .sem-data-source) .sem-data-schema { display: none; }
+.sem-data-error { margin: 0; padding: .6rem .9rem; font-size: .85rem; color: var(--sem-note-danger, currentColor); }
+.sem-data-sort { all: unset; font: inherit; cursor: pointer; display: inline-block; padding-right: 1.1em; position: relative; }
+.sem-data-sort::after { content: "↕"; position: absolute; right: 0; opacity: .5; }
+th[aria-sort="ascending"] .sem-data-sort::after { content: "↑"; opacity: 1; color: var(--sem-accent); }
+th[aria-sort="descending"] .sem-data-sort::after { content: "↓"; opacity: 1; color: var(--sem-accent); }
+.sem-data-sort:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; border-radius: 4px; }
+
+/* data visualizer — async loads + query/view chrome (phases 4–5) */
+.sem-data-pending { margin: 0; padding: .6rem .9rem; font-size: .85rem; color: var(--sem-muted); }
+.sem-data-views { display: flex; gap: .4rem; padding: .5rem .9rem 0; flex-wrap: wrap; }
+.sem-data-view { all: unset; font: inherit; font-size: .8rem; cursor: pointer; padding: .15rem .7rem;
+  border: 1px solid var(--sem-border); border-radius: 999px; color: var(--sem-muted); }
+.sem-data-view[aria-pressed="true"] { background: var(--sem-accent); border-color: var(--sem-accent); color: var(--sem-surface); }
+.sem-data-view:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+
+/* phase 6 — tools row + full-page modal viewer (spec/data-visualizer.md §10) */
+.sem-data-tools { display: flex; align-items: center; justify-content: flex-end; gap: .4rem;
+  padding: .3rem .9rem 0; flex-wrap: wrap; }
+.sem-data-expand, .sem-data-copy { all: unset; font: inherit; font-size: .8rem; cursor: pointer;
+  padding: .15rem .7rem; border: 1px solid var(--sem-border); border-radius: 999px; color: var(--sem-muted); }
+.sem-data-expand:focus-visible, .sem-data-copy:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+.sem-data-copy-status { font-size: .8rem; color: var(--sem-muted); }
+.sem-data-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center;
+  justify-content: center; padding: 1.5rem; background: rgb(0 0 0 / .45); }
+.sem-data-modal-panel { background: var(--sem-surface); color: inherit; box-sizing: border-box;
+  border: 1px solid var(--sem-border); border-radius: 16px; width: min(64rem, 100%); max-height: 100%;
+  overflow: auto; padding: 1rem; }
+.sem-data-modal-close { all: unset; font: inherit; font-size: .8rem; cursor: pointer; margin-bottom: .5rem;
+  padding: .15rem .9rem; border: 1px solid var(--sem-border); border-radius: 999px; }
+.sem-data-modal-close:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+:is(sem-data-join, .sem-data-join) { margin: .25rem 0; }
+:is(sem-data-query, .sem-data-query) { display: block; margin: .5rem 0; }
+.sem-data-query-chrome { margin: .5rem 0; display: block; }
+.sem-data-query-label { display: block; font-variant-caps: all-small-caps; letter-spacing: .05em;
+  font-size: .85rem; color: var(--sem-muted); margin-bottom: .3rem; }
+.sem-data-query-input { display: block; width: 100%; box-sizing: border-box; font: .85rem/1.5 ui-monospace, monospace;
+  padding: .55rem .8rem; border: 1px solid var(--sem-border); border-radius: 10px;
+  background: var(--sem-surface); color: inherit; resize: vertical; }
+.sem-data-query-input:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 1px; }
+.sem-data-query-controls { display: flex; align-items: center; gap: .75rem; margin: .4rem 0 .6rem; }
+.sem-data-query-run { all: unset; font: inherit; font-size: .85rem; cursor: pointer; padding: .25rem 1rem;
+  border: 1px solid var(--sem-border); border-radius: 999px; }
+.sem-data-query-run:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+.sem-data-query-status { font-size: .8rem; color: var(--sem-muted); }
+.sem-data-query-error { margin: 0; padding: .6rem .9rem; font-size: .85rem; color: var(--sem-note-danger, currentColor); }
+.sem-data-query-results table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: .9rem;
+  border: 1px solid var(--sem-border); border-radius: 12px; overflow: hidden; }
+.sem-data-query-results :is(th, td) { padding: .45rem .9rem; text-align: left; border-bottom: 1px solid var(--sem-border); }
+.sem-data-query-results th { font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); }
+.sem-data-query-results tbody tr:last-child :is(th, td) { border-bottom: 0; }
 
 /* print — everything a reader could open, none of the chrome. Reveal
    <details> are opened by fallback/target on `beforeprint`; CSS cannot. */
@@ -569,7 +633,7 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
   .sem-facts-chrome, .sem-quiz-options, .sem-views-tabs, .sem-note-summary,
   .sem-code-chrome, .sem-popover, .sem-references-backlinks, .sem-references-link,
   sem-reader, .sem-reader, .sem-table-chrome, .sem-source-chrome, .sem-source-fence,
-  .sem-md-chrome, .sem-md-raw { display: none !important; }
+  .sem-md-chrome, .sem-md-raw, .sem-data-tools, .sem-data-modal { display: none !important; }
   .sem-md-body { display: block !important; }
   :is(sem-table, .sem-table) { overflow: visible; }
   :is(sem-table, .sem-table) tbody tr[hidden] { display: table-row !important; }
