@@ -23,6 +23,12 @@ describe('scan — the vocabulary tag scan', () => {
     expect(collectTags(document.body)).toEqual(new Set(['sem-note', 'npl-card']));
   });
 
+  it('narrows to one namespace when given a prefix pattern', () => {
+    document.body.innerHTML = '<sem-note>s</sem-note><npl-card>n</npl-card>';
+    expect(collectTags(document.body, /^npl-/)).toEqual(new Set(['npl-card']));
+    expect(collectTags(document.body, /^sem-/)).toEqual(new Set(['sem-note']));
+  });
+
   it('finds sem-* and npl-* elements under a root, root included', () => {
     document.body.innerHTML = `
       <sem-text>
@@ -70,6 +76,15 @@ describe('loader — chunk de-duplication', () => {
     await Promise.all([loader.hydrate(root), loader.hydrate(root)]);
     expect(importer).toHaveBeenCalledTimes(1);
     expect(importer).toHaveBeenCalledWith('chunks/sem-note.js');
+  });
+
+  it('a prefix-narrowed loader ignores the other namespace entirely', async () => {
+    document.body.innerHTML = '<sem-note>s</sem-note><npl-flag>n</npl-flag>';
+    const importer = vi.fn(() => Promise.resolve({}));
+    await createLoader({ 'npl-flag': 'npl-chunks/npl-flag.js' }, importer, /^npl-/).hydrate(document.body);
+    expect(importer).toHaveBeenCalledTimes(1);
+    expect(importer).toHaveBeenCalledWith('npl-chunks/npl-flag.js');
+    expect(document.querySelector('sem-note')!.hasAttribute('data-sem-lazy-error')).toBe(false);
   });
 });
 

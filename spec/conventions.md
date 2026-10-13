@@ -576,17 +576,22 @@ Types `mc|multi|blank|match|order|tf|short`; `correct` attr canonical,
    `semtext.js` is the only script a document carries. A document without
    it shows authored text only — not styled, not interactive (§4).
 5. **Hosted lazy** — served pages only. A page served over HTTP(S) may
-   load `semtext-lazy.js` + `chunks/` instead of the full bundle: the
-   loader scans the document for `sem-*` / `npl-*` tags (a `<sem-text>`
+   load `semtext-lazy.js` + `chunks/` instead of the full bundle — and an
+   NPL document may load `npl-lazy.js` + `npl-chunks/` the same way, or
+   `npl.js`, the optional full NPL bundle, on top of `semtext.js` when it
+   wants every npl component without chunk loading. Each loader scans the
+   document for its namespace's tags (`sem-*` / `npl-*`; a `<sem-text>`
    wrapper is welcome, not required) and imports only the component
    chunks those tags need — components not on the page never download,
    and a failed chunk degrades only its own elements to authored prose
-   with a `role="alert"` note. The hard rules in (4) govern **portable**
-   documents and are unchanged: forms 1–3 still carry no ES-module
-   scripts, and `semtext.js` remains the only script they carry. The
-   trade is the point: the lazy surface cannot be saved to disk and
-   reopened from `file://` — dynamic import needs a server — so a
-   document that must survive offline carries the full bundle (§2).
+   with a `role="alert"` note. Core keeps only the `sem-*` components:
+   `semtext.js` and `semtext-lazy.js` carry no npl code. The hard rules
+   in (4) govern **portable** documents and are unchanged: forms 1–3
+   still carry no ES-module scripts, and `semtext.js` remains the only
+   script they carry. The trade is the point: the lazy surface cannot be
+   saved to disk and reopened from `file://` — dynamic import needs a
+   server — so a document that must survive offline carries the full
+   bundle (§2).
 
 ## 8. Machine-readability contract
 
