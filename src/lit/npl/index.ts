@@ -45,6 +45,8 @@
 /* Components — alphabetical; one two-line pair each, nothing shared. */
 export { NplExample } from './npl-example.js';
 import './npl-example.js';
+export { NplSection } from './npl-section.js';
+import './npl-section.js';
 
 /* Namespace helpers (src/lit/npl/shared.ts). */
 export { defineNpl, nplParam, nplEmit } from './shared.js';
