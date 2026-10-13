@@ -16,10 +16,17 @@
 //   Scenario: the transcript is a labelled live log; the input is labelled
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 // the named import evaluates the module, which registers <sem-chat>
 import { SemChat, consumeReply } from '../../src/lit/sem-chat.js';
 
 const ENC = new TextEncoder();
+
+/** The shipped agent-kit chat fixture, read from disk (no bundling). */
+const FIXTURE = JSON.parse(
+  readFileSync(resolve(process.cwd(), 'src/lit/fixtures/agent-kit/chat.json'), 'utf8'),
+) as { rooms: Array<{ id: string; name: string }>; messages: Array<Record<string, unknown>> };
 
 /** A fetch-Response quack with a stubbed header map (no env-specific Headers). */
 function jsonResponse(payload: unknown): Response {
@@ -292,5 +299,210 @@ describe('consumeReply', () => {
     );
     expect(deltas).toEqual(['one shot']);
     expect(full).toBe('one shot');
+  });
+});
+
+// Feature: the agent-kit demo stub — rooms, threads, reactions and a fixtures
+//          source, all local, zero network.
+//   Scenario: a fixtures child supplies rooms + messages and no fetch is made
+//   Scenario: a fixtures path is fetched once and never the endpoint
+//   Scenario: the room list toggles which thread is shown
+//   Scenario: clicking a reaction pill toggles the count locally
+//   Scenario: replies nest under their parent up to thread-depth
+//   Scenario: the shipped fixture parses and is shaped like the chat API
+//   Scenario: authored markup is the zero-JS transcript (nodes survive upgrade)
+describe('sem-chat fixtures', () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    document.body.innerHTML = '';
+  });
+
+  /** Mount sem-chat with an inline `application/json` fixtures child. */
+  async function mountFixture(
+    payload: unknown,
+    attrs: Record<string, string> = {},
+  ): Promise<SemChat> {
+    const el = document.createElement('sem-chat');
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    const script = document.createElement('script');
+    script.type = 'application/json';
+    script.textContent = JSON.stringify(payload);
+    el.append(script);
+    document.body.appendChild(el);
+    await el.updateComplete;
+    return el;
+  }
+
+  /** Mount with an inline transcript (the zero-JS authoring). */
+  async function mountAuthored(
+    markup: string,
+    attrs: Record<string, string> = {},
+  ): Promise<SemChat> {
+    const el = document.createElement('sem-chat');
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    el.innerHTML = markup;
+    document.body.appendChild(el);
+    await el.updateComplete;
+    return el;
+  }
+
+  const PAYLOAD = {
+    rooms: [
+      { id: 'r1', name: 'General' },
+      { id: 'r2', name: 'Ops' },
+    ],
+    messages: [
+      { id: 'm1', room_id: 'r1', content: 'root one', sender: 'agent', parent_message_id: null, reactions: [{ emoji: '👍', count: 1, me: false }] },
+      { id: 'm2', room_id: 'r1', content: 'reply one', sender: 'user', parent_message_id: 'm1', reactions: [] },
+      { id: 'm3', room_id: 'r1', content: 'deep one', sender: 'agent', parent_message_id: 'm2', reactions: [] },
+      { id: 'm4', room_id: 'r2', content: 'ops only', sender: 'agent', parent_message_id: null, reactions: [] },
+    ],
+  };
+
+  function depth(el: SemChat, id: string): string | null {
+    return el.querySelector(`.sem-chat-msg[data-id="${id}"]`)?.getAttribute('data-depth') ?? null;
+  }
+
+  it('reads rooms + messages from a fixtures child and never fetches', async () => {
+    const el = await mountFixture(PAYLOAD);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(el.querySelectorAll('.sem-chat-room').length).toBe(2);
+    expect(el.querySelector('.sem-chat-log')!.textContent).toContain('root one');
+    expect(el.querySelector('.sem-chat-log')!.textContent).not.toContain('ops only');
+
+    await send(el, 'a local message');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(el.querySelector('.sem-chat-msg[data-role="user"]')).toBeTruthy();
+  });
+
+  it('fetches a fixtures path exactly once and never the endpoint', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(PAYLOAD));
+    const el = document.createElement('sem-chat');
+    el.setAttribute('fixtures', '/fixtures/agent-kit/chat.json');
+    document.body.appendChild(el);
+
+    await vi.waitFor(() => expect(el.querySelector('.sem-chat-msg')).toBeTruthy());
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe('/fixtures/agent-kit/chat.json');
+    await send(el, 'still local');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows one room list and swaps the thread when a room is clicked', async () => {
+    const el = await mountFixture(PAYLOAD);
+    const log = el.querySelector('.sem-chat-log')!;
+
+    expect(log.textContent).toContain('root one');
+    expect(log.textContent).not.toContain('ops only');
+    expect(el.querySelector('.sem-chat-room[data-room-id="r1"]')!.getAttribute('aria-selected')).toBe('true');
+    expect(el.querySelector('.sem-chat-room[data-room-id="r2"]')!.getAttribute('aria-selected')).toBe('false');
+
+    (el.querySelector('.sem-chat-room[data-room-id="r2"]') as HTMLButtonElement).click();
+    await el.updateComplete;
+
+    expect(el.getAttribute('active-room')).toBe('r2');
+    expect(log.textContent).toContain('ops only');
+    expect(log.textContent).not.toContain('root one');
+    expect(el.querySelector('.sem-chat-room[data-room-id="r2"]')!.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('toggles a reaction pill locally, moving count and aria-pressed', async () => {
+    const el = await mountFixture(PAYLOAD);
+    const pill = () => el.querySelector('.sem-chat-reaction[data-emoji="👍"]') as HTMLButtonElement;
+
+    expect(pill().textContent).toBe('👍 1');
+    expect(pill().getAttribute('aria-pressed')).toBe('false');
+
+    pill().click();
+    await el.updateComplete;
+    expect(pill().textContent).toBe('👍 2');
+    expect(pill().getAttribute('aria-pressed')).toBe('true');
+    expect(JSON.parse(el.getAttribute('reactions')!)).toEqual({ m1: { '👍': 2 } });
+
+    pill().click();
+    await el.updateComplete;
+    expect(pill().textContent).toBe('👍 1');
+    expect(pill().getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('seeds reaction counts from the reactions attribute', async () => {
+    const el = await mountFixture(PAYLOAD, { reactions: JSON.stringify({ m1: { '🔥': 5 } }) });
+    const pill = el.querySelector('.sem-chat-reaction[data-emoji="🔥"]') as HTMLButtonElement;
+    expect(pill.textContent).toBe('🔥 5');
+    expect(pill.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('nests replies under their parent, clamped to thread-depth', async () => {
+    const deep = await mountFixture(PAYLOAD, { 'thread-depth': '3' });
+    expect(depth(deep, 'm1')).toBe('0');
+    expect(depth(deep, 'm2')).toBe('1');
+    expect(depth(deep, 'm3')).toBe('2');
+    const order = Array.from(deep.querySelectorAll('.sem-chat-log .sem-chat-msg[data-room="r1"]')).map(
+      (n) => n.getAttribute('data-id'),
+    );
+    expect(order).toEqual(['m1', 'm2', 'm3']);
+
+    const clamp = await mountFixture(PAYLOAD, { 'thread-depth': '1' });
+    expect(depth(clamp, 'm1')).toBe('0');
+    expect(depth(clamp, 'm2')).toBe('1');
+    expect(depth(clamp, 'm3')).toBe('1'); // clamped, never dropped
+    expect(clamp.querySelector('.sem-chat-msg[data-id="m3"]')).toBeTruthy();
+  });
+
+  it('keeps the authored transcript as the zero-JS markup and survives upgrade', async () => {
+    const markup = [
+      '<div class="sem-chat-msg" data-role="user" data-room="r1"><span class="sem-chat-content">hello no-js</span></div>',
+      '<div class="sem-chat-msg" data-role="agent" data-room="r2"><span class="sem-chat-content">ops hidden</span></div>',
+    ].join('');
+    const el = document.createElement('sem-chat');
+    el.setAttribute('rooms', JSON.stringify([{ id: 'r1', name: 'General' }, { id: 'r2', name: 'Ops' }]));
+    el.setAttribute('active-room', 'r1');
+    el.innerHTML = markup;
+    // With JavaScript off, the transcript IS this markup — nothing renders it.
+    expect(el.innerHTML).toContain('hello no-js');
+
+    document.body.appendChild(el);
+    await el.updateComplete;
+
+    const active = el.querySelector('.sem-chat-msg[data-room="r1"]') as HTMLElement;
+    expect(active).toBeTruthy();
+    expect(active.hidden).toBe(false);
+    expect(active.querySelector('.sem-chat-content')!.textContent).toBe('hello no-js');
+
+    const other = el.querySelector('.sem-chat-msg[data-room="r2"]') as HTMLElement;
+    expect(other.hidden).toBe(true);
+    expect(other.textContent).toContain('ops hidden'); // preserved, not destroyed
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('ships a fixture shaped like the chat API response', async () => {
+    expect(FIXTURE.rooms.length).toBeGreaterThanOrEqual(2);
+    for (const room of FIXTURE.rooms) {
+      expect(typeof room.id).toBe('string');
+      expect(typeof room.name).toBe('string');
+    }
+    expect(FIXTURE.messages.length).toBeGreaterThan(0);
+    for (const message of FIXTURE.messages) {
+      expect(typeof message.id).toBe('string');
+      expect(typeof message.room_id).toBe('string');
+      expect(typeof message.content).toBe('string');
+      expect('parent_message_id' in message).toBe(true);
+      expect(Array.isArray(message.reactions)).toBe(true);
+    }
+
+    const el = await mountFixture(FIXTURE);
+    expect(fetchMock).not.toHaveBeenCalled();
+    const general = FIXTURE.rooms[0];
+    expect(el.querySelector(`.sem-chat-room[data-room-id="${general.id}"]`)).toBeTruthy();
+    expect(el.querySelectorAll('.sem-chat-log .sem-chat-msg').length).toBeGreaterThan(0);
   });
 });
