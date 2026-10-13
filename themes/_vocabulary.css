@@ -495,4 +495,10 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
    merge clean. Do NOT convert this into one comma list.
    ============================================================ */
 npl-example, .npl-example { display: block; }
+npl-intent, .npl-intent { display: block; }
+npl-intent-assumption, .npl-intent-assumption { display: block; }
+npl-intent-assumptions, .npl-intent-assumptions { display: block; }
+npl-intent-outcomes, .npl-intent-outcomes { display: block; }
+npl-intent-overview, .npl-intent-overview { display: block; }
+npl-intent-scope, .npl-intent-scope { display: block; }
 
