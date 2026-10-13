@@ -77,6 +77,10 @@ import './lit/sem-source.js';
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
 
+/* agent-kit upsell stubs — interaction-only, fixture-fed, zero network */
+export { SemArtifactCard } from './lit/sem-artifact-card.js';
+import './lit/sem-artifact-card.js';
+
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */
 import {

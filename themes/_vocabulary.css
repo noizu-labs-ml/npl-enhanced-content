@@ -450,6 +450,44 @@ th[aria-sort="ascending"] .sem-table-sort::after { content: "↑"; opacity: 1; c
 th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; color: var(--sem-accent); }
 .sem-table-sort:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; border-radius: 4px; }
 
+/* artifact card — agent-kit upsell stub (src/lit/sem-artifact-card.ts).
+   Typed artifact body (markdown / json / diff / code) plus a version
+   timeline; the authored fallback shows the active version only. */
+:is(sem-artifact-card, .sem-artifact-card) { display: block; margin: 1.5rem 0; }
+:is(.sem-artifact-ui, .sem-artifact-fallback) { border: 1px solid var(--sem-border);
+  border-radius: 10px; padding: .9rem 1rem; }
+.sem-artifact-head { display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; margin: 0 0 .6rem; }
+.sem-artifact-type { font-variant-caps: all-small-caps; letter-spacing: .05em;
+  color: var(--sem-accent); font-weight: 600; }
+.sem-artifact-lang { font-size: .75rem; padding: .1rem .5rem; border: 1px solid var(--sem-border);
+  border-radius: 999px; color: var(--sem-muted); }
+.sem-artifact-version { margin-left: auto; font-size: .8125rem; color: var(--sem-muted); }
+.sem-artifact-body :is(h2, h3, h4) { margin: .9rem 0 .3rem; }
+.sem-artifact-body p { margin: .4rem 0; }
+.sem-artifact-body :is(ul, ol) { margin: .4rem 0; padding-left: 1.3rem; }
+.sem-artifact-pre { margin: 0; padding: .7rem .8rem; overflow-x: auto; font-size: .8125rem;
+  line-height: 1.45; border: 1px solid var(--sem-border); border-radius: 8px; background: var(--sem-surface, #fff); }
+.sem-artifact-diff-add { display: block; color: var(--sem-note-tip, #2e8b57); }
+.sem-artifact-diff-del { display: block; color: var(--sem-note-danger, #b23a3a); }
+.sem-artifact-diff-hunk { display: block; color: var(--sem-accent); }
+.sem-artifact-diff-hunk-meta, .sem-artifact-diff-ctx { display: block; color: inherit; }
+.sem-artifact-timeline { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: .7rem 0 0; }
+.sem-artifact-timeline-label { font-variant-caps: all-small-caps; letter-spacing: .05em; color: var(--sem-muted); }
+.sem-artifact-scrub { flex: 1 1 10rem; accent-color: var(--sem-accent); }
+.sem-artifact-count { font-size: .8125rem; color: var(--sem-muted); font-variant-numeric: tabular-nums; }
+.sem-artifact-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin: .6rem 0 0; }
+.sem-artifact-actions button { font: inherit; font-size: .8125rem; padding: .3rem .7rem;
+  border: 1px solid var(--sem-border); border-radius: 6px; background: var(--sem-surface, #fff);
+  color: var(--sem-fg); cursor: pointer; }
+.sem-artifact-actions .sem-artifact-fork { border-color: var(--sem-accent);
+  background: var(--sem-accent); color: #fff; }
+.sem-artifact-status { font-size: .8125rem; color: var(--sem-muted); min-height: 1em; }
+.sem-artifact-empty { color: var(--sem-muted); }
+/* zero-JS fallback: active version only, no controls; hidden once the
+   interactive tier takes over (gated on the tier marker) */
+:is(sem-artifact-card, .sem-artifact-card)[data-sem-upgraded] .sem-artifact-fallback { display: none; }
+
+
 /* print — everything a reader could open, none of the chrome. Reveal
    <details> are opened by fallback/target on `beforeprint`; CSS cannot. */
 @media print {
