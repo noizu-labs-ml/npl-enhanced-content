@@ -109,6 +109,49 @@ SemTextAgent.outline(doc.body, 2);      // → OutlineNode[] (compact; no bodies
 SemTextAgent.expand(doc.body, 'f-jwt'); // → text for one block
 ```
 
+## Command line (`semtext`) — pipes and the terminal
+
+`bin/semtext.mjs` is the user-facing front end: pipe-friendly commands plus an
+interactive browser. Every pipe command reads a document from a file or stdin
+(`-`), writes data to stdout only, and never prompts. Exit codes follow the
+grep convention — **0** ok, **1** usage or parse error, **2** no matches —
+with errors on stderr only. (The agent CLI's contract differs: 1 domain
+error, 2 usage; its `--json` shapes are depended on, so the two are
+deliberately not merged.)
+
+```console
+$ # the headline pipe: pick records, render them as plain text
+$ semtext filter --type sem-facts doc.html | semtext format --text
+
+$ # filter by attribute or free text; emit normalised XHTML by default
+$ semtext filter --attr data-variant=warning doc.html
+$ semtext filter --text "device flow" doc.html --json | jq '.[].id'
+
+$ # heading tree, whole-document formats, one block in full
+$ semtext outline doc.html | head -20
+$ semtext view doc.html            # plain text (== `semtext format --text`)
+$ semtext format doc.html > normalised.html
+$ semtext expand doc.html f-jwt
+```
+
+`--json` on `outline` / `filter` / `expand` / `format` emits machine-readable
+records. Read a document from stdin with `-`
+(`cat doc.html | semtext outline -`).
+
+### Terminal browser
+
+```console
+$ semtext tui doc.html
+```
+
+Keyboard only: **arrows / j / k** move · **Enter** expand or collapse ·
+**/** search — type, Enter jumps to the first hit and closes the prompt
+(**n** cycles matches, Esc cancels) · **r** raw source of the current
+element · **q** quit. The browser runs entirely in the
+terminal (alternate screen, no dependencies beyond Node's stdlib) and
+restores the terminal on quit or error. Without a TTY it refuses to start
+with a stderr note and exit code 1.
+
 ## Docs
 
 `docs/PROJ-ARCH.md`, `docs/PROJ-LAYOUT.md`, `docs/PROJ-SCHEMA.md` (digests alongside); normative specs in `spec/`.
