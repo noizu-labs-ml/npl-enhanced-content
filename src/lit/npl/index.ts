@@ -43,6 +43,8 @@
  */
 
 /* Components — alphabetical; one two-line pair each, nothing shared. */
+export { NplDirective } from './npl-directive.js';
+import './npl-directive.js';
 export { NplExample } from './npl-example.js';
 import './npl-example.js';
 
