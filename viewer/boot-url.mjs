@@ -9,6 +9,9 @@
  *     which in local dev is http://localhost — relative form only)
  *   - cross-origin https is limited to the fetch allowlist
  *     (raw.githubusercontent.com, gist.githubusercontent.com)
+ *   - a surface may narrow the allowlist via `page.allowedOrigins`
+ *     (the extension viewer tab grants only the hosts its manifest has
+ *     host_permissions for — design §6); the default stays FETCH_ORIGINS
  *
  * Pure module: the page passes `{ origin, href }` so tests need no DOM.
  * Every rejection is a typed error code from VIEWER_ERRORS; the boot loader
@@ -73,7 +76,9 @@ export function viewerError(code, detail) {
  * Validate a ?src= value against the fetch policy.
  *
  * @param {string} raw - the raw query parameter (may be empty/undefined)
- * @param {{origin: string, href: string}} page - boot loader's origin + URL
+ * @param {{origin: string, href: string, allowedOrigins?: string[]}} page -
+ *   boot loader identity; `allowedOrigins` narrows the cross-origin allowlist
+ *   for a surface (extension viewer tab: raw.githubusercontent.com only — §6)
  * @returns {{ok: true, url: URL} | {ok: false, code: string}}
  */
 export function resolveViewerSrc(raw, page) {
@@ -98,7 +103,8 @@ export function resolveViewerSrc(raw, page) {
   if (url.protocol !== 'https:') {
     return { ok: false, code: 'non-https' };
   }
-  if (!FETCH_ORIGINS.includes(url.origin)) {
+  const allowedOrigins = page.allowedOrigins || FETCH_ORIGINS;
+  if (!allowedOrigins.includes(url.origin)) {
     return { ok: false, code: 'origin-not-allowed' };
   }
   return { ok: true, url };
@@ -109,7 +115,7 @@ export function resolveViewerSrc(raw, page) {
  * final URL is always a rejection of the whole fetch.
  *
  * @param {URL} finalUrl - response.url resolved against the page
- * @param {{origin: string}} page
+ * @param {{origin: string, allowedOrigins?: string[]}} page
  * @returns {{ok: true} | {ok: false, code: string}}
  */
 export function checkFinalUrl(finalUrl, page) {
@@ -118,7 +124,8 @@ export function checkFinalUrl(finalUrl, page) {
   }
   if (finalUrl.origin === page.origin) return { ok: true };
   if (finalUrl.protocol !== 'https:') return { ok: false, code: 'non-https' };
-  if (!FETCH_ORIGINS.includes(finalUrl.origin)) return { ok: false, code: 'origin-not-allowed' };
+  const allowedOrigins = page.allowedOrigins || FETCH_ORIGINS;
+  if (!allowedOrigins.includes(finalUrl.origin)) return { ok: false, code: 'origin-not-allowed' };
   return { ok: true };
 }
 

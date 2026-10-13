@@ -168,22 +168,43 @@ window.addEventListener('message', (event) => {
 
 /* ----------------------------- D2 consent ------------------------------- */
 
+/**
+ * Consent persistence seam (design §4.5). Default: localStorage (hosted
+ * viewer, M1). A surface swaps it via setConsentStore — the extension viewer
+ * tab write-throughs chrome.storage.sync ("always allow for this host").
+ * Shape: { read(): string[], write(hosts: string[]): void } — both sync; the
+ * extension store pre-reads at module init and merges asynchronously on
+ * write (a late read only means one extra prompt — fail conservative).
+ */
+let consentStore = {
+  read() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(ALLOW_STORE_KEY) || '[]');
+      return Array.isArray(raw) ? raw.filter((h) => typeof h === 'string') : [];
+    } catch {
+      return [];
+    }
+  },
+  write(hosts) {
+    try {
+      const set = new Set([...this.read(), ...hosts]);
+      localStorage.setItem(ALLOW_STORE_KEY, JSON.stringify([...set].sort()));
+    } catch {
+      /* storage unavailable — Allow-once semantics only */
+    }
+  },
+};
+
+export function setConsentStore(store) {
+  consentStore = store;
+}
+
 function storedAllowedHosts() {
-  try {
-    const raw = JSON.parse(localStorage.getItem(ALLOW_STORE_KEY) || '[]');
-    return Array.isArray(raw) ? raw.filter((h) => typeof h === 'string') : [];
-  } catch {
-    return [];
-  }
+  return consentStore.read();
 }
 
 function persistAllowedHosts(hosts) {
-  try {
-    const set = new Set([...storedAllowedHosts(), ...hosts]);
-    localStorage.setItem(ALLOW_STORE_KEY, JSON.stringify([...set].sort()));
-  } catch {
-    /* storage unavailable — Allow-once semantics only */
-  }
+  consentStore.write(hosts);
 }
 
 function runConsentFlow(hosts) {
@@ -251,12 +272,26 @@ function tripSecurity(type) {
 
 /* ------------------------------ boot ------------------------------------ */
 
+/**
+ * Boot a document by URL — the extension viewer tab entry point (M2: the
+ * raw path opens viewer.html#<encodeURIComponent(rawUrl)>, design §7). The
+ * hosted viewer keeps its auto-entry below (?src=). Source of the URL is
+ * the caller's business; validation and fetch policy are shared.
+ *
+ * @param {string} src - already-extracted source URL/path
+ */
+export function bootViewerWithSrc(src) {
+  setState('loading');
+  boot(src);
+}
+
 const src = new URLSearchParams(location.search).get('src');
 if (src === null) {
   // No src yet: the landing state doubles as usage help, not an error.
+  // (els.status is guarded so the module stays importable in DOM-less
+  // environments — unit tests; a real page always has the element.)
   setState('idle');
-  els.status.textContent = 'Add ?src=/viewer/samples/hello.html to render a document.';
+  if (els.status) els.status.textContent = 'Add ?src=/viewer/samples/hello.html to render a document.';
 } else {
-  setState('loading');
-  boot(src);
+  bootViewerWithSrc(src);
 }
