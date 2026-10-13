@@ -157,7 +157,8 @@ const LAZY_TARGETS = [
     entry: 'src/lazy/npl.ts',
     litDir: resolve(root, 'src/lit/npl'),
     fileFilter: (f) => f.startsWith('npl-') && f.endsWith('.ts'),
-    registerRe: /defineNpl\(\s*'([a-z][a-z0-9-]*)'/g,
+    // anchored: doc-comment bullets also spell `defineNpl('npl-x', ...)` — only real top-level calls register
+    registerRe: /^\s*defineNpl\(\s*'([a-z][a-z0-9-]*)'/gm,
     virtualId: 'virtual:npl-manifest',
     chunkDir: 'npl-chunks',
     budgetKb: 8,
