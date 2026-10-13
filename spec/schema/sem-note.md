@@ -3,6 +3,17 @@
 Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-note.cy.js`. Changes here precede spec changes precede code.
 
+## Scope semantics
+
+A callout — prose set beside the main flow (`role="note"`, light DOM,
+content searchable). The body is the element's content; `variant`
+(`info` default | `warning` | `tip` | `danger`) selects the accent and
+label, `collapsed` hides the body behind a ten-word teaser that expands
+on click, and `view-as="margin"` floats the note as a right-gutter aside
+on wide viewports (inline otherwise, and in print) — CSS-only.
+`view-as` is never extracted: a margin note and an inline note yield the
+same record.
+
 ## Authoring form
 
 ```html

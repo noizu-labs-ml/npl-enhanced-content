@@ -560,8 +560,8 @@
       "name": "highlight",
       "family": "sem",
       "source": "spec/schema/sem-details.md",
-      "summary": "",
-      "description": "",
+      "summary": "Prose with occludable content.",
+      "description": "Prose with occludable content. Recall-oriented prose, distinct from `sem-reveal` (block disclosure) and `sem-views` (perspective switching): same prose, a different interaction model per view. Each `sem-detail` is one prose passage; a `<highlight>` child marks a recall target (`[[cloze]]` sugar maps to `<highlight>`) — `<em>` in plain view, occluded and revealed per item in the `quiz` view (self-check model). `view-as` is display-only sugar (`plain` default, `quiz`): the prose is identical under both.",
       "attributes": [],
       "children": [],
       "example": "<sem-details id=\"oidc-details\" view-as=\"quiz\">\n  <sem-detail>\n    The OIDC token travels in the\n    <highlight>Authorization</highlight> header.\n  </sem-detail>\n</sem-details>",
@@ -776,8 +776,8 @@
       "name": "sem-detail",
       "family": "sem",
       "source": "spec/schema/sem-details.md",
-      "summary": "",
-      "description": "",
+      "summary": "Prose with occludable content.",
+      "description": "Prose with occludable content. Recall-oriented prose, distinct from `sem-reveal` (block disclosure) and `sem-views` (perspective switching): same prose, a different interaction model per view. Each `sem-detail` is one prose passage; a `<highlight>` child marks a recall target (`[[cloze]]` sugar maps to `<highlight>`) — `<em>` in plain view, occluded and revealed per item in the `quiz` view (self-check model). `view-as` is display-only sugar (`plain` default, `quiz`): the prose is identical under both.",
       "attributes": [],
       "children": [],
       "example": "<sem-details id=\"oidc-details\" view-as=\"quiz\">\n  <sem-detail>\n    The OIDC token travels in the\n    <highlight>Authorization</highlight> header.\n  </sem-detail>\n</sem-details>",
@@ -787,8 +787,8 @@
       "name": "sem-details",
       "family": "sem",
       "source": "spec/schema/sem-details.md",
-      "summary": "",
-      "description": "",
+      "summary": "Prose with occludable content.",
+      "description": "Prose with occludable content. Recall-oriented prose, distinct from `sem-reveal` (block disclosure) and `sem-views` (perspective switching): same prose, a different interaction model per view. Each `sem-detail` is one prose passage; a `<highlight>` child marks a recall target (`[[cloze]]` sugar maps to `<highlight>`) — `<em>` in plain view, occluded and revealed per item in the `quiz` view (self-check model). `view-as` is display-only sugar (`plain` default, `quiz`): the prose is identical under both.",
       "attributes": [
         {
           "name": "view-as",
@@ -955,8 +955,8 @@
       "name": "sem-note",
       "family": "sem",
       "source": "spec/schema/sem-note.md",
-      "summary": "",
-      "description": "",
+      "summary": "A callout — prose set beside the main flow (`role=\"note\"`, light DOM, content searchable).",
+      "description": "A callout — prose set beside the main flow (`role=\"note\"`, light DOM, content searchable). The body is the element's content; `variant` (`info` default | `warning` | `tip` | `danger`) selects the accent and label, `collapsed` hides the body behind a ten-word teaser that expands on click, and `view-as=\"margin\"` floats the note as a right-gutter aside on wide viewports (inline otherwise, and in print) — CSS-only. `view-as` is never extracted: a margin note and an inline note yield the same record.",
       "attributes": [
         {
           "name": "variant",
@@ -1021,8 +1021,8 @@
       "name": "sem-procedure",
       "family": "sem",
       "source": "spec/schema/sem-procedure.md",
-      "summary": "",
-      "description": "",
+      "summary": "An ordered, status-annotated procedure.",
+      "description": "An ordered, status-annotated procedure. Each `sem-step` is one instruction and `status` is its lifecycle annotation (`done` | `current` | `todo` default | `blocked`); DOM order is execution order — no step-number attribute, ordinals are positional and rendered with CSS counters. Status sugar (`✅/→/❌`) is display-only: `status` is canonical. Zero-JS element — pure CSS rendering. `kind` is a free token (`runbook`, `recipe`, `migration` …).",
       "attributes": [
         {
           "name": "status",
@@ -1080,8 +1080,8 @@
       "name": "sem-progress",
       "family": "sem",
       "source": "spec/schema/sem-progress.md",
-      "summary": "",
-      "description": "",
+      "summary": "A completion meter — one scalar completion assertion.",
+      "description": "A completion meter — one scalar completion assertion. `value` is required, canonical unit 0..1: out-of-range values clamp for rendering while the raw attribute stays untouched; `label` is optional (default `progress`). The Lit component builds a meter (track + fill + `label :: N%`); JS-off the value reads as text via CSS `attr()` — no fake bar. `status=\"done\"` ⇔ value 1 by convention.",
       "attributes": [
         {
           "name": "value",
@@ -1115,8 +1115,8 @@
       "name": "sem-properties",
       "family": "sem",
       "source": "spec/schema/sem-properties.md",
-      "summary": "",
-      "description": "",
+      "summary": "A definition/properties block: a closed set of key/value assertions.",
+      "description": "A definition/properties block: a closed set of key/value assertions. Each `sem-property` is one pair — `key` is the term (required, free text), the property text is the value. Renders a `<dl>`-equivalent grid, zero-JS: the key column renders via CSS `attr(key)`, and each property authored as `role=\"definition\"` + `aria-label` = the key lets AT announce the pair without JS. Compact `term :: value` sugar is display-only — `key` is canonical. Pure definition list, no copy/search chrome; `view-as=\"glossary\"` turns the block into a glossary (term anchors get hover/focus preview popovers).",
       "attributes": [
         {
           "name": "key",
@@ -1152,8 +1152,8 @@
       "name": "sem-property",
       "family": "sem",
       "source": "spec/schema/sem-properties.md",
-      "summary": "",
-      "description": "",
+      "summary": "A definition/properties block: a closed set of key/value assertions.",
+      "description": "A definition/properties block: a closed set of key/value assertions. Each `sem-property` is one pair — `key` is the term (required, free text), the property text is the value. Renders a `<dl>`-equivalent grid, zero-JS: the key column renders via CSS `attr(key)`, and each property authored as `role=\"definition\"` + `aria-label` = the key lets AT announce the pair without JS. Compact `term :: value` sugar is display-only — `key` is canonical. Pure definition list, no copy/search chrome; `view-as=\"glossary\"` turns the block into a glossary (term anchors get hover/focus preview popovers).",
       "attributes": [],
       "children": [],
       "example": "<sem-properties kind=\"config\">\n  <sem-property key=\"token ttl\" role=\"definition\" aria-label=\"token ttl\">15m</sem-property>\n  <sem-property key=\"refresh rotation\" role=\"definition\" aria-label=\"refresh rotation\">per use</sem-property>\n  <sem-property key=\"storage\" role=\"definition\" aria-label=\"storage\">httpOnly cookie</sem-property>\n</sem-properties>",
@@ -1257,8 +1257,8 @@
       "name": "sem-reveal",
       "family": "sem",
       "source": "spec/schema/sem-reveal.md",
-      "summary": "",
-      "description": "",
+      "summary": "A Q→A disclosure, `<details>`-backed — the non-assertive counterpart to the `sem-fact` Q/A shape (a reveal is exposition, not an assertion).",
+      "description": "A Q→A disclosure, `<details>`-backed — the non-assertive counterpart to the `sem-fact` Q/A shape (a reveal is exposition, not an assertion). `summary` labels the closed state; when absent the first body line (max 60 chars) derives it, by the one rule in `src/shared/summary.ts` that render and extraction share. `collapsed` starts hidden; without it the reveal starts open. The Lit component wraps the element in native `<details>/<summary>` — click/keyboard toggling is native; JS-off the content is fully visible (summary as a small-caps heading).",
       "attributes": [
         {
           "name": "summary",
@@ -1335,8 +1335,8 @@
       "name": "sem-step",
       "family": "sem",
       "source": "spec/schema/sem-procedure.md",
-      "summary": "",
-      "description": "",
+      "summary": "An ordered, status-annotated procedure.",
+      "description": "An ordered, status-annotated procedure. Each `sem-step` is one instruction and `status` is its lifecycle annotation (`done` | `current` | `todo` default | `blocked`); DOM order is execution order — no step-number attribute, ordinals are positional and rendered with CSS counters. Status sugar (`✅/→/❌`) is display-only: `status` is canonical. Zero-JS element — pure CSS rendering. `kind` is a free token (`runbook`, `recipe`, `migration` …).",
       "attributes": [],
       "children": [],
       "example": "<sem-procedure kind=\"runbook\" role=\"list\">\n  <sem-step role=\"listitem\" status=\"done\">provision Infisical path</sem-step>\n  <sem-step role=\"listitem\" status=\"current\">port-forward MinIO</sem-step>\n  <sem-step role=\"listitem\">run migrations</sem-step>\n  <sem-step role=\"listitem\" status=\"blocked\">cut release — waiting on CI</sem-step>\n</sem-procedure>",
@@ -1481,76 +1481,5 @@
       "example": "<sem-views id=\"deploy\">\n  <sem-view name=\"Helm\" active role=\"tabpanel\">content…</sem-view>\n  <sem-view name=\"ArgoCD\" role=\"tabpanel\">content…</sem-view>\n</sem-views>"
     }
   ],
-  "gaps": [
-    {
-      "tag": "sem-details",
-      "missing": [
-        "summary",
-        "description"
-      ]
-    },
-    {
-      "tag": "sem-detail",
-      "missing": [
-        "summary",
-        "description"
-      ]
-    },
-    {
-      "tag": "highlight",
-      "missing": [
-        "summary",
-        "description"
-      ]
-    },
-    {
-      "tag": "sem-note",
-      "missing": [
-        "summary",
-        "description"
-      ]
-    },
-    {
-      "tag": "sem-procedure",
-      "missing": [
-        "summary",
-        "description"
-      ]
-    },
-    {
-      "tag": "sem-step",
-      "missing": [
-        "summary",
-        "description"
-      ]
-    },
-    {
-      "tag": "sem-progress",
-      "missing": [
-        "summary",
-        "description"
-      ]
-    },
-    {
-      "tag": "sem-properties",
-      "missing": [
-        "summary",
-        "description"
-      ]
-    },
-    {
-      "tag": "sem-property",
-      "missing": [
-        "summary",
-        "description"
-      ]
-    },
-    {
-      "tag": "sem-reveal",
-      "missing": [
-        "summary",
-        "description"
-      ]
-    }
-  ]
+  "gaps": []
 }

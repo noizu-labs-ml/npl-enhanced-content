@@ -4,6 +4,17 @@ Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-details.cy.js`. Changes here precede spec changes
 precede code.
 
+## Scope semantics
+
+Prose with occludable content. Recall-oriented prose, distinct from
+`sem-reveal` (block disclosure) and `sem-views` (perspective switching):
+same prose, a different interaction model per view. Each `sem-detail` is
+one prose passage; a `<highlight>` child marks a recall target
+(`[[cloze]]` sugar maps to `<highlight>`) — `<em>` in plain view,
+occluded and revealed per item in the `quiz` view (self-check model).
+`view-as` is display-only sugar (`plain` default, `quiz`): the prose is
+identical under both.
+
 ## Scope decision (recorded)
 
 Three candidate readings existed for `sem-details`; this schema adopts the

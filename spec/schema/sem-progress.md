@@ -4,6 +4,15 @@ Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-progress.cy.js`. Changes here precede spec changes
 precede code.
 
+## Scope semantics
+
+A completion meter — one scalar completion assertion. `value` is
+required, canonical unit 0..1: out-of-range values clamp for rendering
+while the raw attribute stays untouched; `label` is optional (default
+`progress`). The Lit component builds a meter (track + fill +
+`label :: N%`); JS-off the value reads as text via CSS `attr()` — no
+fake bar. `status="done"` ⇔ value 1 by convention.
+
 ## Authoring form
 
 ```html

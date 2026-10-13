@@ -4,6 +4,17 @@ Contract per conventions.md v0.6. BDD source of truth for
 `test/e2e/sem-reveal.cy.js`. Changes here precede spec changes
 precede code.
 
+## Scope semantics
+
+A Q→A disclosure, `<details>`-backed — the non-assertive counterpart to
+the `sem-fact` Q/A shape (a reveal is exposition, not an assertion).
+`summary` labels the closed state; when absent the first body line (max
+60 chars) derives it, by the one rule in `src/shared/summary.ts` that
+render and extraction share. `collapsed` starts hidden; without it the
+reveal starts open. The Lit component wraps the element in native
+`<details>/<summary>` — click/keyboard toggling is native; JS-off the
+content is fully visible (summary as a small-caps heading).
+
 ## Authoring form
 
 ```html
