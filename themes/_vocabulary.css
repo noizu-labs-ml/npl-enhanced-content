@@ -32,7 +32,7 @@ body { margin: 0; background: var(--sem-bg); color: var(--sem-fg); }
 /* Custom elements are inline by default; the vocabulary is block-level. */
 sem-enhanced-document, sem-agent, sem-audiences, sem-note, sem-facts, sem-fact,
 sem-details, sem-detail, sem-procedure, sem-step, sem-properties, sem-property,
-sem-views, sem-view, sem-reveal, sem-progress,
+sem-views, sem-view, sem-reveal, sem-progress, sem-quota-meter,
 sem-chronology, sem-event, sem-code, sem-references, sem-reference, sem-reader, sem-table, sem-source, sem-md,
 sem-agent > :is(name, bio, instructions), sem-fact > :is(statement, conclusion, sem-distractor) { display: block; }
 /* The audience fallback hides with the native attribute; keep it winning
@@ -344,6 +344,26 @@ mark.sem-code-line { display: inline-block; width: 100%; color: inherit;
   border-radius: 999px; overflow: hidden; margin-top: .25rem; }
 :is(sem-progress, .sem-progress) .sem-progress-fill { display: block; height: 100%;
   background: var(--sem-accent); border-radius: 999px; }
+
+/* quota meter — rolling usage window (e.g. a provider's 5-hour cap).
+   Colour tiers are a data-level the Lit element owns (ok → warn at 75%,
+   hot at 90%); each level reads a --sem-quota-meter-* token that falls
+   back to a theme token, so a theme overrides without touching this file. */
+:is(sem-quota-meter, .sem-quota-meter) { margin: 1rem 0; color: var(--sem-muted); font-size: .875rem; }
+/* JS-off: text-only meter from the bare attributes, like sem-progress. */
+:is(sem-quota-meter, .sem-quota-meter):not([data-sem-upgraded])[label][used][limit]::before {
+  content: attr(label) " :: " attr(used) " of " attr(limit); }
+:is(sem-quota-meter, .sem-quota-meter) .sem-quota-meter-label { font-weight: 600; color: var(--sem-fg); margin-right: .5rem; }
+:is(sem-quota-meter, .sem-quota-meter) .sem-quota-meter-track { display: block; height: .5rem;
+  background: color-mix(in srgb, var(--sem-border) 60%, transparent);
+  border-radius: 999px; overflow: hidden; margin-top: .25rem; }
+:is(sem-quota-meter, .sem-quota-meter) .sem-quota-meter-fill { display: block; height: 100%;
+  background: var(--sem-quota-meter-ok, var(--sem-accent)); border-radius: 999px; transition: width .3s; }
+:is(sem-quota-meter, .sem-quota-meter)[data-level="warn"] .sem-quota-meter-fill {
+  background: var(--sem-quota-meter-warn, var(--sem-note-warning)); }
+:is(sem-quota-meter, .sem-quota-meter)[data-level="hot"] .sem-quota-meter-fill {
+  background: var(--sem-quota-meter-hot, var(--sem-note-danger)); }
+:is(sem-quota-meter, .sem-quota-meter) .sem-quota-meter-reset { display: block; margin-top: .25rem; color: var(--sem-muted); }
 
 /* reader — one chrome per document (R/W2, spec/schema/sem-reader.md).
    Sticky bar; the outline drops below it as a panel. The sticky rule is

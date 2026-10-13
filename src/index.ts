@@ -76,6 +76,9 @@ import './lit/sem-source.js';
 /* R/W2.2 Markdown block — thin wrapper over src/md/* */
 export { SemMd } from './lit/sem-md.js';
 import './lit/sem-md.js';
+/* sem-quota-meter — rolling usage window (provider caps); pure display */
+export { SemQuotaMeter } from './lit/sem-quota-meter.js';
+import './lit/sem-quota-meter.js';
 
 /* Vanilla handlers — the former dist/semtext-fallback.js,
  * dist/semtext-md.js and dist/semtext-reading.js entry points. */
