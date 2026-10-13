@@ -31,6 +31,14 @@
   .sem-quiz-options button { @apply hover:bg-slate-100 dark:hover:bg-slate-700; }
   h1 { @apply text-2xl font-bold tracking-tight mb-2; }
   h2 { @apply text-lg font-semibold mt-8 mb-2; }
+  /* Demo card — frames each showcased note with a caption so the top of the
+     page reads as a finished demo rather than two loose callouts. Styled
+     from the theme tokens, so light and dark follow the theme for free. */
+  .note-card { margin: 1.5rem 0; padding: .75rem 1rem 1rem; border-radius: 12px;
+    border: 1px solid var(--sem-border); background: var(--sem-bg); }
+  .note-card > figcaption { margin: 0 0 .5rem; font-size: .75rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--sem-muted); }
+  .note-card > sem-note { margin: 0; }
 </style>
 
 <!-- sem-fallback: vanilla interactivity, no Lit and no external resources.
@@ -53,8 +61,14 @@
     <instructions>Cite sem-fact ids. Prefer conclusions verbatim.</instructions>
   </agent>
 
-  <sem-note data-variant="warning">JWTs must rotate <strong>per session</strong>, not per request.</sem-note>
-  <sem-note id="n-tip" data-variant="tip" collapsed><div class="sem-note-body">Shuffle flashcards before each review session for better recall.</div></sem-note>
+  <figure class="note-card">
+    <figcaption>Warning note</figcaption>
+    <sem-note variant="warning">JWTs must rotate <strong>per session</strong>, not per request.</sem-note>
+  </figure>
+  <figure class="note-card">
+    <figcaption>Tip note</figcaption>
+    <sem-note id="n-tip" variant="tip" collapsed>Shuffle flashcards before each review session for better recall.</sem-note>
+  </figure>
 
   <sem-source id="s-flash" data-label="Facts — flashcards">
   <h2>Facts — flashcards</h2>
@@ -188,8 +202,8 @@
   </sem-audiences>
   <p>Append <code>#sem-audience=operator</code> (or <code>reader</code>) to the URL to pick a profile.</p>
   <sem-note id="n-op" data-audience="operator">Operators: the token endpoint is behind the MinIO port-forward — start it before the migration step.</sem-note>
-  <sem-note id="n-reader" data-audience="reader" data-variant="tip">Readers and operators both see this: a profile that implies <code>reader</code> satisfies it.</sem-note>
-  <sem-note id="n-public" data-audience="!operator" data-variant="warning">Everyone except operators: ask an operator to run the migration for you.</sem-note>
+  <sem-note id="n-reader" data-audience="reader" variant="tip">Readers and operators both see this: a profile that implies <code>reader</code> satisfies it.</sem-note>
+  <sem-note id="n-public" data-audience="!operator" variant="warning">Everyone except operators: ask an operator to run the migration for you.</sem-note>
   </sem-source>
 
   <sem-source id="s-margin" data-label="Note — margin view">

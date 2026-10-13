@@ -470,7 +470,7 @@ agent { font-size: var(--pg-t--1); }
             The same file read as XHTML. Attributes qualify every datum:
             <code>data-kind</code> says what a thing is,
             <code>data-status</code> says where it stands,
-            <code>.sem-conclusion</code> and <code>.sem-distractor</code>
+            <code>&lt;conclusion&gt;</code> and <code>&lt;sem-distractor&gt;</code>
             distinguish an answer from a decoy. A model does not have to infer
             the structure, because the structure is written down.
           </p>
@@ -496,8 +496,8 @@ agent { font-size: var(--pg-t--1); }
       <h2 id="try-h">Change the view. The content does not move.</h2>
       <p class="pg-narrow">
         These four facts are authored once, as
-        <code>div.sem-fact</code> elements holding a
-        <code>.sem-statement</code> and a <code>.sem-conclusion</code>.
+        <code>&lt;sem-fact&gt;</code> elements holding a
+        <code>&lt;statement&gt;</code> and a <code>&lt;conclusion&gt;</code>.
         <code>data-view-as</code> selects how they render. Switching it
         rewrites nothing about what they are, and the records a machine reads
         stay identical.

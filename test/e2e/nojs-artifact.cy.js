@@ -35,7 +35,11 @@ describe('no-JS artifact (dist/demo/*.nojs.html)', () => {
     });
 
     it('leaves the collapsed note body readable — no summary teaser to expand', () => {
-      cy.get('sem-note[collapsed] .sem-note-body').should('be.visible');
+      // The note is authored bare (no .sem-note-body wrapper): with no script
+      // the body is the element's own content, so it reads directly.
+      cy.get('sem-note[collapsed]').should('be.visible')
+        .and('contain.text', 'Shuffle flashcards');
+      cy.get('.sem-note-body').should('not.exist');
       cy.get('.sem-note-summary').should('not.exist');
     });
 
