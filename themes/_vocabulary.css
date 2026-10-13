@@ -476,6 +476,22 @@ th[aria-sort="descending"] .sem-data-sort::after { content: "↓"; opacity: 1; c
   border: 1px solid var(--sem-border); border-radius: 999px; color: var(--sem-muted); }
 .sem-data-view[aria-pressed="true"] { background: var(--sem-accent); border-color: var(--sem-accent); color: var(--sem-surface); }
 .sem-data-view:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+
+/* phase 6 — tools row + full-page modal viewer (spec/data-visualizer.md §10) */
+.sem-data-tools { display: flex; align-items: center; justify-content: flex-end; gap: .4rem;
+  padding: .3rem .9rem 0; flex-wrap: wrap; }
+.sem-data-expand, .sem-data-copy { all: unset; font: inherit; font-size: .8rem; cursor: pointer;
+  padding: .15rem .7rem; border: 1px solid var(--sem-border); border-radius: 999px; color: var(--sem-muted); }
+.sem-data-expand:focus-visible, .sem-data-copy:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
+.sem-data-copy-status { font-size: .8rem; color: var(--sem-muted); }
+.sem-data-modal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center;
+  justify-content: center; padding: 1.5rem; background: rgb(0 0 0 / .45); }
+.sem-data-modal-panel { background: var(--sem-surface); color: inherit; box-sizing: border-box;
+  border: 1px solid var(--sem-border); border-radius: 16px; width: min(64rem, 100%); max-height: 100%;
+  overflow: auto; padding: 1rem; }
+.sem-data-modal-close { all: unset; font: inherit; font-size: .8rem; cursor: pointer; margin-bottom: .5rem;
+  padding: .15rem .9rem; border: 1px solid var(--sem-border); border-radius: 999px; }
+.sem-data-modal-close:focus-visible { outline: 2px solid var(--sem-accent); outline-offset: 2px; }
 :is(sem-data-join, .sem-data-join) { margin: .25rem 0; }
 :is(sem-data-query, .sem-data-query) { display: block; margin: .5rem 0; }
 .sem-data-query-chrome { margin: .5rem 0; display: block; }
@@ -503,7 +519,7 @@ th[aria-sort="descending"] .sem-data-sort::after { content: "↓"; opacity: 1; c
   .sem-facts-chrome, .sem-quiz-options, .sem-views-tabs, .sem-note-summary,
   .sem-code-chrome, .sem-popover, .sem-references-backlinks, .sem-references-link,
   sem-reader, .sem-reader, .sem-table-chrome, .sem-source-chrome, .sem-source-fence,
-  .sem-md-chrome, .sem-md-raw { display: none !important; }
+  .sem-md-chrome, .sem-md-raw, .sem-data-tools, .sem-data-modal { display: none !important; }
   .sem-md-body { display: block !important; }
   :is(sem-table, .sem-table) { overflow: visible; }
   :is(sem-table, .sem-table) tbody tr[hidden] { display: table-row !important; }

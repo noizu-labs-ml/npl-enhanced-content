@@ -1,4 +1,4 @@
-// BDD spec — data visualizer showcase · source: spec/data-visualizer.md (phases 2–5)
+// BDD spec — data visualizer showcase · source: spec/data-visualizer.md (phases 2–6)
 //
 // Feature: the demo page at demo/data-visualizer.html exercises every built
 //          phase — inline payloads, file loads, a declarative join, a column
@@ -125,5 +125,78 @@ describe('data visualizer showcase', () => {
     at(4).find('.sem-data-query-results tbody tr').should('have.length', 4);
     cy.wait(500); // let any late async complaint surface
     cy.wrap(null).then(() => expect(errors, 'console errors').to.deep.eq([]));
+  });
+});
+
+// Phase 6 — modal viewer + deep links (spec/data-visualizer.md §10).
+// fleet-views is visualizer 3; ops-combined is visualizer 4.
+describe('data visualizer phase 6 — modal + deep links', () => {
+  const PAGE = '/demo/data-visualizer.html';
+
+  it('the chrome renders — Expand everywhere, Copy link where a target exists', () => {
+    cy.visit(PAGE);
+    cy.get('sem-data-visualizer .sem-data-expand').should('have.length', 5);
+    cy.get('#fleet-views .sem-data-copy').should('exist');
+    cy.get('#ops-combined .sem-data-copy').should('exist');
+  });
+
+  it('Expand opens a live dialog; Esc closes and restores the children', () => {
+    cy.visit(PAGE);
+    at(3).find('.sem-data-expand').click();
+    // (no stored chains — reusing a cy.get variable continues from the last
+    // subject; re-query the panel, whose contents just moved)
+    cy.get('.sem-data-modal-panel').should('have.attr', 'role', 'dialog')
+      .and('have.attr', 'aria-modal', 'true');
+    cy.get('.sem-data-modal-panel').find('table tbody tr').should('have.length', 4);
+    // the modal is live: switch the view inside it
+    cy.get('.sem-data-modal-panel').find('.sem-data-views button').eq(1).click();
+    cy.get('.sem-data-modal-panel').find('thead th:visible').then(($th) => expect([...$th].map((th) => th.textContent)).to.deep.eq(['name', 'replicas']));
+    cy.get('body').type('{esc}');
+    cy.get('.sem-data-modal').should('not.exist');
+    // the container got its children back — and kept the switched view
+    at(3).find('table').should('exist');
+    at(3).find('thead th:visible').then(($th) => expect([...$th].map((th) => th.textContent)).to.deep.eq(['name', 'replicas']));
+    at(3).find('.sem-data-expand').should('have.attr', 'aria-expanded', 'false');
+  });
+
+  it('Copy link mints the container-scoped link for the active view', () => {
+    cy.visit(PAGE);
+    cy.window().then((win) => cy.stub(win.navigator.clipboard, 'writeText').resolves());
+    at(3).find('.sem-data-views button').eq(1).click();
+    at(3).find('.sem-data-copy').click();
+    at(3).find('.sem-data-copy-status').should('have.text', 'Copied');
+    cy.window().then((win) => {
+      expect(win.location.hash).to.eq('#dv=fleet-views&view=operators');
+      expect(win.navigator.clipboard.writeText).to.have.been.calledWithMatch(/#dv=fleet-views&view=operators$/);
+    });
+  });
+
+  it('a deep link restores the view on load', () => {
+    cy.visit(PAGE + '#dv=fleet-views&view=operators');
+    at(3).find('.sem-data-views button').eq(1).should('have.attr', 'aria-pressed', 'true');
+    at(3).find('thead th:visible').then(($th) => expect([...$th].map((th) => th.textContent)).to.deep.eq(['name', 'replicas']));
+  });
+
+  it('a deep link with q= sets the query chrome and re-runs it', () => {
+    const q = encodeURIComponent('SELECT name FROM services WHERE replicas >= 5');
+    cy.visit(PAGE + '#dv=ops-combined&q=' + q);
+    at(4).find('.sem-data-query-input').should('have.value', 'SELECT name FROM services WHERE replicas >= 5');
+    at(4).find('.sem-data-query-results tbody tr').should('have.length', 1);
+    at(4).find('.sem-data-query-results tbody tr').first().find('td').first().should('have.text', 'search');
+    at(4).find('.sem-data-query-status').should('have.text', '1 row.');
+  });
+
+  it('a source-scoped link with modal=1 reopens the modal', () => {
+    cy.visit(PAGE + '#view=operators&bucket=fleet&modal=1');
+    cy.get('.sem-data-modal-panel').should('have.attr', 'role', 'dialog');
+    cy.get('.sem-data-modal-panel thead th:visible').then(($th) => {
+      expect([...$th].map((th) => th.textContent)).to.deep.eq(['name', 'replicas']);
+    });
+  });
+
+  it('a source-scoped link applies without the modal when modal is absent', () => {
+    cy.visit(PAGE + '#view=operators&bucket=Fleet');
+    cy.get('.sem-data-modal-panel').should('not.exist');
+    at(3).find('thead th:visible').then(($th) => expect([...$th].map((th) => th.textContent)).to.deep.eq(['name', 'replicas']));
   });
 });

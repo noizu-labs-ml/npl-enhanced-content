@@ -86,8 +86,12 @@ data:
   </sem-data-visualizer>
 
   <h2>A view that filters columns</h2>
-  <p>Two declared views; the second keeps only the operator columns.</p>
-  <sem-data-visualizer>
+  <p>Two declared views; the second keeps only the operator columns. Its
+  container id (<code>fleet-views</code>) makes it deep-linkable
+  (spec/data-visualizer.md §10): the Expand and Copy-link chrome mints
+  <code>#dv=fleet-views&view=…</code> links, and the modal reopens from
+  links minted inside it.</p>
+  <sem-data-visualizer id="fleet-views">
     <sem-data-source data-name="Fleet" data-views="all=*; operators=name, replicas" data-view="all">| name   | region | port | replicas |
 |--------|--------|------|----------|
 | auth   | eu     | 8080 | 3        |
@@ -101,8 +105,9 @@ data:
   files next to this page (CSV and YAML), a join composing them on the named
   key column, and the editable default query reading the joined bucket —
   edit it and re-run (button, Ctrl/Cmd+Enter, or just keep typing; it
-  re-runs as you type).</p>
-  <sem-data-visualizer>
+  re-runs as you type). The container id (<code>ops-combined</code>) makes
+  the edited query deep-linkable too (<code>#dv=ops-combined&q=…</code>).</p>
+  <sem-data-visualizer id="ops-combined">
     <sem-data-source data-name="Services" source="data/services.csv"></sem-data-source>
     <sem-data-source data-name="Regions" source="data/regions.yaml"></sem-data-source>
     <sem-data-join data-name="Service Regions" data-left="Services" data-right="Regions" data-on="region"></sem-data-join>

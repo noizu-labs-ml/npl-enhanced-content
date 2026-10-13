@@ -72,8 +72,8 @@ Current, after tag-form canonical (PR #30):
 | Artifact | Budget | Measured |
 |---|---|---|
 | `semtext-fallback.js` | **14 KB** | 13.0 |
-| `semtext-reading.js` | **55 KB** | 54.1 |
-| `semtext.js` (Lit) | **85 KB** | 84.2 |
+| `semtext-reading.js` | **61 KB** | 59.5 |
+| `semtext.js` (Lit) | **91 KB** | 89.7 |
 | `semtext-extract.js` | **12 KB** | 9.7 |
 | `semtext-md.js` | **8.5 KB** | 8.0 |
 
@@ -101,6 +101,11 @@ Data-visualizer phase 5 (2026-10-13) raised reading 43 → 55 KB (measured 54.1)
 parser/executor, sem-data-join materialization, the editable query textarea and
 view buttons (`src/data/query.ts`, `src/reading/data-query.ts`,
 `src/reading/data-tableview.ts`).
+
+Data-visualizer phase 6 (2026-10-13) raised reading 55 → 61 KB (measured 59.5) and Lit
+85 → 91 KB (measured 89.7): the full-page modal viewer and the deep links —
+the Expand/Copy-link chrome, dialog teleport/focus trap, hash parse/apply
+(`src/reading/data-modal.ts`, `src/data/deeplink.ts`, spec §10).
 
 
 ## History (recorded decisions — preserved)

@@ -111,6 +111,12 @@ interface Chrome {
   results: HTMLElement;
   status: HTMLElement;
   timer: ReturnType<typeof setTimeout> | null;
+  /** The editable textarea (deep links read and set it). */
+  input: HTMLTextAreaElement;
+  /** Re-run the chrome (the debounced-edit path shares this). */
+  rerun: () => void;
+  /** The authored statement, captured at wire time — edits diverge from it. */
+  authored: string;
 }
 
 const chomes = new WeakMap<Element, Chrome>();
@@ -157,6 +163,7 @@ function wireQuery(q: Element, container: Element): void {
   if (q.hasAttribute('data-sem-query-wired')) return;
   q.setAttribute('data-sem-query-wired', '');
 
+  const text = (q.textContent ?? '').trim();
   const chromeEl = document.createElement('div');
   chromeEl.className = 'sem-data-query-chrome';
 
@@ -172,7 +179,7 @@ function wireQuery(q: Element, container: Element): void {
   textarea.className = 'sem-data-query-input';
   textarea.rows = 3;
   textarea.spellcheck = false;
-  textarea.value = (q.textContent ?? '').trim();
+  textarea.value = text;
   chromeEl.appendChild(textarea);
 
   const controls = document.createElement('div');
@@ -192,11 +199,11 @@ function wireQuery(q: Element, container: Element): void {
   results.className = 'sem-data-query-results';
   chromeEl.appendChild(results);
 
-  const chrome: Chrome = { q, results, status, timer: null };
+  const rerun = (): void => runQueryChrome(chrome, container);
+  const chrome: Chrome = { q, results, status, timer: null, input: textarea, rerun, authored: text };
   chomes.set(q, chrome);
   q.insertAdjacentElement('afterend', chromeEl);
 
-  const rerun = (): void => runQueryChrome(chrome, container);
   runBtn.addEventListener('click', rerun);
   textarea.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); rerun(); }
@@ -260,6 +267,35 @@ export function wireViewButtons(src: Element, table: HTMLTableElement, columns: 
     nav.appendChild(b);
   });
   table.parentElement?.insertBefore(nav, table);
+}
+
+/* ------------------------------------------------------------------ *
+ * Deep-link entry points (phase 6, §10): the modal module reads and sets
+ * the edited default query through these — the Chrome map stays private.
+ * ------------------------------------------------------------------ */
+
+/** The first editable query's text when it diverges from the authored one. */
+export function currentQueryEdit(container: Element): string | null {
+  for (const q of Array.from(container.querySelectorAll('sem-data-query, .sem-data-query'))) {
+    const c = chomes.get(q);
+    if (!c) continue;
+    const now = c.input.value.trim();
+    return now !== c.authored ? now : null;
+  }
+  return null;
+}
+
+/** Set the default query's text (a deep link landed) and re-run. True when a wired chrome was found. */
+export function setQueryText(container: Element, text: string): boolean {
+  for (const q of Array.from(container.querySelectorAll('sem-data-query, .sem-data-query'))) {
+    const c = chomes.get(q);
+    if (!c) continue;
+    c.input.value = text;
+    c.q.textContent = text;
+    c.rerun();
+    return true;
+  }
+  return false;
 }
 
 export { SOURCE, VISUALIZER };

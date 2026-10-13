@@ -30,7 +30,11 @@ const strict = process.argv.includes('--strict-budget');
 
 /** budgetKb is measured against the minified (not gzipped) artifact. */
 const targets = [
-  { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 85, required: true },
+  // 85 → 91 KB (2026-10-13, data-visualizer phase 6, measured 89.7): the Lit
+  // bundle carries src/reading/data-modal.ts (modal viewer + deep links)
+  // through the data-visualizer wrapper's reading import. Recorded in
+  // ROADMAP "Size budgets".
+  { name: 'semtext.js',          entry: 'src/index.ts',          global: 'SemText',         budgetKb: 91, required: true },
   // 13 → 14 KB (2026-09-22, tag form canonical, measured 13.0): every core
   // handler selects both authoring forms (`:is(sem-x, .sem-x)`), the
   // bare→data-* attribute mirror, the tag-form note body wrap. Recorded in
@@ -54,7 +58,11 @@ const targets = [
   // editable query textarea, view buttons (src/data/query.ts,
   // src/reading/data-query.ts, data-tableview.ts). Budgets move with
   // scripts/build.mjs and ROADMAP "Size budgets" together.
-  { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 55, required: true },
+  // 55 → 61 KB (2026-10-13, phase 6, measured 59.5): the full-page modal
+  // viewer + deep links (src/reading/data-modal.ts, src/data/deeplink.ts,
+  // spec §10). Budgets move with scripts/build.mjs and ROADMAP "Size
+  // budgets" together.
+  { name: 'semtext-reading.js',  entry: 'src/reading/index.ts',  global: 'SemTextReading',  budgetKb: 61, required: true },
   { name: 'semtext-extract.js',  entry: 'src/extract/index.ts',  global: 'SemTextExtract',  budgetKb: 12, required: false },
   { name: 'semtext-md.js',       entry: 'src/md/index.ts',       global: 'SemTextMd',       budgetKb: 8.5,  required: true },
 ];

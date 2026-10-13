@@ -1,6 +1,6 @@
 # SemText Data Visualizer — Design
 
-**Status: DRAFT v0.2 — phases 1-5 built on this branch; phase 6 design-only.**
+**Status: DRAFT v0.2 — phases 1-6 built on this branch.**
 Normative for `sem-data-visualizer` / `sem-data-source` / `sem-data-join` /
 `sem-data-query`. Companion to `spec/conventions.md` (vocabulary rules) and
 `spec/schema/sem-table.md` (the authored-table cousin). Everything marked
@@ -394,21 +394,36 @@ page buckets and touch nothing else.
   error) and re-runs any pending queries (§2). The sync render path is
   unchanged for inline sources.
 
-## 10. Modal viewer and deep links (R4 — phase 6 design)
+## 10. Modal viewer and deep links (R4 — phase 6)
 
 Clicking a visualizer's expand control opens a full-page modal rendering the
 active view large (same enhance output, `role="dialog"`, `aria-modal`, focus
-trap, `Esc` closes). Deep links reload the document with a state restored,
-as `&`-joined hash segments (the `src/shared/state.ts` form):
+trap, `Esc` closes). The modal teleports the container's own children into
+the dialog panel — the rendered tables, view buttons and query chrome stay
+live and keep their listeners — and moving back on close restores the
+original order, so the enhance stays idempotent.
+
+Deep links reload the document with a state restored, as `&`-joined hash
+segments (the `src/shared/state.ts` form):
 
 ```
 #view=<name>&bucket=<source-name>          one view of one source
 #dv=<visualizer-id>&view=<name>            container-scoped state (query chrome included)
+#dv=<visualizer-id>&q=<encoded-query>      the edited default query (DV-Q5)
+&modal=1                                   minted from the modal — reopen it
 ```
 
 A deep link activates that view/query on load and, when the link was minted
-from the modal, opens the modal. Links are authorable: the chrome exposes a
-copy-link button. Phase 6 is design-only in this slice.
+from the modal (`modal=1`), opens the modal. The `dv` id is matched exactly
+(HTML ids are case-sensitive); the `bucket` name goes through the §5
+normalized reference, so `Fleet status` and `fleet-status` name the same
+source. Links are authorable: the chrome exposes a copy-link button that
+mints the link from live state (active view when it differs from the
+authored default, edited query when it diverges from the authored statement,
+`modal=1` while the modal is open) and leaves every other hash segment —
+sem-views bare links, audience — byte-for-byte intact. Container ids or a
+single named source are required to mint; a container with neither renders
+no copy-link button.
 
 ## 11. Phase plan
 
@@ -418,7 +433,7 @@ copy-link button. Phase 6 is design-only in this slice.
 | **2** | Inline `csv` (RFC 4180), `yaml` (§7.3 subset), `json` (§7.4) payloads; `sql` result-shape declarations (§7.5). Unit-tested. | **BUILT (this branch)** |
 | **3** | Structure declarations: `data-type="rows"` + `data-columns` (§6.1) and OpenAPI-style YAML payloads (§6.2); declared-over-inferred types; nested flattening to dotted paths; advisory validation. Unit-tested. | **BUILT (this branch)** |
 | **4** | `source` loaders: relative and same-origin files, absolute http(s) with CORS-as-error, `file://` refusal (§9); async render contract; `data-path`; `data-cache`. Unit-tested. | **BUILT (this branch)** || **5** | Query chrome: editable default query (`sem-data-query`) re-run on change; named buckets (§5); `sem-data-join` on a named key; the §8 SQL subset engine; per-source view-switch buttons (§3). Unit-tested. | **BUILT (this branch)** |
-| 6 | Modal full-page viewer + `#`-deep-links (§10). | designed |
+| 6 | Modal full-page viewer + `#`-deep-links (§10). | **BUILT (this branch)** |
 
 ## 12. Open questions
 
@@ -428,4 +443,4 @@ copy-link button. Phase 6 is design-only in this slice.
 | DV-Q2 | Should views live on the container (shared across sources) instead of per source? | Per source for now; phase 5 adds container-level composed views via queries/joins. |
 | DV-Q3 | Schema JSON: script child (current) vs `data-sem-schema` attribute mirror for no-DOM consumers? | Script child; add the attribute mirror only if a consumer asks. |
 | DV-Q4 | YAML: adopt a general parser dependency instead of the §7.3 subset? | No — the subset is a few KB; a general parser would crowd the reading budget for syntax this spec excludes anyway. Revisit only if a corpus needs flow maps or anchors. |
-| DV-Q5 | Should the query chrome persist an edited query into the hash (phase 6 deep links)? | Yes, in phase 6 — `#dv=<id>&q=<encoded>`; not before. |
+| DV-Q5 | Should the query chrome persist an edited query into the hash (phase 6 deep links)? | Yes, in phase 6 — `#dv=<id>&q=<encoded>`; not before. **RESOLVED (phase 6):** built exactly so; the copy-link button writes `q=` only when the edited statement diverges from the authored one. |

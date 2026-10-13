@@ -16,9 +16,8 @@
  *
  * Zero-JS: with no script at all the authored source text shows as text (the
  * sem-md precedent); the fallback tier here is what renders the native table.
- * Later phases (CSV/YAML/JSON/SQL payloads, declared structures, file and API
- * loaders, editable views, modal + deep links) are designed in the spec and
- * deliberately absent here.
+ * Phase 6 (the modal viewer + deep links) lives in src/reading/data-modal.ts
+ * and hangs off the enhance below; see spec/data-visualizer.md §10.
  */
 
 import { param } from '../shared/attr.js';
@@ -43,6 +42,12 @@ import { normalizeRef } from '../data/names.js';
 import { fetchSource } from './data-load.js';
 import { buildTable, wireSort, STAMP } from './data-tableview.js';
 import { registerBucket, wireQueryChrome, wireViewButtons } from './data-query.js';
+import {
+  applyDeepLinkToContainer,
+  applyDeepLinkToSource,
+  modalOpenFor,
+  wireDataTools,
+} from './data-modal.js';
 
 export const DATA_VISUALIZER = ':is(sem-data-visualizer, .sem-data-visualizer)';
 export const DATA_SOURCE = ':is(sem-data-source, .sem-data-source)';
@@ -60,11 +65,16 @@ type ParseResult =
  * rendered yet. Idempotent on the presence of a rendered body/error.
  */
 export function enhanceDataVisualizerElement(el: Element): void {
+  if (modalOpenFor(el)) return; // children are teleported into the modal viewer
   if (!el.querySelector(':scope > ' + DATA_SOURCE + ' > :is(.sem-data-body, .sem-data-error, .sem-data-pending)')) {
     el.querySelectorAll(':scope > ' + DATA_SOURCE).forEach((src) => renderSource(src));
   }
   // Joins + the default query chrome wire on every pass (both idempotent).
   wireQueryChrome(el);
+  // Phase 6 (§10): the Expand/Copy-link chrome, then any deep-link state in
+  // the current hash (view/bucket/dv/q/modal) applies to what was just built.
+  wireDataTools(el);
+  applyDeepLinkToContainer(el);
 }
 
 /** The declared structure, if any: data-type / type, lowercased. */
@@ -266,6 +276,8 @@ function renderTable(src: Element, table: TableData, schema: ColumnSchema[], for
   const tableEl = body.querySelector('table') as HTMLTableElement;
   wireSort(tableEl, schema);
   wireViewButtons(src, tableEl, table.columns);
+  // A bucket-scoped deep link (§10) whose source landed late applies here.
+  applyDeepLinkToSource(src);
   src.setAttribute('data-sem-fallback', '');
 }
 
