@@ -43,6 +43,10 @@
  */
 
 /* Components — alphabetical; one two-line pair each, nothing shared. */
+export { NplAgent } from './npl-agent.js';
+export { NplExample } from './npl-example.js';
+import './npl-agent.js';
+import './npl-example.js';
 
 /* Namespace helpers (src/lit/npl/shared.ts). */
 export { NplArtifact } from './npl-artifact.js';

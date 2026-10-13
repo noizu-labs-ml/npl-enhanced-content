@@ -494,6 +494,7 @@ th[aria-sort="descending"] .sem-table-sort::after { content: "↓"; opacity: 1; 
    here — nothing shared is ever edited, so parallel component branches
    merge clean. Do NOT convert this into one comma list.
    ============================================================ */
+npl-agent, .npl-agent { display: block; }
 npl-artifact, .npl-artifact { display: block; }
 npl-cot, .npl-cot { display: block; }
 npl-critique, .npl-critique { display: block; }
