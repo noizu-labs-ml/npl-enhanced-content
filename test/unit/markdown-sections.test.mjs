@@ -90,6 +90,13 @@ describe('parseMarkdownSections', () => {
     expect(sections[1].tldr).toBeUndefined();
   });
 
+  it('ownText is the owned body without heading or nested sections', () => {
+    expect(sections[0].ownText).toContain('Body of deployment.');
+    expect(sections[0].ownText).toContain('Ship through CI only.');
+    expect(sections[0].ownText).not.toContain('### Rollback');
+    expect(sections[0].ownText).not.toContain('## Deployment');
+  });
+
   it('pins kind="hard-rule" sections', () => {
     expect(sections[2].pinned).toBe(true);
     expect(sections[0].pinned).toBe(false);

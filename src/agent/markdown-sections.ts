@@ -46,6 +46,9 @@ export interface MdSection {
   /** Expand body: heading + owned lines (+ nested sections), markup lines
    *  (markers, auto tldr) stripped. */
   text: string;
+  /** Owned body only — no heading line, no nested sections. The right text
+   *  for per-section summarisation (focus). */
+  ownText: string;
   /** Raw source slice of the whole section span (nested sections included). */
   raw: string;
   children: MdSection[];
@@ -262,6 +265,7 @@ export function parseMarkdownSections(source: string): { sections: MdSection[]; 
       line: h.index + 1,
       autoTldrLine: tldrEntry?.auto ? tldrEntry.index + 1 : 0,
       text,
+      ownText: own.join('\n').replace(/\s+$/, ''),
       raw: hadFinalNewline ? rawSlice + '\n' : rawSlice,
       children: []
     };
