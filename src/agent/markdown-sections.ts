@@ -169,6 +169,8 @@ export function parseMarkdownSections(source: string): { sections: MdSection[]; 
   const used = new Set<string>();
   const markers = new Map<number, ReturnType<typeof parseMarker>>();
   const tldrs = new Map<number, { text: string; auto: boolean; index: number }>();
+  // Markup lines the expand body drops: marker lines and data-auto tldrs.
+  const markupLines = new Set<number>();
   for (const h of headings) {
     // The first non-blank lines after a heading may carry the marker and
     // (right after it) an authored tldr.
@@ -177,6 +179,7 @@ export function parseMarkdownSections(source: string): { sections: MdSection[]; 
     const marker = cursor < lines.length ? parseMarker(lines[cursor]) : null;
     if (marker) {
       markers.set(h.index, marker);
+      markupLines.add(cursor);
       if (marker.id) used.add(marker.id);
       cursor++;
       while (cursor < lines.length && !lines[cursor].trim()) cursor++;
@@ -184,7 +187,9 @@ export function parseMarkdownSections(source: string): { sections: MdSection[]; 
     const tm = cursor < lines.length ? SEM_TLDR_RE.exec(lines[cursor].trim()) : null;
     if (tm) {
       const attrs = parseAttrs(tm[1]);
-      tldrs.set(h.index, { text: tm[2].trim(), auto: attrs.names.has('data-auto'), index: cursor });
+      const entry = { text: tm[2].trim(), auto: attrs.names.has('data-auto'), index: cursor };
+      tldrs.set(h.index, entry);
+      if (entry.auto) markupLines.add(cursor);
     }
   }
 
@@ -204,13 +209,11 @@ export function parseMarkdownSections(source: string): { sections: MdSection[]; 
     return final;
   }
 
-  /** Markup lines the expand body drops: markers + auto tldr. */
+  /** Markup lines the expand body drops: markers + auto tldrs. */
   function bodyLines(from: number, to: number): string[] {
     const out: string[] = [];
     for (let i = from; i < to; i++) {
-      if (markers.has(i)) continue;
-      const t = tldrs.get(i);
-      if (t && t.auto) continue;
+      if (markupLines.has(i)) continue;
       out.push(lines[i]);
     }
     return out;
@@ -258,7 +261,7 @@ export function parseMarkdownSections(source: string): { sections: MdSection[]; 
       pinned: !!marker?.pinned,
       line: h.index + 1,
       autoTldrLine: tldrEntry?.auto ? tldrEntry.index + 1 : 0,
-      text: text ? '#'.repeat(h.level) + ' ' + h.text + '\n' + text : '#'.repeat(h.level) + ' ' + h.text,
+      text,
       raw: hadFinalNewline ? rawSlice + '\n' : rawSlice,
       children: []
     };
