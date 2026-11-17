@@ -2,6 +2,7 @@ import { html, render, svg, type TemplateResult } from 'lit';
 import { SemElement } from '../base.js';
 import { defineSemext, semextParam } from './shared.js';
 import { describe, layout, parseDiagram, type DiagramModel } from './draftamo-diagram-model.js';
+import { importViewerModule, toViewerDocument, type ViewerInstance } from './draftamo-diagram-3d-adapter.js';
 
 /**
  * semext-draftamo-diagram — an INLINE Draftamo diagram: the diagram XML is
@@ -31,6 +32,9 @@ export class SemextDraftamoDiagram extends SemElement {
 
   #chrome: HTMLElement | null = null;
   #mo: MutationObserver | null = null;
+  #viewer: ViewerInstance | null = null;
+  #viewerHost: HTMLElement | null = null;
+  #mountToken = 0;
 
   constructor() {
     super();
@@ -51,6 +55,7 @@ export class SemextDraftamoDiagram extends SemElement {
   override disconnectedCallback(): void {
     this.#mo?.disconnect();
     this.#mo = null;
+    this.#teardownViewer();
     super.disconnectedCallback();
   }
 
@@ -74,8 +79,73 @@ export class SemextDraftamoDiagram extends SemElement {
       this.append(chrome);
     }
     this.#mo?.takeRecords();
-    render(this.#svg(model), this.#chrome);
+    const src = (semextParam(this, 'viewer-src') ?? '').trim();
+    if (!src) {
+      // Default path: exactly the 2D SVG behavior.
+      this.#teardownViewer();
+      render(this.#svg(model), this.#chrome);
+    } else {
+      // 2D first (the fallback stays warm), then lazily mount the 3D viewer;
+      // on success it replaces the SVG, on failure the SVG simply remains.
+      // Teardown BEFORE the re-render: a mounted viewer's host is about to be
+      // wiped by the lit render — stop its loop first or it keeps rAF-ing
+      // against a dead host.
+      this.#teardownViewer();
+      render(this.#svg(model), this.#chrome);
+      this.#mountViewer(src, model);
+    }
     this.#mo?.takeRecords();
+  }
+
+  /** Lazily load `viewer-src` ({ createViewer }) and mount the 3D document. */
+  async #mountViewer(src: string, model: DiagramModel): Promise<void> {
+    const token = ++this.#mountToken;
+    let viewer: ViewerInstance | null = null;
+    try {
+      const { createViewer } = await importViewerModule(src);
+      if (token !== this.#mountToken || !this.#chrome || !this.isConnected) return;
+      const host = document.createElement('div');
+      host.className = 'semext-draftamo-diagram-viewer';
+      // Attach the host BEFORE construction: the viewer measures the host box,
+      // and a detached host means a zero-size canvas. The fallback stays
+      // intact until construction + setDocument + start have all succeeded —
+      // and any failure below restores it — so the view is never half-mounted
+      // and no teardown happens between the token capture and construction
+      // (a teardown here would bump the token and silence the failure warn).
+      this.#chrome.replaceChildren(host);
+      viewer = createViewer(host);
+      viewer.setDocument(toViewerDocument(model, { title: this.#title() }), { tracedEdgeIds: new Set() });
+      viewer.start();
+      // Re-check immediately before adoption: a teardown that fired during
+      // construction (re-render or disconnect) bumped the token — dispose the
+      // orphan instead of storing a viewer no later teardown will reach.
+      if (token !== this.#mountToken) {
+        viewer.dispose();
+        return;
+      }
+      this.#viewer = viewer;
+      this.#viewerHost = host;
+      this.#mo?.takeRecords();
+    } catch (err) {
+      viewer?.dispose();
+      if (token !== this.#mountToken) return;
+      console.warn('semext-draftamo-diagram: 3D viewer failed to load; falling back to 2D SVG.', err);
+      if (this.#chrome && this.isConnected) render(this.#svg(model), this.#chrome);
+      this.#mo?.takeRecords();
+    }
+  }
+
+  #teardownViewer(): void {
+    this.#mountToken++;
+    this.#viewer?.stopLoop();
+    this.#viewer?.dispose();
+    this.#viewer = null;
+    this.#viewerHost = null;
+  }
+
+  #title(): string {
+    const kind = (semextParam(this, 'kind') ?? this.kind ?? 'uml-class').trim() || 'uml-class';
+    return `${(semextParam(this, 'label') ?? this.label ?? 'Diagram').trim() || 'Diagram'} (${kind})`;
   }
 
   #svg(model: DiagramModel): TemplateResult {
