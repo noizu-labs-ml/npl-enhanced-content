@@ -35,15 +35,27 @@ export interface RawMetrics {
   fontCss: string;
 }
 
+/**
+ * THEROB-187: §8.3 defaults — the single formula source for the fallback
+ * cell box. DEFAULT_CELL_WIDTH/HEIGHT are that box instantiated at the
+ * default font size; `measureCellMetrics` derives its per-size fallbacks
+ * from the same ratios, so the numbers cannot drift apart (review r2).
+ */
+const DEFAULT_FONT_SIZE = 14;
+const DEFAULT_LINE_HEIGHT = 1.27;
+const DEFAULT_ADVANCE_RATIO = 0.6;
+export const DEFAULT_CELL_WIDTH = DEFAULT_FONT_SIZE * DEFAULT_ADVANCE_RATIO;
+export const DEFAULT_CELL_HEIGHT = Math.round(DEFAULT_FONT_SIZE * DEFAULT_LINE_HEIGHT);
+
 /** Measure the monospace cell box. Pure given a measuring context. */
 export function measureCellMetrics(ctx: MeasuringContext, options: MeasureOptions = {}): RawMetrics {
-  const fontSize = options.fontSize ?? 14;
-  const lineHeight = options.lineHeight ?? 1.27;
+  const fontSize = options.fontSize ?? DEFAULT_FONT_SIZE;
+  const lineHeight = options.lineHeight ?? DEFAULT_LINE_HEIGHT;
   const fontCss = `${fontSize}px ${options.fontFamily ?? SHELL_FONT_STACK}`;
   ctx.font = fontCss;
   const advance = ctx.measureText('W').width;
   const wide = ctx.measureText('Ｗ').width; // Ｗ FULLWIDTH LATIN CAPITAL LETTER W
-  const cellWidth = advance > 0 ? advance : fontSize * 0.6;
+  const cellWidth = advance > 0 ? advance : (DEFAULT_CELL_WIDTH / DEFAULT_FONT_SIZE) * fontSize;
   return {
     cellWidth,
     cellHeight: Math.round(fontSize * lineHeight),

@@ -54,8 +54,21 @@ import type { CanvasRenderer } from './render/canvas.js';
 import type { CellMetrics, ScreenRenderer } from './render/types.js';
 import { renderTabStrip, renderWindowTitlebar, tabDomId } from '../shared/window-chrome.js';
 import '../shared/sem-scroll.js'; // side-effect: register <sem-scroll> (§10)
+import {
+  clampDpr,
+  DEFAULT_CELL_HEIGHT,
+  DEFAULT_CELL_WIDTH,
+  fitCounts,
+  measureCellMetrics,
+  type MeasuringContext,
+} from './render/metrics.js';
 import type { KeyEvent } from './screen/types.js';
 import type { AppSpawnAction } from './terminal-core.js';
+
+/** THEROB-187: bounded surface re-check window (ticks per connection
+ * cycle) — re-armed in connectedCallback so each fresh attach gets a
+ * fresh budget; never a poll loop. */
+const SURFACE_RETRY_BUDGET = 3;
 
 /**
  * sem-terminal — the reusable terminal core: input, history, transcript,
@@ -183,6 +196,14 @@ export class SemTerminal extends SemElement {
   #mirrorOnly: DOMMirror | null = null;
   /** True when the mirror is the visible view (§8.5 promotion). */
   #domView = false;
+  /**
+   * THEROB-187: bounded re-check budget for the deferred surface work
+   * (missing `.sem-term-surface`, or a surface whose layout has not
+   * landed — zero box). Each scheduled tick spends one unit; re-armed in
+   * connectedCallback so every connection cycle gets a fresh window;
+   * never a poll loop.
+   */
+  #retryBudget = 0;
   /** Theme ANSI-16 RGB cache — invalidated whenever metrics change. */
   #ansiCache: Array<Rgb | null> = [];
 
@@ -404,6 +425,11 @@ export class SemTerminal extends SemElement {
       this.#hookSession(this.#session); // bundled plugins + attribute URLs
       this.#maybeStartPlayback();
     }
+    // THEROB-187 (review r1): every connection cycle re-arms the bounded
+    // surface re-check window — a surface (or its layout) that mounts late
+    // gets a fresh budget per fresh attach, instead of a spent window from
+    // an earlier cycle hiding it forever.
+    this.#retryBudget = SURFACE_RETRY_BUDGET;
     // The canvas surface needs a rendered frame first; reconnects re-run
     // this and the guard makes it idempotent (§8 attach).
     void this.updateComplete.then(() => {
@@ -887,11 +913,53 @@ export class SemTerminal extends SemElement {
    * canvas paint path (§8) — the r2-canvas integration
    * ---------------------------------------------------------------- */
 
-  /** Attach the renderer once the surface exists; idempotent on reconnect. */
+  /**
+   * THEROB-187 (review r2): the one bounded re-check primitive, shared by
+   * the deferred-mount (null surface) and zero-geometry (no layout) paths.
+   * Anchored on requestAnimationFrame — an idle element resolves
+   * updateComplete in back-to-back microtasks, which would burn the whole
+   * window without a render or a layout pass ever landing, and a surface
+   * that mounts later would be missed. rAF is one tick per frame; the
+   * fallback keeps updateComplete only where rAF is unavailable (old
+   * engines). Each spend schedules exactly one tick, dropped when the
+   * element has disconnected, rejections surfaced as a warning.
+   */
+  #boundedRecheck(action: () => void): void {
+    if (this.#retryBudget <= 0) return;
+    this.#retryBudget -= 1;
+    const run = (): void => {
+      try {
+        if (!this.isConnected) return; // disconnected — drop the tick
+        action();
+      } catch (error) {
+        console.warn('sem-terminal: deferred surface re-check failed', error);
+      }
+    };
+    const view = this.ownerDocument?.defaultView;
+    const raf = view?.requestAnimationFrame?.bind(view);
+    if (typeof raf === 'function') {
+      raf(run);
+      return;
+    }
+    void this.updateComplete.then(run).catch((error: unknown) => {
+      console.warn('sem-terminal: deferred surface re-check failed', error);
+    });
+  }
+
+  /** Attach the renderer once the surface appears; idempotent on reconnect. */
   #ensureRenderer(): void {
     if (this.#renderer !== null || this.#domView) return;
     const surface = this.querySelector('.sem-term-surface');
-    if (!(surface instanceof HTMLElement)) return;
+    if (!(surface instanceof HTMLElement)) {
+      // THEROB-187: a surface that mounts after first paint used to leave
+      // the seed (80×24) as the final geometry — the bail was silent and
+      // nothing ever re-checked. #boundedRecheck: rAF-anchored (an idle
+      // element must not burn the window on microtasks), bounded,
+      // isConnected-guarded, rejections warn.
+      this.#boundedRecheck(() => this.#ensureRenderer());
+      return;
+    }
+    this.#retryBudget = SURFACE_RETRY_BUDGET;
     const result = createCanvasRenderer({
       onUnavailable: () => {
         // §8.5: the mirror IS the a11y tree; promote it to the view. The
@@ -935,7 +1003,13 @@ export class SemTerminal extends SemElement {
     // required flip — core-screen deviation 2): hidden input (IME/paste),
     // mouse/selection, wheel, and the context menu all ride the surface.
     this.#ensureInputAttached(surface);
-    this.#onMetrics(renderer.metrics());
+    const metrics = renderer.metrics();
+    this.#onMetrics(metrics);
+    // THEROB-187: a renderer that could not measure (no 2d context — the
+    // mirror is the view) reports degenerate metrics; #onMetrics returns
+    // early and the 80×24 seed survives first paint. Refit from the
+    // surface box instead (same clamped resize path).
+    if (!(metrics.cols > 0) || !(metrics.rows > 0)) this.#refitToSurface();
   }
 
   /** §8.5a: the shell (when present) learns the canvas proved available. */
@@ -973,6 +1047,69 @@ export class SemTerminal extends SemElement {
     // The mirror-only fallback paints the same surface — the input rides it
     // there too (wheel, selection, context menu have no canvas to lean on).
     this.#ensureInputAttached(surface);
+    // THEROB-187: the mirror-only path had no metrics source (DOMMirror does
+    // not measure), so the 80×24 seed survived first paint here too. Measure
+    // the surface once at mount; later size changes are out of scope for the
+    // standalone mirror.
+    this.#refitToSurface();
+  }
+
+  /**
+   * THEROB-187: measure `.sem-term-surface` and refit the screen through
+   * `#onMetrics` — the same clamped resize the canvas path uses. Used by
+   * the mirror-only path, which has no renderer metrics callback; a zero
+   * box (surface not laid out) leaves the geometry untouched.
+   */
+  #refitToSurface(): void {
+    const surface = this.querySelector('.sem-term-surface');
+    if (!(surface instanceof HTMLElement)) return;
+    const width = surface.clientWidth;
+    const height = surface.clientHeight;
+    if (!(width > 0) || !(height > 0)) {
+      // THEROB-187 (review r1): layout may land after the mirror mounts
+      // (hidden tab, late CSS) — a zero box used to give up silently and
+      // the 80×24 seed survived. Same bounded re-check window as the
+      // deferred-mount path, so the refit lands when layout arrives.
+      this.#boundedRecheck(() => this.#refitToSurface());
+      return;
+    }
+    const cell = this.#probeCellBox();
+    const { cols, rows } = fitCounts(width, height, cell.cellWidth, cell.cellHeight);
+    const view = this.ownerDocument?.defaultView;
+    this.#onMetrics({
+      cols,
+      rows,
+      cellWidth: cell.cellWidth,
+      cellHeight: cell.cellHeight,
+      dpr: clampDpr(view?.devicePixelRatio ?? 1),
+    });
+    // A landed refit re-arms the window: each settled geometry gets a full
+    // re-check allowance, while a forever-zero surface never lands and so
+    // still exhausts bounded.
+    this.#retryBudget = SURFACE_RETRY_BUDGET;
+  }
+
+  /**
+   * THEROB-187: cell box for the mirror-only refit. A probe canvas measures
+   * when the document can (forced-colors keeps 2d contexts); without one
+   * (no-2d-context refusal), fall back to the §8.3 default 14px box.
+   */
+  #probeCellBox(): { cellWidth: number; cellHeight: number } {
+    const probe = this.ownerDocument?.createElement?.('canvas');
+    const ctx = probe?.getContext?.('2d') as MeasuringContext | null;
+    if (ctx !== null && ctx !== undefined) {
+      const raw = measureCellMetrics(ctx);
+      // THEROB-187 (review r1): a non-null but degenerate 2d context must
+      // not feed invalid geometry into fitCounts — validate, else fall
+      // through to the documented default cell box.
+      if (
+        Number.isFinite(raw.cellWidth) && raw.cellWidth > 0 &&
+        Number.isFinite(raw.cellHeight) && raw.cellHeight > 0
+      ) {
+        return { cellWidth: raw.cellWidth, cellHeight: raw.cellHeight };
+      }
+    }
+    return { cellWidth: DEFAULT_CELL_WIDTH, cellHeight: DEFAULT_CELL_HEIGHT };
   }
 
   /**
